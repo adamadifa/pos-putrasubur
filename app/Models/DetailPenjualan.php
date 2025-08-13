@@ -17,12 +17,14 @@ class DetailPenjualan extends Model
         'qty',
         'harga',
         'subtotal',
+        'discount',
     ];
 
     protected $casts = [
         'qty' => 'decimal:3',
         'harga' => 'decimal:2',
         'subtotal' => 'decimal:2',
+        'discount' => 'decimal:2',
     ];
 
     /**

@@ -44,6 +44,22 @@ class PembayaranPenjualan extends Model
     }
 
     /**
+     * Get metode pembayaran display
+     */
+    public function getMetodePembayaranDisplayAttribute()
+    {
+        $metode = [
+            'tunai' => '💵 Tunai',
+            'transfer' => '🏦 Transfer Bank',
+            'qris' => '📱 QRIS',
+            'kartu' => '💳 Kartu Debit/Credit',
+            'ewallet' => '📱 E-Wallet'
+        ];
+
+        return $metode[$this->metode_pembayaran] ?? $this->metode_pembayaran;
+    }
+
+    /**
      * Get status bayar display
      */
     public function getStatusBayarDisplayAttribute()

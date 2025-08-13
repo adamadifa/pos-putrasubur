@@ -5,6 +5,8 @@ use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\PelangganController;
 use App\Http\Controllers\PenjualanController;
+use App\Http\Controllers\PembayaranPenjualanController;
+use App\Http\Controllers\PrinterSettingController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -41,8 +43,11 @@ Route::middleware('auth')->group(function () {
         Route::put('/{encryptedId}', [PenjualanController::class, 'update'])->name('update');
         Route::delete('/{encryptedId}', [PenjualanController::class, 'destroy'])->name('destroy');
     });
+
+    // Penjualan API Routes (inside auth middleware but outside group to avoid parameter conflicts)
     Route::get('penjualan/search-products', [PenjualanController::class, 'searchProducts'])->name('penjualan.search-products');
     Route::get('penjualan/product/{id}', [PenjualanController::class, 'getProduct'])->name('penjualan.get-product');
+    Route::get('penjualan/pending-receipt', [PenjualanController::class, 'getPendingReceipt'])->name('penjualan.pending-receipt');
 
     // Pembayaran Routes
     Route::prefix('pembayaran')->name('pembayaran.')->group(function () {
@@ -52,6 +57,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/create', function () {
             return view('pembayaran.create');
         })->name('create');
+        Route::post('/', [PembayaranPenjualanController::class, 'store'])->name('store');
         Route::get('/{id}', function ($id) {
             return view('pembayaran.show', compact('id'));
         })->name('show');
@@ -91,6 +97,23 @@ Route::middleware('auth')->group(function () {
             return view('laporan.pembayaran');
         })->name('pembayaran');
     });
+
+    // Printer Settings Routes
+    Route::prefix('printer')->name('printer.')->group(function () {
+        Route::get('/settings', [PrinterSettingController::class, 'index'])->name('settings');
+        Route::post('/test-print', [PrinterSettingController::class, 'testPrint'])->name('test-print');
+        Route::post('/save-settings', [PrinterSettingController::class, 'savePrinterSettings'])->name('save-settings');
+        Route::get('/get-settings', [PrinterSettingController::class, 'getPrinterSettings'])->name('get-settings');
+    });
+});
+
+// QZ Tray Certificate Routes (outside auth middleware untuk public access)
+Route::get('/qz-certificate', [PrinterSettingController::class, 'getCertificate']);
+Route::post('/qz-sign', [PrinterSettingController::class, 'signRequest']);
+
+// Certificate generation route (dengan auth)
+Route::middleware('auth')->group(function () {
+    Route::post('/generate-qz-certificate', [PrinterSettingController::class, 'generateCertificateCommand'])->name('generate-qz-certificate');
 });
 
 require __DIR__ . '/auth.php';

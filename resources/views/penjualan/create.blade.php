@@ -303,11 +303,7 @@
                                 <i class="ti ti-device-floppy text-lg mr-2"></i>
                                 Simpan Transaksi
                             </button>
-                            <a href="{{ route('penjualan.index') }}"
-                                class="w-full py-3 bg-red-100 text-red-700 rounded-lg font-medium hover:bg-red-200 transition-colors text-center block">
-                                <i class="ti ti-x text-lg mr-2"></i>
-                                Batal
-                            </a>
+
                         </div>
                     </div>
                 </form>
@@ -348,31 +344,64 @@
                 </div>
 
                 <!-- Quantity Input -->
-                <div class="mb-6">
+                <div class="mb-4">
                     <label for="quantityInput" class="block text-sm font-medium text-gray-700 mb-2">
                         Quantity
                     </label>
-                    <div class="flex items-center space-x-3">
+                    <div class="flex items-center space-x-2">
                         <button type="button" id="decreaseQty"
-                            class="w-10 h-10 bg-gray-200 rounded-lg text-gray-600 hover:bg-gray-300 flex items-center justify-center font-semibold">
-                            -
+                            class="w-12 h-12 bg-red-500 hover:bg-red-600 rounded-xl text-white flex items-center justify-center font-bold text-xl transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg">
+                            <i class="ti ti-minus"></i>
                         </button>
-                        <input type="text" id="quantityInput"
-                            class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-lg font-semibold"
-                            value="1" placeholder="0">
+                        <div class="flex-1 relative">
+                            <input type="text" id="quantityInput"
+                                class="w-full pl-4 pr-16 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-lg font-semibold"
+                                value="1" placeholder="0">
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <span id="modalProductUnitInInput"
+                                    class="text-sm font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded"></span>
+                            </div>
+                        </div>
                         <button type="button" id="increaseQty"
-                            class="w-10 h-10 bg-blue-600 rounded-lg text-white hover:bg-blue-700 flex items-center justify-center font-semibold">
-                            +
+                            class="w-12 h-12 bg-blue-600 hover:bg-blue-700 rounded-xl text-white flex items-center justify-center font-bold text-xl transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg">
+                            <i class="ti ti-plus"></i>
                         </button>
                     </div>
                     <p class="text-xs text-gray-500 mt-1">Masukkan jumlah yang diinginkan (maksimal sesuai stok)</p>
                 </div>
 
+                <!-- Discount Input -->
+                <div class="mb-6">
+                    <label for="discountInput" class="block text-sm font-medium text-gray-700 mb-2">
+                        Potongan Harga (Opsional)
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 text-sm font-medium">Rp</span>
+                        </div>
+                        <input type="text" id="discountInput"
+                            class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-right text-lg font-semibold"
+                            value="0" placeholder="0">
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Masukkan potongan harga untuk produk ini (dalam Rupiah)</p>
+                </div>
+
                 <!-- Total Price Preview -->
                 <div class="mb-6 p-3 bg-blue-50 rounded-lg">
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-600">Total Harga:</span>
-                        <span id="modalTotalPrice" class="text-lg font-bold text-blue-600">Rp 0</span>
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-600">Subtotal:</span>
+                            <span id="modalSubtotalPrice" class="font-medium text-gray-800">Rp 0</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm" id="modalDiscountRow"
+                            style="display: none;">
+                            <span class="text-orange-600">Potongan:</span>
+                            <span id="modalDiscountPrice" class="font-medium text-orange-600">Rp 0</span>
+                        </div>
+                        <div class="flex justify-between items-center border-t border-blue-200 pt-2">
+                            <span class="text-sm font-medium text-gray-700">Total Harga:</span>
+                            <span id="modalTotalPrice" class="text-lg font-bold text-blue-600">Rp 0</span>
+                        </div>
                     </div>
                 </div>
 
@@ -473,6 +502,102 @@
             </div>
         </div>
     </div>
+
+    <!-- Order Preview Modal -->
+    <div id="orderPreviewModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 xl:w-1/2 shadow-lg rounded-xl bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">Preview Pesanan</h3>
+                    <button type="button" id="closeOrderPreviewModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="ti ti-x text-2xl"></i>
+                    </button>
+                </div>
+
+                <!-- Customer Info -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                            <i class="ti ti-user text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900" id="previewCustomerName">-</h4>
+                            <p class="text-sm text-gray-600" id="previewCustomerCode">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transaction Info -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <p class="text-xs text-gray-500 mb-1">No. Faktur</p>
+                        <p class="font-semibold text-gray-900" id="previewInvoiceNumber">-</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <p class="text-xs text-gray-500 mb-1">Tanggal</p>
+                        <p class="font-semibold text-gray-900" id="previewDate">-</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <p class="text-xs text-gray-500 mb-1">Jenis Transaksi</p>
+                        <p class="font-semibold text-gray-900" id="previewTransactionType">-</p>
+                    </div>
+                </div>
+
+                <!-- Order Items -->
+                <div class="mb-6">
+                    <h4 class="font-semibold text-gray-900 mb-3">Detail Pesanan</h4>
+                    <div class="max-h-64 overflow-y-auto" id="previewOrderItems">
+                        <!-- Items will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                    <h4 class="font-semibold text-gray-900 mb-3">Ringkasan Pembayaran</h4>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Subtotal</span>
+                            <span class="font-medium" id="previewSubtotal">Rp 0</span>
+                        </div>
+                        <div class="flex justify-between text-sm" id="previewDiscountRow" style="display: none;">
+                            <span class="text-gray-600">Diskon Keseluruhan</span>
+                            <span class="font-medium text-red-600" id="previewDiscount">Rp 0</span>
+                        </div>
+                        <div class="flex justify-between text-lg font-bold border-t border-gray-200 pt-2">
+                            <span>Total</span>
+                            <span class="text-blue-600" id="previewTotal">Rp 0</span>
+                        </div>
+
+                        <!-- DP & Remaining (for kredit) -->
+                        <div id="previewPaymentBreakdown" class="hidden border-t border-gray-200 pt-2 space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-green-600">DP Dibayar</span>
+                                <span class="font-medium text-green-600" id="previewDP">Rp 0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-orange-600">Sisa Pembayaran</span>
+                                <span class="font-medium text-orange-600" id="previewRemaining">Rp 0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex space-x-3">
+                    <button type="button" id="cancelOrderPreview"
+                        class="flex-1 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                        <i class="ti ti-arrow-left text-lg mr-2"></i>
+                        Kembali Edit
+                    </button>
+                    <button type="button" id="confirmOrderSave"
+                        class="flex-1 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                        <i class="ti ti-device-floppy text-lg mr-2"></i>
+                        Konfirmasi & Simpan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('styles')
@@ -554,6 +679,12 @@
         /* Order item animation */
         .order-item {
             animation: slideIn 0.3s ease;
+            transition: all 0.2s ease;
+        }
+
+        .order-item:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         @keyframes slideIn {
@@ -566,6 +697,38 @@
                 opacity: 1;
                 transform: translateX(0);
             }
+        }
+
+        /* Order item layout improvements */
+        .order-item .space-y-2>*+* {
+            margin-top: 0.5rem;
+        }
+
+        /* Quantity badge styling */
+        .order-item .bg-blue-50 {
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            border: 1px solid #93c5fd;
+        }
+
+        /* Remove button improved styling */
+        .order-item .remove-btn {
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+        }
+
+        .order-item .remove-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Price breakdown styling */
+        .order-item .text-orange-600 {
+            font-weight: 500;
+        }
+
+        .order-item .font-bold.text-lg {
+            font-size: 1.125rem;
+            line-height: 1.75rem;
         }
 
         /* Loading animation */
@@ -668,11 +831,52 @@
         #decreaseQty,
         #increaseQty {
             transition: all 0.2s ease;
+            min-width: 48px;
+            min-height: 48px;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         #decreaseQty:hover,
         #increaseQty:hover {
             transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        #decreaseQty:active,
+        #increaseQty:active {
+            transform: scale(0.95);
+        }
+
+        #decreaseQty {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        #decreaseQty:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+        }
+
+        #increaseQty {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        #increaseQty:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        }
+
+        /* Input group with unit */
+        #quantityInput {
+            padding-right: 70px !important;
+        }
+
+        #modalProductUnitInInput {
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+            border: 1px solid #d1d5db;
+            font-weight: 600;
+            color: #374151;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
         }
 
         #quantityInput {
@@ -700,35 +904,7 @@
             transition: all 0.3s ease;
         }
 
-        /* Order item hover effects */
-        .order-item:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
 
-        .order-item {
-            transition: all 0.2s ease;
-        }
-
-        /* Edit hint */
-        .order-item:hover::after {
-            content: "Klik untuk edit quantity";
-            position: absolute;
-            bottom: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 10px;
-            white-space: nowrap;
-            z-index: 10;
-        }
-
-        .order-item {
-            position: relative;
-        }
 
         /* Stock badge animations and effects */
         .product-card .stock-badge {
@@ -829,6 +1005,46 @@
         .search-form input:focus {
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Order Preview Modal Styles */
+        #orderPreviewModal {
+            backdrop-filter: blur(4px);
+        }
+
+        #orderPreviewModal>div {
+            animation: previewModalSlideIn 0.3s ease;
+        }
+
+        @keyframes previewModalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Preview order items styling */
+        #previewOrderItems::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #previewOrderItems::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+
+        #previewOrderItems::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        #previewOrderItems::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
 
         /* Product grid responsive */
@@ -997,14 +1213,46 @@
                 dpAmountDisplay.required = false;
                 dpAmountDisplay.value = '0';
                 dpAmount.value = 0;
+
+                // Auto-fill payment for tunai (cash) transactions
+                if (this.value === 'tunai') {
+                    autoFillCashPayment();
+                }
             }
             updateOrderSummary();
         });
+
+        // Auto-fill cash payment function
+        function autoFillCashPayment() {
+            // Get the current total
+            const totalText = document.getElementById('totalDisplay').textContent;
+            const totalAmount = parseFormattedNumber(totalText.replace('Rp ', ''));
+
+            if (totalAmount > 0) {
+                // Set DP amount to equal the total for cash transactions
+                dpAmountDisplay.value = formatNumberInput(totalAmount);
+                dpAmount.value = totalAmount;
+
+                // Update the summary to reflect the payment
+                updateOrderSummary();
+
+                // Show a subtle notification
+                showToast('Pembayaran tunai otomatis diisi sesuai total', 'info');
+            }
+        }
 
         // Set initial DP visibility based on old value
         @if (old('jenis_transaksi') == 'kredit')
             dpContainer.classList.remove('hidden');
             dpAmountDisplay.required = true;
+        @else
+            // Auto-fill payment for initial cash transactions
+            if (jenisTransaksi.value === 'tunai') {
+                // Delay to ensure DOM is ready
+                setTimeout(() => {
+                    autoFillCashPayment();
+                }, 100);
+            }
         @endif
 
         // Update DP when amount changes
@@ -1167,7 +1415,7 @@
         });
 
         // Show quantity modal
-        function showQuantityModal(product, currentQty = 1) {
+        function showQuantityModal(product, currentQty = 1, currentDiscount = 0) {
             currentProduct = product;
 
             // Update modal content
@@ -1177,9 +1425,16 @@
             document.getElementById('modalProductStock').textContent = formatNumber(product.stock);
             document.getElementById('modalProductUnit').textContent = product.unit;
 
+            // Update unit in input group
+            document.getElementById('modalProductUnitInInput').textContent = product.unit;
+
             // Set quantity (for edit mode or new item)
             quantityInput.value = formatDecimalInput(currentQty);
             quantityInput.dataset.maxStock = product.stock;
+
+            // Set discount
+            const discountInput = document.getElementById('discountInput');
+            discountInput.value = formatNumberInput(currentDiscount.toString());
 
             // Update modal title based on mode
             const modalTitle = document.querySelector('#quantityModal h3');
@@ -1213,8 +1468,35 @@
         function updateModalTotalPrice() {
             if (currentProduct) {
                 const qty = parseFormattedDecimal(quantityInput.value) || 0;
-                const total = currentProduct.price * qty;
+                const discount = parseFormattedNumber(document.getElementById('discountInput').value) || 0;
+                const subtotal = currentProduct.price * qty;
+                const total = Math.max(0, subtotal - discount);
+
+                // Update subtotal
+                document.getElementById('modalSubtotalPrice').textContent = `Rp ${formatNumber(subtotal)}`;
+
+                // Show/hide discount row
+                const discountRow = document.getElementById('modalDiscountRow');
+                const discountPriceElement = document.getElementById('modalDiscountPrice');
+
+                if (discount > 0) {
+                    discountRow.style.display = 'flex';
+                    discountPriceElement.textContent = `Rp ${formatNumber(discount)}`;
+                } else {
+                    discountRow.style.display = 'none';
+                }
+
+                // Update total
                 document.getElementById('modalTotalPrice').textContent = `Rp ${formatNumber(total)}`;
+
+                // Validate discount doesn't exceed subtotal
+                if (discount > subtotal && subtotal > 0) {
+                    document.getElementById('discountInput').style.borderColor = '#ef4444';
+                    document.getElementById('discountInput').style.backgroundColor = '#fef2f2';
+                } else {
+                    document.getElementById('discountInput').style.borderColor = '#d1d5db';
+                    document.getElementById('discountInput').style.backgroundColor = '#ffffff';
+                }
             }
         }
 
@@ -1239,6 +1521,10 @@
         // Setup quantity input with decimal formatting
         setupDecimalInput(quantityInput);
 
+        // Setup discount input with number formatting
+        const discountInput = document.getElementById('discountInput');
+        setupNumberInput(discountInput);
+
         // Quantity input handlers
         quantityInput.addEventListener('input', function() {
             let numericValue = parseFormattedDecimal(this.value);
@@ -1255,13 +1541,26 @@
             updateModalTotalPrice();
         });
 
+        // Discount input handlers
+        discountInput.addEventListener('input', function() {
+            updateModalTotalPrice();
+        });
+
         // Decrease quantity button
         decreaseQty.addEventListener('click', function() {
             let value = parseFormattedDecimal(quantityInput.value) || 1;
             if (value > 0.1) {
                 // Decrease by 1 for values >= 1, by 0.1 for decimal values
                 let newValue = value >= 1 ? value - 1 : Math.max(0.1, Math.round((value - 0.1) * 10) / 10);
-                quantityInput.value = formatDecimalInput(newValue);
+
+                // Format and set the value properly
+                let formattedValue = formatDecimalInput(newValue);
+                quantityInput.value = formattedValue;
+
+                // Trigger input event to ensure proper formatting
+                quantityInput.dispatchEvent(new Event('input', {
+                    bubbles: true
+                }));
                 updateModalTotalPrice();
             }
         });
@@ -1272,7 +1571,15 @@
             if (currentProduct && value < currentProduct.stock) {
                 // Increase by 1 for integer values, by 0.1 for decimal values
                 let newValue = value % 1 === 0 ? value + 1 : Math.round((value + 0.1) * 10) / 10;
-                quantityInput.value = formatDecimalInput(newValue);
+
+                // Format and set the value properly
+                let formattedValue = formatDecimalInput(newValue);
+                quantityInput.value = formattedValue;
+
+                // Trigger input event to ensure proper formatting
+                quantityInput.dispatchEvent(new Event('input', {
+                    bubbles: true
+                }));
                 updateModalTotalPrice();
             } else if (currentProduct) {
                 showToast(`Maksimal quantity adalah ${formatNumber(currentProduct.stock)} ${currentProduct.unit}`,
@@ -1284,18 +1591,26 @@
         confirmQuantity.addEventListener('click', function() {
             if (currentProduct) {
                 const qty = parseFormattedDecimal(quantityInput.value) || 1;
+                const discount = parseFormattedNumber(document.getElementById('discountInput').value) || 0;
 
                 if (qty <= 0) {
                     showToast('Quantity harus lebih dari 0!', 'error');
                     return;
                 }
 
+                // Validate discount
+                const subtotal = currentProduct.price * qty;
+                if (discount > subtotal) {
+                    showToast('Potongan tidak boleh melebihi subtotal!', 'error');
+                    return;
+                }
+
                 if (editingItemIndex !== null) {
                     // Edit existing item
-                    updateOrderItemQuantity(editingItemIndex, qty);
+                    updateOrderItemQuantity(editingItemIndex, qty, discount);
                 } else {
                     // Add new item
-                    addToOrder(currentProduct, qty);
+                    addToOrder(currentProduct, qty, discount);
                 }
 
                 closeQuantityModalHandler();
@@ -1309,18 +1624,17 @@
             }
         });
 
-        function addToOrder(product, quantity = 1) {
+        function addToOrder(product, quantity = 1, discount = 0) {
             // Check if product already in order
             const existingIndex = orderItems.findIndex(item => item.id === product.id);
 
             if (existingIndex !== -1) {
-                // Calculate new total quantity
-                const newTotalQty = orderItems[existingIndex].qty + quantity;
-
-                if (newTotalQty <= product.stock) {
-                    orderItems[existingIndex].qty = newTotalQty;
+                // For existing items, replace with new values
+                if (quantity <= product.stock) {
+                    orderItems[existingIndex].qty = quantity;
+                    orderItems[existingIndex].discount = discount;
                     updateOrderItem(existingIndex);
-                    showToast(`${product.name} ditambahkan ke pesanan (${quantity} ${product.unit})`, 'success');
+                    showToast(`${product.name} diperbarui dalam pesanan`, 'success');
                 } else {
                     showToast('Stok tidak mencukupi!', 'error');
                 }
@@ -1331,6 +1645,7 @@
                     const newItem = {
                         ...product,
                         qty: quantity,
+                        discount: discount,
                         index: productIndex++
                     };
                     orderItems.push(newItem);
@@ -1393,25 +1708,72 @@
 
             emptyState.style.display = 'none';
 
+            const subtotal = item.price * item.qty;
+            const discount = item.discount || 0;
+            const total = subtotal - discount;
+
             const itemHtml = `
-                <div class="order-item flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer" data-index="${item.index}">
-                    <div class="flex-1 edit-item-area">
-                        <h4 class="font-medium text-sm text-gray-900">${item.name}</h4>
-                        <p class="text-xs text-gray-500">${item.code}</p>
-                        <p class="text-sm font-medium text-blue-600">Rp ${formatNumber(item.price)}</p>
+                <div class="order-item bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 cursor-pointer" data-index="${item.index}">
+                    <!-- Product Header -->
+                    <div class="flex items-start justify-between mb-3 edit-item-area">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-900 text-sm">${item.name}</h4>
+                            <p class="text-xs text-gray-500 mt-1">${item.code}</p>
                     </div>
-                    <div class="flex items-center space-x-3">
+                        <div class="flex items-center space-x-2">
                         <div class="text-center edit-item-area">
-                            <span class="qty text-sm font-medium text-gray-900">${formatDecimalInput(item.qty)}</span>
-                            <p class="text-xs text-gray-500">${item.unit}</p>
+                                <div class="bg-blue-50 px-3 py-1 rounded-full">
+                                    <span class="qty text-sm font-semibold text-blue-700">${formatDecimalInput(item.qty)}</span>
+                                    <span class="text-xs text-blue-600 ml-1">${item.unit}</span>
                         </div>
-                        <button type="button" class="remove-btn w-8 h-8 bg-red-500 rounded-lg text-white hover:bg-red-600 flex items-center justify-center" onclick="event.stopPropagation()">
+                            </div>
+                            <button type="button" class="remove-btn w-8 h-8 bg-red-500 rounded-full text-white hover:bg-red-600 flex items-center justify-center transition-colors" onclick="event.stopPropagation()">
                             <i class="ti ti-trash text-sm"></i>
                         </button>
                     </div>
+                    </div>
+                    
+                    <!-- Price Breakdown -->
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-600">Harga Satuan</span>
+                            <span class="font-medium text-gray-800">Rp ${formatNumber(item.price)}</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-600">Subtotal (${formatDecimalInput(item.qty)} × Rp ${formatNumber(item.price)})</span>
+                            <span class="font-medium text-gray-800">Rp ${formatNumber(subtotal)}</span>
+                        </div>
+                        
+                        ${discount > 0 ? `
+                                                                                            <div class="flex items-center justify-between text-sm">
+                                                                                                <span class="text-orange-600 flex items-center">
+                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                    Potongan Harga
+                                                                                                </span>
+                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                            </div>
+                                                                                            ` : ''}
+                        
+                        <!-- Total Line -->
+                        <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
+                            <span class="font-semibold text-gray-900">Total</span>
+                            <span class="font-bold text-lg ${discount > 0 ? 'text-green-600' : 'text-blue-600'}">Rp ${formatNumber(total)}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Edit Hint -->
+                    <div class="mt-3 pt-2 border-t border-gray-100">
+                        <p class="text-xs text-gray-400 text-center">
+                            <i class="ti ti-click text-xs mr-1"></i>
+                            Klik untuk edit quantity atau potongan
+                        </p>
+                    </div>
+                    
                     <input type="hidden" name="items[${item.index}][produk_id]" value="${item.id}">
                     <input type="hidden" name="items[${item.index}][qty]" value="${item.qty}" class="qty-input">
                     <input type="hidden" name="items[${item.index}][harga]" value="${item.price}">
+                    <input type="hidden" name="items[${item.index}][discount]" value="${discount}" class="discount-input">
                 </div>
             `;
 
@@ -1434,8 +1796,48 @@
             const item = orderItems[itemIndex];
             const element = document.querySelector(`[data-index="${item.index}"]`);
 
-            element.querySelector('.qty').textContent = formatDecimalInput(item.qty);
+            // Update hidden inputs
             element.querySelector('.qty-input').value = item.qty;
+            element.querySelector('.discount-input').value = item.discount || 0;
+
+            // Calculate values
+            const subtotal = item.price * item.qty;
+            const discount = item.discount || 0;
+            const total = subtotal - discount;
+
+            // Update quantity display
+            const qtyElement = element.querySelector('.qty');
+            qtyElement.textContent = formatDecimalInput(item.qty);
+
+            // Rebuild the entire price breakdown section
+            const priceBreakdownContainer = element.querySelector('.space-y-2');
+            priceBreakdownContainer.innerHTML = `
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-gray-600">Harga Satuan</span>
+                    <span class="font-medium text-gray-800">Rp ${formatNumber(item.price)}</span>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-gray-600">Subtotal (${formatDecimalInput(item.qty)} × Rp ${formatNumber(item.price)})</span>
+                    <span class="font-medium text-gray-800">Rp ${formatNumber(subtotal)}</span>
+                </div>
+                
+                ${discount > 0 ? `
+                                                                                    <div class="flex items-center justify-between text-sm">
+                                                                                        <span class="text-orange-600 flex items-center">
+                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                            Potongan Harga
+                                                                                        </span>
+                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                    </div>
+                                                                                    ` : ''}
+                
+                <!-- Total Line -->
+                <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
+                    <span class="font-semibold text-gray-900">Total</span>
+                    <span class="font-bold text-lg ${discount > 0 ? 'text-green-600' : 'text-blue-600'}">Rp ${formatNumber(total)}</span>
+                </div>
+            `;
         }
 
         // Edit order item quantity
@@ -1446,12 +1848,12 @@
             const item = orderItems[itemIndex];
             editingItemIndex = itemIndex;
 
-            // Show modal with current quantity
-            showQuantityModal(item, item.qty);
+            // Show modal with current quantity and discount
+            showQuantityModal(item, item.qty, item.discount || 0);
         }
 
         // Update order item quantity
-        function updateOrderItemQuantity(itemIndex, newQty) {
+        function updateOrderItemQuantity(itemIndex, newQty, newDiscount = 0) {
             const item = orderItems[itemIndex];
 
             // Validate new quantity
@@ -1466,14 +1868,22 @@
                 return;
             }
 
-            // Update quantity
+            // Update quantity and discount
             const oldQty = item.qty;
+            const oldDiscount = item.discount || 0;
             item.qty = newQty;
+            item.discount = newDiscount;
             updateOrderItem(itemIndex);
             updateOrderSummary();
 
-            showToast(`${item.name} quantity diupdate: ${formatNumber(oldQty)} → ${formatNumber(newQty)} ${item.unit}`,
-                'success');
+            if (oldDiscount !== newDiscount) {
+                showToast(
+                    `${item.name} diperbarui dengan quantity ${formatNumber(newQty)} dan potongan Rp ${formatNumber(newDiscount)}`,
+                    'success');
+            } else {
+                showToast(`${item.name} quantity diupdate: ${formatNumber(oldQty)} → ${formatNumber(newQty)} ${item.unit}`,
+                    'success');
+            }
         }
 
         function removeOrderItem(index) {
@@ -1493,7 +1903,12 @@
         }
 
         function updateOrderSummary() {
-            const subtotal = orderItems.reduce((total, item) => total + (item.price * item.qty), 0);
+            // Calculate subtotal with individual item discounts
+            const subtotal = orderItems.reduce((total, item) => {
+                const itemSubtotal = item.price * item.qty;
+                const itemDiscount = item.discount || 0;
+                return total + (itemSubtotal - itemDiscount);
+            }, 0);
             const discount = parseFormattedNumber(document.getElementById('diskonDisplay').value);
             const total = subtotal - discount;
 
@@ -1506,6 +1921,13 @@
             document.getElementById('subtotalDisplay').textContent = `Rp ${formatNumber(subtotal)}`;
             document.getElementById('discountDisplay').textContent = `Rp ${formatNumber(discount)}`;
             document.getElementById('totalDisplay').textContent = `Rp ${formatNumber(total)}`;
+
+            // Auto-update payment for cash transactions when total changes
+            if (jenisTransaksi === 'tunai' && total > 0) {
+                // Always update payment amount to match total for cash transactions
+                document.getElementById('dpAmountDisplay').value = formatNumberInput(total);
+                document.getElementById('dpAmount').value = total;
+            }
 
             // Show/hide payment breakdown for kredit
             if (jenisTransaksi === 'kredit' && total > 0) {
@@ -1537,11 +1959,14 @@
 
         // Format decimal number with thousand separator and comma for decimal
         function formatDecimalInput(value) {
-            if (!value) return '';
+            if (!value && value !== 0) return '';
+
+            // Convert to string first
+            let strValue = value.toString();
 
             // If value already contains comma, handle it carefully
-            if (value.toString().includes(',')) {
-                let parts = value.toString().split(',');
+            if (strValue.includes(',')) {
+                let parts = strValue.split(',');
                 let integerPart = parts[0];
                 let decimalPart = parts[1] || '';
 
@@ -1549,7 +1974,7 @@
                 integerPart = integerPart.replace(/\./g, '');
 
                 // Format integer part with thousand separator
-                if (integerPart) {
+                if (integerPart && integerPart !== '0') {
                     integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
                 }
 
@@ -1557,14 +1982,19 @@
                 if (decimalPart !== '') {
                     return integerPart + ',' + decimalPart;
                 } else {
-                    return integerPart + ',';
+                    return integerPart;
                 }
             } else {
-                // Convert to string and handle both comma and dot as decimal separator
-                let strValue = value.toString().replace(',', '.');
+                // Handle numeric input
+                let numValue;
+                if (typeof value === 'number') {
+                    numValue = value;
+                } else {
+                    // Convert string to number, handle both comma and dot as decimal separator
+                    let cleanValue = strValue.replace(',', '.');
+                    numValue = parseFloat(cleanValue);
+                }
 
-                // Parse as float
-                let numValue = parseFloat(strValue);
                 if (isNaN(numValue)) return '';
 
                 // Split integer and decimal parts
@@ -1627,6 +2057,7 @@
         // Setup decimal input formatting
         function setupDecimalInput(input) {
             let isFormatting = false;
+            let lastValidValue = '1';
 
             input.addEventListener('input', function(e) {
                 if (isFormatting) return;
@@ -1634,61 +2065,92 @@
                 const cursorPosition = e.target.selectionStart;
                 const oldValue = e.target.value;
 
-                // Allow digits, comma, and dot
-                let inputValue = e.target.value.replace(/[^\d,\.]/g, '');
+                // Get the raw numeric value by removing all formatting
+                let rawValue = e.target.value.replace(/[^\d,]/g, ''); // Keep digits and comma only
 
-                // Handle multiple decimal separators
-                let commaCount = (inputValue.match(/,/g) || []).length;
-
-                // If multiple commas, keep only the first one
-                if (commaCount > 1) {
-                    let firstCommaIndex = inputValue.indexOf(',');
-                    inputValue = inputValue.substring(0, firstCommaIndex + 1) + inputValue.substring(
-                        firstCommaIndex + 1).replace(/,/g, '');
+                // If input is empty, don't format yet
+                if (!rawValue) {
+                    return;
                 }
 
-                // If user types dot after comma, ignore it
-                if (inputValue.includes(',') && inputValue.lastIndexOf('.') > inputValue.lastIndexOf(',')) {
-                    inputValue = inputValue.replace(/\./g, '');
-                }
+                // Handle decimal separator (comma)
+                let hasDecimal = rawValue.includes(',');
+                let integerPart = '';
+                let decimalPart = '';
 
-                // Only format if not actively typing after comma
-                let shouldFormat = true;
-                if (inputValue.includes(',')) {
-                    let parts = inputValue.split(',');
-                    // Don't format if user is still typing decimal part
-                    if (parts[1] !== undefined && cursorPosition > inputValue.indexOf(',')) {
-                        shouldFormat = false;
+                if (hasDecimal) {
+                    let parts = rawValue.split(',');
+                    integerPart = parts[0] || '';
+                    decimalPart = parts[1] || '';
+
+                    // If multiple commas, keep only the first one
+                    if (parts.length > 2) {
+                        decimalPart = parts.slice(1).join('');
                     }
+                } else {
+                    integerPart = rawValue;
                 }
 
-                let newValue;
-                if (shouldFormat && !inputValue.endsWith(',')) {
-                    newValue = formatDecimalInput(inputValue);
-                } else {
-                    // Just clean the input without full formatting
-                    newValue = inputValue;
+                // Format the value
+                let newValue = '';
+                if (integerPart) {
+                    // Add thousand separators to integer part
+                    if (integerPart.length >= 4) {
+                        integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                    }
+                    newValue = integerPart;
+                }
+
+                // Add decimal part if exists
+                if (hasDecimal) {
+                    newValue += ',' + decimalPart;
+                }
+
+                // Store last valid value
+                let numericValue = parseFormattedDecimal(newValue);
+                if (numericValue > 0) {
+                    lastValidValue = newValue;
                 }
 
                 if (newValue !== oldValue) {
                     isFormatting = true;
                     e.target.value = newValue;
 
-                    // Adjust cursor position more intelligently
+                    // Calculate new cursor position
                     let newCursorPos = cursorPosition;
 
-                    // If a dot was added for thousand separator, adjust cursor
-                    let oldDots = (oldValue.match(/\./g) || []).length;
-                    let newDots = (newValue.match(/\./g) || []).length;
-                    let dotDiff = newDots - oldDots;
+                    // Count dots before cursor in old and new values
+                    let oldDots = (oldValue.substring(0, cursorPosition).match(/\./g) || []).length;
+                    let newDots = (newValue.substring(0, cursorPosition).match(/\./g) || []).length;
 
-                    if (dotDiff > 0 && cursorPosition > 0) {
-                        // Count dots before cursor in old value
-                        let dotsBeforeCursor = (oldValue.substring(0, cursorPosition).match(/\./g) || []).length;
-                        let newDotsBeforeCursor = (newValue.substring(0, cursorPosition + dotDiff).match(/\./g) ||
-                        []).length;
-                        newCursorPos = cursorPosition + (newDotsBeforeCursor - dotsBeforeCursor);
+                    // Adjust cursor position based on dot difference
+                    if (newValue.length > oldValue.length) {
+                        // Text was added (likely a dot for thousand separator)
+                        let addedDots = (newValue.match(/\./g) || []).length - (oldValue.match(/\./g) || []).length;
+                        if (addedDots > 0) {
+                            // Find where the dot was added relative to cursor
+                            let textBeforeCursor = oldValue.substring(0, cursorPosition);
+                            let digitsBeforeCursor = textBeforeCursor.replace(/[^\d]/g, '').length;
+
+                            // Count how many dots should be before this many digits in the new value
+                            let newTextUpToDigits = newValue.replace(/[^\d.]/g, '');
+                            let dotsBeforeDigits = 0;
+                            let digitCount = 0;
+
+                            for (let i = 0; i < newTextUpToDigits.length && digitCount < digitsBeforeCursor; i++) {
+                                if (newTextUpToDigits[i] === '.') {
+                                    dotsBeforeDigits++;
+                                } else {
+                                    digitCount++;
+                                }
+                            }
+
+                            newCursorPos = cursorPosition + dotsBeforeDigits - oldDots;
+                        }
                     }
+
+                    // Make sure cursor position is within bounds
+                    newCursorPos = Math.max(0, Math.min(newCursorPos, newValue.length));
 
                     e.target.setSelectionRange(newCursorPos, newCursorPos);
                     isFormatting = false;
@@ -1696,11 +2158,23 @@
             });
 
             input.addEventListener('blur', function(e) {
-                let value = parseFormattedDecimal(e.target.value);
+                let inputValue = e.target.value.trim();
+
+                // If empty, set to last valid value or 1
+                if (!inputValue) {
+                    e.target.value = lastValidValue || '1';
+                    return;
+                }
+
+                let value = parseFormattedDecimal(inputValue);
                 if (value <= 0 || isNaN(value)) {
-                    e.target.value = '1';
+                    // Use last valid value instead of defaulting to 1
+                    e.target.value = lastValidValue || '1';
                 } else {
-                    e.target.value = formatDecimalInput(value);
+                    // Format the value properly
+                    let formattedValue = formatDecimalInput(value);
+                    e.target.value = formattedValue;
+                    lastValidValue = formattedValue;
                 }
             });
 
@@ -1714,16 +2188,145 @@
         // Update totals when discount changes
         document.getElementById('diskon').addEventListener('input', updateOrderSummary);
 
-        // Form validation
+        // Order Preview Modal functionality
+        const orderPreviewModal = document.getElementById('orderPreviewModal');
+        const closeOrderPreviewModal = document.getElementById('closeOrderPreviewModal');
+        const cancelOrderPreview = document.getElementById('cancelOrderPreview');
+        const confirmOrderSave = document.getElementById('confirmOrderSave');
+
+        // Close preview modal
+        function closePreviewModal() {
+            orderPreviewModal.classList.add('hidden');
+        }
+
+        closeOrderPreviewModal.addEventListener('click', closePreviewModal);
+        cancelOrderPreview.addEventListener('click', closePreviewModal);
+
+        // Close modal when clicking outside
+        orderPreviewModal.addEventListener('click', (e) => {
+            if (e.target === orderPreviewModal) {
+                closePreviewModal();
+            }
+        });
+
+        // Close modal with ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !orderPreviewModal.classList.contains('hidden')) {
+                closePreviewModal();
+            }
+        });
+
+        // Show order preview
+        function showOrderPreview() {
+            // Get customer info
+            const customerName = document.getElementById('customerDisplay').value || 'Belum dipilih';
+            const selectedCustomer = document.querySelector('.customer-item.bg-blue-100');
+
+            document.getElementById('previewCustomerName').textContent = customerName;
+            document.getElementById('previewCustomerCode').textContent = selectedCustomer ?
+                selectedCustomer.dataset.code : '-';
+
+            // Get transaction info
+            document.getElementById('previewInvoiceNumber').textContent =
+                document.querySelector('input[name="no_faktur"]').value;
+            document.getElementById('previewDate').textContent =
+                new Date(document.querySelector('input[name="tanggal"]').value).toLocaleDateString('id-ID');
+
+            const jenisTransaksi = document.getElementById('jenisTransaksi').value;
+            document.getElementById('previewTransactionType').textContent =
+                jenisTransaksi === 'kredit' ? 'Kredit' : 'Tunai';
+
+            // Populate order items
+            const previewOrderItems = document.getElementById('previewOrderItems');
+            previewOrderItems.innerHTML = '';
+
+            orderItems.forEach(item => {
+                const subtotal = item.price * item.qty;
+                const discount = item.discount || 0;
+                const total = subtotal - discount;
+
+                const itemHtml = `
+                    <div class="bg-white border border-gray-200 rounded-lg p-3 mb-2">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <h5 class="font-medium text-gray-900 text-sm">${item.name}</h5>
+                                <p class="text-xs text-gray-500">${item.code}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-medium text-gray-900">${formatDecimalInput(item.qty)} ${item.unit}</p>
+                                <p class="text-xs text-gray-500">@ Rp ${formatNumber(item.price)}</p>
+                            </div>
+                        </div>
+                        <div class="mt-2 pt-2 border-t border-gray-100 space-y-1">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-gray-600">Subtotal</span>
+                                <span>Rp ${formatNumber(subtotal)}</span>
+                            </div>
+                            ${discount > 0 ? `
+                                                                                            <div class="flex justify-between text-xs">
+                                                                                                <span class="text-orange-600">Potongan</span>
+                                                                                                <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                            </div>
+                                                                                            ` : ''}
+                            <div class="flex justify-between text-sm font-medium">
+                                <span>Total</span>
+                                <span class="text-blue-600">Rp ${formatNumber(total)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                previewOrderItems.insertAdjacentHTML('beforeend', itemHtml);
+            });
+
+            // Calculate totals
+            const subtotalItems = orderItems.reduce((total, item) => {
+                const itemSubtotal = item.price * item.qty;
+                const itemDiscount = item.discount || 0;
+                return total + (itemSubtotal - itemDiscount);
+            }, 0);
+            const discount = parseFormattedNumber(document.getElementById('diskonDisplay').value);
+            const total = subtotalItems - discount;
+
+            // Update summary
+            document.getElementById('previewSubtotal').textContent = `Rp ${formatNumber(subtotalItems)}`;
+
+            const previewDiscountRow = document.getElementById('previewDiscountRow');
+            if (discount > 0) {
+                previewDiscountRow.style.display = 'flex';
+                document.getElementById('previewDiscount').textContent = `Rp ${formatNumber(discount)}`;
+            } else {
+                previewDiscountRow.style.display = 'none';
+            }
+
+            document.getElementById('previewTotal').textContent = `Rp ${formatNumber(total)}`;
+
+            // Show/hide payment breakdown for kredit
+            const previewPaymentBreakdown = document.getElementById('previewPaymentBreakdown');
+            if (jenisTransaksi === 'kredit') {
+                const dpAmount = parseFormattedNumber(document.getElementById('dpAmountDisplay').value);
+                const remaining = Math.max(0, total - dpAmount);
+
+                previewPaymentBreakdown.classList.remove('hidden');
+                document.getElementById('previewDP').textContent = `Rp ${formatNumber(dpAmount)}`;
+                document.getElementById('previewRemaining').textContent = `Rp ${formatNumber(remaining)}`;
+            } else {
+                previewPaymentBreakdown.classList.add('hidden');
+            }
+
+            // Show modal
+            orderPreviewModal.classList.remove('hidden');
+        }
+
+        // Form validation and preview
         document.getElementById('salesForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Always prevent default first
+
             if (orderItems.length === 0) {
-                e.preventDefault();
                 showToast('Minimal harus ada 1 produk!', 'error');
                 return false;
             }
 
             if (!pelangganId.value) {
-                e.preventDefault();
                 showToast('Silakan pilih pelanggan terlebih dahulu!', 'error');
                 searchCustomerBtn.focus();
                 return false;
@@ -1732,39 +2335,142 @@
             // Validate DP for kredit transactions
             const jenisTransaksi = document.getElementById('jenisTransaksi').value;
             if (jenisTransaksi === 'kredit') {
-                const subtotal = orderItems.reduce((total, item) => total + (item.price * item.qty), 0);
+                const subtotal = orderItems.reduce((total, item) => {
+                    const itemSubtotal = item.price * item.qty;
+                    const itemDiscount = item.discount || 0;
+                    return total + (itemSubtotal - itemDiscount);
+                }, 0);
                 const discount = parseFormattedNumber(document.getElementById('diskonDisplay').value);
                 const total = subtotal - discount;
                 const dpAmount = parseFormattedNumber(document.getElementById('dpAmountDisplay').value);
 
                 if (dpAmount > total) {
-                    e.preventDefault();
                     showToast('DP tidak boleh melebihi total transaksi!', 'error');
                     document.getElementById('dpAmountDisplay').focus();
                     return false;
                 }
 
                 if (dpAmount < 0) {
-                    e.preventDefault();
                     showToast('DP tidak boleh kurang dari 0!', 'error');
                     document.getElementById('dpAmountDisplay').focus();
                     return false;
                 }
             }
 
-            // Show loading state
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="ti ti-loader animate-spin mr-2"></i>Menyimpan...';
-            submitBtn.disabled = true;
+            // Show preview modal instead of submitting directly
+            showOrderPreview();
+        });
 
-            // If validation fails, restore button
-            setTimeout(() => {
-                if (submitBtn.disabled) {
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
+        // Confirm order save
+        confirmOrderSave.addEventListener('click', function() {
+            const button = this;
+            const originalText = button.innerHTML;
+            const cancelButton = document.getElementById('cancelOrderPreview');
+
+            // Disable both buttons and show loading state
+            button.disabled = true;
+            cancelButton.disabled = true;
+            button.classList.add('opacity-75', 'cursor-not-allowed');
+            cancelButton.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // Add loading overlay to modal content
+            const modalContent = orderPreviewModal.querySelector('.bg-white');
+            const loadingOverlay = document.createElement('div');
+            loadingOverlay.className =
+                'absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50 rounded-2xl';
+            loadingOverlay.innerHTML = `
+                <div class="text-center">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
+                        <i class="ti ti-loader animate-spin text-2xl text-blue-600"></i>
+                    </div>
+                    <p class="text-lg font-semibold text-gray-800" id="loadingText">Memvalidasi data...</p>
+                    <p class="text-sm text-gray-500 mt-1">Mohon tunggu sebentar</p>
+                    
+                    <!-- Progress Bar -->
+                    <div class="w-64 bg-gray-200 rounded-full h-2 mt-4 mx-auto">
+                        <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2" id="progressText">0%</p>
+                </div>
+            `;
+            modalContent.appendChild(loadingOverlay);
+
+            // Animation sequence for better UX
+            const loadingStates = [{
+                    text: 'Memvalidasi data...',
+                    buttonText: '<i class="ti ti-loader animate-spin mr-2"></i>Memvalidasi...',
+                    progress: 25,
+                    delay: 0
+                },
+                {
+                    text: 'Menyimpan ke database...',
+                    buttonText: '<i class="ti ti-loader animate-spin mr-2"></i>Menyimpan...',
+                    progress: 60,
+                    delay: 1000
+                },
+                {
+                    text: 'Berhasil tersimpan!',
+                    buttonText: '<i class="ti ti-check animate-pulse mr-2"></i>Berhasil!',
+                    progress: 90,
+                    delay: 2000
+                },
+                {
+                    text: 'Mengalihkan halaman...',
+                    buttonText: '<i class="ti ti-check animate-pulse mr-2"></i>Mengalihkan...',
+                    progress: 100,
+                    delay: 2500
                 }
-            }, 5000);
+            ];
+
+            // Execute loading animation sequence
+            loadingStates.forEach((state, index) => {
+                setTimeout(() => {
+                    // Update overlay text
+                    const loadingText = document.getElementById('loadingText');
+                    const progressBar = document.getElementById('progressBar');
+                    const progressText = document.getElementById('progressText');
+
+                    if (loadingText) {
+                        loadingText.textContent = state.text;
+                    }
+
+                    // Update progress bar
+                    if (progressBar) {
+                        progressBar.style.width = state.progress + '%';
+                    }
+                    if (progressText) {
+                        progressText.textContent = state.progress + '%';
+                    }
+
+                    // Update button text
+                    button.innerHTML = state.buttonText;
+
+                    // Change icon color for success states
+                    if (state.progress >= 90) {
+                        const icon = loadingOverlay.querySelector('.ti-loader');
+                        if (icon) {
+                            icon.className = 'ti ti-check animate-pulse text-2xl text-green-600';
+                        }
+                        const iconBg = loadingOverlay.querySelector('.bg-blue-100');
+                        if (iconBg) {
+                            iconBg.className =
+                                'inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4';
+                        }
+                        if (progressBar) {
+                            progressBar.className =
+                                'bg-green-600 h-2 rounded-full transition-all duration-1000 ease-out';
+                        }
+                    }
+
+                    // If this is the last state, submit the form
+                    if (index === loadingStates.length - 1) {
+                        setTimeout(() => {
+                            const form = document.getElementById('salesForm');
+                            form.submit();
+                        }, 800);
+                    }
+                }, state.delay);
+            });
         });
     </script>
 @endpush
