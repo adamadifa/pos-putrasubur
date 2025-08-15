@@ -1,7 +1,7 @@
 @extends('layouts.pos')
 
-@section('title', 'Transaksi Baru')
-@section('page-title', 'Buat Transaksi Penjualan')
+@section('title', 'Edit Transaksi')
+@section('page-title', 'Edit Transaksi Penjualan')
 
 @section('content')
     <div class="min-h-screen">
@@ -174,8 +174,9 @@
 
             <!-- Right Side - Order Summary -->
             <div class="w-96">
-                <form action="{{ route('penjualan.store') }}" method="POST" id="salesForm">
+                <form action="{{ route('penjualan.update', $penjualan->encrypted_id) }}" method="POST" id="salesForm">
                     @csrf
+                    @method('PUT')
 
                     <!-- Customer & Invoice Info -->
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
@@ -183,14 +184,14 @@
 
                         <!-- Invoice Number -->
                         <div class="mb-2">
-                            <input type="text" name="no_faktur" value="{{ old('no_faktur', $invoiceNumber) }}"
+                            <input type="text" name="no_faktur" value="{{ old('no_faktur', $penjualan->no_faktur) }}"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
                                 placeholder="Nomor Faktur" readonly>
                         </div>
 
                         <!-- Date -->
                         <div class="mb-2">
-                            <input type="date" name="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}"
+                            <input type="date" name="tanggal" value="{{ old('tanggal', $penjualan->tanggal) }}"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required>
                         </div>
@@ -213,7 +214,7 @@
                                 </button>
                             </div>
                             <input type="hidden" name="pelanggan_id" id="pelangganId"
-                                value="{{ old('pelanggan_id') }}" required>
+                                value="{{ old('pelanggan_id', $penjualan->pelanggan_id) }}" required>
                         </div>
 
                         <!-- Transaction Type -->
@@ -221,9 +222,12 @@
                             <select name="jenis_transaksi" id="jenisTransaksi"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required>
-                                <option value="tunai" {{ old('jenis_transaksi', 'tunai') == 'tunai' ? 'selected' : '' }}>
+                                <option value="tunai"
+                                    {{ old('jenis_transaksi', $penjualan->jenis_transaksi) == 'tunai' ? 'selected' : '' }}>
                                     Tunai</option>
-                                <option value="kredit" {{ old('jenis_transaksi') == 'kredit' ? 'selected' : '' }}>Kredit
+                                <option value="kredit"
+                                    {{ old('jenis_transaksi', $penjualan->jenis_transaksi) == 'kredit' ? 'selected' : '' }}>
+                                    Kredit
                                 </option>
                             </select>
                         </div>
@@ -232,11 +236,10 @@
                         <div class="mb-2 hidden" id="dpContainer">
                             <input type="text" id="dpAmountDisplay"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-right"
-                                placeholder="Jumlah DP (Rp)" value="{{ old('dp_amount', 0) }}">
-                            <input type="hidden" name="dp_amount" id="dpAmount" value="{{ old('dp_amount', 0) }}">
+                                placeholder="Jumlah DP (Rp)" value="{{ old('dp_amount', $penjualan->dp_amount ?? 0) }}">
+                            <input type="hidden" name="dp_amount" id="dpAmount"
+                                value="{{ old('dp_amount', $penjualan->dp_amount ?? 0) }}">
                         </div>
-
-
                     </div>
 
                     <!-- Order Summary -->
@@ -259,10 +262,12 @@
 
                         <!-- Discount -->
                         <div class="border-t border-gray-200 pt-4">
-                            <input type="text" id="diskonDisplay" value="{{ old('diskon', 0) }}"
+                            <input type="text" id="diskonDisplay"
+                                value="{{ old('diskon', $penjualan->diskon ?? 0) }}"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-right"
                                 placeholder="Diskon (Rp)">
-                            <input type="hidden" name="diskon" id="diskon" value="{{ old('diskon', 0) }}">
+                            <input type="hidden" name="diskon" id="diskon"
+                                value="{{ old('diskon', $penjualan->diskon ?? 0) }}">
                         </div>
                     </div>
 
@@ -301,9 +306,13 @@
                             <button type="submit"
                                 class="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
                                 <i class="ti ti-device-floppy text-lg mr-2"></i>
-                                Simpan Transaksi
+                                Update Transaksi
                             </button>
+                        </div>
 
+                        <!-- Hidden inputs for order items -->
+                        <div id="hiddenItemsContainer">
+                            <!-- Hidden inputs will be generated here dynamically -->
                         </div>
                     </div>
                 </form>
@@ -609,7 +618,7 @@
                     <button type="button" id="confirmOrderSave"
                         class="flex-1 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
                         <i class="ti ti-device-floppy text-lg mr-2"></i>
-                        Konfirmasi & Simpan
+                        Konfirmasi & Update
                     </button>
                 </div>
             </div>
@@ -921,8 +930,6 @@
             transition: all 0.3s ease;
         }
 
-
-
         /* Stock badge animations and effects */
         .product-card .stock-badge {
             transition: all 0.3s ease;
@@ -1105,6 +1112,23 @@
         let currentProduct = null;
         let editingItemIndex = null;
 
+        // Initialize existing order items from edit data
+        @if ($penjualan->detailPenjualan)
+            @foreach ($penjualan->detailPenjualan as $index => $detail)
+                orderItems.push({
+                    id: {{ $detail->produk_id }},
+                    name: '{{ $detail->produk->nama_produk }}',
+                    code: '{{ $detail->produk->kode_produk }}',
+                    price: {{ $detail->harga }},
+                    stock: {{ $detail->produk->stok }},
+                    unit: '{{ $detail->produk->satuan->nama ?? '' }}',
+                    qty: {{ $detail->qty }},
+                    discount: {{ $detail->discount ?? 0 }},
+                    index: productIndex++
+                });
+            @endforeach
+        @endif
+
         // Customer modal functionality
         const customerModal = document.getElementById('customerModal');
         const searchCustomerBtn = document.getElementById('searchCustomerBtn');
@@ -1113,6 +1137,12 @@
         const customerDisplay = document.getElementById('customerDisplay');
         const pelangganId = document.getElementById('pelangganId');
         const clearCustomerBtn = document.getElementById('clearCustomerBtn');
+
+        // Set initial customer display
+        @if ($penjualan->pelanggan)
+            customerDisplay.value = '{{ $penjualan->pelanggan->nama }} ({{ $penjualan->pelanggan->kode_pelanggan }})';
+            clearCustomerBtn.classList.remove('hidden');
+        @endif
 
         // Open customer modal
         searchCustomerBtn.addEventListener('click', () => {
@@ -1130,12 +1160,6 @@
             pelangganId.value = '';
             customerDisplay.value = '';
             clearCustomerBtn.classList.add('hidden');
-
-            // Remove selection styling from all customer items
-            document.querySelectorAll('.customer-item').forEach(item => {
-                item.classList.remove('bg-blue-100', 'border-blue-500');
-            });
-
             showToast('Pilihan pelanggan dibersihkan', 'info');
         });
 
@@ -1178,41 +1202,13 @@
                 const customerName = item.dataset.name;
                 const customerCode = item.dataset.code;
 
-                // Update form fields
                 pelangganId.value = customerId;
                 customerDisplay.value = `${customerName} (${customerCode})`;
-
-                // Show clear button
                 clearCustomerBtn.classList.remove('hidden');
-
-                // Close modal
                 customerModal.classList.add('hidden');
-
-                // Show success message
                 showToast(`Pelanggan ${customerName} dipilih`, 'success');
-
-                // Remove previous selection styling
-                document.querySelectorAll('.customer-item').forEach(i => {
-                    i.classList.remove('bg-blue-100', 'border-blue-500');
-                });
-
-                // Add selection styling
-                item.classList.add('bg-blue-100', 'border-blue-500');
             });
         });
-
-        // Set initial customer if old value exists
-        @if (old('pelanggan_id'))
-            const initialCustomerId = '{{ old('pelanggan_id') }}';
-            const initialCustomerItem = document.querySelector(`[data-id="${initialCustomerId}"]`);
-            if (initialCustomerItem) {
-                const customerName = initialCustomerItem.dataset.name;
-                const customerCode = initialCustomerItem.dataset.code;
-                customerDisplay.value = `${customerName} (${customerCode})`;
-                clearCustomerBtn.classList.remove('hidden');
-                initialCustomerItem.classList.add('bg-blue-100', 'border-blue-500');
-            }
-        @endif
 
         // Transaction type functionality
         const jenisTransaksi = document.getElementById('jenisTransaksi');
@@ -1220,7 +1216,6 @@
         const dpAmountDisplay = document.getElementById('dpAmountDisplay');
         const dpAmount = document.getElementById('dpAmount');
 
-        // Handle transaction type change
         jenisTransaksi.addEventListener('change', function() {
             if (this.value === 'kredit') {
                 dpContainer.classList.remove('hidden');
@@ -1230,46 +1225,14 @@
                 dpAmountDisplay.required = false;
                 dpAmountDisplay.value = '0';
                 dpAmount.value = 0;
-
-                // Auto-fill payment for tunai (cash) transactions
-                if (this.value === 'tunai') {
-                    autoFillCashPayment();
-                }
             }
             updateOrderSummary();
         });
 
-        // Auto-fill cash payment function
-        function autoFillCashPayment() {
-            // Get the current total
-            const totalText = document.getElementById('totalDisplay').textContent;
-            const totalAmount = parseFormattedNumber(totalText.replace('Rp ', ''));
-
-            if (totalAmount > 0) {
-                // Set DP amount to equal the total for cash transactions
-                dpAmountDisplay.value = formatNumberInput(totalAmount);
-                dpAmount.value = totalAmount;
-
-                // Update the summary to reflect the payment
-                updateOrderSummary();
-
-                // Show a subtle notification
-                showToast('Pembayaran tunai otomatis diisi sesuai total', 'info');
-            }
-        }
-
-        // Set initial DP visibility based on old value
-        @if (old('jenis_transaksi') == 'kredit')
+        // Set initial DP visibility
+        @if ($penjualan->jenis_transaksi == 'kredit')
             dpContainer.classList.remove('hidden');
             dpAmountDisplay.required = true;
-        @else
-            // Auto-fill payment for initial cash transactions
-            if (jenisTransaksi.value === 'tunai') {
-                // Delay to ensure DOM is ready
-                setTimeout(() => {
-                    autoFillCashPayment();
-                }, 100);
-            }
         @endif
 
         // Update DP when amount changes
@@ -1278,119 +1241,41 @@
             updateOrderSummary();
         });
 
-        // Setup number formatting for input fields
-        const diskonDisplay = document.getElementById('diskonDisplay');
-        const diskonHidden = document.getElementById('diskon');
-
-        setupNumberInput(diskonDisplay);
+        // Setup number formatting
         setupNumberInput(dpAmountDisplay);
-
-        // Update hidden fields when display fields change
-        diskonDisplay.addEventListener('input', function() {
-            diskonHidden.value = parseFormattedNumber(this.value);
-            updateOrderSummary();
-        });
-
-        // Format initial values
-        if (diskonDisplay.value && diskonDisplay.value !== '0') {
-            diskonDisplay.value = formatNumberInput(diskonDisplay.value);
-        }
-
-        if (dpAmountDisplay.value && dpAmountDisplay.value !== '0') {
-            dpAmountDisplay.value = formatNumberInput(dpAmountDisplay.value);
-        }
+        setupNumberInput(document.getElementById('diskonDisplay'));
 
         // Category filter functionality
         document.querySelectorAll('.category-filter').forEach(btn => {
             btn.addEventListener('click', function() {
-                // Update active state
                 document.querySelectorAll('.category-filter').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
-
                 const category = this.dataset.category;
                 filterProducts(category);
             });
         });
 
         // Product search functionality
-        function searchProducts(searchTerm) {
-            const products = document.querySelectorAll('.product-card');
-            const term = searchTerm.toLowerCase();
-
-            products.forEach(product => {
-                const name = product.dataset.name.toLowerCase();
-                const code = product.dataset.code.toLowerCase();
-
-                if (name.includes(term) || code.includes(term)) {
-                    product.style.display = 'block';
-                } else {
-                    product.style.display = 'none';
-                }
-            });
-        }
-
-        // Product search by name/SKU
         document.getElementById('productSearch').addEventListener('input', function(e) {
             searchProducts(e.target.value);
-            // Clear barcode search when typing in product search
-            if (e.target.value) {
-                document.getElementById('barcodeSearch').value = '';
-            }
         });
 
         // Barcode search functionality
         document.getElementById('barcodeSearch').addEventListener('input', function(e) {
             const barcode = e.target.value.trim();
-
             if (barcode) {
-                // Clear product search when typing in barcode
                 document.getElementById('productSearch').value = '';
-
-                // Search by barcode (assuming barcode is stored in kode_produk)
                 searchProducts(barcode);
-
-                // Auto-add product if exact match found
-                if (barcode.length >= 8) { // Assuming minimum barcode length
-                    const exactMatch = Array.from(document.querySelectorAll('.product-card')).find(product =>
-                        product.dataset.code.toLowerCase() === barcode.toLowerCase()
-                    );
-
-                    if (exactMatch && exactMatch.style.display !== 'none') {
-                        // Show quantity modal for the product
-                        const productData = {
-                            id: exactMatch.dataset.id,
-                            name: exactMatch.dataset.name,
-                            code: exactMatch.dataset.code,
-                            price: parseFloat(exactMatch.dataset.price),
-                            stock: parseInt(exactMatch.dataset.stock),
-                            unit: exactMatch.dataset.unit
-                        };
-
-                        showQuantityModal(productData);
-
-                        // Clear barcode field after showing modal
-                        this.value = '';
-                    }
-                }
             } else {
-                // Show all products if barcode field is empty
                 document.querySelectorAll('.product-card').forEach(product => {
                     product.style.display = 'block';
                 });
             }
         });
 
-        // Scan button functionality (placeholder for actual barcode scanner integration)
-        document.getElementById('scanButton').addEventListener('click', function() {
-            const barcodeInput = document.getElementById('barcodeSearch');
-            barcodeInput.focus();
-            showToast('Silakan scan barcode atau ketik manual', 'info');
-        });
-
         // Filter products by category
         function filterProducts(category) {
             const products = document.querySelectorAll('.product-card');
-
             products.forEach(product => {
                 if (category === 'all' || product.dataset.category === category) {
                     product.style.display = 'block';
@@ -1399,6 +1284,36 @@
                 }
             });
         }
+
+        // Search products
+        function searchProducts(searchTerm) {
+            const products = document.querySelectorAll('.product-card');
+            const term = searchTerm.toLowerCase();
+            products.forEach(product => {
+                const name = product.dataset.name.toLowerCase();
+                const code = product.dataset.code.toLowerCase();
+                if (name.includes(term) || code.includes(term)) {
+                    product.style.display = 'block';
+                } else {
+                    product.style.display = 'none';
+                }
+            });
+        }
+
+        // Product click handler
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const productData = {
+                    id: this.dataset.id,
+                    name: this.dataset.name,
+                    code: this.dataset.code,
+                    price: parseFloat(this.dataset.price),
+                    stock: parseInt(this.dataset.stock),
+                    unit: this.dataset.unit
+                };
+                showQuantityModal(productData);
+            });
+        });
 
         // Quantity Modal functionality
         const quantityModal = document.getElementById('quantityModal');
@@ -1409,56 +1324,23 @@
         const decreaseQty = document.getElementById('decreaseQty');
         const increaseQty = document.getElementById('increaseQty');
 
-        // Product click handler - show quantity modal
-        document.querySelectorAll('.product-card').forEach(card => {
-            card.addEventListener('click', function() {
-                // Visual feedback
-                this.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    this.style.transform = '';
-                }, 150);
-
-                const productData = {
-                    id: this.dataset.id,
-                    name: this.dataset.name,
-                    code: this.dataset.code,
-                    price: parseFloat(this.dataset.price),
-                    stock: parseInt(this.dataset.stock),
-                    unit: this.dataset.unit
-                };
-
-                showQuantityModal(productData);
-            });
-        });
-
-        // Show quantity modal
         function showQuantityModal(product, currentQty = 1, currentDiscount = 0, currentPrice = null) {
             currentProduct = product;
-
-            // Update modal content
             document.getElementById('modalProductName').textContent = product.name;
             document.getElementById('modalProductCode').textContent = product.code;
             document.getElementById('modalProductPrice').textContent = `Rp ${formatNumber(product.price)}`;
             document.getElementById('modalProductStock').textContent = formatNumber(product.stock);
             document.getElementById('modalProductUnit').textContent = product.unit;
-
-            // Update unit in input group
             document.getElementById('modalProductUnitInInput').textContent = product.unit;
 
-            // Set price (use current price if editing, otherwise use default)
             const priceInput = document.getElementById('modalPriceInput');
             const defaultPrice = currentPrice || product.price;
             priceInput.value = formatNumberInput(defaultPrice.toString());
             document.getElementById('modalDefaultPrice').textContent = `Rp ${formatNumber(product.price)}`;
 
-            // Set quantity (for edit mode or new item)
             quantityInput.value = formatDecimalInput(currentQty);
+            document.getElementById('discountInput').value = formatNumberInput(currentDiscount.toString());
 
-            // Set discount
-            const discountInput = document.getElementById('discountInput');
-            discountInput.value = formatNumberInput(currentDiscount.toString());
-
-            // Update modal title based on mode
             const modalTitle = document.querySelector('#quantityModal h3');
             if (editingItemIndex !== null) {
                 modalTitle.textContent = 'Edit Quantity';
@@ -1470,23 +1352,18 @@
                     '<i class="ti ti-plus text-sm mr-1"></i>Tambah ke Keranjang';
             }
 
-            // Update total price
             updateModalTotalPrice();
-
-            // Show modal
             quantityModal.classList.remove('hidden');
             quantityInput.focus();
             quantityInput.select();
         }
 
-        // Close quantity modal
         function closeQuantityModalHandler() {
             quantityModal.classList.add('hidden');
             currentProduct = null;
             editingItemIndex = null;
         }
 
-        // Update modal total price
         function updateModalTotalPrice() {
             if (currentProduct) {
                 const qty = parseFormattedDecimal(quantityInput.value) || 0;
@@ -1496,10 +1373,7 @@
                 const subtotal = currentPrice * qty;
                 const total = Math.max(0, subtotal - discount);
 
-                // Update subtotal
                 document.getElementById('modalSubtotalPrice').textContent = `Rp ${formatNumber(subtotal)}`;
-
-                // Show/hide discount row
                 const discountRow = document.getElementById('modalDiscountRow');
                 const discountPriceElement = document.getElementById('modalDiscountPrice');
 
@@ -1510,12 +1384,8 @@
                     discountRow.style.display = 'none';
                 }
 
-
-
-                // Update total
                 document.getElementById('modalTotalPrice').textContent = `Rp ${formatNumber(total)}`;
 
-                // Validate discount doesn't exceed subtotal
                 if (discount > subtotal && subtotal > 0) {
                     document.getElementById('discountInput').style.borderColor = '#ef4444';
                     document.getElementById('discountInput').style.backgroundColor = '#fef2f2';
@@ -1530,62 +1400,34 @@
         closeQuantityModal.addEventListener('click', closeQuantityModalHandler);
         cancelQuantity.addEventListener('click', closeQuantityModalHandler);
 
-        // Close modal when clicking outside
         quantityModal.addEventListener('click', (e) => {
             if (e.target === quantityModal) {
                 closeQuantityModalHandler();
             }
         });
 
-        // Close modal with ESC key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && !quantityModal.classList.contains('hidden')) {
                 closeQuantityModalHandler();
             }
         });
 
-        // Setup quantity input with decimal formatting
+        // Setup inputs
         setupDecimalInput(quantityInput);
+        setupNumberInput(document.getElementById('discountInput'));
+        setupNumberInput(document.getElementById('modalPriceInput'));
 
-        // Setup discount input with number formatting
-        const discountInput = document.getElementById('discountInput');
-        setupNumberInput(discountInput);
+        // Input handlers
+        document.getElementById('modalPriceInput').addEventListener('input', updateModalTotalPrice);
+        quantityInput.addEventListener('input', updateModalTotalPrice);
+        document.getElementById('discountInput').addEventListener('input', updateModalTotalPrice);
 
-        // Setup price input with number formatting
-        const priceInput = document.getElementById('modalPriceInput');
-        setupNumberInput(priceInput);
-
-        // Price input handlers
-        priceInput.addEventListener('input', function() {
-            updateModalTotalPrice();
-        });
-
-        // Quantity input handlers
-        quantityInput.addEventListener('input', function() {
-            let numericValue = parseFormattedDecimal(this.value);
-
-            if (numericValue < 0) numericValue = 0;
-
-            updateModalTotalPrice();
-        });
-
-        // Discount input handlers
-        discountInput.addEventListener('input', function() {
-            updateModalTotalPrice();
-        });
-
-        // Decrease quantity button
+        // Quantity buttons
         decreaseQty.addEventListener('click', function() {
             let value = parseFormattedDecimal(quantityInput.value) || 1;
             if (value > 0.1) {
-                // Decrease by 1 for values >= 1, by 0.1 for decimal values
                 let newValue = value >= 1 ? value - 1 : Math.max(0.1, Math.round((value - 0.1) * 10) / 10);
-
-                // Format and set the value properly
-                let formattedValue = formatDecimalInput(newValue);
-                quantityInput.value = formattedValue;
-
-                // Trigger input event to ensure proper formatting
+                quantityInput.value = formatDecimalInput(newValue);
                 quantityInput.dispatchEvent(new Event('input', {
                     bubbles: true
                 }));
@@ -1593,25 +1435,17 @@
             }
         });
 
-        // Increase quantity button
         increaseQty.addEventListener('click', function() {
             let value = parseFormattedDecimal(quantityInput.value) || 1;
-
-            // Increase by 1 for integer values, by 0.1 for decimal values
             let newValue = value % 1 === 0 ? value + 1 : Math.round((value + 0.1) * 10) / 10;
-
-            // Format and set the value properly
-            let formattedValue = formatDecimalInput(newValue);
-            quantityInput.value = formattedValue;
-
-            // Trigger input event to ensure proper formatting
+            quantityInput.value = formatDecimalInput(newValue);
             quantityInput.dispatchEvent(new Event('input', {
                 bubbles: true
             }));
             updateModalTotalPrice();
         });
 
-        // Confirm quantity and add to order
+        // Confirm quantity
         confirmQuantity.addEventListener('click', function() {
             if (currentProduct) {
                 const qty = parseFormattedDecimal(quantityInput.value) || 1;
@@ -1629,20 +1463,15 @@
                     return;
                 }
 
-                // Validate discount
                 const subtotal = currentPrice * qty;
                 if (discount > subtotal) {
                     showToast('Potongan tidak boleh melebihi subtotal!', 'error');
                     return;
                 }
 
-
-
                 if (editingItemIndex !== null) {
-                    // Edit existing item
                     updateOrderItemQuantity(editingItemIndex, qty, discount, currentPrice);
                 } else {
-                    // Add new item
                     addToOrder(currentProduct, qty, discount, currentPrice);
                 }
 
@@ -1650,26 +1479,23 @@
             }
         });
 
-        // Allow Enter key to confirm quantity
         quantityInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 confirmQuantity.click();
             }
         });
 
+        // Add to order function
         function addToOrder(product, quantity = 1, discount = 0, customPrice = null) {
-            // Check if product already in order
             const existingIndex = orderItems.findIndex(item => item.id === product.id);
 
             if (existingIndex !== -1) {
-                // For existing items, replace with new values
                 orderItems[existingIndex].qty = quantity;
                 orderItems[existingIndex].discount = discount;
                 orderItems[existingIndex].price = customPrice || product.price;
                 updateOrderItem(existingIndex);
                 showToast(`${product.name} diperbarui dalam pesanan`, 'success');
             } else {
-                // Add new item
                 const newItem = {
                     ...product,
                     qty: quantity,
@@ -1685,8 +1511,407 @@
             updateOrderSummary();
         }
 
+        // Render order item
+        function renderOrderItem(item) {
+            const orderItemsContainer = document.getElementById('orderItems');
+            const emptyState = document.getElementById('emptyState');
+
+            emptyState.style.display = 'none';
+
+            const subtotal = item.price * item.qty;
+            const discount = item.discount || 0;
+            const total = subtotal - discount;
+
+            const itemHtml = `
+                <div class="order-item bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 cursor-pointer" data-index="${item.index}">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-900 text-sm">${item.name}</h4>
+                            <p class="text-xs text-gray-500 mt-1">${item.code}</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="text-center">
+                                <div class="bg-blue-50 px-3 py-1 rounded-full">
+                                    <span class="qty text-sm font-semibold text-blue-700">${formatDecimalInput(item.qty)}</span>
+                                    <span class="text-xs text-blue-600 ml-1">${item.unit}</span>
+                                </div>
+                            </div>
+                            <button type="button" class="remove-btn w-8 h-8 bg-red-500 rounded-full text-white hover:bg-red-600 flex items-center justify-center transition-colors" onclick="event.stopPropagation()">
+                                <i class="ti ti-trash text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-600">Harga Satuan</span>
+                            <span class="font-medium text-gray-800">Rp ${formatNumber(item.price)}</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-600">Subtotal (${formatDecimalInput(item.qty)} × Rp ${formatNumber(item.price)})</span>
+                            <span class="font-medium text-gray-800">Rp ${formatNumber(subtotal)}</span>
+                        </div>
+                        
+                        ${discount > 0 ? `
+                                                            <div class="flex items-center justify-between text-sm">
+                                                                <span class="text-orange-600 flex items-center">
+                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                    Potongan Harga
+                                                                </span>
+                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                            </div>
+                                                        ` : ''}
+                        
+                        <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
+                            <span class="font-semibold text-gray-900">Total</span>
+                            <span class="font-bold text-lg ${discount > 0 ? 'text-green-600' : 'text-blue-600'}">Rp ${formatNumber(total)}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3 pt-2 border-t border-gray-100">
+                        <p class="text-xs text-gray-400 text-center">
+                            <i class="ti ti-click text-xs mr-1"></i>
+                            Klik untuk edit quantity atau potongan
+                        </p>
+                    </div>
+                    
+                    <input type="hidden" name="items[${item.index}][produk_id]" value="${item.id}">
+                    <input type="hidden" name="items[${item.index}][qty]" value="${item.qty}" class="qty-input">
+                    <input type="hidden" name="items[${item.index}][harga]" value="${item.price}">
+                    <input type="hidden" name="items[${item.index}][discount]" value="${discount}" class="discount-input">
+                </div>
+            `;
+
+            orderItemsContainer.insertAdjacentHTML('beforeend', itemHtml);
+            addOrderItemListeners(orderItemsContainer.lastElementChild, item.index);
+        }
+
+        // Add event listeners to order item
+        function addOrderItemListeners(element, index) {
+            const removeBtn = element.querySelector('.remove-btn');
+            removeBtn.addEventListener('click', () => removeOrderItem(index));
+            element.addEventListener('click', () => editOrderItemQuantity(index));
+        }
+
+        // Update order item
+        function updateOrderItem(itemIndex) {
+            const item = orderItems[itemIndex];
+            const element = document.querySelector(`[data-index="${item.index}"]`);
+
+            element.querySelector('.qty-input').value = item.qty;
+            element.querySelector('.discount-input').value = item.discount || 0;
+            element.querySelector('input[name*="[harga]"]').value = item.price;
+
+            const subtotal = item.price * item.qty;
+            const discount = item.discount || 0;
+            const total = subtotal - discount;
+
+            const qtyElement = element.querySelector('.qty');
+            qtyElement.textContent = formatDecimalInput(item.qty);
+
+            const priceBreakdownContainer = element.querySelector('.space-y-2');
+            priceBreakdownContainer.innerHTML = `
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-gray-600">Harga Satuan</span>
+                    <span class="font-medium text-gray-800">Rp ${formatNumber(item.price)}</span>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-gray-600">Subtotal (${formatDecimalInput(item.qty)} × Rp ${formatNumber(item.price)})</span>
+                    <span class="font-medium text-gray-800">Rp ${formatNumber(subtotal)}</span>
+                </div>
+                
+                ${discount > 0 ? `
+                                                    <div class="flex items-center justify-between text-sm">
+                                                        <span class="text-orange-600 flex items-center">
+                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                            Potongan Harga
+                                                        </span>
+                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                    </div>
+                                                ` : ''}
+                
+                <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
+                    <span class="font-semibold text-gray-900">Total</span>
+                    <span class="font-bold text-lg ${discount > 0 ? 'text-green-600' : 'text-blue-600'}">Rp ${formatNumber(total)}</span>
+                </div>
+            `;
+        }
+
+        // Edit order item quantity
+        function editOrderItemQuantity(index) {
+            const itemIndex = orderItems.findIndex(item => item.index === index);
+            if (itemIndex === -1) return;
+
+            const item = orderItems[itemIndex];
+            editingItemIndex = itemIndex;
+            showQuantityModal(item, item.qty, item.discount || 0, item.price);
+        }
+
+        // Update order item quantity
+        function updateOrderItemQuantity(itemIndex, newQty, newDiscount = 0, newPrice = null) {
+            const item = orderItems[itemIndex];
+
+            if (newQty <= 0) {
+                removeOrderItem(item.index);
+                showToast(`${item.name} dihapus dari pesanan`, 'info');
+                return;
+            }
+
+            const oldQty = item.qty;
+            const oldDiscount = item.discount || 0;
+            const oldPrice = item.price;
+            item.qty = newQty;
+            item.discount = newDiscount;
+            if (newPrice !== null) {
+                item.price = newPrice;
+            }
+            updateOrderItem(itemIndex);
+            updateOrderSummary();
+
+            let updateMessage = '';
+            if (oldPrice !== item.price) {
+                updateMessage += `harga Rp ${formatNumber(oldPrice)} → Rp ${formatNumber(item.price)}, `;
+            }
+            if (oldDiscount !== newDiscount) {
+                updateMessage += `potongan Rp ${formatNumber(newDiscount)}, `;
+            }
+            updateMessage += `quantity ${formatNumber(oldQty)} → ${formatNumber(newQty)} ${item.unit}`;
+
+            showToast(`${item.name} diperbarui: ${updateMessage}`, 'success');
+        }
+
+        // Remove order item
+        function removeOrderItem(index) {
+            orderItems = orderItems.filter(item => item.index !== index);
+            const element = document.querySelector(`[data-index="${index}"]`);
+            element.remove();
+
+            if (orderItems.length === 0) {
+                document.getElementById('emptyState').style.display = 'block';
+            }
+
+            updateOrderSummary();
+        }
+
+        // Update order summary
+        function updateOrderSummary() {
+            const subtotal = orderItems.reduce((total, item) => {
+                const itemSubtotal = item.price * item.qty;
+                const itemDiscount = item.discount || 0;
+                return total + (itemSubtotal - itemDiscount);
+            }, 0);
+
+            const discount = parseFormattedNumber(document.getElementById('diskonDisplay').value);
+            const total = subtotal - discount;
+
+            const jenisTransaksi = document.getElementById('jenisTransaksi').value;
+            const dpAmount = parseFormattedNumber(document.getElementById('dpAmountDisplay').value);
+            const paymentBreakdown = document.getElementById('paymentBreakdown');
+
+            document.getElementById('orderCount').textContent = `${orderItems.length} item`;
+            document.getElementById('subtotalDisplay').textContent = `Rp ${formatNumber(subtotal)}`;
+            document.getElementById('discountDisplay').textContent = `Rp ${formatNumber(discount)}`;
+            document.getElementById('totalDisplay').textContent = `Rp ${formatNumber(total)}`;
+
+            if (jenisTransaksi === 'kredit' && total > 0) {
+                paymentBreakdown.classList.remove('hidden');
+                const remaining = Math.max(0, total - dpAmount);
+                document.getElementById('dpDisplay').textContent = `Rp ${formatNumber(dpAmount)}`;
+                document.getElementById('remainingDisplay').textContent = `Rp ${formatNumber(remaining)}`;
+            } else {
+                paymentBreakdown.classList.add('hidden');
+            }
+        }
+
+        // Utility functions
+        function formatNumber(num) {
+            return new Intl.NumberFormat('id-ID').format(num);
+        }
+
+        function formatNumberInput(value) {
+            const numericValue = value.toString().replace(/\D/g, '');
+            return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        function parseFormattedNumber(value) {
+            return parseInt(value.replace(/\./g, '')) || 0;
+        }
+
+        function formatDecimalInput(value) {
+            if (!value && value !== 0) return '';
+            let strValue = value.toString();
+            if (strValue.includes(',')) {
+                let parts = strValue.split(',');
+                let integerPart = parts[0];
+                let decimalPart = parts[1] || '';
+                integerPart = integerPart.replace(/\./g, '');
+                if (integerPart && integerPart !== '0') {
+                    integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                }
+                if (decimalPart !== '') {
+                    return integerPart + ',' + decimalPart;
+                } else {
+                    return integerPart;
+                }
+            } else {
+                let numValue;
+                if (typeof value === 'number') {
+                    numValue = value;
+                } else {
+                    let cleanValue = strValue.replace(',', '.');
+                    numValue = parseFloat(cleanValue);
+                }
+                if (isNaN(numValue)) return '';
+                let parts = numValue.toString().split('.');
+                let integerPart = parts[0];
+                let decimalPart = parts[1] || '';
+                integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                if (decimalPart) {
+                    return integerPart + ',' + decimalPart;
+                } else {
+                    return integerPart;
+                }
+            }
+        }
+
+        function parseFormattedDecimal(value) {
+            if (!value) return 0;
+            let cleanValue = value.toString()
+                .replace(/\./g, '')
+                .replace(',', '.');
+            let numValue = parseFloat(cleanValue);
+            return isNaN(numValue) ? 0 : numValue;
+        }
+
+        // Setup number input formatting
+        function setupNumberInput(input) {
+            input.addEventListener('input', function(e) {
+                const cursorPosition = e.target.selectionStart;
+                const oldValue = e.target.value;
+                const newValue = formatNumberInput(e.target.value);
+                e.target.value = newValue;
+                const diff = newValue.length - oldValue.length;
+                e.target.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
+            });
+
+            input.addEventListener('blur', function(e) {
+                if (e.target.value === '' || e.target.value === '0') {
+                    e.target.value = '0';
+                }
+            });
+
+            input.addEventListener('focus', function(e) {
+                if (e.target.value === '0') {
+                    e.target.select();
+                }
+            });
+        }
+
+        // Setup decimal input formatting
+        function setupDecimalInput(input) {
+            let isFormatting = false;
+            let lastValidValue = '1';
+
+            input.addEventListener('input', function(e) {
+                if (isFormatting) return;
+                const cursorPosition = e.target.selectionStart;
+                const oldValue = e.target.value;
+                let rawValue = e.target.value.replace(/[^\d,]/g, '');
+                if (!rawValue) return;
+
+                let hasDecimal = rawValue.includes(',');
+                let integerPart = '';
+                let decimalPart = '';
+
+                if (hasDecimal) {
+                    let parts = rawValue.split(',');
+                    integerPart = parts[0] || '';
+                    decimalPart = parts[1] || '';
+                    if (parts.length > 2) {
+                        decimalPart = parts.slice(1).join('');
+                    }
+                } else {
+                    integerPart = rawValue;
+                }
+
+                let newValue = '';
+                if (integerPart) {
+                    if (integerPart.length >= 4) {
+                        integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                    }
+                    newValue = integerPart;
+                }
+
+                if (hasDecimal) {
+                    newValue += ',' + decimalPart;
+                }
+
+                let numericValue = parseFormattedDecimal(newValue);
+                if (numericValue > 0) {
+                    lastValidValue = newValue;
+                }
+
+                if (newValue !== oldValue) {
+                    isFormatting = true;
+                    e.target.value = newValue;
+                    let newCursorPos = cursorPosition;
+                    let oldDots = (oldValue.substring(0, cursorPosition).match(/\./g) || []).length;
+                    let newDots = (newValue.substring(0, cursorPosition).match(/\./g) || []).length;
+
+                    if (newValue.length > oldValue.length) {
+                        let addedDots = (newValue.match(/\./g) || []).length - (oldValue.match(/\./g) || []).length;
+                        if (addedDots > 0) {
+                            let textBeforeCursor = oldValue.substring(0, cursorPosition);
+                            let digitsBeforeCursor = textBeforeCursor.replace(/[^\d]/g, '').length;
+                            let newTextUpToDigits = newValue.replace(/[^\d.]/g, '');
+                            let dotsBeforeDigits = 0;
+                            let digitCount = 0;
+
+                            for (let i = 0; i < newTextUpToDigits.length && digitCount < digitsBeforeCursor; i++) {
+                                if (newTextUpToDigits[i] === '.') {
+                                    dotsBeforeDigits++;
+                                } else {
+                                    digitCount++;
+                                }
+                            }
+
+                            newCursorPos = cursorPosition + dotsBeforeDigits - oldDots;
+                        }
+                    }
+
+                    newCursorPos = Math.max(0, Math.min(newCursorPos, newValue.length));
+                    e.target.setSelectionRange(newCursorPos, newCursorPos);
+                    isFormatting = false;
+                }
+            });
+
+            input.addEventListener('blur', function(e) {
+                let inputValue = e.target.value.trim();
+                if (!inputValue) {
+                    e.target.value = lastValidValue || '1';
+                    return;
+                }
+                let value = parseFormattedDecimal(inputValue);
+                if (value <= 0 || isNaN(value)) {
+                    e.target.value = lastValidValue || '1';
+                } else {
+                    let formattedValue = formatDecimalInput(value);
+                    e.target.value = formattedValue;
+                    lastValidValue = formattedValue;
+                }
+            });
+
+            input.addEventListener('focus', function(e) {
+                if (e.target.value === '1') {
+                    e.target.select();
+                }
+            });
+        }
+
+        // Toast notification function
         function showToast(message, type = 'info') {
-            // Remove existing toast
             const existingToast = document.querySelector('.toast');
             if (existingToast) {
                 existingToast.remove();
@@ -1712,12 +1937,10 @@
 
             document.body.appendChild(toast);
 
-            // Animate in
             setTimeout(() => {
                 toast.classList.remove('translate-x-full');
             }, 100);
 
-            // Remove after 3 seconds
             setTimeout(() => {
                 toast.classList.add('translate-x-full');
                 setTimeout(() => {
@@ -1728,530 +1951,30 @@
             }, 3000);
         }
 
-        function renderOrderItem(item) {
-            const orderItemsContainer = document.getElementById('orderItems');
-            const emptyState = document.getElementById('emptyState');
+        // Initialize order display
+        function initializeOrderDisplay() {
+            console.log('initializeOrderDisplay called');
+            console.log('orderItems length:', orderItems.length);
+            console.log('orderItems:', orderItems);
 
-            emptyState.style.display = 'none';
-
-            const subtotal = item.price * item.qty;
-            const discount = item.discount || 0;
-            const total = subtotal - discount;
-
-            const itemHtml = `
-                <div class="order-item bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 cursor-pointer" data-index="${item.index}">
-                    <!-- Product Header -->
-                    <div class="flex items-start justify-between mb-3 edit-item-area">
-                        <div class="flex-1">
-                            <h4 class="font-semibold text-gray-900 text-sm">${item.name}</h4>
-                            <p class="text-xs text-gray-500 mt-1">${item.code}</p>
-                    </div>
-                        <div class="flex items-center space-x-2">
-                        <div class="text-center edit-item-area">
-                                <div class="bg-blue-50 px-3 py-1 rounded-full">
-                                    <span class="qty text-sm font-semibold text-blue-700">${formatDecimalInput(item.qty)}</span>
-                                    <span class="text-xs text-blue-600 ml-1">${item.unit}</span>
-                        </div>
-                            </div>
-                            <button type="button" class="remove-btn w-8 h-8 bg-red-500 rounded-full text-white hover:bg-red-600 flex items-center justify-center transition-colors" onclick="event.stopPropagation()">
-                            <i class="ti ti-trash text-sm"></i>
-                        </button>
-                    </div>
-                    </div>
-                    
-                    <!-- Price Breakdown -->
-                    <div class="space-y-2">
-                        <div class="flex items-center justify-between text-sm">
-                            <span class="text-gray-600">Harga Satuan</span>
-                            <span class="font-medium text-gray-800">Rp ${formatNumber(item.price)}</span>
-                        </div>
-                        
-                        <div class="flex items-center justify-between text-sm">
-                            <span class="text-gray-600">Subtotal (${formatDecimalInput(item.qty)} × Rp ${formatNumber(item.price)})</span>
-                            <span class="font-medium text-gray-800">Rp ${formatNumber(subtotal)}</span>
-                        </div>
-                        
-                        ${discount > 0 ? `
-                                                                                                                    <div class="flex items-center justify-between text-sm">
-                                                                                                                        <span class="text-orange-600 flex items-center">
-                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                            Potongan Harga
-                                                                                                                        </span>
-                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                    </div>
-                                                                                                                    ` : ''}
-                        
-                        <!-- Total Line -->
-                        <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
-                            <span class="font-semibold text-gray-900">Total</span>
-                            <span class="font-bold text-lg ${discount > 0 ? 'text-green-600' : 'text-blue-600'}">Rp ${formatNumber(total)}</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Edit Hint -->
-                    <div class="mt-3 pt-2 border-t border-gray-100">
-                        <p class="text-xs text-gray-400 text-center">
-                            <i class="ti ti-click text-xs mr-1"></i>
-                            Klik untuk edit quantity atau potongan
-                        </p>
-                    </div>
-                    
-                    <input type="hidden" name="items[${item.index}][produk_id]" value="${item.id}">
-                    <input type="hidden" name="items[${item.index}][qty]" value="${item.qty}" class="qty-input">
-                    <input type="hidden" name="items[${item.index}][harga]" value="${item.price}">
-                    <input type="hidden" name="items[${item.index}][discount]" value="${discount}" class="discount-input">
-                </div>
-            `;
-
-            orderItemsContainer.insertAdjacentHTML('beforeend', itemHtml);
-
-            // Add event listeners for the new item
-            const newItemElement = orderItemsContainer.lastElementChild;
-            addOrderItemListeners(newItemElement, item.index);
-        }
-
-        function addOrderItemListeners(element, index) {
-            const removeBtn = element.querySelector('.remove-btn');
-            removeBtn.addEventListener('click', () => removeOrderItem(index));
-
-            // Add click listener for edit quantity
-            element.addEventListener('click', () => editOrderItemQuantity(index));
-        }
-
-        function updateOrderItem(itemIndex) {
-            const item = orderItems[itemIndex];
-            const element = document.querySelector(`[data-index="${item.index}"]`);
-
-            // Update hidden inputs
-            element.querySelector('.qty-input').value = item.qty;
-            element.querySelector('.discount-input').value = item.discount || 0;
-            element.querySelector('input[name*="[harga]"]').value = item.price;
-
-            // Calculate values
-            const subtotal = item.price * item.qty;
-            const discount = item.discount || 0;
-            const total = subtotal - discount;
-
-            // Update quantity display
-            const qtyElement = element.querySelector('.qty');
-            qtyElement.textContent = formatDecimalInput(item.qty);
-
-            // Rebuild the entire price breakdown section
-            const priceBreakdownContainer = element.querySelector('.space-y-2');
-            priceBreakdownContainer.innerHTML = `
-                <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-600">Harga Satuan</span>
-                    <span class="font-medium text-gray-800">Rp ${formatNumber(item.price)}</span>
-                </div>
-                
-                <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-600">Subtotal (${formatDecimalInput(item.qty)} × Rp ${formatNumber(item.price)})</span>
-                    <span class="font-medium text-gray-800">Rp ${formatNumber(subtotal)}</span>
-                </div>
-                
-                ${discount > 0 ? `
-                                                                                                            <div class="flex items-center justify-between text-sm">
-                                                                                                                <span class="text-orange-600 flex items-center">
-                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                    Potongan Harga
-                                                                                                                </span>
-                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                            </div>
-                                                                                                            ` : ''}
-                
-                <!-- Total Line -->
-                <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
-                    <span class="font-semibold text-gray-900">Total</span>
-                    <span class="font-bold text-lg ${discount > 0 ? 'text-green-600' : 'text-blue-600'}">Rp ${formatNumber(total)}</span>
-                </div>
-            `;
-        }
-
-        // Edit order item quantity
-        function editOrderItemQuantity(index) {
-            const itemIndex = orderItems.findIndex(item => item.index === index);
-            if (itemIndex === -1) return;
-
-            const item = orderItems[itemIndex];
-            editingItemIndex = itemIndex;
-
-            // Show modal with current quantity, discount, and price
-            showQuantityModal(item, item.qty, item.discount || 0, item.price);
-        }
-
-        // Update order item quantity
-        function updateOrderItemQuantity(itemIndex, newQty, newDiscount = 0, newPrice = null) {
-            const item = orderItems[itemIndex];
-
-            // Validate new quantity
-            if (newQty <= 0) {
-                removeOrderItem(item.index);
-                showToast(`${item.name} dihapus dari pesanan`, 'info');
-                return;
-            }
-
-
-
-            // Update quantity, discount, and price
-            const oldQty = item.qty;
-            const oldDiscount = item.discount || 0;
-            const oldPrice = item.price;
-            item.qty = newQty;
-            item.discount = newDiscount;
-            if (newPrice !== null) {
-                item.price = newPrice;
-            }
-            updateOrderItem(itemIndex);
-            updateOrderSummary();
-
-            let updateMessage = '';
-            if (oldPrice !== item.price) {
-                updateMessage += `harga Rp ${formatNumber(oldPrice)} → Rp ${formatNumber(item.price)}, `;
-            }
-            if (oldDiscount !== newDiscount) {
-                updateMessage += `potongan Rp ${formatNumber(newDiscount)}, `;
-            }
-            updateMessage += `quantity ${formatNumber(oldQty)} → ${formatNumber(newQty)} ${item.unit}`;
-
-            showToast(`${item.name} diperbarui: ${updateMessage}`, 'success');
-        }
-
-        function removeOrderItem(index) {
-            // Remove from array
-            orderItems = orderItems.filter(item => item.index !== index);
-
-            // Remove from DOM
-            const element = document.querySelector(`[data-index="${index}"]`);
-            element.remove();
-
-            // Show empty state if no items
-            if (orderItems.length === 0) {
-                document.getElementById('emptyState').style.display = 'block';
-            }
-
-            updateOrderSummary();
-        }
-
-        function updateOrderSummary() {
-            // Calculate subtotal with individual item discounts
-            const subtotal = orderItems.reduce((total, item) => {
-                const itemSubtotal = item.price * item.qty;
-                const itemDiscount = item.discount || 0;
-                return total + (itemSubtotal - itemDiscount);
-            }, 0);
-
-
-            const discount = parseFormattedNumber(document.getElementById('diskonDisplay').value);
-            const total = subtotal - discount;
-
-            // Get transaction type and DP amount
-            const jenisTransaksi = document.getElementById('jenisTransaksi').value;
-            const dpAmount = parseFormattedNumber(document.getElementById('dpAmountDisplay').value);
-            const paymentBreakdown = document.getElementById('paymentBreakdown');
-
-            document.getElementById('orderCount').textContent = `${orderItems.length} item`;
-            document.getElementById('subtotalDisplay').textContent = `Rp ${formatNumber(subtotal)}`;
-            document.getElementById('discountDisplay').textContent = `Rp ${formatNumber(discount)}`;
-            document.getElementById('totalDisplay').textContent = `Rp ${formatNumber(total)}`;
-
-            // Auto-update payment for cash transactions when total changes
-            if (jenisTransaksi === 'tunai' && total > 0) {
-                // Always update payment amount to match total for cash transactions
-                document.getElementById('dpAmountDisplay').value = formatNumberInput(total);
-                document.getElementById('dpAmount').value = total;
-            }
-
-            // Show/hide payment breakdown for kredit
-            if (jenisTransaksi === 'kredit' && total > 0) {
-                paymentBreakdown.classList.remove('hidden');
-                const remaining = Math.max(0, total - dpAmount);
-                document.getElementById('dpDisplay').textContent = `Rp ${formatNumber(dpAmount)}`;
-                document.getElementById('remainingDisplay').textContent = `Rp ${formatNumber(remaining)}`;
+            if (orderItems.length > 0) {
+                document.getElementById('emptyState').style.display = 'none';
+                orderItems.forEach((item, index) => {
+                    console.log('Rendering item:', item);
+                    renderOrderItem(item);
+                });
+                updateOrderSummary();
             } else {
-                paymentBreakdown.classList.add('hidden');
+                console.log('No order items to display');
             }
         }
-
-
-
-        function formatNumber(num) {
-            return new Intl.NumberFormat('id-ID').format(num);
-        }
-
-        // Format number input with thousand separator
-        function formatNumberInput(value) {
-            // Remove all non-digit characters
-            const numericValue = value.toString().replace(/\D/g, '');
-            // Format with thousand separator
-            return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-        }
-
-        // Parse formatted number back to numeric value
-        function parseFormattedNumber(value) {
-            return parseInt(value.replace(/\./g, '')) || 0;
-        }
-
-        // Format decimal number with thousand separator and comma for decimal
-        function formatDecimalInput(value) {
-            if (!value && value !== 0) return '';
-
-            // Convert to string first
-            let strValue = value.toString();
-
-            // If value already contains comma, handle it carefully
-            if (strValue.includes(',')) {
-                let parts = strValue.split(',');
-                let integerPart = parts[0];
-                let decimalPart = parts[1] || '';
-
-                // Remove existing dots from integer part and format
-                integerPart = integerPart.replace(/\./g, '');
-
-                // Format integer part with thousand separator
-                if (integerPart && integerPart !== '0') {
-                    integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-                }
-
-                // Return with decimal part
-                if (decimalPart !== '') {
-                    return integerPart + ',' + decimalPart;
-                } else {
-                    return integerPart;
-                }
-            } else {
-                // Handle numeric input
-                let numValue;
-                if (typeof value === 'number') {
-                    numValue = value;
-                } else {
-                    // Convert string to number, handle both comma and dot as decimal separator
-                    let cleanValue = strValue.replace(',', '.');
-                    numValue = parseFloat(cleanValue);
-                }
-
-                if (isNaN(numValue)) return '';
-
-                // Split integer and decimal parts
-                let parts = numValue.toString().split('.');
-                let integerPart = parts[0];
-                let decimalPart = parts[1] || '';
-
-                // Format integer part with thousand separator
-                integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-
-                // Return formatted number
-                if (decimalPart) {
-                    return integerPart + ',' + decimalPart;
-                } else {
-                    return integerPart;
-                }
-            }
-        }
-
-        // Parse formatted decimal back to numeric value
-        function parseFormattedDecimal(value) {
-            if (!value) return 0;
-
-            // Remove thousand separators and convert comma to dot
-            let cleanValue = value.toString()
-                .replace(/\./g, '') // Remove thousand separators
-                .replace(',', '.'); // Convert comma to dot for decimal
-
-            let numValue = parseFloat(cleanValue);
-            return isNaN(numValue) ? 0 : numValue;
-        }
-
-        // Setup number input formatting
-        function setupNumberInput(input) {
-            input.addEventListener('input', function(e) {
-                const cursorPosition = e.target.selectionStart;
-                const oldValue = e.target.value;
-                const newValue = formatNumberInput(e.target.value);
-
-                e.target.value = newValue;
-
-                // Adjust cursor position
-                const diff = newValue.length - oldValue.length;
-                e.target.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
-            });
-
-            input.addEventListener('blur', function(e) {
-                if (e.target.value === '' || e.target.value === '0') {
-                    e.target.value = '0';
-                }
-            });
-
-            input.addEventListener('focus', function(e) {
-                if (e.target.value === '0') {
-                    e.target.select();
-                }
-            });
-        }
-
-        // Setup decimal input formatting
-        function setupDecimalInput(input) {
-            let isFormatting = false;
-            let lastValidValue = '1';
-
-            input.addEventListener('input', function(e) {
-                if (isFormatting) return;
-
-                const cursorPosition = e.target.selectionStart;
-                const oldValue = e.target.value;
-
-                // Get the raw numeric value by removing all formatting
-                let rawValue = e.target.value.replace(/[^\d,]/g, ''); // Keep digits and comma only
-
-                // If input is empty, don't format yet
-                if (!rawValue) {
-                    return;
-                }
-
-                // Handle decimal separator (comma)
-                let hasDecimal = rawValue.includes(',');
-                let integerPart = '';
-                let decimalPart = '';
-
-                if (hasDecimal) {
-                    let parts = rawValue.split(',');
-                    integerPart = parts[0] || '';
-                    decimalPart = parts[1] || '';
-
-                    // If multiple commas, keep only the first one
-                    if (parts.length > 2) {
-                        decimalPart = parts.slice(1).join('');
-                    }
-                } else {
-                    integerPart = rawValue;
-                }
-
-                // Format the value
-                let newValue = '';
-                if (integerPart) {
-                    // Add thousand separators to integer part
-                    if (integerPart.length >= 4) {
-                        integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-                    }
-                    newValue = integerPart;
-                }
-
-                // Add decimal part if exists
-                if (hasDecimal) {
-                    newValue += ',' + decimalPart;
-                }
-
-                // Store last valid value
-                let numericValue = parseFormattedDecimal(newValue);
-                if (numericValue > 0) {
-                    lastValidValue = newValue;
-                }
-
-                if (newValue !== oldValue) {
-                    isFormatting = true;
-                    e.target.value = newValue;
-
-                    // Calculate new cursor position
-                    let newCursorPos = cursorPosition;
-
-                    // Count dots before cursor in old and new values
-                    let oldDots = (oldValue.substring(0, cursorPosition).match(/\./g) || []).length;
-                    let newDots = (newValue.substring(0, cursorPosition).match(/\./g) || []).length;
-
-                    // Adjust cursor position based on dot difference
-                    if (newValue.length > oldValue.length) {
-                        // Text was added (likely a dot for thousand separator)
-                        let addedDots = (newValue.match(/\./g) || []).length - (oldValue.match(/\./g) || []).length;
-                        if (addedDots > 0) {
-                            // Find where the dot was added relative to cursor
-                            let textBeforeCursor = oldValue.substring(0, cursorPosition);
-                            let digitsBeforeCursor = textBeforeCursor.replace(/[^\d]/g, '').length;
-
-                            // Count how many dots should be before this many digits in the new value
-                            let newTextUpToDigits = newValue.replace(/[^\d.]/g, '');
-                            let dotsBeforeDigits = 0;
-                            let digitCount = 0;
-
-                            for (let i = 0; i < newTextUpToDigits.length && digitCount < digitsBeforeCursor; i++) {
-                                if (newTextUpToDigits[i] === '.') {
-                                    dotsBeforeDigits++;
-                                } else {
-                                    digitCount++;
-                                }
-                            }
-
-                            newCursorPos = cursorPosition + dotsBeforeDigits - oldDots;
-                        }
-                    }
-
-                    // Make sure cursor position is within bounds
-                    newCursorPos = Math.max(0, Math.min(newCursorPos, newValue.length));
-
-                    e.target.setSelectionRange(newCursorPos, newCursorPos);
-                    isFormatting = false;
-                }
-            });
-
-            input.addEventListener('blur', function(e) {
-                let inputValue = e.target.value.trim();
-
-                // If empty, set to last valid value or 1
-                if (!inputValue) {
-                    e.target.value = lastValidValue || '1';
-                    return;
-                }
-
-                let value = parseFormattedDecimal(inputValue);
-                if (value <= 0 || isNaN(value)) {
-                    // Use last valid value instead of defaulting to 1
-                    e.target.value = lastValidValue || '1';
-                } else {
-                    // Format the value properly
-                    let formattedValue = formatDecimalInput(value);
-                    e.target.value = formattedValue;
-                    lastValidValue = formattedValue;
-                }
-            });
-
-            input.addEventListener('focus', function(e) {
-                if (e.target.value === '1') {
-                    e.target.select();
-                }
-            });
-        }
-
-        // Update totals when discount changes
-        document.getElementById('diskon').addEventListener('input', updateOrderSummary);
-
-        // Order Preview Modal functionality
-        const orderPreviewModal = document.getElementById('orderPreviewModal');
-        const closeOrderPreviewModal = document.getElementById('closeOrderPreviewModal');
-        const cancelOrderPreview = document.getElementById('cancelOrderPreview');
-        const confirmOrderSave = document.getElementById('confirmOrderSave');
-
-        // Close preview modal
-        function closePreviewModal() {
-            orderPreviewModal.classList.add('hidden');
-        }
-
-        closeOrderPreviewModal.addEventListener('click', closePreviewModal);
-        cancelOrderPreview.addEventListener('click', closePreviewModal);
-
-        // Close modal when clicking outside
-        orderPreviewModal.addEventListener('click', (e) => {
-            if (e.target === orderPreviewModal) {
-                closePreviewModal();
-            }
-        });
-
-        // Close modal with ESC key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && !orderPreviewModal.classList.contains('hidden')) {
-                closePreviewModal();
-            }
-        });
 
         // Show order preview
         function showOrderPreview() {
+            console.log('showOrderPreview function called');
+            console.log('Customer display value:', document.getElementById('customerDisplay').value);
+            console.log('Pelanggan ID value:', document.getElementById('pelangganId').value);
+
             // Get customer info
             const customerName = document.getElementById('customerDisplay').value || 'Belum dipilih';
             const selectedCustomer = document.querySelector('.customer-item.bg-blue-100');
@@ -2297,11 +2020,11 @@
                                 <span>Rp ${formatNumber(subtotal)}</span>
                             </div>
                             ${discount > 0 ? `
-                                                                                                                    <div class="flex justify-between text-xs">
-                                                                                                                        <span class="text-orange-600">Potongan</span>
-                                                                                                                        <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                    </div>
-                                                                                                                    ` : ''}
+                                                        <div class="flex justify-between text-xs">
+                                                            <span class="text-orange-600">Potongan</span>
+                                                            <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                        </div>
+                                                    ` : ''}
                             <div class="flex justify-between text-sm font-medium">
                                 <span>Total</span>
                                 <span class="text-blue-600">Rp ${formatNumber(total)}</span>
@@ -2347,56 +2070,92 @@
                 previewPaymentBreakdown.classList.add('hidden');
             }
 
-            // Show modal
-            orderPreviewModal.classList.remove('hidden');
-        }
-
-        // Form validation and preview
-        document.getElementById('salesForm').addEventListener('submit', function(e) {
-            e.preventDefault(); // Always prevent default first
+            // Update hidden inputs with order items data
+            const hiddenContainer = document.getElementById('hiddenItemsContainer');
+            hiddenContainer.innerHTML = ''; // Clear existing inputs
 
             if (orderItems.length === 0) {
-                showToast('Minimal harus ada 1 produk!', 'error');
-                return false;
+                console.error('No order items to send!');
+                showToast('Tidak ada item untuk dikirim', 'error');
+                return;
             }
 
-            if (!pelangganId.value) {
-                showToast('Silakan pilih pelanggan terlebih dahulu!', 'error');
-                searchCustomerBtn.focus();
-                return false;
+            orderItems.forEach((item, index) => {
+                const itemsForController = {
+                    produk_id: item.id,
+                    qty: item.qty,
+                    harga: item.price,
+                    discount: item.discount || 0
+                };
+
+                console.log(`Creating hidden inputs for item ${index}:`, itemsForController);
+
+                // Create hidden inputs for each field
+                Object.keys(itemsForController).forEach(key => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = `items[${index}][${key}]`;
+                    input.value = itemsForController[key];
+                    hiddenContainer.appendChild(input);
+
+                    console.log(`Created input: ${input.name} = ${input.value}`);
+                });
+            });
+
+            console.log('Hidden inputs created for items:', orderItems);
+            console.log('Hidden inputs HTML:', hiddenContainer.innerHTML);
+            console.log('Total hidden inputs created:', hiddenContainer.children.length);
+
+            // Show modal
+            document.getElementById('orderPreviewModal').classList.remove('hidden');
+        }
+
+        // Order Preview Modal functionality
+        const orderPreviewModal = document.getElementById('orderPreviewModal');
+        const closeOrderPreviewModal = document.getElementById('closeOrderPreviewModal');
+        const cancelOrderPreview = document.getElementById('cancelOrderPreview');
+        const confirmOrderSave = document.getElementById('confirmOrderSave');
+
+        // Close preview modal
+        function closePreviewModal() {
+            orderPreviewModal.classList.add('hidden');
+        }
+
+        closeOrderPreviewModal.addEventListener('click', closePreviewModal);
+        cancelOrderPreview.addEventListener('click', closePreviewModal);
+
+        // Close modal when clicking outside
+        orderPreviewModal.addEventListener('click', (e) => {
+            if (e.target === orderPreviewModal) {
+                closePreviewModal();
             }
+        });
 
-            // Validate DP for kredit transactions
-            const jenisTransaksi = document.getElementById('jenisTransaksi').value;
-            if (jenisTransaksi === 'kredit') {
-                const subtotal = orderItems.reduce((total, item) => {
-                    const itemSubtotal = item.price * item.qty;
-                    const itemDiscount = item.discount || 0;
-                    return total + (itemSubtotal - itemDiscount);
-                }, 0);
-                const discount = parseFormattedNumber(document.getElementById('diskonDisplay').value);
-                const total = subtotal - discount;
-                const dpAmount = parseFormattedNumber(document.getElementById('dpAmountDisplay').value);
-
-                if (dpAmount > total) {
-                    showToast('DP tidak boleh melebihi total transaksi!', 'error');
-                    document.getElementById('dpAmountDisplay').focus();
-                    return false;
-                }
-
-                if (dpAmount < 0) {
-                    showToast('DP tidak boleh kurang dari 0!', 'error');
-                    document.getElementById('dpAmountDisplay').focus();
-                    return false;
-                }
+        // Close modal with ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !orderPreviewModal.classList.contains('hidden')) {
+                closePreviewModal();
             }
-
-            // Show preview modal instead of submitting directly
-            showOrderPreview();
         });
 
         // Confirm order save
         confirmOrderSave.addEventListener('click', function() {
+            console.log('Confirm order save clicked');
+            console.log('Order items:', orderItems);
+            console.log('Form data:', {
+                pelanggan_id: document.getElementById('pelangganId').value,
+                jenis_transaksi: document.getElementById('jenisTransaksi').value,
+                dp_amount: document.getElementById('dpAmount').value,
+                diskon: document.getElementById('diskon').value
+            });
+
+            // Log hidden inputs that will be sent
+            const hiddenInputs = document.querySelectorAll('#hiddenItemsContainer input');
+            console.log('Hidden inputs to be sent:', Array.from(hiddenInputs).map(input => ({
+                name: input.name,
+                value: input.value
+            })));
+
             const button = this;
             const originalText = button.innerHTML;
             const cancelButton = document.getElementById('cancelOrderPreview');
@@ -2500,10 +2259,82 @@
                     if (index === loadingStates.length - 1) {
                         setTimeout(() => {
                             const form = document.getElementById('salesForm');
+
+                            // Ensure hidden inputs are properly set before submit
+                            const hiddenContainer = document.getElementById(
+                                'hiddenItemsContainer');
+                            if (hiddenContainer.children.length === 0) {
+                                console.error('No hidden inputs found!');
+                                showToast('Terjadi kesalahan: Data items tidak lengkap',
+                                    'error');
+                                return;
+                            }
+
+                            console.log('Submitting form with hidden inputs:',
+                                hiddenContainer.innerHTML);
+
+                            // Log form data before submit
+                            const formData = new FormData(form);
+                            console.log('Form data entries:');
+                            for (let [key, value] of formData.entries()) {
+                                console.log(`${key}: ${value}`);
+                            }
+
                             form.submit();
                         }, 800);
                     }
                 }, state.delay);
+            });
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeOrderDisplay();
+
+            // Update discount when changed
+            document.getElementById('diskonDisplay').addEventListener('input', function() {
+                document.getElementById('diskon').value = parseFormattedNumber(this.value);
+                updateOrderSummary();
+            });
+
+            // Format initial values
+            if (document.getElementById('diskonDisplay').value && document.getElementById('diskonDisplay').value !==
+                '0') {
+                document.getElementById('diskonDisplay').value = formatNumberInput(document.getElementById(
+                    'diskonDisplay').value);
+            }
+
+            if (dpAmountDisplay.value && dpAmountDisplay.value !== '0') {
+                dpAmountDisplay.value = formatNumberInput(dpAmountDisplay.value);
+            }
+
+            // Form submission handler - prevent default and show preview
+            const salesForm = document.getElementById('salesForm');
+
+            // Remove any existing event listeners
+            const newForm = salesForm.cloneNode(true);
+            salesForm.parentNode.replaceChild(newForm, salesForm);
+
+            // Add new event listener
+            newForm.addEventListener('submit', function(e) {
+                console.log('Form submit event triggered');
+                e.preventDefault();
+
+                // Validate if there are order items
+                if (orderItems.length === 0) {
+                    showToast('Pilih minimal satu produk terlebih dahulu', 'warning');
+                    return;
+                }
+
+                // Validate customer selection
+                const customerId = document.getElementById('pelangganId').value;
+                if (!customerId) {
+                    showToast('Pilih pelanggan terlebih dahulu', 'warning');
+                    return;
+                }
+
+                console.log('Validation passed, showing preview');
+                showOrderPreview();
             });
         });
     </script>
