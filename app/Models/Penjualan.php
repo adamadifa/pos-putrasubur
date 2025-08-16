@@ -20,6 +20,7 @@ class Penjualan extends Model
         'status_pembayaran',
         'jatuh_tempo',
         'kasir_id',
+        'jenis_transaksi',
     ];
 
     protected $casts = [

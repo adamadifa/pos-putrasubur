@@ -120,42 +120,12 @@
                                     <p class="text-lg font-bold text-blue-600 mb-2">Rp
                                         {{ number_format($product->harga_jual, 0, ',', '.') }}</p>
 
-                                    <!-- Stock Badge -->
+                                    <!-- Category Badge -->
                                     <div class="flex items-center justify-center">
-                                        @php
-                                            $stockLevel = 'normal';
-                                            $stockColor = 'bg-green-100 text-green-800 border-green-200';
-                                            $stockIcon = 'ti-check-circle';
-                                            $stockClass = '';
-                                            $tooltip = 'Stok Normal';
-
-                                            if ($product->stok <= 10) {
-                                                $stockLevel = 'low';
-                                                $stockColor = 'bg-red-100 text-red-800 border-red-200';
-                                                $stockIcon = 'ti-alert-circle';
-                                                $stockClass = 'stock-low';
-                                                $tooltip = 'Stok Rendah - Segera Restock!';
-                                            } elseif ($product->stok <= 50) {
-                                                $stockLevel = 'medium';
-                                                $stockColor = 'bg-orange-100 text-orange-800 border-orange-200';
-                                                $stockIcon = 'ti-alert-triangle';
-                                                $stockClass = 'stock-medium';
-                                                $tooltip = 'Stok Menengah - Perlu Perhatian';
-                                            } elseif ($product->stok >= 1000) {
-                                                $stockLevel = 'high';
-                                                $stockColor = 'bg-blue-100 text-blue-800 border-blue-200';
-                                                $stockIcon = 'ti-package';
-                                                $stockClass = 'stock-high';
-                                                $tooltip = 'Stok Tinggi - Persediaan Aman';
-                                            }
-                                        @endphp
-
-                                        <div class="stock-badge inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border {{ $stockColor }} {{ $stockClass }}"
-                                            data-tooltip="{{ $tooltip }}">
-                                            <i class="ti {{ $stockIcon }} text-xs mr-1"></i>
-                                            <span
-                                                class="font-semibold">{{ number_format($product->stok, 0, ',', '.') }}</span>
-                                            <span class="ml-1 opacity-75">{{ $product->satuan->nama ?? '' }}</span>
+                                        <div
+                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border bg-blue-100 text-blue-800 border-blue-200">
+                                            <i class="ti ti-tag text-xs mr-1"></i>
+                                            <span>{{ $product->kategori->nama ?? 'Uncategorized' }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -337,9 +307,8 @@
                         </div>
                     </div>
                     <div class="mt-2 text-sm text-gray-600">
-                        <span>Stok tersedia: </span>
-                        <span id="modalProductStock" class="font-medium text-green-600"></span>
-                        <span id="modalProductUnit" class="text-gray-500 ml-1"></span>
+                        <span>Satuan: </span>
+                        <span id="modalProductUnit" class="font-medium text-blue-600"></span>
                     </div>
                 </div>
 
@@ -923,86 +892,23 @@
 
 
 
-        /* Stock badge animations and effects */
-        .product-card .stock-badge {
+        /* Category badge hover effect */
+        .product-card .inline-flex {
             transition: all 0.3s ease;
         }
 
-        .product-card:hover .stock-badge {
+        .product-card:hover .inline-flex {
             transform: scale(1.05);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
-        /* Stock level specific animations */
-        .stock-low {
-            animation: pulse-red 2s infinite;
-        }
 
-        .stock-medium {
-            animation: pulse-orange 3s infinite;
-        }
 
-        .stock-high {
-            animation: glow-blue 4s infinite;
-        }
 
-        @keyframes pulse-red {
 
-            0%,
-            100% {
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
-            }
 
-            50% {
-                box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
-            }
-        }
 
-        @keyframes pulse-orange {
 
-            0%,
-            100% {
-                box-shadow: 0 0 0 0 rgba(245, 101, 101, 0.3);
-            }
-
-            50% {
-                box-shadow: 0 0 0 3px rgba(245, 101, 101, 0.1);
-            }
-        }
-
-        @keyframes glow-blue {
-
-            0%,
-            100% {
-                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.2);
-            }
-
-            50% {
-                box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-            }
-        }
-
-        /* Stock badge hover tooltip */
-        .stock-badge:hover::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            top: -30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 10px;
-            white-space: nowrap;
-            z-index: 20;
-            opacity: 1;
-            transition: opacity 0.3s ease;
-        }
-
-        .stock-badge {
-            position: relative;
-        }
 
         /* Barcode search styling */
         #barcodeSearch:focus {
@@ -1439,7 +1345,7 @@
             document.getElementById('modalProductName').textContent = product.name;
             document.getElementById('modalProductCode').textContent = product.code;
             document.getElementById('modalProductPrice').textContent = `Rp ${formatNumber(product.price)}`;
-            document.getElementById('modalProductStock').textContent = formatNumber(product.stock);
+
             document.getElementById('modalProductUnit').textContent = product.unit;
 
             // Update unit in input group
@@ -1772,14 +1678,14 @@
                         </div>
                         
                         ${discount > 0 ? `
-                                                                                                                    <div class="flex items-center justify-between text-sm">
-                                                                                                                        <span class="text-orange-600 flex items-center">
-                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                            Potongan Harga
-                                                                                                                        </span>
-                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                    </div>
-                                                                                                                    ` : ''}
+                                                                                                                            <div class="flex items-center justify-between text-sm">
+                                                                                                                                <span class="text-orange-600 flex items-center">
+                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                    Potongan Harga
+                                                                                                                                </span>
+                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                            </div>
+                                                                                                                            ` : ''}
                         
                         <!-- Total Line -->
                         <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -1850,14 +1756,14 @@
                 </div>
                 
                 ${discount > 0 ? `
-                                                                                                            <div class="flex items-center justify-between text-sm">
-                                                                                                                <span class="text-orange-600 flex items-center">
-                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                    Potongan Harga
-                                                                                                                </span>
-                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                            </div>
-                                                                                                            ` : ''}
+                                                                                                                    <div class="flex items-center justify-between text-sm">
+                                                                                                                        <span class="text-orange-600 flex items-center">
+                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                            Potongan Harga
+                                                                                                                        </span>
+                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                    </div>
+                                                                                                                    ` : ''}
                 
                 <!-- Total Line -->
                 <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -2297,11 +2203,11 @@
                                 <span>Rp ${formatNumber(subtotal)}</span>
                             </div>
                             ${discount > 0 ? `
-                                                                                                                    <div class="flex justify-between text-xs">
-                                                                                                                        <span class="text-orange-600">Potongan</span>
-                                                                                                                        <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                    </div>
-                                                                                                                    ` : ''}
+                                                                                                                            <div class="flex justify-between text-xs">
+                                                                                                                                <span class="text-orange-600">Potongan</span>
+                                                                                                                                <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                            </div>
+                                                                                                                            ` : ''}
                             <div class="flex justify-between text-sm font-medium">
                                 <span>Total</span>
                                 <span class="text-blue-600">Rp ${formatNumber(total)}</span>

@@ -22,6 +22,7 @@ class PembayaranPenjualanController extends Controller
             $validated = $request->validate([
                 'penjualan_id' => 'required|exists:penjualan,id',
                 'jumlah' => 'required|numeric|min:1000',
+                'tanggal' => 'required|date',
                 'metode_pembayaran' => 'required|string|in:tunai,transfer,qris,kartu,ewallet',
                 'keterangan' => 'nullable|string|max:255',
             ], [
@@ -30,6 +31,8 @@ class PembayaranPenjualanController extends Controller
                 'jumlah.required' => 'Jumlah pembayaran wajib diisi.',
                 'jumlah.numeric' => 'Jumlah pembayaran harus berupa angka.',
                 'jumlah.min' => 'Jumlah pembayaran minimal Rp 1.000.',
+                'tanggal.required' => 'Tanggal pembayaran wajib diisi.',
+                'tanggal.date' => 'Format tanggal tidak valid.',
                 'metode_pembayaran.required' => 'Metode pembayaran wajib dipilih.',
                 'metode_pembayaran.in' => 'Metode pembayaran tidak valid.',
                 'keterangan.max' => 'Keterangan maksimal 255 karakter.',
@@ -54,25 +57,36 @@ class PembayaranPenjualanController extends Controller
             // Generate payment reference number
             $noBukti = 'PAY-' . date('Ymd') . '-' . str_pad($penjualan->id, 4, '0', STR_PAD_LEFT) . '-' . str_pad($penjualan->pembayaranPenjualan->count() + 1, 2, '0', STR_PAD_LEFT);
 
+            // Calculate payment status logic
+            $totalBayarBaru = $totalSudahBayar + $validated['jumlah'];
+            $jumlahPembayaranSebelumnya = $penjualan->pembayaranPenjualan->count();
+
+            // Determine status_bayar based on payment sequence and completion
+            $statusBayar = 'D'; // Default: DP (first payment)
+            $statusPembayaran = 'dp'; // Default: DP status for penjualan
+
+            if ($totalBayarBaru >= $penjualan->total) {
+                // This payment completes the transaction
+                $statusBayar = 'P'; // Pelunasan
+                $statusPembayaran = 'lunas';
+            } elseif ($jumlahPembayaranSebelumnya > 0) {
+                // This is not the first payment and not completing the transaction
+                $statusBayar = 'A'; // Angsuran
+                $statusPembayaran = 'angsuran';
+            }
+            // If $jumlahPembayaranSebelumnya == 0, it remains 'D' (first DP payment)
+
             // Create payment record
             $pembayaran = PembayaranPenjualan::create([
                 'penjualan_id' => $validated['penjualan_id'],
                 'no_bukti' => $noBukti,
-                'tanggal' => now(),
+                'tanggal' => $validated['tanggal'],
                 'jumlah_bayar' => $validated['jumlah'],
                 'metode_pembayaran' => $validated['metode_pembayaran'],
-                'status_bayar' => 'D', // Default: DP
+                'status_bayar' => $statusBayar,
                 'keterangan' => $validated['keterangan'],
                 'user_id' => Auth::id(),
             ]);
-
-            // Update penjualan status if payment is complete
-            $totalBayarBaru = $totalSudahBayar + $validated['jumlah'];
-            $statusPembayaran = 'dp';
-
-            if ($totalBayarBaru >= $penjualan->total) {
-                $statusPembayaran = 'lunas';
-            }
 
             $penjualan->update([
                 'status_pembayaran' => $statusPembayaran

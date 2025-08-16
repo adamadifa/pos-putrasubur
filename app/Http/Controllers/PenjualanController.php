@@ -197,6 +197,7 @@ class PenjualanController extends Controller
                 'no_faktur' => $validated['no_faktur'],
                 'tanggal' => $validated['tanggal'],
                 'pelanggan_id' => $validated['pelanggan_id'],
+                'jenis_transaksi' => $validated['jenis_transaksi'],
                 'total' => $totalSetelahDiskon,
                 'diskon' => $diskon,
                 'status_pembayaran' => $statusPembayaran,
@@ -308,7 +309,7 @@ class PenjualanController extends Controller
     public function update(Request $request, $encryptedId): RedirectResponse
     {
 
-gi
+
         $penjualan = Penjualan::findByEncryptedId($encryptedId);
 
         // Check if transaction is within H+1 (today and yesterday)
@@ -383,10 +384,10 @@ gi
                 'tanggal' => $validated['tanggal'],
                 'pelanggan_id' => $validated['pelanggan_id'],
                 'jenis_transaksi' => $validated['jenis_transaksi'],
-                'dp_amount' => $validated['dp_amount'] ?? 0,
                 'total' => $totalSetelahDiskon,
                 'diskon' => $diskon,
                 'status_pembayaran' => $statusPembayaran,
+                'kasir_id' => auth()->id(),
             ]);
 
             // Create new detail penjualan

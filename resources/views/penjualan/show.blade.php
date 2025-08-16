@@ -347,10 +347,34 @@
                                         <div class="flex-1">
                                             <div class="flex items-center space-x-2 mb-1">
                                                 <h5 class="font-semibold text-gray-900">{{ $pembayaran->no_bukti }}</h5>
+                                                @php
+                                                    $statusConfig = [
+                                                        'D' => [
+                                                            'label' => 'DP',
+                                                            'bg' => 'bg-blue-100',
+                                                            'text' => 'text-blue-800',
+                                                            'icon' => 'ti-clock',
+                                                        ],
+                                                        'A' => [
+                                                            'label' => 'Angsuran',
+                                                            'bg' => 'bg-orange-100',
+                                                            'text' => 'text-orange-800',
+                                                            'icon' => 'ti-coins',
+                                                        ],
+                                                        'P' => [
+                                                            'label' => 'Pelunasan',
+                                                            'bg' => 'bg-green-100',
+                                                            'text' => 'text-green-800',
+                                                            'icon' => 'ti-check',
+                                                        ],
+                                                    ];
+                                                    $status =
+                                                        $statusConfig[$pembayaran->status_bayar] ?? $statusConfig['D'];
+                                                @endphp
                                                 <span
-                                                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                    <i class="ti ti-check mr-1"></i>
-                                                    Berhasil
+                                                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $status['bg'] }} {{ $status['text'] }}">
+                                                    <i class="ti {{ $status['icon'] }} mr-1"></i>
+                                                    {{ $status['label'] }}
                                                 </span>
                                             </div>
 
@@ -616,6 +640,16 @@
                                 <div class="mt-1 text-xs text-gray-500">
                                     Maksimal: Rp {{ number_format($penjualan->sisa_pembayaran, 0) }}
                                 </div>
+                            </div>
+
+                            <!-- Payment Date -->
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Tanggal Pembayaran
+                                </label>
+                                <input type="date" name="tanggal" value="{{ date('Y-m-d') }}"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
+                                    required>
                             </div>
 
                             <!-- Payment Method -->
