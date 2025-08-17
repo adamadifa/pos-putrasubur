@@ -78,7 +78,7 @@
         @endif
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             <!-- Transaksi Hari Ini Card -->
             <div
                 class="relative bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
@@ -200,74 +200,40 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Status Summary Today -->
-        <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-            <div class="flex items-center justify-between mb-6">
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-900">Ringkasan Status Pembayaran Hari Ini</h3>
-                    <p class="text-sm text-gray-600">{{ now()->format('d F Y') }}</p>
-                </div>
-                <div class="text-sm text-gray-500">
-                    Total: {{ $penjualanHariIni }} transaksi
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <!-- Lunas -->
-                <div class="text-center p-4 bg-green-50 rounded-lg border border-green-200">
-                    <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <i class="ti ti-check-circle text-white text-xl"></i>
+            <!-- Jenis Transaksi Card -->
+            <div
+                class="relative bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+                <div class="relative p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div
+                                class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                <i class="ti ti-cash text-2xl text-white"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-sm font-medium text-indigo-100">Jenis Transaksi</h3>
+                            <div class="flex items-center space-x-3 mt-2">
+                                <div class="text-center">
+                                    <p class="text-lg font-bold text-white">
+                                        {{ $jenisTransaksiCountsHariIni['tunai'] ?? 0 }}</p>
+                                    <p class="text-xs text-indigo-200">Tunai</p>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-lg font-bold text-white">
+                                        {{ $jenisTransaksiCountsHariIni['kredit'] ?? 0 }}</p>
+                                    <p class="text-xs text-indigo-200">Kredit</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <p class="text-2xl font-bold text-green-600">{{ $statusCountsHariIni['lunas'] }}</p>
-                    <p class="text-sm text-green-600 font-medium">Lunas</p>
-                    @if ($penjualanHariIni > 0)
-                        <p class="text-xs text-gray-500 mt-1">
-                            {{ number_format(($statusCountsHariIni['lunas'] / $penjualanHariIni) * 100, 1) }}%</p>
-                    @endif
-                </div>
-
-                <!-- DP -->
-                <div class="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <i class="ti ti-clock text-white text-xl"></i>
-                    </div>
-                    <p class="text-2xl font-bold text-blue-600">{{ $statusCountsHariIni['dp'] }}</p>
-                    <p class="text-sm text-blue-600 font-medium">DP</p>
-                    @if ($penjualanHariIni > 0)
-                        <p class="text-xs text-gray-500 mt-1">
-                            {{ number_format(($statusCountsHariIni['dp'] / $penjualanHariIni) * 100, 1) }}%</p>
-                    @endif
-                </div>
-
-                <!-- Angsuran -->
-                <div class="text-center p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                    <div class="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <i class="ti ti-clock-hour-4 text-white text-xl"></i>
-                    </div>
-                    <p class="text-2xl font-bold text-yellow-600">{{ $statusCountsHariIni['angsuran'] }}</p>
-                    <p class="text-sm text-yellow-600 font-medium">Angsuran</p>
-                    @if ($penjualanHariIni > 0)
-                        <p class="text-xs text-gray-500 mt-1">
-                            {{ number_format(($statusCountsHariIni['angsuran'] / $penjualanHariIni) * 100, 1) }}%</p>
-                    @endif
-                </div>
-
-                <!-- Belum Bayar -->
-                <div class="text-center p-4 bg-red-50 rounded-lg border border-red-200">
-                    <div class="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <i class="ti ti-x-circle text-white text-xl"></i>
-                    </div>
-                    <p class="text-2xl font-bold text-red-600">{{ $statusCountsHariIni['belum_bayar'] }}</p>
-                    <p class="text-sm text-red-600 font-medium">Belum Bayar</p>
-                    @if ($penjualanHariIni > 0)
-                        <p class="text-xs text-gray-500 mt-1">
-                            {{ number_format(($statusCountsHariIni['belum_bayar'] / $penjualanHariIni) * 100, 1) }}%</p>
-                    @endif
                 </div>
             </div>
         </div>
+
+
 
         <!-- Filters -->
         <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
@@ -333,6 +299,20 @@
                     </select>
                 </div>
 
+                <!-- Jenis Transaksi Filter -->
+                <div class="lg:w-48">
+                    <label for="jenis_transaksi" class="block text-sm font-medium text-gray-700 mb-2">Jenis
+                        Transaksi</label>
+                    <select name="jenis_transaksi" id="jenis_transaksi"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
+                        <option value="">Semua Jenis</option>
+                        <option value="tunai" {{ request('jenis_transaksi') == 'tunai' ? 'selected' : '' }}>Tunai
+                        </option>
+                        <option value="kredit" {{ request('jenis_transaksi') == 'kredit' ? 'selected' : '' }}>Kredit
+                        </option>
+                    </select>
+                </div>
+
                 <!-- Filter Buttons -->
                 <div class="flex space-x-3">
                     <button type="submit"
@@ -340,7 +320,7 @@
                         <i class="ti ti-filter text-lg mr-2"></i>
                         Filter
                     </button>
-                    @if (request()->hasAny(['search', 'tanggal_dari', 'tanggal_sampai', 'status']))
+                    @if (request()->hasAny(['search', 'tanggal_dari', 'tanggal_sampai', 'status', 'jenis_transaksi']))
                         <a href="{{ route('penjualan.index') }}"
                             class="inline-flex items-center px-6 py-3 bg-gray-600 border border-transparent rounded-lg font-medium text-sm text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
                             <i class="ti ti-x text-lg mr-2"></i>
@@ -409,6 +389,13 @@
                             <th scope="col"
                                 class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                 <div class="flex items-center justify-center space-x-2">
+                                    <i class="ti ti-cash text-blue-600"></i>
+                                    <span>Jenis</span>
+                                </div>
+                            </th>
+                            <th scope="col"
+                                class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                <div class="flex items-center justify-center space-x-2">
                                     <i class="ti ti-settings text-blue-600"></i>
                                     <span>Aksi</span>
                                 </div>
@@ -426,22 +413,22 @@
                                         'label' => 'Lunas',
                                     ],
                                     'dp' => [
-                                        'bg' => 'bg-gradient-to-r from-blue-500 to-blue-600',
+                                        'bg' => 'bg-gradient-to-r from-red-500 to-red-600',
                                         'text' => 'text-white',
-                                        'icon' => 'ti-clock',
-                                        'label' => 'DP',
+                                        'icon' => 'ti-x-circle',
+                                        'label' => 'Belum Lunas',
                                     ],
                                     'angsuran' => [
-                                        'bg' => 'bg-gradient-to-r from-yellow-500 to-yellow-600',
+                                        'bg' => 'bg-gradient-to-r from-red-500 to-red-600',
                                         'text' => 'text-white',
-                                        'icon' => 'ti-clock-hour-4',
-                                        'label' => 'Angsuran',
+                                        'icon' => 'ti-x-circle',
+                                        'label' => 'Belum Lunas',
                                     ],
                                     'belum_bayar' => [
                                         'bg' => 'bg-gradient-to-r from-red-500 to-red-600',
                                         'text' => 'text-white',
                                         'icon' => 'ti-x-circle',
-                                        'label' => 'Belum Bayar',
+                                        'label' => 'Belum Lunas',
                                     ],
                                 ];
                                 $config = $statusConfig[$item->status_pembayaran] ?? $statusConfig['belum_bayar'];
@@ -524,6 +511,31 @@
                                     </span>
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap text-center">
+                                    @php
+                                        $jenisConfig = [
+                                            'tunai' => [
+                                                'bg' => 'bg-gradient-to-r from-green-500 to-green-600',
+                                                'text' => 'text-white',
+                                                'icon' => 'ti-cash',
+                                                'label' => 'Tunai',
+                                            ],
+                                            'kredit' => [
+                                                'bg' => 'bg-gradient-to-r from-purple-500 to-purple-600',
+                                                'text' => 'text-white',
+                                                'icon' => 'ti-credit-card',
+                                                'label' => 'Kredit',
+                                            ],
+                                        ];
+                                        $jenisTransaksiConfig =
+                                            $jenisConfig[$item->jenis_transaksi] ?? $jenisConfig['tunai'];
+                                    @endphp
+                                    <span
+                                        class="inline-flex items-center px-3 py-2 rounded-full text-xs font-medium {{ $jenisTransaksiConfig['bg'] }} {{ $jenisTransaksiConfig['text'] }} shadow-sm">
+                                        <i class="ti {{ $jenisTransaksiConfig['icon'] }} text-xs mr-1"></i>
+                                        {{ $jenisTransaksiConfig['label'] }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-center">
                                     <div class="flex items-center justify-center space-x-2">
                                         <!-- View Button -->
                                         <a href="{{ route('penjualan.show', $item->encrypted_id) }}"
@@ -573,7 +585,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="px-6 py-12 text-center">
+                                <td colspan="9" class="px-6 py-12 text-center">
                                     <div class="text-gray-500">
                                         <i class="ti ti-shopping-cart-off text-5xl mx-auto mb-4 text-gray-400"></i>
                                         <p class="text-lg font-medium">Tidak ada transaksi ditemukan</p>

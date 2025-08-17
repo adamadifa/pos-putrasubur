@@ -62,11 +62,38 @@
                         ];
                         $config = $statusConfig[$penjualan->status_pembayaran] ?? $statusConfig['belum_bayar'];
                     @endphp
-                    <span
-                        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ $config['bg'] }} {{ $config['text'] }}">
-                        <i class="ti {{ $config['icon'] }} mr-1"></i>
-                        {{ $config['label'] }}
-                    </span>
+                    <div class="flex items-center space-x-3">
+                        <!-- Status Pembayaran -->
+                        <span
+                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ $config['bg'] }} {{ $config['text'] }}">
+                            <i class="ti {{ $config['icon'] }} mr-1"></i>
+                            {{ $config['label'] }}
+                        </span>
+
+                        <!-- Jenis Transaksi -->
+                        @php
+                            $jenisConfig = [
+                                'tunai' => [
+                                    'bg' => 'bg-green-100',
+                                    'text' => 'text-green-800',
+                                    'icon' => 'ti-cash',
+                                    'label' => 'Tunai',
+                                ],
+                                'kredit' => [
+                                    'bg' => 'bg-purple-100',
+                                    'text' => 'text-purple-800',
+                                    'icon' => 'ti-credit-card',
+                                    'label' => 'Kredit',
+                                ],
+                            ];
+                            $jenisTransaksiConfig = $jenisConfig[$penjualan->jenis_transaksi] ?? $jenisConfig['tunai'];
+                        @endphp
+                        <span
+                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ $jenisTransaksiConfig['bg'] }} {{ $jenisTransaksiConfig['text'] }}">
+                            <i class="ti {{ $jenisTransaksiConfig['icon'] }} mr-1"></i>
+                            {{ $jenisTransaksiConfig['label'] }}
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -376,6 +403,35 @@
                                                     <i class="ti {{ $status['icon'] }} mr-1"></i>
                                                     {{ $status['label'] }}
                                                 </span>
+
+                                                <!-- Delete Status Badge -->
+                                                @php
+                                                    $today = \Carbon\Carbon::today();
+                                                    $paymentDate = \Carbon\Carbon::parse(
+                                                        $pembayaran->created_at,
+                                                    )->startOfDay();
+
+                                                    // Check if this is the latest payment
+                                                    $latestPayment = $penjualan->pembayaranPenjualan
+                                                        ->sortByDesc('created_at')
+                                                        ->first();
+                                                    $isLatestPayment =
+                                                        $latestPayment && $latestPayment->id === $pembayaran->id;
+
+                                                    // Payment can only be deleted if:
+                                                    // 1. It's created today AND
+// 2. It's the latest payment (no newer payments exist)
+                                                    $canDelete = $today->equalTo($paymentDate) && $isLatestPayment;
+                                                @endphp
+
+                                                <!-- User Badge -->
+                                                <span
+                                                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                                    <i class="ti ti-user mr-1"></i>
+                                                    {{ $pembayaran->user->name ?? 'Unknown' }}
+                                                </span>
+
+
                                             </div>
 
                                             <div class="flex items-center space-x-4 text-sm text-gray-600">
@@ -387,6 +443,12 @@
                                                     <i class="ti ti-credit-card text-purple-500 mr-1"></i>
                                                     <span class="capitalize">{{ $pembayaran->metode_pembayaran }}</span>
                                                 </div>
+                                                <div class="flex items-center">
+                                                    <i class="ti ti-clock text-gray-500 mr-1"></i>
+                                                    <span>Dibuat:
+                                                        {{ $pembayaran->created_at->format('d M Y, H:i') }}</span>
+                                                </div>
+
                                             </div>
 
                                             @if ($pembayaran->keterangan)
@@ -406,6 +468,33 @@
                                             <div class="text-xs text-gray-500">
                                                 {{ $pembayaran->tanggal->format('H:i') }}
                                             </div>
+                                        </div>
+
+                                        <!-- Action Buttons -->
+                                        <div class="flex items-center space-x-2 ml-4">
+                                            @if ($canDelete)
+                                                <button
+                                                    onclick="confirmDeletePayment({{ $pembayaran->id }}, '{{ $pembayaran->no_bukti }}')"
+                                                    class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                                                    title="Hapus Pembayaran">
+                                                    <i class="ti ti-trash text-sm"></i>
+                                                </button>
+                                            @else
+                                                @php
+                                                    $tooltipMessage = '';
+                                                    if (!$today->equalTo($paymentDate)) {
+                                                        $tooltipMessage =
+                                                            'Pembayaran hanya bisa dihapus pada hari yang sama dengan pembuatan.';
+                                                    } else {
+                                                        $tooltipMessage =
+                                                            'Pembayaran tidak dapat dihapus karena sudah ada pembayaran baru.';
+                                                    }
+                                                @endphp
+                                                <button class="p-2 text-gray-400 cursor-not-allowed"
+                                                    title="{{ $tooltipMessage }}" disabled>
+                                                    <i class="ti ti-trash text-sm"></i>
+                                                </button>
+                                            @endif
                                         </div>
                                     </div>
                                 @endforeach
@@ -436,6 +525,22 @@
                             </div>
                             <span class="font-semibold text-gray-900">
                                 Rp {{ number_format($penjualan->detailPenjualan->sum('subtotal'), 0, ',', '.') }}
+                            </span>
+                        </div>
+
+                        <!-- Jenis Transaksi -->
+                        <div class="flex items-center justify-between py-2">
+                            <div class="flex items-center">
+                                @if ($penjualan->jenis_transaksi == 'tunai')
+                                    <i class="ti ti-cash text-green-400 mr-2"></i>
+                                @else
+                                    <i class="ti ti-credit-card text-purple-400 mr-2"></i>
+                                @endif
+                                <span class="text-gray-600">Jenis Transaksi</span>
+                            </div>
+                            <span
+                                class="font-semibold {{ $penjualan->jenis_transaksi == 'tunai' ? 'text-green-600' : 'text-purple-600' }}">
+                                {{ ucfirst($penjualan->jenis_transaksi) }}
                             </span>
                         </div>
 
@@ -513,13 +618,18 @@
                                 <div class="w-5 h-5 bg-white/20 rounded flex items-center justify-center mr-3">
                                     <i class="ti ti-printer text-sm"></i>
                                 </div>
-                                <span id="printButtonText">Cetak Invoice (QZ Tray)</span>
-                                <div id="printerInfo" class="text-xs text-white/80 mt-1 font-normal">
-                                    @if (session('printer_settings.default_printer'))
-                                        Printer: {{ session('printer_settings.default_printer') }}
-                                    @else
-                                        Printer: Auto-detect
-                                    @endif
+                                <div class="flex flex-col items-center text-center">
+                                    <span id="printButtonText" class="font-medium">Cetak Invoice (QZ Tray)</span>
+                                    <div id="printerInfo" class="text-xs text-white/80 font-normal">
+                                        @php
+                                            $defaultPrinter = \App\Models\PrinterSetting::getDefault();
+                                        @endphp
+                                        @if ($defaultPrinter)
+                                            Printer: {{ $defaultPrinter->printer_name }}
+                                        @else
+                                            Printer: Auto-detect
+                                        @endif
+                                    </div>
                                 </div>
                             </button>
 
@@ -574,7 +684,7 @@
         <!-- Payment Modal -->
         <div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
             <div class="flex items-center justify-center min-h-screen p-4">
-                <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-auto">
+                <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-auto">
                     <!-- Modal Header -->
                     <div class="px-6 py-4 border-b bg-gradient-to-r from-green-50 to-emerald-50">
                         <div class="flex items-center justify-between">
@@ -597,24 +707,24 @@
 
                     <!-- Modal Body -->
                     <div class="p-6">
-                        <!-- Payment Summary -->
-                        <div class="mb-6 p-4 bg-gray-50 rounded-lg">
-                            <div class="grid grid-cols-2 gap-4 text-sm">
+                        <!-- Payment Summary - Compact -->
+                        <div class="mb-4 p-3 bg-gray-50 rounded-lg">
+                            <div class="grid grid-cols-3 gap-3 text-sm">
                                 <div>
-                                    <span class="text-gray-600">Total Tagihan:</span>
-                                    <div class="font-semibold text-lg text-gray-800">Rp
-                                        {{ number_format($penjualan->total, 0) }}</div>
+                                    <span class="text-gray-600 text-xs">Total:</span>
+                                    <div class="font-semibold text-gray-800">Rp {{ number_format($penjualan->total, 0) }}
+                                    </div>
                                 </div>
                                 <div>
-                                    <span class="text-gray-600">Sudah Bayar:</span>
-                                    <div class="font-semibold text-lg text-green-600">Rp
+                                    <span class="text-gray-600 text-xs">Sudah Bayar:</span>
+                                    <div class="font-semibold text-green-600">Rp
                                         {{ number_format($penjualan->pembayaranPenjualan->sum('jumlah_bayar'), 0) }}</div>
                                 </div>
-                            </div>
-                            <div class="mt-3 pt-3 border-t">
-                                <span class="text-gray-600">Sisa Pembayaran:</span>
-                                <div class="font-semibold text-xl text-red-600">Rp
-                                    {{ number_format($penjualan->sisa_pembayaran, 0) }}</div>
+                                <div>
+                                    <span class="text-gray-600 text-xs">Sisa:</span>
+                                    <div class="font-semibold text-red-600">Rp
+                                        {{ number_format($penjualan->sisa_pembayaran, 0) }}</div>
+                                </div>
                             </div>
                         </div>
 
@@ -623,90 +733,98 @@
                             @csrf
                             <input type="hidden" name="penjualan_id" value="{{ $penjualan->id }}">
 
-                            <!-- Payment Amount -->
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Jumlah Pembayaran
-                                </label>
-                                <div class="relative">
-                                    <span
-                                        class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">Rp</span>
-                                    <input type="number" id="paymentAmount" name="jumlah" step="100"
-                                        min="1000" max="{{ $penjualan->sisa_pembayaran }}"
-                                        value="{{ $penjualan->sisa_pembayaran }}"
-                                        class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
-                                        placeholder="Masukkan jumlah pembayaran" onchange="updatePaymentInfo()" required>
-                                </div>
-                                <div class="mt-1 text-xs text-gray-500">
-                                    Maksimal: Rp {{ number_format($penjualan->sisa_pembayaran, 0) }}
-                                </div>
-                            </div>
-
-                            <!-- Payment Date -->
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Tanggal Pembayaran
-                                </label>
-                                <input type="date" name="tanggal" value="{{ date('Y-m-d') }}"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
-                                    required>
-                            </div>
-
-                            <!-- Payment Method -->
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Metode Pembayaran
-                                </label>
-                                <select name="metode_pembayaran"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
-                                    required>
-                                    <option value="">Pilih metode pembayaran</option>
-                                    <option value="tunai">💵 Tunai</option>
-                                    <option value="transfer">🏦 Transfer Bank</option>
-                                    <option value="qris">📱 QRIS</option>
-                                    <option value="kartu">💳 Kartu Debit/Credit</option>
-                                    <option value="ewallet">📱 E-Wallet</option>
-                                </select>
-                            </div>
-
-                            <!-- Payment Notes -->
-                            <div class="mb-6">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Keterangan (Opsional)
-                                </label>
-                                <textarea name="keterangan" rows="3"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
-                                    placeholder="Keterangan tambahan untuk pembayaran ini"></textarea>
-                            </div>
-
-                            <!-- Payment Preview -->
-                            <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                <h4 class="font-medium text-blue-800 mb-2">Preview Pembayaran:</h4>
-                                <div class="space-y-1 text-sm">
-                                    <div class="flex justify-between">
-                                        <span class="text-blue-700">Jumlah Bayar:</span>
-                                        <span class="font-medium" id="previewAmount">Rp
-                                            {{ number_format($penjualan->sisa_pembayaran, 0) }}</span>
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                <!-- Left Column -->
+                                <div class="space-y-3">
+                                    <!-- Payment Amount -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                                            Jumlah Pembayaran <span class="text-red-500">*</span>
+                                        </label>
+                                        <div class="relative">
+                                            <span
+                                                class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">Rp</span>
+                                            <input type="number" id="paymentAmount" name="jumlah" step="100"
+                                                min="1000" max="{{ $penjualan->sisa_pembayaran }}"
+                                                value="{{ $penjualan->sisa_pembayaran }}"
+                                                class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
+                                                placeholder="0" onchange="updatePaymentInfo()" required>
+                                        </div>
+                                        <div class="mt-1 text-xs text-gray-500">
+                                            Maks: Rp {{ number_format($penjualan->sisa_pembayaran, 0) }}
+                                        </div>
                                     </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-blue-700">Sisa Setelah Bayar:</span>
-                                        <span class="font-medium" id="previewRemaining">Rp 0</span>
+
+                                    <!-- Payment Method -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                                            Metode Pembayaran <span class="text-red-500">*</span>
+                                        </label>
+                                        <select name="metode_pembayaran"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
+                                            required>
+                                            <option value="">Pilih metode...</option>
+                                            <option value="tunai">💵 Tunai</option>
+                                            <option value="transfer">🏦 Transfer Bank</option>
+                                            <option value="qris">📱 QRIS</option>
+                                            <option value="kartu">💳 Kartu Debit/Credit</option>
+                                            <option value="ewallet">📱 E-Wallet</option>
+                                        </select>
                                     </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-blue-700">Status:</span>
-                                        <span class="font-medium text-green-600" id="previewStatus">Lunas</span>
+                                </div>
+
+                                <!-- Right Column -->
+                                <div class="space-y-3">
+                                    <!-- Payment Date -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                                            Tanggal Pembayaran <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="date" name="tanggal" value="{{ date('Y-m-d') }}"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
+                                            required>
+                                    </div>
+
+                                    <!-- Payment Notes -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                                            Keterangan
+                                        </label>
+                                        <textarea name="keterangan" rows="2"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
+                                            placeholder="Catatan tambahan..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Payment Preview - Compact -->
+                            <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                <h4 class="font-medium text-blue-800 mb-2 text-sm">Preview Pembayaran:</h4>
+                                <div class="grid grid-cols-3 gap-4 text-sm">
+                                    <div>
+                                        <span class="text-blue-700 text-xs">Jumlah Bayar:</span>
+                                        <div class="font-medium" id="previewAmount">Rp
+                                            {{ number_format($penjualan->sisa_pembayaran, 0) }}</div>
+                                    </div>
+                                    <div>
+                                        <span class="text-blue-700 text-xs">Sisa Setelah Bayar:</span>
+                                        <div class="font-medium" id="previewRemaining">Rp 0</div>
+                                    </div>
+                                    <div>
+                                        <span class="text-blue-700 text-xs">Status:</span>
+                                        <div class="font-medium text-green-600" id="previewStatus">Lunas</div>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Action Buttons -->
-                            <div class="flex space-x-3">
+                            <div class="flex space-x-3 mt-4">
                                 <button type="button" onclick="closePaymentModal()"
-                                    class="flex-1 px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">
+                                    class="flex-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">
                                     Batal
                                 </button>
                                 <button type="submit" id="submitPaymentBtn"
-                                    class="flex-1 px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-colors duration-200 font-medium">
+                                    class="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-colors duration-200 font-medium">
                                     <span id="submitBtnText">Simpan Pembayaran</span>
                                 </button>
                             </div>
@@ -1145,20 +1263,57 @@
             const submitBtn = document.getElementById('submitPaymentBtn');
             const submitBtnText = document.getElementById('submitBtnText');
 
+            // Validate form data before submission
+            const jumlah = formData.get('jumlah');
+            const metode_pembayaran = formData.get('metode_pembayaran');
+            const tanggal = formData.get('tanggal');
+
+            if (!jumlah || jumlah <= 0) {
+                showPaymentError('Jumlah pembayaran harus diisi dan lebih dari 0');
+                return;
+            }
+
+            if (!metode_pembayaran) {
+                showPaymentError('Metode pembayaran harus dipilih');
+                return;
+            }
+
+            if (!tanggal) {
+                showPaymentError('Tanggal pembayaran harus diisi');
+                return;
+            }
+
             // Disable button and show loading
             submitBtn.disabled = true;
             submitBtnText.innerHTML = '<i class="ti ti-loader animate-spin mr-2"></i>Menyimpan...';
+
+            // Log form data for debugging
+            console.log('Submitting payment:', {
+                jumlah: jumlah,
+                metode_pembayaran: metode_pembayaran,
+                tanggal: tanggal,
+                penjualan_id: formData.get('penjualan_id'),
+                keterangan: formData.get('keterangan')
+            });
 
             // Submit payment
             fetch('{{ route('pembayaran.store') }}', {
                     method: 'POST',
                     body: formData,
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
                     },
                     credentials: 'same-origin'
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => {
+                            throw new Error(err.message || 'Terjadi kesalahan pada server');
+                        });
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         // Show success message
@@ -1386,6 +1541,76 @@
             content += '================================\n';
 
             return content;
+        }
+
+        // Delete Payment Functions
+        function confirmDeletePayment(paymentId, noBukti) {
+            Swal.fire({
+                title: 'Hapus Pembayaran?',
+                text: `Apakah Anda yakin ingin menghapus pembayaran "${noBukti}"?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    deletePayment(paymentId);
+                }
+            });
+        }
+
+        function deletePayment(paymentId) {
+            const formData = new FormData();
+            formData.append('_token', '{{ csrf_token() }}');
+            formData.append('_method', 'DELETE');
+
+            // Show loading state
+            Swal.fire({
+                title: 'Menghapus...',
+                text: 'Mohon tunggu sebentar',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch(`/pembayaran/${paymentId}`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: 'Pembayaran berhasil dihapus',
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            // Reload page to show updated data
+                            window.location.reload();
+                        });
+                    } else {
+                        throw new Error(data.message || 'Terjadi kesalahan saat menghapus pembayaran');
+                    }
+                })
+                .catch(error => {
+                    console.error('Delete payment error:', error);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: error.message,
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                });
         }
     </script>
 @endpush

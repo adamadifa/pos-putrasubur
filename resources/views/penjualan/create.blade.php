@@ -160,9 +160,12 @@
 
                         <!-- Date -->
                         <div class="mb-2">
-                            <input type="date" name="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required>
+                            <div class="date-input-wrapper">
+                                <input type="text" id="tanggal" value="{{ old('tanggal', date('d/m/Y')) }}"
+                                    class="flatpickr-input w-full" placeholder="Pilih tanggal" required readonly>
+                                <i class="ti ti-calendar"></i>
+                            </div>
+                            <input type="hidden" name="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}">
                         </div>
 
                         <!-- Customer -->
@@ -200,10 +203,19 @@
 
                         <!-- DP Amount (shown only for kredit) -->
                         <div class="mb-2 hidden" id="dpContainer">
+                            <label for="dpAmountDisplay" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="ti ti-credit-card mr-1"></i>
+                                Jumlah Down Payment (DP)
+                            </label>
                             <input type="text" id="dpAmountDisplay"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-right"
                                 placeholder="Jumlah DP (Rp)" value="{{ old('dp_amount', 0) }}">
                             <input type="hidden" name="dp_amount" id="dpAmount" value="{{ old('dp_amount', 0) }}">
+                            <p class="text-xs text-gray-500 mt-1">
+                                <i class="ti ti-info-circle mr-1"></i>
+                                Masukkan jumlah uang muka yang akan dibayar pelanggan. DP harus lebih dari 0 dan tidak boleh
+                                melebihi total transaksi.
+                            </p>
                         </div>
 
 
@@ -707,6 +719,36 @@
             box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
         }
 
+        /* Order item highlight styles */
+        .order-item.ring-2 {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Disable product card when product is already in order */
+        .product-card.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            pointer-events: none;
+            position: relative;
+        }
+
+        .product-card.disabled::after {
+            content: "✓ Sudah di pesanan";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(34, 197, 94, 0.9);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+            z-index: 10;
+            white-space: nowrap;
+        }
+
         /* Price breakdown styling */
         .order-item .text-orange-600 {
             font-weight: 500;
@@ -1010,6 +1052,57 @@
         let orderItems = [];
         let currentProduct = null;
         let editingItemIndex = null;
+
+        // Initialize product card states
+        document.addEventListener('DOMContentLoaded', function() {
+            updateProductCardStates();
+
+            // Initialize Flatpickr for date input
+            flatpickr("#tanggal", {
+                dateFormat: "d/m/Y",
+                locale: "id",
+                allowInput: false,
+                clickOpens: true,
+                todayHighlight: true,
+                maxDate: "today",
+                defaultDate: "today",
+                animate: "slideDown",
+                disableMobile: false,
+                enableTime: false,
+                time_24hr: true,
+                onChange: function(selectedDates, dateStr, instance) {
+                    // Update hidden input for form submission
+                    const dateInput = document.querySelector('input[name="tanggal"]');
+                    if (selectedDates[0]) {
+                        const year = selectedDates[0].getFullYear();
+                        const month = String(selectedDates[0].getMonth() + 1).padStart(2, '0');
+                        const day = String(selectedDates[0].getDate()).padStart(2, '0');
+                        dateInput.value = `${year}-${month}-${day}`;
+
+                        // Add visual feedback
+                        const input = document.getElementById('tanggal');
+                        input.classList.add('ring-2', 'ring-blue-500', 'ring-opacity-50');
+                        setTimeout(() => {
+                            input.classList.remove('ring-2', 'ring-blue-500',
+                                'ring-opacity-50');
+                        }, 300);
+                    }
+                },
+                onOpen: function(selectedDates, dateStr, instance) {
+                    // Add smooth animation
+                    const calendar = document.querySelector('.flatpickr-calendar');
+                    if (calendar) {
+                        calendar.style.opacity = '0';
+                        calendar.style.transform = 'scale(0.95) translateY(-10px)';
+                        setTimeout(() => {
+                            calendar.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                            calendar.style.opacity = '1';
+                            calendar.style.transform = 'scale(1) translateY(0)';
+                        }, 10);
+                    }
+                }
+            });
+        });
 
         // Customer modal functionality
         const customerModal = document.getElementById('customerModal');
@@ -1333,6 +1426,22 @@
                     unit: this.dataset.unit
                 };
 
+                // Check if product already exists in order
+                const existingIndex = orderItems.findIndex(item => item.id === productData.id);
+
+                if (existingIndex !== -1) {
+                    // Product already exists - show message and don't open modal
+                    showToast(
+                        `${productData.name} sudah ada di pesanan. Klik item di ringkasan pesanan untuk mengubah quantity.`,
+                        'info');
+
+                    // Highlight the existing item in the order summary
+                    highlightOrderItem(existingIndex);
+
+                    // Prevent modal from opening
+                    return;
+                }
+
                 showQuantityModal(productData);
             });
         });
@@ -1591,6 +1700,31 @@
             updateOrderSummary();
         }
 
+        // Highlight order item for better UX
+        function highlightOrderItem(index) {
+            // Remove previous highlights
+            document.querySelectorAll('.order-item').forEach(item => {
+                item.classList.remove('ring-2', 'ring-blue-500', 'ring-opacity-50', 'bg-blue-50');
+            });
+
+            // Add highlight to current item
+            const orderItem = document.querySelector(`[data-index="${index}"]`);
+            if (orderItem) {
+                orderItem.classList.add('ring-2', 'ring-blue-500', 'ring-opacity-50', 'bg-blue-50');
+
+                // Scroll to the item if it's not visible
+                orderItem.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest'
+                });
+
+                // Remove highlight after 3 seconds
+                setTimeout(() => {
+                    orderItem.classList.remove('ring-2', 'ring-blue-500', 'ring-opacity-50', 'bg-blue-50');
+                }, 3000);
+            }
+        }
+
         function showToast(message, type = 'info') {
             // Remove existing toast
             const existingToast = document.querySelector('.toast');
@@ -1678,14 +1812,14 @@
                         </div>
                         
                         ${discount > 0 ? `
-                                                                                                                            <div class="flex items-center justify-between text-sm">
-                                                                                                                                <span class="text-orange-600 flex items-center">
-                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                    Potongan Harga
-                                                                                                                                </span>
-                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                            </div>
-                                                                                                                            ` : ''}
+                                                                                                                                                    <div class="flex items-center justify-between text-sm">
+                                                                                                                                                        <span class="text-orange-600 flex items-center">
+                                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                            Potongan Harga
+                                                                                                                                                        </span>
+                                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                    </div>
+                                                                                                                                                    ` : ''}
                         
                         <!-- Total Line -->
                         <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -1756,14 +1890,14 @@
                 </div>
                 
                 ${discount > 0 ? `
-                                                                                                                    <div class="flex items-center justify-between text-sm">
-                                                                                                                        <span class="text-orange-600 flex items-center">
-                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                            Potongan Harga
-                                                                                                                        </span>
-                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                    </div>
-                                                                                                                    ` : ''}
+                                                                                                                                            <div class="flex items-center justify-between text-sm">
+                                                                                                                                                <span class="text-orange-600 flex items-center">
+                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                    Potongan Harga
+                                                                                                                                                </span>
+                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                            </div>
+                                                                                                                                            ` : ''}
                 
                 <!-- Total Line -->
                 <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -1822,6 +1956,22 @@
             showToast(`${item.name} diperbarui: ${updateMessage}`, 'success');
         }
 
+        // Update product card states to show which products are already in order
+        function updateProductCardStates() {
+            const productCards = document.querySelectorAll('.product-card');
+
+            productCards.forEach(card => {
+                const productId = parseInt(card.dataset.id);
+                const isInOrder = orderItems.some(item => item.id === productId);
+
+                if (isInOrder) {
+                    card.classList.add('disabled');
+                } else {
+                    card.classList.remove('disabled');
+                }
+            });
+        }
+
         function removeOrderItem(index) {
             // Remove from array
             orderItems = orderItems.filter(item => item.index !== index);
@@ -1845,6 +1995,9 @@
                 const itemDiscount = item.discount || 0;
                 return total + (itemSubtotal - itemDiscount);
             }, 0);
+
+            // Update product card states based on order items
+            updateProductCardStates();
 
 
             const discount = parseFormattedNumber(document.getElementById('diskonDisplay').value);
@@ -2203,11 +2356,11 @@
                                 <span>Rp ${formatNumber(subtotal)}</span>
                             </div>
                             ${discount > 0 ? `
-                                                                                                                            <div class="flex justify-between text-xs">
-                                                                                                                                <span class="text-orange-600">Potongan</span>
-                                                                                                                                <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                            </div>
-                                                                                                                            ` : ''}
+                                                                                                                                                    <div class="flex justify-between text-xs">
+                                                                                                                                                        <span class="text-orange-600">Potongan</span>
+                                                                                                                                                        <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                    </div>
+                                                                                                                                                    ` : ''}
                             <div class="flex justify-between text-sm font-medium">
                                 <span>Total</span>
                                 <span class="text-blue-600">Rp ${formatNumber(total)}</span>

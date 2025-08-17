@@ -161,10 +161,14 @@
 
                         <!-- Date -->
                         <div class="mb-2">
-                            <input type="date" name="tanggal"
-                                value="{{ old('tanggal', $penjualan->tanggal->format('Y-m-d')) }}"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required>
+                            <div class="date-input-wrapper">
+                                <input type="text" id="tanggal"
+                                    value="{{ old('tanggal', $penjualan->tanggal->format('d/m/Y')) }}"
+                                    class="flatpickr-input w-full" placeholder="Pilih tanggal" required readonly>
+                                <i class="ti ti-calendar"></i>
+                            </div>
+                            <input type="hidden" name="tanggal"
+                                value="{{ old('tanggal', $penjualan->tanggal->format('Y-m-d')) }}">
                         </div>
 
                         <!-- Customer -->
@@ -208,11 +212,20 @@
 
                         <!-- DP Amount (shown only for kredit) -->
                         <div class="mb-2 hidden" id="dpContainer">
+                            <label for="dpAmountDisplay" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="ti ti-credit-card mr-1"></i>
+                                Jumlah Down Payment (DP)
+                            </label>
                             <input type="text" id="dpAmountDisplay"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-right"
                                 placeholder="Jumlah DP (Rp)" value="{{ old('dp_amount', $penjualan->dp_amount ?? 0) }}">
                             <input type="hidden" name="dp_amount" id="dpAmount"
                                 value="{{ old('dp_amount', $penjualan->dp_amount ?? 0) }}">
+                            <p class="text-xs text-gray-500 mt-1">
+                                <i class="ti ti-info-circle mr-1"></i>
+                                Masukkan jumlah uang muka yang akan dibayar pelanggan. DP harus lebih dari 0 dan tidak boleh
+                                melebihi total transaksi.
+                            </p>
                         </div>
 
 
@@ -575,6 +588,14 @@
                                 <span class="text-orange-600">Sisa Pembayaran</span>
                                 <span class="font-medium text-orange-600" id="previewRemaining">Rp 0</span>
                             </div>
+
+                            <!-- DP Warning for DP 0 -->
+                            <div id="dpWarning" class="hidden bg-orange-50 border border-orange-200 rounded-lg p-3">
+                                <div class="flex items-center text-orange-800">
+                                    <i class="ti ti-alert-triangle text-orange-500 mr-2"></i>
+                                    <span class="text-sm font-medium">DP 0 - Pembayaran akan dilakukan kemudian</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -696,6 +717,31 @@
             }
         }
 
+        /* Date Input Wrapper */
+        .date-input-wrapper {
+            position: relative;
+        }
+
+        .date-input-wrapper .ti-calendar {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .flatpickr-input {
+            padding-right: 40px;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        .flatpickr-input:focus {
+            cursor: text;
+        }
+
         /* Order item layout improvements */
         .order-item .space-y-2>*+* {
             margin-top: 0.5rem;
@@ -705,6 +751,36 @@
         .order-item .bg-blue-50 {
             background: linear-gradient(135deg, #dbeafe, #bfdbfe);
             border: 1px solid #93c5fd;
+        }
+
+        /* Order item highlight styles */
+        .order-item.ring-2 {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Disable product card when product is already in order */
+        .product-card.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            pointer-events: none;
+            position: relative;
+        }
+
+        .product-card.disabled::after {
+            content: "✓ Sudah di pesanan";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(34, 197, 94, 0.9);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+            z-index: 10;
+            white-space: nowrap;
         }
 
         /* Remove button improved styling */
@@ -1018,6 +1094,53 @@
         let currentProduct = null;
         let editingItemIndex = null;
 
+        // Initialize Flatpickr for date input
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Flatpickr
+            flatpickr("#tanggal", {
+                dateFormat: "d/m/Y",
+                locale: "id",
+                allowInput: false,
+                clickOpens: true,
+                todayHighlight: true,
+                maxDate: "today",
+                defaultDate: "{{ old('tanggal', $penjualan->tanggal->format('Y-m-d')) }}",
+                animate: "slideDown",
+                disableMobile: false,
+                enableTime: false,
+                time_24hr: true,
+                onChange: function(selectedDates, dateStr, instance) {
+                    const dateInput = document.querySelector('input[name="tanggal"]');
+                    if (selectedDates[0]) {
+                        const year = selectedDates[0].getFullYear();
+                        const month = String(selectedDates[0].getMonth() + 1).padStart(2, '0');
+                        const day = String(selectedDates[0].getDate()).padStart(2, '0');
+                        dateInput.value = `${year}-${month}-${day}`;
+
+                        // Add visual feedback
+                        const input = document.getElementById('tanggal');
+                        input.classList.add('ring-2', 'ring-blue-500', 'ring-opacity-50');
+                        setTimeout(() => {
+                            input.classList.remove('ring-2', 'ring-blue-500',
+                                'ring-opacity-50');
+                        }, 300);
+                    }
+                },
+                onOpen: function(selectedDates, dateStr, instance) {
+                    const calendar = document.querySelector('.flatpickr-calendar');
+                    if (calendar) {
+                        calendar.style.opacity = '0';
+                        calendar.style.transform = 'scale(0.95) translateY(-10px)';
+                        setTimeout(() => {
+                            calendar.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                            calendar.style.opacity = '1';
+                            calendar.style.transform = 'scale(1) translateY(0)';
+                        }, 10);
+                    }
+                }
+            });
+        });
+
         // Initialize existing order items from edit data
         @if ($penjualan->detailPenjualan)
             @foreach ($penjualan->detailPenjualan as $index => $detail)
@@ -1037,6 +1160,8 @@
             // Render existing items after DOM is ready
             document.addEventListener('DOMContentLoaded', function() {
                 renderExistingOrderItems();
+                // Initialize product card states
+                updateProductCardStates();
             });
         @endif
 
@@ -1079,14 +1204,14 @@
                                     </div>
                                     
                                     ${discount > 0 ? `
-                                                                <div class="flex items-center justify-between text-sm">
-                                                                    <span class="text-orange-600 flex items-center">
-                                                                        <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                        Potongan Harga
-                                                                    </span>
-                                                                    <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                </div>
-                                                            ` : ''}
+                                                                                    <div class="flex items-center justify-between text-sm">
+                                                                                        <span class="text-orange-600 flex items-center">
+                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                            Potongan Harga
+                                                                                        </span>
+                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                    </div>
+                                                                                ` : ''}
                                     
                                     <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
                                         <span class="font-semibold text-gray-900">Total</span>
@@ -1256,6 +1381,12 @@
             if (this.value === 'kredit') {
                 dpContainer.classList.remove('hidden');
                 dpAmountDisplay.required = true;
+
+                // Reset DP amount to 0 for kredit transactions initially
+                resetDPForKredit();
+
+                // Show info message
+                showToast('Transaksi kredit: DP diatur ke 0. Silakan atur jumlah DP yang diinginkan.', 'info');
             } else {
                 dpContainer.classList.add('hidden');
                 dpAmountDisplay.required = false;
@@ -1289,10 +1420,20 @@
             }
         }
 
+        // Reset DP amount for kredit transactions
+        function resetDPForKredit() {
+            dpAmountDisplay.value = '0';
+            dpAmount.value = 0;
+            updateOrderSummary();
+        }
+
         // Set initial DP visibility based on transaction type
         @if (old('jenis_transaksi', $penjualan->jenis_transaksi) == 'kredit')
             dpContainer.classList.remove('hidden');
             dpAmountDisplay.required = true;
+
+            // For kredit transactions, don't auto-fill DP amount
+            // User must manually set the DP amount or leave it at 0
         @else
             // Auto-fill payment for initial cash transactions
             if (jenisTransaksi.value === 'tunai') {
@@ -1457,6 +1598,22 @@
                     stock: parseInt(this.dataset.stock),
                     unit: this.dataset.unit
                 };
+
+                // Check if product already exists in order
+                const existingIndex = orderItems.findIndex(item => item.id === productData.id);
+
+                if (existingIndex !== -1) {
+                    // Product already exists - show message and don't open modal
+                    showToast(
+                        `${productData.name} sudah ada di pesanan. Klik item di ringkasan pesanan untuk mengubah quantity.`,
+                        'info');
+
+                    // Highlight the existing item in the order summary
+                    highlightOrderItem(existingIndex);
+
+                    // Prevent modal from opening
+                    return;
+                }
 
                 showQuantityModal(productData);
             });
@@ -1716,6 +1873,31 @@
             updateOrderSummary();
         }
 
+        // Highlight order item for better UX
+        function highlightOrderItem(index) {
+            // Remove previous highlights
+            document.querySelectorAll('.order-item').forEach(item => {
+                item.classList.remove('ring-2', 'ring-blue-500', 'ring-opacity-50', 'bg-blue-50');
+            });
+
+            // Add highlight to current item
+            const orderItem = document.querySelector(`[data-index="${index}"]`);
+            if (orderItem) {
+                orderItem.classList.add('ring-2', 'ring-blue-500', 'ring-opacity-50', 'bg-blue-50');
+
+                // Scroll to the item if it's not visible
+                orderItem.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest'
+                });
+
+                // Remove highlight after 3 seconds
+                setTimeout(() => {
+                    orderItem.classList.remove('ring-2', 'ring-blue-500', 'ring-opacity-50', 'bg-blue-50');
+                }, 3000);
+            }
+        }
+
         function showToast(message, type = 'info') {
             // Remove existing toast
             const existingToast = document.querySelector('.toast');
@@ -1803,14 +1985,14 @@
                         </div>
                         
                         ${discount > 0 ? `
-                                                                                                                                            <div class="flex items-center justify-between text-sm">
-                                                                                                                                                <span class="text-orange-600 flex items-center">
-                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                    Potongan Harga
-                                                                                                                                                </span>
-                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                            </div>
-                                                                                                                                            ` : ''}
+                                                                                                                                                                <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                    <span class="text-orange-600 flex items-center">
+                                                                                                                                                                        <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                        Potongan Harga
+                                                                                                                                                                    </span>
+                                                                                                                                                                    <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                </div>
+                                                                                                                                                                ` : ''}
                         
                         <!-- Total Line -->
                         <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -1877,14 +2059,14 @@
                 </div>
                 
                 ${discount > 0 ? `
-                                                                                                                                    <div class="flex items-center justify-between text-sm">
-                                                                                                                                        <span class="text-orange-600 flex items-center">
-                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                            Potongan Harga
-                                                                                                                                        </span>
-                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                    </div>
-                                                                                                                                    ` : ''}
+                                                                                                                                                        <div class="flex items-center justify-between text-sm">
+                                                                                                                                                            <span class="text-orange-600 flex items-center">
+                                                                                                                                                                <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                Potongan Harga
+                                                                                                                                                            </span>
+                                                                                                                                                            <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                        </div>
+                                                                                                                                                        ` : ''}
                 
                 <!-- Total Line -->
                 <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -1948,6 +2130,22 @@
             showToast(`${item.name} diperbarui: ${updateMessage}`, 'success');
         }
 
+        // Update product card states to show which products are already in order
+        function updateProductCardStates() {
+            const productCards = document.querySelectorAll('.product-card');
+
+            productCards.forEach(card => {
+                const productId = parseInt(card.dataset.id);
+                const isInOrder = orderItems.some(item => item.id === productId);
+
+                if (isInOrder) {
+                    card.classList.add('disabled');
+                } else {
+                    card.classList.remove('disabled');
+                }
+            });
+        }
+
         function removeOrderItem(index) {
             // Remove from array
             orderItems = orderItems.filter(item => item.index !== index);
@@ -1972,6 +2170,9 @@
                 const itemDiscount = item.discount || 0;
                 return total + (itemSubtotal - itemDiscount);
             }, 0);
+
+            // Update product card states based on order items
+            updateProductCardStates();
 
 
             const discount = parseFormattedNumber(document.getElementById('diskonDisplay').value);
@@ -2000,6 +2201,9 @@
                 const remaining = Math.max(0, total - dpAmount);
                 document.getElementById('dpDisplay').textContent = `Rp ${formatNumber(dpAmount)}`;
                 document.getElementById('remainingDisplay').textContent = `Rp ${formatNumber(remaining)}`;
+
+                // For kredit transactions, don't auto-fill payment amount
+                // User must manually set the DP amount
             } else {
                 paymentBreakdown.classList.add('hidden');
             }
@@ -2330,11 +2534,11 @@
                                 <span>Rp ${formatNumber(subtotal)}</span>
                             </div>
                             ${discount > 0 ? `
-                                                                                                                                            <div class="flex justify-between text-xs">
-                                                                                                                                                <span class="text-orange-600">Potongan</span>
-                                                                                                                                                <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                            </div>
-                                                                                                                                            ` : ''}
+                                                                                                                                                                <div class="flex justify-between text-xs">
+                                                                                                                                                                    <span class="text-orange-600">Potongan</span>
+                                                                                                                                                                    <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                </div>
+                                                                                                                                                                ` : ''}
                             <div class="flex justify-between text-sm font-medium">
                                 <span>Total</span>
                                 <span class="text-blue-600">Rp ${formatNumber(total)}</span>
@@ -2376,6 +2580,18 @@
                 previewPaymentBreakdown.classList.remove('hidden');
                 document.getElementById('previewDP').textContent = `Rp ${formatNumber(dpAmount)}`;
                 document.getElementById('previewRemaining').textContent = `Rp ${formatNumber(remaining)}`;
+
+                // Add warning for DP 0
+                const dpWarning = document.getElementById('dpWarning');
+                if (dpAmount === 0) {
+                    if (dpWarning) {
+                        dpWarning.classList.remove('hidden');
+                    }
+                } else {
+                    if (dpWarning) {
+                        dpWarning.classList.add('hidden');
+                    }
+                }
             } else {
                 previewPaymentBreakdown.classList.add('hidden');
             }
@@ -2385,7 +2601,7 @@
         }
 
         // Form validation and preview
-        document.getElementById('salesForm').addEventListener('submit', function(e) {
+        document.getElementById('salesForm').addEventListener('submit', async function(e) {
             e.preventDefault(); // Always prevent default first
 
             if (orderItems.length === 0) {
@@ -2421,6 +2637,26 @@
                     showToast('DP tidak boleh kurang dari 0!', 'error');
                     document.getElementById('dpAmountDisplay').focus();
                     return false;
+                }
+
+                // Allow DP 0 for kredit transactions (user can pay later)
+                if (dpAmount === 0) {
+                    // Show confirmation dialog for DP 0 using SweetAlert
+                    const result = await Swal.fire({
+                        title: 'Konfirmasi DP 0',
+                        text: 'DP diatur ke 0. Transaksi akan disimpan sebagai kredit tanpa pembayaran awal. Lanjutkan?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Ya, Lanjutkan',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true
+                    });
+
+                    if (!result.isConfirmed) {
+                        return false;
+                    }
                 }
             }
 

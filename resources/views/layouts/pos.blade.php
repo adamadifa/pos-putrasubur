@@ -18,6 +18,308 @@
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        /* Custom Flatpickr Styling - Clean & Modern */
+        .flatpickr-calendar {
+            background: #ffffff;
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            width: 320px;
+            padding: 0;
+        }
+
+        /* Header Section */
+        .flatpickr-months {
+            background: #3b82f6;
+            color: white;
+            padding: 16px 0;
+            margin: 0;
+        }
+
+        .flatpickr-month {
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .flatpickr-current-month {
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .flatpickr-monthDropdown-months {
+            background: transparent;
+            border: none;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            padding: 4px 8px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .flatpickr-monthDropdown-months:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .flatpickr-monthDropdown-months option {
+            background: #3b82f6;
+            color: white;
+            padding: 8px;
+        }
+
+        .flatpickr-current-month .numInputWrapper {
+            background: transparent;
+            border: none;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .flatpickr-current-month .numInputWrapper input {
+            background: transparent;
+            border: none;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            text-align: center;
+            padding: 4px 8px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .flatpickr-current-month .numInputWrapper input:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Navigation Arrows */
+        .flatpickr-months .flatpickr-prev-month,
+        .flatpickr-months .flatpickr-next-month {
+            color: white;
+            fill: white;
+            padding: 8px;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .flatpickr-months .flatpickr-prev-month:hover,
+        .flatpickr-months .flatpickr-next-month:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.1);
+        }
+
+        .flatpickr-months .flatpickr-prev-month svg,
+        .flatpickr-months .flatpickr-next-month svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Weekdays Header */
+        .flatpickr-weekdays {
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 0 8px 0;
+            margin: 0;
+        }
+
+        .flatpickr-weekday {
+            color: #64748b;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 8px 0;
+        }
+
+        /* Days Grid */
+        .flatpickr-days {
+            background: white;
+            padding: 12px;
+            margin: 0;
+        }
+
+        .flatpickr-day {
+            border-radius: 12px;
+            border: 2px solid transparent;
+            color: #374151;
+            font-weight: 500;
+            font-size: 14px;
+            height: 40px;
+            line-height: 36px;
+            margin: 2px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .flatpickr-day:hover {
+            background: #eff6ff;
+            border-color: #3b82f6;
+            color: #1e40af;
+            transform: scale(1.05);
+        }
+
+        .flatpickr-day.selected {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .flatpickr-day.selected:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+            transform: scale(1.05);
+        }
+
+        .flatpickr-day.today {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .flatpickr-day.today:hover {
+            background: #059669;
+            border-color: #059669;
+            transform: scale(1.05);
+        }
+
+        .flatpickr-day.disabled {
+            color: #cbd5e1;
+            background: #f8fafc;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .flatpickr-day.disabled:hover {
+            background: #f8fafc;
+            border-color: transparent;
+            transform: none;
+        }
+
+        .flatpickr-day.prevMonthDay,
+        .flatpickr-day.nextMonthDay {
+            color: #94a3b8;
+            opacity: 0.7;
+        }
+
+        .flatpickr-day.prevMonthDay:hover,
+        .flatpickr-day.nextMonthDay:hover {
+            background: #f1f5f9;
+            color: #64748b;
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        /* Input Field Styling */
+        .flatpickr-input {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 16px 12px 48px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .flatpickr-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 4px 6px rgba(0, 0, 0, 0.1);
+            outline: none;
+        }
+
+        .flatpickr-input:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Calendar Icon */
+        .date-input-wrapper {
+            position: relative;
+        }
+
+        .date-input-wrapper .ti-calendar {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 18px;
+            pointer-events: none;
+            transition: color 0.2s ease;
+        }
+
+        .date-input-wrapper:focus-within .ti-calendar,
+        .date-input-wrapper:hover .ti-calendar {
+            color: #3b82f6;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 640px) {
+            .flatpickr-calendar {
+                width: 100% !important;
+                max-width: 300px;
+                margin: 0 auto;
+            }
+
+            .flatpickr-day {
+                height: 36px;
+                line-height: 32px;
+                font-size: 13px;
+            }
+
+            .flatpickr-months {
+                padding: 12px 0;
+            }
+
+            .flatpickr-month {
+                font-size: 14px;
+            }
+        }
+
+        /* Smooth Animations */
+        .flatpickr-calendar {
+            animation: calendarSlideIn 0.3s ease-out;
+        }
+
+        @keyframes calendarSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+    </style>
+
     <script>
         tailwind.config = {
             theme: {
@@ -43,6 +345,85 @@
             }
         }
     </script>
+
+    <style>
+        /* Fix scrolling issues */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            overflow-x: hidden;
+        }
+
+        /* Improve scrolling performance */
+        .overflow-y-auto {
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+
+        /* Custom scrollbar for webkit browsers */
+        .overflow-y-auto::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Prevent layout shift during scrolling */
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Optimize animations and transitions */
+        .transition-all {
+            will-change: transform, opacity;
+        }
+
+        /* Fix for mobile scrolling */
+        @media (max-width: 1024px) {
+            .overflow-y-auto {
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
+            }
+        }
+
+        /* Additional scroll optimizations */
+        .scroll-smooth {
+            scroll-behavior: smooth;
+        }
+
+        /* Prevent horizontal scroll */
+        .min-h-full {
+            min-height: 100%;
+        }
+
+        /* Optimize gradient background */
+        .bg-gradient-to-br {
+            background-attachment: fixed;
+        }
+
+        /* Improve button transitions */
+        #scrollToTop {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #scrollToTop:hover {
+            transform: translateY(-2px) scale(1.05);
+        }
+    </style>
 
     @stack('styles')
 </head>
@@ -244,7 +625,7 @@
         <!-- Main Content -->
         <div class="flex-1 flex flex-col overflow-hidden lg:ml-0">
             <!-- Top Navigation -->
-            <header class="bg-white shadow-sm border-b border-gray-200">
+            <header class="bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
                 <div class="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
                     <div class="flex items-center gap-4">
                         <!-- Mobile menu button -->
@@ -336,12 +717,23 @@
             </header>
 
             <!-- Main Content Area -->
-            <main class="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100">
-                <div class="p-6">
+            <main
+                class="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 scroll-smooth">
+                <div class="p-6 min-h-full">
                     @yield('content')
                 </div>
             </main>
         </div>
+
+        <!-- Scroll to Top Button -->
+        <button id="scrollToTop" onclick="scrollToTop()"
+            class="fixed bottom-6 right-6 z-40 p-3 bg-primary-600 text-white rounded-full shadow-lg hover:bg-primary-700 transition-all duration-300 opacity-0 pointer-events-none transform translate-y-4"
+            style="display: none;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+            </svg>
+        </button>
     </div>
 
     <!-- jQuery -->
@@ -350,6 +742,88 @@
     <!-- Tabler Icons -->
     <script src="https://unpkg.com/@tabler/icons@latest/icons-react/dist/index.umd.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/iconfont/tabler-icons.min.css">
+
+    <script>
+        // Optimize scrolling performance
+        document.addEventListener('DOMContentLoaded', function() {
+            // Debounce scroll events for better performance
+            let ticking = false;
+
+            function updateScroll() {
+                ticking = false;
+            }
+
+            function requestTick() {
+                if (!ticking) {
+                    requestAnimationFrame(updateScroll);
+                    ticking = true;
+                }
+            }
+
+            // Optimize scroll performance
+            const mainContent = document.querySelector('main');
+            if (mainContent) {
+                mainContent.addEventListener('scroll', requestTick, {
+                    passive: true
+                });
+            }
+
+            // Prevent scroll chaining on mobile
+            document.addEventListener('touchmove', function(e) {
+                if (e.target.closest('.overflow-y-auto')) {
+                    e.stopPropagation();
+                }
+            }, {
+                passive: true
+            });
+
+            // Smooth scroll to top functionality
+            window.scrollToTop = function() {
+                const mainContent = document.querySelector('main');
+                if (mainContent) {
+                    mainContent.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }
+            };
+
+            // Show/hide scroll to top button
+            const scrollToTopBtn = document.getElementById('scrollToTop');
+            if (mainContent && scrollToTopBtn) {
+                mainContent.addEventListener('scroll', function() {
+                    if (this.scrollTop > 300) {
+                        scrollToTopBtn.style.display = 'block';
+                        setTimeout(() => {
+                            scrollToTopBtn.classList.remove('opacity-0', 'pointer-events-none',
+                                'translate-y-4');
+                        }, 100);
+                    } else {
+                        scrollToTopBtn.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+                        setTimeout(() => {
+                            scrollToTopBtn.style.display = 'none';
+                        }, 300);
+                    }
+                });
+            }
+        });
+
+        // Optimize Alpine.js performance
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('scrollOptimizer', () => ({
+                init() {
+                    // Optimize transitions during scroll
+                    this.$watch('$store.scrollY', (value) => {
+                        if (value > 100) {
+                            this.$el.classList.add('scrolled');
+                        } else {
+                            this.$el.classList.remove('scrolled');
+                        }
+                    });
+                }
+            }));
+        });
+    </script>
 
     @stack('scripts')
 </body>

@@ -50,6 +50,11 @@ class PenjualanController extends Controller
             $query->where('status_pembayaran', $request->status);
         }
 
+        // Handle jenis transaksi filter
+        if ($request->filled('jenis_transaksi')) {
+            $query->where('jenis_transaksi', $request->jenis_transaksi);
+        }
+
         // Default sorting by date descending
         $query->orderBy('tanggal', 'desc')->orderBy('created_at', 'desc');
 
@@ -70,6 +75,12 @@ class PenjualanController extends Controller
             'dp' => Penjualan::whereDate('tanggal', today())->where('status_pembayaran', 'dp')->count(),
             'angsuran' => Penjualan::whereDate('tanggal', today())->where('status_pembayaran', 'angsuran')->count(),
             'belum_bayar' => Penjualan::whereDate('tanggal', today())->where('status_pembayaran', 'belum_bayar')->count(),
+        ];
+
+        // Jenis transaksi counts - hari ini
+        $jenisTransaksiCountsHariIni = [
+            'tunai' => Penjualan::whereDate('tanggal', today())->where('jenis_transaksi', 'tunai')->count(),
+            'kredit' => Penjualan::whereDate('tanggal', today())->where('jenis_transaksi', 'kredit')->count(),
         ];
 
         // Status counts - keseluruhan
@@ -97,6 +108,7 @@ class PenjualanController extends Controller
             'nilaiHariIni',
             'statusCounts',
             'statusCountsHariIni',
+            'jenisTransaksiCountsHariIni',
             'penjualanKemarin',
             'nilaiKemarin',
             'perubahanPenjualan',
@@ -245,6 +257,22 @@ class PenjualanController extends Controller
                         : 'Pembayaran DP awal',
                     'user_id' => Auth::id(),
                 ]);
+
+                Log::info('Created payment record', [
+                    'penjualan_id' => $penjualan->id,
+                    'no_bukti' => $noBukti,
+                    'amount' => $dpAmount,
+                    'jenis_transaksi' => $jenisTransaksi,
+                    'metode_pembayaran' => $metodePembayaran
+                ]);
+            } else {
+                // No payment amount - this could be a pure credit transaction
+                Log::info('No payment record created', [
+                    'penjualan_id' => $penjualan->id,
+                    'jenis_transaksi' => $jenisTransaksi,
+                    'dp_amount' => $dpAmount,
+                    'status_pembayaran' => $statusPembayaran
+                ]);
             }
 
             DB::commit();
@@ -375,6 +403,7 @@ class PenjualanController extends Controller
                 } elseif ($dpAmount >= $totalSetelahDiskon) {
                     $statusPembayaran = 'lunas';
                 } else {
+                    // DP = 0 means no payment has been made yet
                     $statusPembayaran = 'belum_bayar';
                 }
             }
@@ -414,6 +443,14 @@ class PenjualanController extends Controller
             if ($validated['jenis_transaksi'] === 'kredit') {
                 $dpAmount = $validated['dp_amount'] ?? 0;
 
+                // Log the transaction details for debugging
+                Log::info('Processing kredit transaction', [
+                    'penjualan_id' => $penjualan->id,
+                    'dp_amount' => $dpAmount,
+                    'total' => $totalSetelahDiskon,
+                    'status_pembayaran' => $statusPembayaran
+                ]);
+
                 if ($dpAmount > 0) {
                     // Generate payment reference number
                     $noBukti = 'PAY-' . date('Ymd') . '-' . str_pad($penjualan->id, 4, '0', STR_PAD_LEFT);
@@ -429,22 +466,35 @@ class PenjualanController extends Controller
                         'keterangan' => 'Pembayaran DP',
                         'user_id' => Auth::id(),
                     ]);
+
+                    Log::info('Created DP payment record', ['no_bukti' => $noBukti, 'amount' => $dpAmount]);
                 }
 
-                // If there's remaining amount, create credit record
-                $remainingAmount = $totalSetelahDiskon - $dpAmount;
-                if ($remainingAmount > 0) {
-                    $noBuktiKredit = 'PAY-' . date('Ymd') . '-' . str_pad($penjualan->id, 4, '0', STR_PAD_LEFT) . '-CR';
+                // Only create credit record if there's remaining amount AND DP > 0
+                // If DP = 0, no payment records should be created (pure credit transaction)
+                if ($dpAmount > 0) {
+                    $remainingAmount = $totalSetelahDiskon - $dpAmount;
+                    if ($remainingAmount > 0) {
+                        $noBuktiKredit = 'PAY-' . date('Ymd') . '-' . str_pad($penjualan->id, 4, '0', STR_PAD_LEFT) . '-CR';
 
-                    PembayaranPenjualan::create([
+                        PembayaranPenjualan::create([
+                            'penjualan_id' => $penjualan->id,
+                            'no_bukti' => $noBuktiKredit,
+                            'tanggal' => $validated['tanggal'],
+                            'jumlah_bayar' => $remainingAmount,
+                            'metode_pembayaran' => 'kredit',
+                            'status_bayar' => 'A', // A = Angsuran
+                            'keterangan' => 'Sisa pembayaran kredit',
+                            'user_id' => Auth::id(),
+                        ]);
+
+                        Log::info('Created credit payment record', ['no_bukti' => $noBuktiKredit, 'amount' => $remainingAmount]);
+                    }
+                } else {
+                    // DP = 0, no payment records are created - this is a pure credit transaction
+                    Log::info('No payment records created for kredit transaction with DP 0', [
                         'penjualan_id' => $penjualan->id,
-                        'no_bukti' => $noBuktiKredit,
-                        'tanggal' => $validated['tanggal'],
-                        'jumlah_bayar' => $remainingAmount,
-                        'metode_pembayaran' => 'kredit',
-                        'status_bayar' => 'A', // A = Angsuran
-                        'keterangan' => 'Sisa pembayaran kredit',
-                        'user_id' => Auth::id(),
+                        'total' => $totalSetelahDiskon
                     ]);
                 }
             } else {

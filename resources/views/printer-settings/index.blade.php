@@ -278,6 +278,64 @@ Terima kasih atas kunjungan Anda!
             </div>
         </div>
 
+        <!-- Existing Printer Settings -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="bg-gradient-to-r from-gray-50 to-green-50 px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Daftar Pengaturan Printer
+                </h2>
+            </div>
+            <div class="p-6">
+                <div class="space-y-3">
+                    @foreach ($printerSettings as $setting)
+                        <div
+                            class="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-3">
+                                    <div
+                                        class="w-3 h-3 rounded-full {{ $setting->is_default ? 'bg-green-500' : 'bg-gray-300' }}">
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-900">{{ $setting->name }}</h4>
+                                        <p class="text-sm text-gray-600">{{ $setting->printer_name }}</p>
+                                        @if ($setting->printer_port)
+                                            <p class="text-xs text-gray-500">Port: {{ $setting->printer_port }}</p>
+                                        @endif
+                                        @if ($setting->description)
+                                            <p class="text-xs text-gray-500">{{ $setting->description }}</p>
+                                        @endif
+                                        @if ($setting->printer_config)
+                                            <p class="text-xs text-gray-500">
+                                                Config: {{ $setting->printer_config['paper_size'] ?? 'A4' }} |
+                                                {{ $setting->printer_config['orientation'] ?? 'portrait' }} |
+                                                Auto-print: {{ $setting->printer_config['auto_print'] ? 'Ya' : 'Tidak' }}
+                                            </p>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                @if (!$setting->is_default)
+                                    <button onclick="setAsDefault({{ $setting->id }})"
+                                        class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors">
+                                        Set Default
+                                    </button>
+                                @endif
+                                <button onclick="deletePrinterSetting({{ $setting->id }})"
+                                    class="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors">
+                                    Hapus
+                                </button>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+
         <!-- Log Messages Card -->
         <div class="bg-white rounded-xl shadow-lg overflow-hidden">
             <div class="bg-gradient-to-r from-gray-50 to-slate-50 px-6 py-4 border-b border-gray-200">
@@ -580,13 +638,19 @@ Terima kasih atas kunjungan Anda!
         // Save printer settings
         function saveSettings() {
             const settings = {
-                default_printer: selectedPrinter,
-                paper_size: document.getElementById('paper-size').value,
-                orientation: document.getElementById('orientation').value,
-                auto_print: document.getElementById('auto-print').checked
+                name: 'Default Printer Setting',
+                printer_name: selectedPrinter || 'Auto-detect',
+                printer_port: null,
+                printer_config: {
+                    paper_size: document.getElementById('paper-size')?.value || 'A4',
+                    orientation: document.getElementById('orientation')?.value || 'portrait',
+                    auto_print: document.getElementById('auto-print')?.checked || false
+                },
+                description: 'Pengaturan printer default dari form',
+                is_default: true
             };
 
-            fetch('{{ route('printer.save-settings') }}', {
+            fetch('{{ route('printer.settings.store') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -597,14 +661,64 @@ Terima kasih atas kunjungan Anda!
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        addLog('Settings saved successfully!', 'success');
+                        addLog('Pengaturan printer berhasil disimpan ke database!', 'success');
+                        // Reload page to show new setting
+                        setTimeout(() => location.reload(), 1000);
                     } else {
-                        addLog('Failed to save settings', 'error');
+                        addLog('Gagal menyimpan pengaturan: ' + data.message, 'error');
                     }
                 })
                 .catch(err => {
-                    addLog('Error saving settings: ' + err.message, 'error');
+                    addLog('Error menyimpan pengaturan: ' + err.message, 'error');
                 });
+        }
+
+        // Set printer as default
+        function setAsDefault(settingId) {
+            fetch(`/printer/settings/${settingId}/set-default`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        addLog('Printer berhasil di-set sebagai default!', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        addLog('Gagal set default: ' + data.message, 'error');
+                    }
+                })
+                .catch(err => {
+                    addLog('Error set default: ' + err.message, 'error');
+                });
+        }
+
+        // Delete printer setting
+        function deletePrinterSetting(settingId) {
+            if (confirm('Apakah Anda yakin ingin menghapus pengaturan printer ini?')) {
+                fetch(`/printer/settings/${settingId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            addLog('Pengaturan printer berhasil dihapus!', 'success');
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            addLog('Gagal menghapus: ' + data.message, 'error');
+                        }
+                    })
+                    .catch(err => {
+                        addLog('Error menghapus: ' + err.message, 'error');
+                    });
+            }
         }
 
         // Load saved settings
@@ -641,6 +755,7 @@ Terima kasih atas kunjungan Anda!
         refreshPrintersBtn.addEventListener('click', loadPrinters);
         testPrintBtn.addEventListener('click', testPrint);
         testRawPrintBtn.addEventListener('click', testRawPrint);
+
         saveSettingsBtn.addEventListener('click', saveSettings);
 
         printerSelect.addEventListener('change', function() {

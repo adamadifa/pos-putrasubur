@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PrinterSetting;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class PrinterSettingController extends Controller
 {
@@ -12,7 +15,10 @@ class PrinterSettingController extends Controller
      */
     public function index()
     {
-        return view('printer-settings.index');
+        $printerSettings = PrinterSetting::getActive();
+        $defaultPrinter = PrinterSetting::getDefault();
+
+        return view('printer-settings.index', compact('printerSettings', 'defaultPrinter'));
     }
 
     /**
@@ -44,26 +50,49 @@ class PrinterSettingController extends Controller
     public function savePrinterSettings(Request $request): JsonResponse
     {
         $request->validate([
-            'default_printer' => 'required|string',
-            'paper_size' => 'nullable|string',
-            'orientation' => 'nullable|string|in:portrait,landscape'
+            'name' => 'required|string|max:255',
+            'printer_name' => 'required|string|max:255',
+            'printer_port' => 'nullable|string|max:255',
+            'printer_config' => 'nullable|array',
+            'description' => 'nullable|string',
+            'is_default' => 'boolean'
         ]);
 
-        // Save to session or database as needed
-        session([
-            'printer_settings' => [
-                'default_printer' => $request->default_printer,
-                'paper_size' => $request->paper_size ?? 'A4',
-                'orientation' => $request->orientation ?? 'portrait',
-                'auto_print' => $request->boolean('auto_print'),
-                'updated_at' => now()
-            ]
-        ]);
+        try {
+            DB::beginTransaction();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Printer settings saved successfully'
-        ]);
+            // If this is set as default, remove default from others
+            if ($request->boolean('is_default')) {
+                PrinterSetting::where('is_default', true)->update(['is_default' => false]);
+            }
+
+            // Create or update printer setting
+            $printerSetting = PrinterSetting::create([
+                'name' => $request->name,
+                'printer_name' => $request->printer_name,
+                'printer_port' => $request->printer_port,
+                'printer_config' => $request->printer_config ?? [],
+                'description' => $request->description,
+                'is_default' => $request->boolean('is_default'),
+                'is_active' => true
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Printer setting saved successfully',
+                'data' => $printerSetting
+            ]);
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Failed to save printer setting: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save printer setting: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -71,17 +100,169 @@ class PrinterSettingController extends Controller
      */
     public function getPrinterSettings(): JsonResponse
     {
-        $settings = session('printer_settings', [
-            'default_printer' => '',
-            'paper_size' => 'A4',
-            'orientation' => 'portrait',
-            'auto_print' => false
-        ]);
+        $printerSettings = PrinterSetting::getActive();
+        $defaultPrinter = PrinterSetting::getDefault();
 
         return response()->json([
             'success' => true,
-            'settings' => $settings
+            'settings' => $printerSettings,
+            'default_printer' => $defaultPrinter
         ]);
+    }
+
+    /**
+     * Store a newly created printer setting
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'printer_name' => 'required|string|max:255',
+            'printer_port' => 'nullable|string|max:255',
+            'printer_config' => 'nullable|array',
+            'description' => 'nullable|string',
+            'is_default' => 'boolean'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // If this is set as default, remove default from others
+            if ($request->boolean('is_default')) {
+                PrinterSetting::where('is_default', true)->update(['is_default' => false]);
+            }
+
+            // Create or update printer setting
+            $printerSetting = PrinterSetting::create([
+                'name' => $request->name,
+                'printer_name' => $request->printer_name,
+                'printer_port' => $request->printer_port,
+                'printer_config' => $request->printer_config ?? [],
+                'description' => $request->description,
+                'is_default' => $request->boolean('is_default'),
+                'is_active' => true
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Printer setting saved successfully',
+                'data' => $printerSetting
+            ]);
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Failed to save printer setting: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save printer setting: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Display the specified printer setting
+     */
+    public function show(PrinterSetting $printerSetting): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $printerSetting
+        ]);
+    }
+
+    /**
+     * Update the specified printer setting
+     */
+    public function update(Request $request, PrinterSetting $printerSetting): JsonResponse
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'printer_name' => 'required|string|max:255',
+            'printer_port' => 'nullable|string|max:255',
+            'printer_config' => 'nullable|array',
+            'description' => 'nullable|string',
+            'is_default' => 'boolean'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // If this is set as default, remove default from others
+            if ($request->boolean('is_default')) {
+                PrinterSetting::where('is_default', true)->update(['is_default' => false]);
+            }
+
+            $printerSetting->update([
+                'name' => $request->name,
+                'printer_name' => $request->printer_name,
+                'printer_port' => $request->printer_port,
+                'printer_config' => $request->printer_config ?? [],
+                'description' => $request->description,
+                'is_default' => $request->boolean('is_default')
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Printer setting updated successfully',
+                'data' => $printerSetting
+            ]);
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Failed to update printer setting: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update printer setting: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Remove the specified printer setting
+     */
+    public function destroy(PrinterSetting $printerSetting): JsonResponse
+    {
+        try {
+            $printerSetting->update(['is_active' => false]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Printer setting deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to delete printer setting: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete printer setting: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Set printer setting as default
+     */
+    public function setDefault(PrinterSetting $printerSetting): JsonResponse
+    {
+        try {
+            $printerSetting->setAsDefault();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Printer setting set as default successfully'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to set printer setting as default: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to set printer setting as default: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
