@@ -87,14 +87,14 @@
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                             @php
                                 $icons = [
-                                    'ti-cash' => '💵 Tunai',
-                                    'ti-credit-card' => '💳 Kartu',
-                                    'ti-device-mobile' => '📱 Mobile',
-                                    'ti-building-bank' => '🏦 Bank',
-                                    'ti-wallet' => '👛 Wallet',
-                                    'ti-receipt' => '🧾 Receipt',
-                                    'ti-coins' => '🪙 Coins',
-                                    'ti-transfer' => '🔄 Transfer',
+                                    'ti-cash' => 'Tunai',
+                                    'ti-credit-card' => 'Kartu',
+                                    'ti-device-mobile' => 'Mobile',
+                                    'ti-building-bank' => 'Bank',
+                                    'ti-wallet' => 'Wallet',
+                                    'ti-receipt' => 'Receipt',
+                                    'ti-coins' => 'Coins',
+                                    'ti-transfer' => 'Transfer',
                                 ];
                             @endphp
                             @foreach ($icons as $icon => $label)
@@ -103,7 +103,10 @@
                                     <input type="radio" name="icon" value="{{ $icon }}"
                                         {{ old('icon') === $icon ? 'checked' : '' }}
                                         class="mr-2 text-blue-600 focus:ring-blue-500">
-                                    <span class="text-sm">{{ $label }}</span>
+                                    <div class="flex items-center">
+                                        <i class="ti {{ $icon }} text-lg text-blue-600 mr-2"></i>
+                                        <span class="text-sm">{{ $label }}</span>
+                                    </div>
                                 </label>
                             @endforeach
                         </div>

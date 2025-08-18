@@ -18,10 +18,15 @@ class PembayaranPenjualanController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
+            // Clean and parse jumlah input
+            $jumlahInput = $request->input('jumlah');
+            $jumlahClean = preg_replace('/[^\d]/', '', $jumlahInput);
+            $jumlahNumeric = (int) $jumlahClean;
+
             // Validate request
             $validated = $request->validate([
                 'penjualan_id' => 'required|exists:penjualan,id',
-                'jumlah' => 'required|numeric|min:1000',
+                'jumlah' => 'required|string',
                 'tanggal' => 'required|date',
                 'metode_pembayaran' => 'required|string|exists:metode_pembayaran,kode',
                 'keterangan' => 'nullable|string|max:255',
@@ -29,14 +34,23 @@ class PembayaranPenjualanController extends Controller
                 'penjualan_id.required' => 'ID penjualan wajib diisi.',
                 'penjualan_id.exists' => 'Penjualan tidak ditemukan.',
                 'jumlah.required' => 'Jumlah pembayaran wajib diisi.',
-                'jumlah.numeric' => 'Jumlah pembayaran harus berupa angka.',
-                'jumlah.min' => 'Jumlah pembayaran minimal Rp 1.000.',
                 'tanggal.required' => 'Tanggal pembayaran wajib diisi.',
                 'tanggal.date' => 'Format tanggal tidak valid.',
                 'metode_pembayaran.required' => 'Metode pembayaran wajib dipilih.',
                 'metode_pembayaran.exists' => 'Metode pembayaran tidak valid.',
                 'keterangan.max' => 'Keterangan maksimal 255 karakter.',
             ]);
+
+            // Custom validation for jumlah
+            if ($jumlahNumeric < 1000) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jumlah pembayaran minimal Rp 1.000.'
+                ], 422);
+            }
+
+            // Update validated data with clean numeric value
+            $validated['jumlah'] = $jumlahNumeric;
 
             DB::beginTransaction();
 

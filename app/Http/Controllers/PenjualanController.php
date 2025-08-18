@@ -172,6 +172,7 @@ class PenjualanController extends Controller
             'pelanggan_id.exists' => 'Pelanggan tidak valid.',
             'jenis_transaksi.required' => 'Jenis transaksi wajib dipilih.',
             'jenis_transaksi.in' => 'Jenis transaksi tidak valid.',
+            'metode_pembayaran.exists' => 'Metode pembayaran tidak valid.',
             'dp_amount.min' => 'Jumlah pembayaran tidak boleh negatif.',
             'items.required' => 'Minimal harus ada 1 produk.',
             'items.min' => 'Minimal harus ada 1 produk.',
@@ -183,6 +184,18 @@ class PenjualanController extends Controller
             'items.*.harga.min' => 'Harga tidak boleh negatif.',
             'items.*.discount.min' => 'Diskon tidak boleh negatif.',
         ]);
+
+        // Additional validation for metode_pembayaran to ensure it's active
+        if ($validated['metode_pembayaran']) {
+            $metodeExists = \App\Models\MetodePembayaran::where('kode', $validated['metode_pembayaran'])
+                ->where('status', true)
+                ->exists();
+
+            if (!$metodeExists) {
+                return back()->withInput()
+                    ->withErrors(['metode_pembayaran' => 'Metode pembayaran yang dipilih tidak aktif.']);
+            }
+        }
 
         DB::beginTransaction();
 
@@ -249,8 +262,36 @@ class PenjualanController extends Controller
                 // Generate payment reference number
                 $noBukti = 'PAY-' . date('Ymd') . '-' . str_pad($penjualan->id, 4, '0', STR_PAD_LEFT);
 
-                // Use metode_pembayaran from form if available, otherwise determine based on transaction type
-                $metodePembayaran = $validated['metode_pembayaran'] ?? ($jenisTransaksi === 'tunai' ? 'tunai' : 'dp');
+                // Get metode_pembayaran from form, with proper validation
+                $metodePembayaran = $validated['metode_pembayaran'] ?? null;
+
+                // If no metode_pembayaran selected, get default based on transaction type
+                if (!$metodePembayaran) {
+                    if ($jenisTransaksi === 'tunai') {
+                        // For cash transactions, get the first active 'tunai' method
+                        $defaultMetode = \App\Models\MetodePembayaran::where('status', true)
+                            ->where('kode', 'like', '%tunai%')
+                            ->first();
+                        $metodePembayaran = $defaultMetode ? $defaultMetode->kode : null;
+                    } else {
+                        // For credit transactions, get the first active method
+                        $defaultMetode = \App\Models\MetodePembayaran::where('status', true)
+                            ->orderBy('urutan')
+                            ->first();
+                        $metodePembayaran = $defaultMetode ? $defaultMetode->kode : null;
+                    }
+                }
+
+                // Validate that metode_pembayaran exists in database
+                if ($metodePembayaran) {
+                    $metodeExists = \App\Models\MetodePembayaran::where('kode', $metodePembayaran)
+                        ->where('status', true)
+                        ->exists();
+
+                    if (!$metodeExists) {
+                        throw new \Exception('Metode pembayaran yang dipilih tidak valid atau tidak aktif.');
+                    }
+                }
 
                 PembayaranPenjualan::create([
                     'penjualan_id' => $penjualan->id,

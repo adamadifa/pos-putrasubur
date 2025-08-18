@@ -743,48 +743,9 @@
                             @csrf
                             <input type="hidden" name="penjualan_id" value="{{ $penjualan->id }}">
 
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                <!-- Left Column -->
-                                <div class="space-y-3">
-                                    <!-- Payment Amount -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                                            Jumlah Pembayaran <span class="text-red-500">*</span>
-                                        </label>
-                                        <div class="relative">
-                                            <span
-                                                class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">Rp</span>
-                                            <input type="number" id="paymentAmount" name="jumlah" step="100"
-                                                min="1000" max="{{ $penjualan->sisa_pembayaran }}"
-                                                value="{{ $penjualan->sisa_pembayaran }}"
-                                                class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
-                                                placeholder="0" onchange="updatePaymentInfo()" required>
-                                        </div>
-                                        <div class="mt-1 text-xs text-gray-500">
-                                            Maks: Rp {{ number_format($penjualan->sisa_pembayaran, 0) }}
-                                        </div>
-                                    </div>
-
-                                    <!-- Payment Method -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                                            Metode Pembayaran <span class="text-red-500">*</span>
-                                        </label>
-                                        <select name="metode_pembayaran"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
-                                            required>
-                                            <option value="">Pilih metode...</option>
-                                            @foreach ($metodePembayaran as $metode)
-                                                <option value="{{ $metode->kode }}">
-                                                    <i class="ti {{ $metode->icon_display }}"></i> {{ $metode->nama }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <!-- Right Column -->
-                                <div class="space-y-3">
+                            <div class="space-y-4">
+                                <!-- Row 1: Tanggal dan Nominal bersebelahan -->
+                                <div class="grid grid-cols-2 gap-4">
                                     <!-- Payment Date -->
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -795,14 +756,58 @@
                                             required>
                                     </div>
 
-                                    <!-- Payment Notes -->
+                                    <!-- Payment Amount -->
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">
-                                            Keterangan
+                                            Jumlah Pembayaran <span class="text-red-500">*</span>
                                         </label>
-                                        <textarea name="keterangan" rows="2"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
-                                            placeholder="Catatan tambahan..."></textarea>
+                                        <div class="relative">
+                                            <div
+                                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span class="text-gray-500 text-sm font-medium">Rp</span>
+                                            </div>
+                                            <input type="text" id="paymentAmount" name="jumlah"
+                                                value="{{ number_format($penjualan->sisa_pembayaran, 0, ',', '.') }}"
+                                                class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200 text-right text-lg font-semibold"
+                                                placeholder="0">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Row 2: Keterangan full width -->
+                                <div>
+                                    <textarea name="keterangan" rows="2"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
+                                        placeholder="Keterangan (opsional)..."></textarea>
+                                </div>
+
+                                <!-- Row 3: Metode Pembayaran -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Metode Pembayaran <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        @foreach ($metodePembayaran as $metode)
+                                            <label class="relative cursor-pointer payment-method-option">
+                                                <input type="radio" name="metode_pembayaran"
+                                                    value="{{ $metode->kode }}"
+                                                    {{ old('metode_pembayaran') == $metode->kode ? 'checked' : '' }}
+                                                    class="sr-only payment-method-radio">
+                                                <div
+                                                    class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 payment-method-card">
+                                                    <div class="flex flex-col items-center text-center">
+                                                        <div
+                                                            class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-2">
+                                                            <i
+                                                                class="ti {{ $metode->icon_display }} text-blue-600 text-lg"></i>
+                                                        </div>
+                                                        <span
+                                                            class="text-sm font-medium text-gray-900">{{ $metode->nama }}</span>
+                                                        <span class="text-xs text-gray-500">{{ $metode->kode }}</span>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        @endforeach
                                     </div>
                                 </div>
                             </div>
@@ -822,7 +827,29 @@
                                     </div>
                                     <div>
                                         <span class="text-blue-700 text-xs">Status:</span>
-                                        <div class="font-medium text-green-600" id="previewStatus">Lunas</div>
+                                        <div class="font-medium text-green-600" id="previewStatus">
+                                            @php
+                                                $sudahDibayar = $penjualan->pembayaranPenjualan->sum('jumlah_bayar');
+                                                $totalTransaksi = $penjualan->total;
+                                                $sisaPembayaran = $penjualan->sisa_pembayaran;
+
+                                                if ($sudahDibayar == 0) {
+                                                    // Pembayaran pertama
+                                                    if ($sisaPembayaran == 0) {
+                                                        echo 'P (Pelunasan)';
+                                                    } else {
+                                                        echo 'D (DP)';
+                                                    }
+                                                } else {
+                                                    // Pembayaran selanjutnya
+                                                    if ($sisaPembayaran == 0) {
+                                                        echo 'P (Pelunasan)';
+                                                    } else {
+                                                        echo 'A (Angsuran)';
+                                                    }
+                                                }
+                                            @endphp
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1246,22 +1273,72 @@
             document.body.style.overflow = 'auto';
         }
 
+        // Format number input with thousand separator
+        function formatNumberInput(value) {
+            // Remove all non-digit characters
+            const numericValue = value.toString().replace(/\D/g, '');
+            // Format with thousand separator
+            return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        // Parse formatted number back to numeric value
+        function parseFormattedNumber(value) {
+            if (!value || typeof value !== 'string') return 0;
+
+            // Remove all non-digit characters (dots and commas)
+            const cleanValue = value.toString().replace(/[^\d]/g, '');
+
+            const result = parseInt(cleanValue) || 0;
+            return result;
+        }
+
+        // Setup number input formatting
+        function setupNumberInput(input) {
+            input.addEventListener('input', function(e) {
+                const cursorPosition = e.target.selectionStart;
+                const oldValue = e.target.value;
+                const newValue = formatNumberInput(e.target.value);
+
+                e.target.value = newValue;
+
+                // Adjust cursor position
+                const diff = newValue.length - oldValue.length;
+                e.target.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
+            });
+        }
+
         function updatePaymentInfo() {
-            const paymentAmount = parseFloat(document.getElementById('paymentAmount').value) || 0;
+            const paymentAmount = parseFormattedNumber(document.getElementById('paymentAmount').value) || 0;
             const remainingAmount = {{ $penjualan->sisa_pembayaran }} - paymentAmount;
+            const totalTransaksi = {{ $penjualan->total }};
+            const sudahDibayar = {{ $penjualan->pembayaranPenjualan->sum('jumlah_bayar') }};
 
             // Update preview
             document.getElementById('previewAmount').textContent = `Rp ${paymentAmount.toLocaleString('id-ID')}`;
             document.getElementById('previewRemaining').textContent = `Rp ${remainingAmount.toLocaleString('id-ID')}`;
 
-            // Update status
+            // Update status berdasarkan rule
             const statusElement = document.getElementById('previewStatus');
-            if (remainingAmount <= 0) {
-                statusElement.textContent = 'Lunas';
-                statusElement.className = 'font-medium text-green-600';
+
+            if (sudahDibayar == 0) {
+                // Pembayaran pertama
+                if (paymentAmount >= totalTransaksi) {
+                    statusElement.textContent = 'P (Pelunasan)';
+                    statusElement.className = 'font-medium text-green-600';
+                } else {
+                    statusElement.textContent = 'D (DP)';
+                    statusElement.className = 'font-medium text-blue-600';
+                }
             } else {
-                statusElement.textContent = 'DP';
-                statusElement.className = 'font-medium text-blue-600';
+                // Pembayaran selanjutnya
+                const totalAfterPayment = sudahDibayar + paymentAmount;
+                if (totalAfterPayment >= totalTransaksi) {
+                    statusElement.textContent = 'P (Pelunasan)';
+                    statusElement.className = 'font-medium text-green-600';
+                } else {
+                    statusElement.textContent = 'A (Angsuran)';
+                    statusElement.className = 'font-medium text-orange-600';
+                }
             }
         }
 
@@ -1274,28 +1351,72 @@
             const submitBtnText = document.getElementById('submitBtnText');
 
             // Validate form data before submission
-            const jumlah = formData.get('jumlah');
+            const jumlahRaw = formData.get('jumlah');
+            const jumlah = parseFormattedNumber(jumlahRaw);
             const metode_pembayaran = formData.get('metode_pembayaran');
             const tanggal = formData.get('tanggal');
 
+
+
+            // Validate jumlah pembayaran
+            if (!jumlahRaw || jumlahRaw.trim() === '') {
+                showPaymentError('Jumlah pembayaran wajib diisi!');
+                document.getElementById('paymentAmount').focus();
+                return;
+            }
+
             if (!jumlah || jumlah <= 0) {
-                showPaymentError('Jumlah pembayaran harus diisi dan lebih dari 0');
+                showPaymentError('Jumlah pembayaran harus lebih dari 0!');
+                document.getElementById('paymentAmount').focus();
+                return;
+            }
+
+            // Validate maksimum pembayaran
+            const maxPayment = {{ $penjualan->sisa_pembayaran }};
+            if (jumlah > maxPayment) {
+                showPaymentError(
+                    `Jumlah pembayaran tidak boleh melebihi sisa pembayaran (Rp ${maxPayment.toLocaleString('id-ID')})!`
+                );
+                document.getElementById('paymentAmount').focus();
                 return;
             }
 
             if (!metode_pembayaran) {
-                showPaymentError('Metode pembayaran harus dipilih');
+                showPaymentError('Metode pembayaran wajib dipilih!');
+
+                // Add error highlight to all payment method cards
+                const paymentCards = document.querySelectorAll('.payment-method-card');
+                paymentCards.forEach(card => {
+                    card.classList.add('border-red-500', 'bg-red-50', 'animate-pulse');
+                    // Remove error highlight after 3 seconds
+                    setTimeout(() => {
+                        card.classList.remove('border-red-500', 'bg-red-50', 'animate-pulse');
+                    }, 3000);
+                });
+
+                // Focus on the first payment method card
+                const firstPaymentCard = document.querySelector('.payment-method-card');
+                if (firstPaymentCard) {
+                    firstPaymentCard.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
                 return;
             }
 
             if (!tanggal) {
-                showPaymentError('Tanggal pembayaran harus diisi');
+                showPaymentError('Tanggal pembayaran wajib diisi!');
+                document.querySelector('input[name="tanggal"]').focus();
                 return;
             }
 
             // Disable button and show loading
             submitBtn.disabled = true;
             submitBtnText.innerHTML = '<i class="ti ti-loader animate-spin mr-2"></i>Menyimpan...';
+
+            // Update form data with parsed values
+            formData.set('jumlah', jumlah);
 
             // Log form data for debugging
             console.log('Submitting payment:', {
@@ -1552,6 +1673,59 @@
 
             return content;
         }
+
+        // Payment Method Option Buttons Styling
+        document.addEventListener('DOMContentLoaded', function() {
+            const paymentRadios = document.querySelectorAll('.payment-method-radio');
+            const paymentCards = document.querySelectorAll('.payment-method-card');
+
+            // Function to update payment method card styling
+            function updatePaymentMethodCards() {
+                paymentCards.forEach((card, index) => {
+                    const radio = paymentRadios[index];
+                    if (radio.checked) {
+                        card.classList.remove('border-gray-200', 'bg-white', 'border-red-500', 'bg-red-50',
+                            'animate-pulse');
+                        card.classList.add('border-blue-500', 'bg-blue-50');
+                    } else {
+                        card.classList.remove('border-blue-500', 'bg-blue-50', 'border-red-500',
+                            'bg-red-50', 'animate-pulse');
+                        card.classList.add('border-gray-200', 'bg-white');
+                    }
+                });
+            }
+
+            // Add event listeners to radio buttons
+            paymentRadios.forEach((radio, index) => {
+                radio.addEventListener('change', function() {
+                    updatePaymentMethodCards();
+                });
+
+                // Add click event to card for better UX
+                const card = paymentCards[index];
+                card.addEventListener('click', function() {
+                    radio.checked = true;
+                    updatePaymentMethodCards();
+                });
+            });
+
+            // Initialize card states
+            updatePaymentMethodCards();
+
+            // Setup number input formatting
+            const paymentAmountInput = document.getElementById('paymentAmount');
+            if (paymentAmountInput) {
+                setupNumberInput(paymentAmountInput);
+
+                // Add event listener for real-time preview update
+                paymentAmountInput.addEventListener('input', function() {
+                    updatePaymentInfo();
+                });
+
+                // Initialize preview on page load
+                updatePaymentInfo();
+            }
+        });
 
         // Delete Payment Functions
         function confirmDeletePayment(paymentId, noBukti) {

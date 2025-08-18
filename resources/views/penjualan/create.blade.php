@@ -203,16 +203,29 @@
 
                         <!-- Payment Method -->
                         <div class="mb-2">
-                            <select name="metode_pembayaran" id="metodePembayaran"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required>
-                                <option value="">Pilih metode pembayaran...</option>
-                                @foreach($metodePembayaran as $metode)
-                                    <option value="{{ $metode->kode }}" {{ old('metode_pembayaran') == $metode->kode ? 'selected' : '' }}>
-                                        <i class="ti {{ $metode->icon_display }}"></i> {{ $metode->nama }}
-                                    </option>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Metode Pembayaran <span class="text-red-500">*</span>
+                            </label>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="paymentMethodContainer">
+                                @foreach ($metodePembayaran as $metode)
+                                    <label class="relative cursor-pointer payment-method-option">
+                                        <input type="radio" name="metode_pembayaran" value="{{ $metode->kode }}"
+                                            {{ old('metode_pembayaran') == $metode->kode ? 'checked' : '' }}
+                                            class="sr-only payment-method-radio">
+                                        <div
+                                            class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 payment-method-card">
+                                            <div class="flex flex-col items-center text-center">
+                                                <div
+                                                    class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-2">
+                                                    <i class="ti {{ $metode->icon_display }} text-blue-600 text-xl"></i>
+                                                </div>
+                                                <span class="text-sm font-medium text-gray-900">{{ $metode->nama }}</span>
+                                                <span class="text-xs text-gray-500">{{ $metode->kode }}</span>
+                                            </div>
+                                        </div>
+                                    </label>
                                 @endforeach
-                            </select>
+                            </div>
                         </div>
 
                         <!-- DP Amount (shown only for kredit) -->
@@ -1227,9 +1240,45 @@
             }
         @endif
 
+        // Payment Method Radio Button Handling
+        const paymentRadios = document.querySelectorAll('.payment-method-radio');
+        const paymentCards = document.querySelectorAll('.payment-method-card');
+
+        // Function to update payment method card styling
+        function updatePaymentMethodCards() {
+            paymentCards.forEach((card, index) => {
+                const radio = paymentRadios[index];
+                if (radio.checked) {
+                    card.classList.remove('border-gray-200', 'bg-white', 'border-red-500', 'bg-red-50',
+                        'animate-pulse');
+                    card.classList.add('border-blue-500', 'bg-blue-50');
+                } else {
+                    card.classList.remove('border-blue-500', 'bg-blue-50', 'border-red-500', 'bg-red-50',
+                        'animate-pulse');
+                    card.classList.add('border-gray-200', 'bg-white');
+                }
+            });
+        }
+
+        // Add event listeners to radio buttons
+        paymentRadios.forEach((radio, index) => {
+            radio.addEventListener('change', function() {
+                updatePaymentMethodCards();
+            });
+
+            // Add click event to card for better UX
+            const card = paymentCards[index];
+            card.addEventListener('click', function() {
+                radio.checked = true;
+                updatePaymentMethodCards();
+            });
+        });
+
+        // Initialize card states
+        updatePaymentMethodCards();
+
         // Transaction type functionality
         const jenisTransaksi = document.getElementById('jenisTransaksi');
-        const metodePembayaran = document.getElementById('metodePembayaran');
         const dpContainer = document.getElementById('dpContainer');
         const dpAmountDisplay = document.getElementById('dpAmountDisplay');
         const dpAmount = document.getElementById('dpAmount');
@@ -1240,14 +1289,12 @@
                 dpContainer.classList.remove('hidden');
                 dpAmountDisplay.required = true;
                 // For kredit, metode pembayaran is optional (for DP)
-                metodePembayaran.required = false;
             } else {
                 dpContainer.classList.add('hidden');
                 dpAmountDisplay.required = false;
                 dpAmountDisplay.value = '0';
                 dpAmount.value = 0;
-                // For tunai, metode pembayaran is required
-                metodePembayaran.required = true;
+                // For tunai, metode pembayaran validation will be handled by custom validation
 
                 // Auto-fill payment for tunai (cash) transactions
                 if (this.value === 'tunai') {
@@ -1280,10 +1327,8 @@
         @if (old('jenis_transaksi') == 'kredit')
             dpContainer.classList.remove('hidden');
             dpAmountDisplay.required = true;
-            metodePembayaran.required = false;
         @else
-            // For tunai transactions, metode pembayaran is required
-            metodePembayaran.required = true;
+            // For tunai transactions, metode pembayaran validation will be handled by custom validation
             // Auto-fill payment for initial cash transactions
             if (jenisTransaksi.value === 'tunai') {
                 // Delay to ensure DOM is ready
@@ -1824,24 +1869,19 @@
                     <!-- Price Breakdown -->
                     <div class="space-y-2">
                         <div class="flex items-center justify-between text-sm">
-                            <span class="text-gray-600">Harga Satuan</span>
-                            <span class="font-medium text-gray-800">Rp ${formatNumber(item.price)}</span>
-                        </div>
-                        
-                        <div class="flex items-center justify-between text-sm">
                             <span class="text-gray-600">Subtotal (${formatDecimalInput(item.qty)} × Rp ${formatNumber(item.price)})</span>
                             <span class="font-medium text-gray-800">Rp ${formatNumber(subtotal)}</span>
                         </div>
                         
                         ${discount > 0 ? `
-                                                                                                                                                                            <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                                <span class="text-orange-600 flex items-center">
-                                                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                                    Potongan Harga
-                                                                                                                                                                                </span>
-                                                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                            </div>
-                                                                                                                                                                            ` : ''}
+                                                                                                                                                                                                                    <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                        <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                            Potongan Harga
+                                                                                                                                                                                                                        </span>
+                                                                                                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                    ` : ''}
                         
                         <!-- Total Line -->
                         <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -1902,24 +1942,19 @@
             const priceBreakdownContainer = element.querySelector('.space-y-2');
             priceBreakdownContainer.innerHTML = `
                 <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-600">Harga Satuan</span>
-                    <span class="font-medium text-gray-800">Rp ${formatNumber(item.price)}</span>
-                </div>
-                
-                <div class="flex items-center justify-between text-sm">
                     <span class="text-gray-600">Subtotal (${formatDecimalInput(item.qty)} × Rp ${formatNumber(item.price)})</span>
                     <span class="font-medium text-gray-800">Rp ${formatNumber(subtotal)}</span>
                 </div>
                 
                 ${discount > 0 ? `
-                                                                                                                                                                    <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                        <span class="text-orange-600 flex items-center">
-                                                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                            Potongan Harga
-                                                                                                                                                                        </span>
-                                                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                    </div>
-                                                                                                                                                                    ` : ''}
+                                                                                                                                                                                                            <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                    Potongan Harga
+                                                                                                                                                                                                                </span>
+                                                                                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                            ` : ''}
                 
                 <!-- Total Line -->
                 <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -2378,11 +2413,11 @@
                                 <span>Rp ${formatNumber(subtotal)}</span>
                             </div>
                             ${discount > 0 ? `
-                                                                                                                                                                            <div class="flex justify-between text-xs">
-                                                                                                                                                                                <span class="text-orange-600">Potongan</span>
-                                                                                                                                                                                <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                            </div>
-                                                                                                                                                                            ` : ''}
+                                                                                                                                                                                                                    <div class="flex justify-between text-xs">
+                                                                                                                                                                                                                        <span class="text-orange-600">Potongan</span>
+                                                                                                                                                                                                                        <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                    ` : ''}
                             <div class="flex justify-between text-sm font-medium">
                                 <span>Total</span>
                                 <span class="text-blue-600">Rp ${formatNumber(total)}</span>
@@ -2449,11 +2484,29 @@
 
             // Validate metode pembayaran for tunai transactions
             const jenisTransaksi = document.getElementById('jenisTransaksi').value;
-            const metodePembayaran = document.getElementById('metodePembayaran').value;
+            const selectedPaymentMethod = document.querySelector('.payment-method-radio:checked');
 
-            if (jenisTransaksi === 'tunai' && !metodePembayaran) {
-                showToast('Silakan pilih metode pembayaran!', 'error');
-                document.getElementById('metodePembayaran').focus();
+            if (jenisTransaksi === 'tunai' && !selectedPaymentMethod) {
+                showToast('Metode pembayaran wajib dipilih untuk transaksi tunai!', 'error');
+
+                // Add error highlight to all payment method cards
+                const paymentCards = document.querySelectorAll('.payment-method-card');
+                paymentCards.forEach(card => {
+                    card.classList.add('border-red-500', 'bg-red-50', 'animate-pulse');
+                    // Remove error highlight after 3 seconds
+                    setTimeout(() => {
+                        card.classList.remove('border-red-500', 'bg-red-50', 'animate-pulse');
+                    }, 3000);
+                });
+
+                // Focus on the first payment method card
+                const firstPaymentCard = document.querySelector('.payment-method-card');
+                if (firstPaymentCard) {
+                    firstPaymentCard.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
                 return false;
             }
 

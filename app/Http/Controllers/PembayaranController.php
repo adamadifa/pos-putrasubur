@@ -54,23 +54,37 @@ class PembayaranController extends Controller
      */
     public function store(Request $request)
     {
+        // Clean and parse jumlah input
+        $jumlahInput = $request->input('jumlah');
+        $jumlahClean = preg_replace('/[^\d]/', '', $jumlahInput);
+        $jumlahNumeric = (int) $jumlahClean;
+
         $validated = $request->validate([
             'penjualan_id' => 'required|exists:penjualan,id',
-            'jumlah_raw' => 'required|numeric|min:0.01',
+            'jumlah' => 'required|string',
             'metode_pembayaran' => 'required|string|max:50',
             'tanggal' => 'required|date',
             'keterangan' => 'nullable|string|max:255',
         ], [
             'penjualan_id.required' => 'Transaksi wajib dipilih.',
             'penjualan_id.exists' => 'Transaksi tidak valid.',
-            'jumlah_raw.required' => 'Jumlah bayar wajib diisi.',
-            'jumlah_raw.numeric' => 'Jumlah bayar harus berupa angka.',
-            'jumlah_raw.min' => 'Jumlah bayar minimal 0.01.',
+            'jumlah.required' => 'Jumlah bayar wajib diisi.',
             'metode_pembayaran.required' => 'Metode pembayaran wajib dipilih.',
             'tanggal.required' => 'Tanggal pembayaran wajib diisi.',
             'tanggal.date' => 'Format tanggal tidak valid.',
             'keterangan.max' => 'Keterangan maksimal 255 karakter.',
         ]);
+
+        // Custom validation for jumlah
+        if ($jumlahNumeric < 1000) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Jumlah pembayaran minimal Rp 1.000.'
+            ], 422);
+        }
+
+        // Update validated data with clean numeric value
+        $validated['jumlah_raw'] = $jumlahNumeric;
 
         DB::beginTransaction();
 
