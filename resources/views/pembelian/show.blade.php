@@ -1,7 +1,7 @@
 @extends('layouts.pos')
 
-@section('title', 'Detail Penjualan')
-@section('page-title', 'Detail Transaksi Penjualan')
+@section('title', 'Detail Pembelian')
+@section('page-title', 'Detail Transaksi Pembelian')
 
 @section('content')
     <div class="max-w-6xl mx-auto space-y-6">
@@ -24,13 +24,13 @@
             <div class="px-6 py-4 border-b bg-gray-50">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-4">
-                        <a href="{{ route('penjualan.index') }}"
+                        <a href="{{ route('pembelian.index') }}"
                             class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
                             <i class="ti ti-arrow-left text-xl"></i>
                         </a>
                         <div>
-                            <h1 class="text-xl font-bold text-gray-900">{{ $penjualan->no_faktur }}</h1>
-                            <p class="text-sm text-gray-500">{{ $penjualan->tanggal->format('d M Y, H:i') }}</p>
+                            <h1 class="text-xl font-bold text-gray-900">{{ $pembelian->no_faktur }}</h1>
+                            <p class="text-sm text-gray-500">{{ $pembelian->tanggal->format('d M Y, H:i') }}</p>
                         </div>
                     </div>
                     @php
@@ -60,7 +60,7 @@
                                 'label' => 'Belum Bayar',
                             ],
                         ];
-                        $config = $statusConfig[$penjualan->status_pembayaran] ?? $statusConfig['belum_bayar'];
+                        $config = $statusConfig[$pembelian->status_pembayaran] ?? $statusConfig['belum_bayar'];
                     @endphp
                     <div class="flex items-center space-x-3">
                         <!-- Status Pembayaran -->
@@ -86,7 +86,7 @@
                                     'label' => 'Kredit',
                                 ],
                             ];
-                            $jenisTransaksiConfig = $jenisConfig[$penjualan->jenis_transaksi] ?? $jenisConfig['tunai'];
+                            $jenisTransaksiConfig = $jenisConfig[$pembelian->jenis_transaksi] ?? $jenisConfig['tunai'];
                         @endphp
                         <span
                             class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ $jenisTransaksiConfig['bg'] }} {{ $jenisTransaksiConfig['text'] }}">
@@ -102,53 +102,55 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Left Column -->
             <div class="lg:col-span-2 space-y-6">
-                <!-- Customer Info -->
+                <!-- Supplier Info -->
                 <div class="bg-white rounded-lg shadow border">
-                    <div class="px-6 py-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+                    <div class="px-6 py-4 border-b bg-gradient-to-r from-orange-50 to-red-50">
                         <h3 class="font-semibold text-gray-900 flex items-center">
-                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                <i class="ti ti-user-circle text-blue-600"></i>
+                            <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="ti ti-building-store text-orange-600"></i>
                             </div>
-                            Informasi Pelanggan
+                            Informasi Supplier
                         </h3>
                     </div>
                     <div class="p-6">
-                        <!-- Customer Profile Section -->
+                        <!-- Supplier Profile Section -->
                         <div class="flex items-start space-x-6 mb-6 pb-6 border-b border-gray-100">
-                            <!-- Customer Photo -->
+                            <!-- Supplier Photo -->
                             <div class="flex-shrink-0">
-                                @if ($penjualan->pelanggan->foto ?? false)
-                                    <img src="{{ asset('storage/pelanggan/' . $penjualan->pelanggan->foto) }}"
-                                        alt="{{ $penjualan->pelanggan->nama }}"
-                                        class="w-20 h-20 rounded-full object-cover border-4 border-blue-100 shadow-md">
-                                @else
-                                    <div
-                                        class="w-20 h-20 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center shadow-md">
-                                        <i class="ti ti-user text-3xl text-white"></i>
-                                    </div>
-                                @endif
+                                <div
+                                    class="w-20 h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center shadow-md">
+                                    <i class="ti ti-building-store text-3xl text-white"></i>
+                                </div>
                             </div>
 
-                            <!-- Customer Basic Info -->
+                            <!-- Supplier Basic Info -->
                             <div class="flex-1">
-                                <h4 class="text-xl font-bold text-gray-900 mb-1">{{ $penjualan->pelanggan->nama ?? 'N/A' }}
+                                <h4 class="text-xl font-bold text-gray-900 mb-1">{{ $pembelian->supplier->nama ?? 'N/A' }}
                                 </h4>
                                 <div class="flex items-center text-sm text-gray-500 mb-2">
                                     <i class="ti ti-id-badge mr-1"></i>
-                                    {{ $penjualan->pelanggan->kode_pelanggan ?? 'N/A' }}
+                                    {{ $pembelian->supplier->kode_supplier ?? 'N/A' }}
                                 </div>
-                                @if ($penjualan->pelanggan->telepon)
+                                @if ($pembelian->supplier->telepon)
                                     <div class="flex items-center text-sm text-gray-600 mb-1">
                                         <i class="ti ti-phone text-green-600 mr-2"></i>
-                                        <a href="tel:{{ $penjualan->pelanggan->telepon }}" class="hover:text-blue-600">
-                                            {{ $penjualan->pelanggan->telepon }}
+                                        <a href="tel:{{ $pembelian->supplier->telepon }}" class="hover:text-orange-600">
+                                            {{ $pembelian->supplier->telepon }}
                                         </a>
                                     </div>
                                 @endif
-                                @if ($penjualan->pelanggan->alamat)
+                                @if ($pembelian->supplier->email)
+                                    <div class="flex items-center text-sm text-gray-600 mb-1">
+                                        <i class="ti ti-mail text-blue-600 mr-2"></i>
+                                        <a href="mailto:{{ $pembelian->supplier->email }}" class="hover:text-orange-600">
+                                            {{ $pembelian->supplier->email }}
+                                        </a>
+                                    </div>
+                                @endif
+                                @if ($pembelian->supplier->alamat)
                                     <div class="flex items-start text-sm text-gray-600">
                                         <i class="ti ti-map-pin text-red-500 mr-2 mt-0.5"></i>
-                                        <span>{{ $penjualan->pelanggan->alamat }}</span>
+                                        <span>{{ $pembelian->supplier->alamat }}</span>
                                     </div>
                                 @endif
                             </div>
@@ -161,8 +163,8 @@
                                     <i class="ti ti-user-check text-purple-600"></i>
                                 </div>
                                 <div>
-                                    <p class="text-sm text-gray-500 mb-1">Dilayani Oleh</p>
-                                    <p class="font-semibold text-gray-900">{{ $penjualan->kasir->name ?? 'N/A' }}</p>
+                                    <p class="text-sm text-gray-500 mb-1">Dibuat Oleh</p>
+                                    <p class="font-semibold text-gray-900">{{ $pembelian->user->name ?? 'N/A' }}</p>
                                 </div>
                             </div>
 
@@ -171,56 +173,33 @@
                                     <i class="ti ti-calendar-event text-green-600"></i>
                                 </div>
                                 <div>
-                                    <p class="text-sm text-gray-500 mb-1">Tanggal Transaksi</p>
-                                    <p class="font-semibold text-gray-900">{{ $penjualan->tanggal->format('d M Y, H:i') }}
+                                    <p class="text-sm text-gray-500 mb-1">Tanggal Pembelian</p>
+                                    <p class="font-semibold text-gray-900">{{ $pembelian->tanggal->format('d M Y, H:i') }}
                                     </p>
                                 </div>
                             </div>
-
-                            @if ($penjualan->jatuh_tempo)
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                                        <i class="ti ti-calendar-due text-orange-600"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-500 mb-1">Jatuh Tempo</p>
-                                        <p class="font-semibold text-gray-900 mb-1">
-                                            {{ $penjualan->jatuh_tempo->format('d M Y') }}</p>
-                                        @php
-                                            $daysLeft = now()->diffInDays($penjualan->jatuh_tempo, false);
-                                        @endphp
-                                        @if ($daysLeft < 0)
-                                            <span
-                                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                <i class="ti ti-alert-circle mr-1"></i>
-                                                Terlambat {{ abs($daysLeft) }} hari
-                                            </span>
-                                        @elseif($daysLeft == 0)
-                                            <span
-                                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                <i class="ti ti-clock mr-1"></i>
-                                                Jatuh tempo hari ini
-                                            </span>
-                                        @else
-                                            <span
-                                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                <i class="ti ti-check-circle mr-1"></i>
-                                                {{ $daysLeft }} hari lagi
-                                            </span>
-                                        @endif
-                                    </div>
-                                </div>
-                            @endif
 
                             <div class="flex items-center space-x-3">
                                 <div class="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center">
                                     <i class="ti ti-receipt text-cyan-600"></i>
                                 </div>
                                 <div>
-                                    <p class="text-sm text-gray-500 mb-1">No. Invoice</p>
-                                    <p class="font-semibold text-gray-900">{{ $penjualan->no_faktur }}</p>
+                                    <p class="text-sm text-gray-500 mb-1">No. Faktur</p>
+                                    <p class="font-semibold text-gray-900">{{ $pembelian->no_faktur }}</p>
                                 </div>
                             </div>
+
+                            @if ($pembelian->keterangan)
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                        <i class="ti ti-note text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-500 mb-1">Keterangan</p>
+                                        <p class="font-semibold text-gray-900">{{ $pembelian->keterangan }}</p>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -232,12 +211,12 @@
                             <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
                                 <i class="ti ti-shopping-cart text-green-600"></i>
                             </div>
-                            Detail Produk ({{ $penjualan->detailPenjualan->count() }} item)
+                            Detail Produk ({{ $pembelian->detailPembelian->count() }} item)
                         </h3>
                     </div>
                     <div class="p-6">
                         <div class="space-y-4">
-                            @foreach ($penjualan->detailPenjualan as $detail)
+                            @foreach ($pembelian->detailPembelian as $detail)
                                 <div
                                     class="flex items-center space-x-4 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200">
                                     <!-- Product Photo/Icon -->
@@ -246,7 +225,7 @@
                                             <div class="relative group">
                                                 <img src="{{ asset('storage/' . $detail->produk->foto) }}"
                                                     alt="{{ $detail->produk->nama_produk }}"
-                                                    class="w-12 h-12 rounded-xl object-cover border-2 border-indigo-200 shadow-sm group-hover:scale-105 transition-transform duration-200">
+                                                    class="w-12 h-12 rounded-xl object-cover border-2 border-orange-200 shadow-sm group-hover:scale-105 transition-transform duration-200">
                                                 <!-- Overlay untuk hover effect -->
                                                 <div
                                                     class="absolute inset-0 bg-black/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
@@ -255,7 +234,7 @@
                                             </div>
                                         @else
                                             <div
-                                                class="w-12 h-12 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-xl flex items-center justify-center shadow-sm hover:scale-105 transition-transform duration-200">
+                                                class="w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center shadow-sm hover:scale-105 transition-transform duration-200">
                                                 <i class="ti ti-box text-white text-lg"></i>
                                             </div>
                                         @endif
@@ -282,13 +261,13 @@
 
                                         <div class="flex items-center space-x-4 text-sm text-gray-600">
                                             <div class="flex items-center">
-                                                <i class="ti ti-package text-indigo-500 mr-1"></i>
+                                                <i class="ti ti-package text-orange-500 mr-1"></i>
                                                 <span class="font-medium">{{ $detail->qty }}
                                                     {{ $detail->produk->satuan->nama ?? 'pcs' }}</span>
                                             </div>
                                             <div class="flex items-center">
                                                 <i class="ti ti-currency-dollar text-green-500 mr-1"></i>
-                                                <span>@ Rp {{ number_format($detail->harga, 0, ',', '.') }}</span>
+                                                <span>@ Rp {{ number_format($detail->harga_beli, 0, ',', '.') }}</span>
                                             </div>
                                         </div>
 
@@ -296,7 +275,7 @@
                                             <div class="flex items-center mt-1">
                                                 <i class="ti ti-discount text-red-500 mr-1"></i>
                                                 <span class="text-xs text-red-600 font-medium">
-                                                    Diskon: Rp {{ number_format($detail->discount, 0, ',', '.') }}
+                                                    Potongan: Rp {{ number_format($detail->discount, 0, ',', '.') }}
                                                 </span>
                                             </div>
                                         @endif
@@ -309,7 +288,7 @@
                                         </div>
                                         @if ($detail->discount > 0)
                                             <div class="text-xs text-gray-500 line-through">
-                                                Rp {{ number_format($detail->qty * $detail->harga, 0, ',', '.') }}
+                                                Rp {{ number_format($detail->qty * $detail->harga_beli, 0, ',', '.') }}
                                             </div>
                                         @endif
                                     </div>
@@ -320,55 +299,57 @@
                 </div>
 
                 <!-- Payment History -->
-                @if ($penjualan->pembayaranPenjualan->count() > 0)
+                @if ($pembelian->pembayaranPembelian->count() > 0)
                     <div class="bg-white rounded-lg shadow border">
                         <div class="px-6 py-4 border-b bg-gradient-to-r from-purple-50 to-pink-50">
                             <h3 class="font-semibold text-gray-900 flex items-center">
                                 <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
                                     <i class="ti ti-wallet text-purple-600"></i>
                                 </div>
-                                Riwayat Pembayaran ({{ $penjualan->pembayaranPenjualan->count() }} transaksi)
+                                Riwayat Pembayaran ({{ $pembelian->pembayaranPembelian->count() }} transaksi)
                             </h3>
                         </div>
                         <div class="p-6">
                             <div class="space-y-4">
-                                @foreach ($penjualan->pembayaranPenjualan as $pembayaran)
+                                @foreach ($pembelian->pembayaranPembelian as $pembayaran)
                                     <div
                                         class="flex items-center space-x-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200 hover:shadow-md transition-all duration-200">
                                         <!-- Payment Icon -->
                                         <div class="flex-shrink-0">
                                             @php
-                                                // Get payment method from database
-                                                $metodePembayaranData = \App\Models\MetodePembayaran::where(
-                                                    'kode',
-                                                    $pembayaran->metode_pembayaran,
-                                                )->first();
-
-                                                // Default icon and color if not found
-                                                $icon = $metodePembayaranData
-                                                    ? $metodePembayaranData->icon_display
-                                                    : 'ti-credit-card';
-                                                $color = 'from-blue-400 to-indigo-500'; // Default color
-
-                                                // Color mapping based on common payment methods
-                                                $colorMap = [
-                                                    'tunai' => 'from-green-400 to-emerald-500',
-                                                    'transfer' => 'from-blue-400 to-indigo-500',
-                                                    'qris' => 'from-purple-400 to-pink-500',
-                                                    'kartu' => 'from-orange-400 to-red-500',
-                                                    'ewallet' => 'from-cyan-400 to-blue-500',
+                                                $paymentIcons = [
+                                                    'tunai' => [
+                                                        'icon' => 'ti-cash',
+                                                        'color' => 'from-green-400 to-emerald-500',
+                                                    ],
+                                                    'transfer' => [
+                                                        'icon' => 'ti-credit-card',
+                                                        'color' => 'from-blue-400 to-indigo-500',
+                                                    ],
+                                                    'kartu_kredit' => [
+                                                        'icon' => 'ti-credit-card',
+                                                        'color' => 'from-purple-400 to-pink-500',
+                                                    ],
+                                                    'kartu_debit' => [
+                                                        'icon' => 'ti-credit-card',
+                                                        'color' => 'from-orange-400 to-red-500',
+                                                    ],
+                                                    'e_wallet' => [
+                                                        'icon' => 'ti-device-mobile',
+                                                        'color' => 'from-cyan-400 to-blue-500',
+                                                    ],
+                                                    'dp' => [
+                                                        'icon' => 'ti-credit-card',
+                                                        'color' => 'from-blue-400 to-indigo-500',
+                                                    ],
                                                 ];
-
-                                                if (
-                                                    $metodePembayaranData &&
-                                                    isset($colorMap[strtolower($metodePembayaranData->kode)])
-                                                ) {
-                                                    $color = $colorMap[strtolower($metodePembayaranData->kode)];
-                                                }
+                                                $paymentConfig =
+                                                    $paymentIcons[strtolower($pembayaran->metode_pembayaran)] ??
+                                                    $paymentIcons['tunai'];
                                             @endphp
                                             <div
-                                                class="w-12 h-12 bg-gradient-to-br {{ $color }} rounded-xl flex items-center justify-center shadow-sm">
-                                                <i class="ti {{ $icon }} text-white text-lg"></i>
+                                                class="w-12 h-12 bg-gradient-to-br {{ $paymentConfig['color'] }} rounded-xl flex items-center justify-center shadow-sm">
+                                                <i class="ti {{ $paymentConfig['icon'] }} text-white text-lg"></i>
                                             </div>
                                         </div>
 
@@ -406,34 +387,12 @@
                                                     {{ $status['label'] }}
                                                 </span>
 
-                                                <!-- Delete Status Badge -->
-                                                @php
-                                                    $today = \Carbon\Carbon::today();
-                                                    $paymentDate = \Carbon\Carbon::parse(
-                                                        $pembayaran->created_at,
-                                                    )->startOfDay();
-
-                                                    // Check if this is the latest payment
-                                                    $latestPayment = $penjualan->pembayaranPenjualan
-                                                        ->sortByDesc('created_at')
-                                                        ->first();
-                                                    $isLatestPayment =
-                                                        $latestPayment && $latestPayment->id === $pembayaran->id;
-
-                                                    // Payment can only be deleted if:
-                                                    // 1. It's created today AND
-// 2. It's the latest payment (no newer payments exist)
-                                                    $canDelete = $today->equalTo($paymentDate) && $isLatestPayment;
-                                                @endphp
-
                                                 <!-- User Badge -->
                                                 <span
                                                     class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                                                     <i class="ti ti-user mr-1"></i>
                                                     {{ $pembayaran->user->name ?? 'Unknown' }}
                                                 </span>
-
-
                                             </div>
 
                                             <div class="flex items-center space-x-4 text-sm text-gray-600">
@@ -443,22 +402,13 @@
                                                 </div>
                                                 <div class="flex items-center">
                                                     <i class="ti ti-credit-card text-purple-500 mr-1"></i>
-                                                    <span class="capitalize">
-                                                        @php
-                                                            $metodePembayaranData = \App\Models\MetodePembayaran::where(
-                                                                'kode',
-                                                                $pembayaran->metode_pembayaran,
-                                                            )->first();
-                                                        @endphp
-                                                        {{ $metodePembayaranData ? $metodePembayaranData->nama : $pembayaran->metode_pembayaran }}
-                                                    </span>
+                                                    <span class="capitalize">{{ $pembayaran->metode_pembayaran }}</span>
                                                 </div>
                                                 <div class="flex items-center">
                                                     <i class="ti ti-clock text-gray-500 mr-1"></i>
                                                     <span>Dibuat:
                                                         {{ $pembayaran->created_at->format('d M Y, H:i') }}</span>
                                                 </div>
-
                                             </div>
 
                                             @if ($pembayaran->keterangan)
@@ -478,33 +428,6 @@
                                             <div class="text-xs text-gray-500">
                                                 {{ $pembayaran->tanggal->format('H:i') }}
                                             </div>
-                                        </div>
-
-                                        <!-- Action Buttons -->
-                                        <div class="flex items-center space-x-2 ml-4">
-                                            @if ($canDelete)
-                                                <button
-                                                    onclick="confirmDeletePayment({{ $pembayaran->id }}, '{{ $pembayaran->no_bukti }}')"
-                                                    class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors duration-200"
-                                                    title="Hapus Pembayaran">
-                                                    <i class="ti ti-trash text-sm"></i>
-                                                </button>
-                                            @else
-                                                @php
-                                                    $tooltipMessage = '';
-                                                    if (!$today->equalTo($paymentDate)) {
-                                                        $tooltipMessage =
-                                                            'Pembayaran hanya bisa dihapus pada hari yang sama dengan pembuatan.';
-                                                    } else {
-                                                        $tooltipMessage =
-                                                            'Pembayaran tidak dapat dihapus karena sudah ada pembayaran baru.';
-                                                    }
-                                                @endphp
-                                                <button class="p-2 text-gray-400 cursor-not-allowed"
-                                                    title="{{ $tooltipMessage }}" disabled>
-                                                    <i class="ti ti-trash text-sm"></i>
-                                                </button>
-                                            @endif
                                         </div>
                                     </div>
                                 @endforeach
@@ -534,14 +457,14 @@
                                 <span class="text-gray-600">Subtotal</span>
                             </div>
                             <span class="font-semibold text-gray-900">
-                                Rp {{ number_format($penjualan->detailPenjualan->sum('subtotal'), 0, ',', '.') }}
+                                Rp {{ number_format($pembelian->detailPembelian->sum('subtotal'), 0, ',', '.') }}
                             </span>
                         </div>
 
                         <!-- Jenis Transaksi -->
                         <div class="flex items-center justify-between py-2">
                             <div class="flex items-center">
-                                @if ($penjualan->jenis_transaksi == 'tunai')
+                                @if ($pembelian->jenis_transaksi == 'tunai')
                                     <i class="ti ti-cash text-green-400 mr-2"></i>
                                 @else
                                     <i class="ti ti-credit-card text-purple-400 mr-2"></i>
@@ -549,12 +472,12 @@
                                 <span class="text-gray-600">Jenis Transaksi</span>
                             </div>
                             <span
-                                class="font-semibold {{ $penjualan->jenis_transaksi == 'tunai' ? 'text-green-600' : 'text-purple-600' }}">
-                                {{ ucfirst($penjualan->jenis_transaksi) }}
+                                class="font-semibold {{ $pembelian->jenis_transaksi == 'tunai' ? 'text-green-600' : 'text-purple-600' }}">
+                                {{ ucfirst($pembelian->jenis_transaksi) }}
                             </span>
                         </div>
 
-                        @if ($penjualan->diskon > 0)
+                        @if ($pembelian->diskon > 0)
                             <!-- Discount -->
                             <div class="flex items-center justify-between py-2">
                                 <div class="flex items-center">
@@ -562,20 +485,20 @@
                                     <span class="text-gray-600">Diskon</span>
                                 </div>
                                 <span class="font-semibold text-red-600">
-                                    -Rp {{ number_format($penjualan->diskon, 0, ',', '.') }}
+                                    -Rp {{ number_format($pembelian->diskon, 0, ',', '.') }}
                                 </span>
                             </div>
                         @endif
 
                         <!-- Total -->
                         <div
-                            class="flex items-center justify-between py-3 border-t border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 -mx-6 px-6 rounded-lg">
+                            class="flex items-center justify-between py-3 border-t border-gray-200 bg-gradient-to-r from-orange-50 to-red-50 -mx-6 px-6 rounded-lg">
                             <div class="flex items-center">
-                                <i class="ti ti-currency-dollar text-blue-600 mr-2"></i>
+                                <i class="ti ti-currency-dollar text-orange-600 mr-2"></i>
                                 <span class="font-bold text-gray-900">Total</span>
                             </div>
-                            <span class="font-bold text-xl text-blue-600">
-                                Rp {{ number_format($penjualan->total, 0, ',', '.') }}
+                            <span class="font-bold text-xl text-orange-600">
+                                Rp {{ number_format($pembelian->total, 0, ',', '.') }}
                             </span>
                         </div>
 
@@ -587,22 +510,27 @@
                                     <span class="text-gray-600">Dibayar</span>
                                 </div>
                                 <span class="font-semibold text-green-600">
-                                    Rp {{ number_format($penjualan->total_dibayar, 0, ',', '.') }}
+                                    Rp
+                                    {{ number_format($pembelian->pembayaranPembelian->sum('jumlah_bayar'), 0, ',', '.') }}
                                 </span>
                             </div>
 
+                            @php
+                                $totalDibayar = $pembelian->pembayaranPembelian->sum('jumlah_bayar');
+                                $sisaPembayaran = $pembelian->total - $totalDibayar;
+                            @endphp
+
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center">
-                                    @if ($penjualan->sisa_pembayaran > 0)
+                                    @if ($sisaPembayaran > 0)
                                         <i class="ti ti-clock text-red-500 mr-2"></i>
                                     @else
                                         <i class="ti ti-check text-green-500 mr-2"></i>
                                     @endif
                                     <span class="text-gray-600">Sisa</span>
                                 </div>
-                                <span
-                                    class="font-semibold {{ $penjualan->sisa_pembayaran > 0 ? 'text-red-600' : 'text-green-600' }}">
-                                    Rp {{ number_format($penjualan->sisa_pembayaran, 0, ',', '.') }}
+                                <span class="font-semibold {{ $sisaPembayaran > 0 ? 'text-red-600' : 'text-green-600' }}">
+                                    Rp {{ number_format($sisaPembayaran, 0, ',', '.') }}
                                 </span>
                             </div>
                         </div>
@@ -653,10 +581,10 @@
                             </button>
                         </div>
 
-                        @if ($penjualan->status_pembayaran !== 'lunas')
+                        @if ($pembelian->status_pembayaran !== 'lunas')
                             <!-- Edit Button -->
-                            <a href="{{ route('penjualan.edit', $penjualan->encrypted_id) }}"
-                                class="w-full flex items-center justify-center px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-sm hover:shadow-md">
+                            <a href="{{ route('pembelian.edit', $pembelian->encrypted_id) }}"
+                                class="w-full flex items-center justify-center px-4 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-lg hover:from-orange-700 hover:to-red-700 transition-all duration-200 shadow-sm hover:shadow-md">
                                 <div class="w-5 h-5 bg-white/20 rounded flex items-center justify-center mr-3">
                                     <i class="ti ti-edit text-sm"></i>
                                 </div>
@@ -664,7 +592,7 @@
                             </a>
                         @endif
 
-                        @if ($penjualan->sisa_pembayaran > 0)
+                        @if ($sisaPembayaran > 0)
                             <!-- Payment Button -->
                             <button type="button" onclick="openPaymentModal()"
                                 class="w-full flex items-center justify-center px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-sm hover:shadow-md">
@@ -675,10 +603,10 @@
                             </button>
                         @endif
 
-                        @if ($penjualan->pembayaranPenjualan->count() == 0)
+                        @if ($pembelian->pembayaranPembelian->count() == 0)
                             <!-- Delete Button -->
                             <button type="button"
-                                onclick="confirmDelete('{{ $penjualan->encrypted_id }}', '{{ $penjualan->no_faktur }}')"
+                                onclick="confirmDelete('{{ $pembelian->encrypted_id }}', '{{ $pembelian->no_faktur }}')"
                                 class="w-full flex items-center justify-center px-4 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-lg hover:from-red-700 hover:to-rose-700 transition-all duration-200 shadow-sm hover:shadow-md">
                                 <div class="w-5 h-5 bg-white/20 rounded flex items-center justify-center mr-3">
                                     <i class="ti ti-trash text-sm"></i>
@@ -690,343 +618,203 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Payment Modal -->
-        <div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
-            <div class="flex items-center justify-center min-h-screen p-4">
-                <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-auto">
-                    <!-- Modal Header -->
-                    <div class="px-6 py-4 border-b bg-gradient-to-r from-green-50 to-emerald-50">
-                        <div class="flex items-center justify-between">
-                            <h3 class="text-lg font-semibold text-gray-800 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                                </svg>
-                                Tambah Pembayaran
-                            </h3>
-                            <button onclick="closePaymentModal()" class="text-gray-400 hover:text-gray-600">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12" />
-                                </svg>
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-auto">
+                <!-- Modal Header -->
+                <div class="px-6 py-4 border-b bg-gradient-to-r from-green-50 to-emerald-50">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                            </svg>
+                            Tambah Pembayaran
+                        </h3>
+                        <button onclick="closePaymentModal()" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="p-6">
+                    <!-- Payment Summary - Compact -->
+                    <div class="mb-4 p-3 bg-gray-50 rounded-lg">
+                        <div class="grid grid-cols-3 gap-3 text-sm">
+                            <div>
+                                <span class="text-gray-600 text-xs">Total:</span>
+                                <div class="font-semibold text-gray-800">Rp {{ number_format($pembelian->total, 0) }}
+                                </div>
+                            </div>
+                            <div>
+                                <span class="text-gray-600 text-xs">Sudah Bayar:</span>
+                                <div class="font-semibold text-green-600">Rp
+                                    {{ number_format($pembelian->pembayaranPembelian->sum('jumlah_bayar'), 0) }}</div>
+                            </div>
+                            <div>
+                                <span class="text-gray-600 text-xs">Sisa:</span>
+                                <div class="font-semibold text-red-600">Rp
+                                    {{ number_format($sisaPembayaran, 0) }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Form -->
+                    <form id="paymentForm" onsubmit="submitPayment(event)">
+                        @csrf
+                        <input type="hidden" name="pembelian_id" value="{{ $pembelian->id }}">
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <!-- Left Column -->
+                            <div class="space-y-3">
+                                <!-- Payment Amount -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Jumlah Pembayaran <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <span
+                                            class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">Rp</span>
+                                        <input type="number" id="paymentAmount" name="jumlah" step="100"
+                                            min="1000" max="{{ $sisaPembayaran }}" value="{{ $sisaPembayaran }}"
+                                            class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
+                                            placeholder="0" onchange="updatePaymentInfo()" required>
+                                    </div>
+                                    <div class="mt-1 text-xs text-gray-500">
+                                        Maks: Rp {{ number_format($sisaPembayaran, 0) }}
+                                    </div>
+                                </div>
+
+                                <!-- Payment Method -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Metode Pembayaran <span class="text-red-500">*</span>
+                                    </label>
+                                    <select name="metode_pembayaran"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
+                                        required>
+                                        <option value="">Pilih metode...</option>
+                                        <option value="tunai">💵 Tunai</option>
+                                        <option value="transfer">🏦 Transfer Bank</option>
+                                        <option value="qris">📱 QRIS</option>
+                                        <option value="kartu">💳 Kartu Debit/Credit</option>
+                                        <option value="ewallet">📱 E-Wallet</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Right Column -->
+                            <div class="space-y-3">
+                                <!-- Payment Date -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Tanggal Pembayaran <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="date" name="tanggal" value="{{ date('Y-m-d') }}"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
+                                        required>
+                                </div>
+
+                                <!-- Payment Notes -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Keterangan
+                                    </label>
+                                    <textarea name="keterangan" rows="2"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
+                                        placeholder="Catatan tambahan..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Preview - Compact -->
+                        <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <h4 class="font-medium text-blue-800 mb-2 text-sm">Preview Pembayaran:</h4>
+                            <div class="grid grid-cols-3 gap-4 text-sm">
+                                <div>
+                                    <span class="text-blue-700 text-xs">Jumlah Bayar:</span>
+                                    <div class="font-medium" id="previewAmount">Rp
+                                        {{ number_format($sisaPembayaran, 0) }}</div>
+                                </div>
+                                <div>
+                                    <span class="text-blue-700 text-xs">Sisa Setelah Bayar:</span>
+                                    <div class="font-medium" id="previewRemaining">Rp 0</div>
+                                </div>
+                                <div>
+                                    <span class="text-blue-700 text-xs">Status:</span>
+                                    <div class="font-medium text-green-600" id="previewStatus">Lunas</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex space-x-3 mt-4">
+                            <button type="button" onclick="closePaymentModal()"
+                                class="flex-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">
+                                Batal
+                            </button>
+                            <button type="submit" id="submitPaymentBtn"
+                                class="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-colors duration-200 font-medium">
+                                <span id="submitBtnText">Simpan Pembayaran</span>
                             </button>
                         </div>
-                    </div>
-
-                    <!-- Modal Body -->
-                    <div class="p-6">
-                        <!-- Payment Summary - Compact -->
-                        <div class="mb-4 p-3 bg-gray-50 rounded-lg">
-                            <div class="grid grid-cols-3 gap-3 text-sm">
-                                <div>
-                                    <span class="text-gray-600 text-xs">Total:</span>
-                                    <div class="font-semibold text-gray-800">Rp {{ number_format($penjualan->total, 0) }}
-                                    </div>
-                                </div>
-                                <div>
-                                    <span class="text-gray-600 text-xs">Sudah Bayar:</span>
-                                    <div class="font-semibold text-green-600">Rp
-                                        {{ number_format($penjualan->pembayaranPenjualan->sum('jumlah_bayar'), 0) }}</div>
-                                </div>
-                                <div>
-                                    <span class="text-gray-600 text-xs">Sisa:</span>
-                                    <div class="font-semibold text-red-600">Rp
-                                        {{ number_format($penjualan->sisa_pembayaran, 0) }}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Payment Form -->
-                        <form id="paymentForm" onsubmit="submitPayment(event)">
-                            @csrf
-                            <input type="hidden" name="penjualan_id" value="{{ $penjualan->id }}">
-
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                <!-- Left Column -->
-                                <div class="space-y-3">
-                                    <!-- Payment Amount -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                                            Jumlah Pembayaran <span class="text-red-500">*</span>
-                                        </label>
-                                        <div class="relative">
-                                            <span
-                                                class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">Rp</span>
-                                            <input type="number" id="paymentAmount" name="jumlah" step="100"
-                                                min="1000" max="{{ $penjualan->sisa_pembayaran }}"
-                                                value="{{ $penjualan->sisa_pembayaran }}"
-                                                class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
-                                                placeholder="0" onchange="updatePaymentInfo()" required>
-                                        </div>
-                                        <div class="mt-1 text-xs text-gray-500">
-                                            Maks: Rp {{ number_format($penjualan->sisa_pembayaran, 0) }}
-                                        </div>
-                                    </div>
-
-                                    <!-- Payment Method -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                                            Metode Pembayaran <span class="text-red-500">*</span>
-                                        </label>
-                                        <select name="metode_pembayaran"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
-                                            required>
-                                            <option value="">Pilih metode...</option>
-                                            @foreach ($metodePembayaran as $metode)
-                                                <option value="{{ $metode->kode }}">
-                                                    <i class="ti {{ $metode->icon_display }}"></i> {{ $metode->nama }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <!-- Right Column -->
-                                <div class="space-y-3">
-                                    <!-- Payment Date -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                                            Tanggal Pembayaran <span class="text-red-500">*</span>
-                                        </label>
-                                        <input type="date" name="tanggal" value="{{ date('Y-m-d') }}"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
-                                            required>
-                                    </div>
-
-                                    <!-- Payment Notes -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                                            Keterangan
-                                        </label>
-                                        <textarea name="keterangan" rows="2"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
-                                            placeholder="Catatan tambahan..."></textarea>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Payment Preview - Compact -->
-                            <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                <h4 class="font-medium text-blue-800 mb-2 text-sm">Preview Pembayaran:</h4>
-                                <div class="grid grid-cols-3 gap-4 text-sm">
-                                    <div>
-                                        <span class="text-blue-700 text-xs">Jumlah Bayar:</span>
-                                        <div class="font-medium" id="previewAmount">Rp
-                                            {{ number_format($penjualan->sisa_pembayaran, 0) }}</div>
-                                    </div>
-                                    <div>
-                                        <span class="text-blue-700 text-xs">Sisa Setelah Bayar:</span>
-                                        <div class="font-medium" id="previewRemaining">Rp 0</div>
-                                    </div>
-                                    <div>
-                                        <span class="text-blue-700 text-xs">Status:</span>
-                                        <div class="font-medium text-green-600" id="previewStatus">Lunas</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Action Buttons -->
-                            <div class="flex space-x-3 mt-4">
-                                <button type="button" onclick="closePaymentModal()"
-                                    class="flex-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">
-                                    Batal
-                                </button>
-                                <button type="submit" id="submitPaymentBtn"
-                                    class="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-colors duration-200 font-medium">
-                                    <span id="submitBtnText">Simpan Pembayaran</span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
-@endsection
 
-@push('styles')
-    <style>
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-
-            .print-section,
-            .print-section * {
-                visibility: visible;
-            }
-
-            .print-section {
-                position: absolute;
-                left: 0;
-                top: 0;
-            }
-        }
-    </style>
-@endpush
-
-@push('scripts')
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- QZ Tray -->
+    <script src="{{ asset('js/qz/qz-tray.js') }}"></script>
+    <script src="{{ asset('js/qz/qz-config.js') }}"></script>
+
     <script>
-        function confirmDelete(salesId, invoiceNumber) {
-            if (confirm(`Apakah Anda yakin ingin menghapus transaksi "${invoiceNumber}"?`)) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `{{ route('penjualan.destroy', '') }}/${salesId}`;
+        // Confirm delete function
+        function confirmDelete(id, faktur) {
+            Swal.fire({
+                title: 'Konfirmasi Hapus',
+                text: `Apakah Anda yakin ingin menghapus pembelian "${faktur}"?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Create form and submit
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/pembelian/${id}`;
 
-                const csrfToken = document.createElement('input');
-                csrfToken.type = 'hidden';
-                csrfToken.name = '_token';
-                csrfToken.value = '{{ csrf_token() }}';
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
 
-                const methodField = document.createElement('input');
-                methodField.type = 'hidden';
-                methodField.name = '_method';
-                methodField.value = 'DELETE';
+                    const methodField = document.createElement('input');
+                    methodField.type = 'hidden';
+                    methodField.name = '_method';
+                    methodField.value = 'DELETE';
 
-                form.appendChild(csrfToken);
-                form.appendChild(methodField);
-                document.body.appendChild(form);
-                form.submit();
-            }
-        }
-
-        // Auto-print receipt functionality
-        function checkForPendingReceipt() {
-            fetch('{{ route('penjualan.pending-receipt') }}', {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                    },
-                    credentials: 'same-origin'
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success && data.receipt) {
-                        console.log('Pending receipt found:', data.receipt);
-                        autoPrintReceipt(data.receipt);
-                    } else {
-                        console.log('No pending receipt available');
-                    }
-                })
-                .catch(error => {
-                    console.log('Error checking pending receipt:', error.message);
-                });
-        }
-
-        function autoPrintReceipt(receiptData) {
-            // Check if QZ Tray is available
-            if (typeof qz === 'undefined') {
-                console.log('QZ Tray not loaded, loading script...');
-                loadQZTrayAndPrint(receiptData);
-                return;
-            }
-
-            // Setup QZ security (unsigned mode)
-            qz.security.setCertificatePromise(function(resolve, reject) {
-                resolve(); // Allow unsigned requests
-            });
-
-            qz.security.setSignaturePromise(function(toSign) {
-                return function(resolve, reject) {
-                    resolve(toSign); // Allow unsigned requests
-                };
-            });
-
-            // Connect and print
-            qz.websocket.connect({
-                retries: 2,
-                delay: 1
-            }).then(function() {
-                console.log('QZ Tray connected for auto-print');
-
-                // Get default printer from settings or find any printer
-                const defaultPrinter = @json(session('printer_settings.default_printer', ''));
-
-                if (defaultPrinter) {
-                    printReceipt(defaultPrinter, receiptData);
-                } else {
-                    // Find any available printer
-                    qz.printers.find().then(function(printers) {
-                        if (printers.length > 0) {
-                            printReceipt(printers[0], receiptData);
-                        } else {
-                            console.log('No printers found for auto-print');
-                        }
-                    });
+                    form.appendChild(csrfToken);
+                    form.appendChild(methodField);
+                    document.body.appendChild(form);
+                    form.submit();
                 }
-            }).catch(function(err) {
-                console.log('QZ Tray connection failed for auto-print:', err);
             });
         }
-
-        function printReceipt(printerName, receiptData) {
-            const config = qz.configs.create(printerName);
-
-            qz.print(config, receiptData.receipt_data).then(function() {
-                console.log(`Receipt auto-printed to ${printerName}`);
-
-                // Show notification
-                showNotification('✅ Struk berhasil dicetak otomatis!', 'success');
-            }).catch(function(err) {
-                console.log('Auto-print failed:', err);
-                showNotification('⚠️ Auto-print gagal: ' + err.message, 'warning');
-            });
-        }
-
-        function loadQZTrayAndPrint(receiptData) {
-            const script = document.createElement('script');
-            script.src = '{{ asset('js/qz/qz-tray.js') }}';
-            script.onload = function() {
-                setTimeout(() => autoPrintReceipt(receiptData), 1000);
-            };
-            document.head.appendChild(script);
-        }
-
-        function showNotification(message, type = 'info') {
-            // Create notification element
-            const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full ${
-                type === 'success' ? 'bg-green-500 text-white' : 
-                type === 'warning' ? 'bg-yellow-500 text-white' : 
-                'bg-blue-500 text-white'
-            }`;
-            notification.innerHTML = message;
-
-            document.body.appendChild(notification);
-
-            // Animate in
-            setTimeout(() => {
-                notification.classList.remove('translate-x-full');
-            }, 100);
-
-            // Animate out and remove
-            setTimeout(() => {
-                notification.classList.add('translate-x-full');
-                setTimeout(() => {
-                    document.body.removeChild(notification);
-                }, 300);
-            }, 3000);
-        }
-
-        // Check for pending receipt when page loads (only if success message exists)
-        document.addEventListener('DOMContentLoaded', function() {
-            // Only check for auto-print if this is a newly created transaction
-            const successMessage = document.querySelector('.bg-green-50');
-            if (successMessage) {
-                // Check after a short delay to ensure page is fully loaded
-                setTimeout(checkForPendingReceipt, 1500);
-            }
-        });
 
         // Print Invoice with QZ Tray functionality
         function printInvoiceWithQZTray(event) {
@@ -1125,18 +913,18 @@
 
             // Invoice info
             invoiceLines.push("\x1B\x61\x00"); // Left align
-            invoiceLines.push("INVOICE\n");
-            invoiceLines.push("No. Faktur: {{ $penjualan->no_faktur }}\n");
-            invoiceLines.push("Tanggal: {{ $penjualan->tanggal->format('d/m/Y H:i') }}\n");
-            invoiceLines.push("Pelanggan: {{ $penjualan->pelanggan->nama }}\n");
-            invoiceLines.push("Kasir: {{ $penjualan->kasir->name }}\n");
+            invoiceLines.push("PURCHASE ORDER\n");
+            invoiceLines.push("No. Faktur: {{ $pembelian->no_faktur }}\n");
+            invoiceLines.push("Tanggal: {{ $pembelian->tanggal->format('d/m/Y H:i') }}\n");
+            invoiceLines.push("Supplier: {{ $pembelian->supplier->nama }}\n");
+            invoiceLines.push("Dibuat: {{ $pembelian->user->name }}\n");
             invoiceLines.push("================================\n");
 
             // Items
-            @foreach ($penjualan->detailPenjualan as $detail)
+            @foreach ($pembelian->detailPembelian as $detail)
                 invoiceLines.push("{{ substr($detail->produk->nama_produk, 0, 20) }}\n");
                 invoiceLines.push(
-                    "  {{ number_format($detail->qty, 0) }} {{ $detail->produk->satuan->nama ?? 'pcs' }} x {{ number_format($detail->harga, 0) }} = {{ number_format($detail->subtotal, 0) }}\n"
+                    "  {{ number_format($detail->qty, 0) }} {{ $detail->produk->satuan->nama ?? 'pcs' }} x {{ number_format($detail->harga_beli, 0) }} = {{ number_format($detail->subtotal, 0) }}\n"
                 );
                 @if ($detail->discount > 0)
                     invoiceLines.push("  Diskon: -{{ number_format($detail->discount, 0) }}\n");
@@ -1147,31 +935,31 @@
 
             // Totals
             @php
-                $subtotalSebelumDiskon = $penjualan->total + $penjualan->diskon;
+                $subtotalSebelumDiskon = $pembelian->total + $pembelian->diskon;
             @endphp
             invoiceLines.push("Subtotal: Rp {{ number_format($subtotalSebelumDiskon, 0) }}\n");
 
-            @if ($penjualan->diskon > 0)
-                invoiceLines.push("Diskon: -Rp {{ number_format($penjualan->diskon, 0) }}\n");
+            @if ($pembelian->diskon > 0)
+                invoiceLines.push("Diskon: -Rp {{ number_format($pembelian->diskon, 0) }}\n");
             @endif
 
-            invoiceLines.push("TOTAL: Rp {{ number_format($penjualan->total, 0) }}\n");
+            invoiceLines.push("TOTAL: Rp {{ number_format($pembelian->total, 0) }}\n");
 
             // Payment info
             @php
-                $totalBayar = $penjualan->pembayaranPenjualan->sum('jumlah_bayar');
+                $totalBayar = $pembelian->pembayaranPembelian->sum('jumlah_bayar');
             @endphp
             @if ($totalBayar > 0)
                 invoiceLines.push("Bayar: Rp {{ number_format($totalBayar, 0) }}\n");
 
-                @if ($totalBayar >= $penjualan->total)
+                @if ($totalBayar >= $pembelian->total)
                     @php
-                        $kembalian = $totalBayar - $penjualan->total;
+                        $lunas = $totalBayar - $pembelian->total;
                     @endphp
-                    invoiceLines.push("Kembalian: Rp {{ number_format($kembalian, 0) }}\n");
+                    invoiceLines.push("Lunas: Rp {{ number_format($lunas, 0) }}\n");
                 @else
                     @php
-                        $sisa = $penjualan->total - $totalBayar;
+                        $sisa = $pembelian->total - $totalBayar;
                     @endphp
                     invoiceLines.push("Sisa: Rp {{ number_format($sisa, 0) }}\n");
                 @endif
@@ -1179,7 +967,7 @@
 
             invoiceLines.push("================================\n");
             invoiceLines.push("\x1B\x61\x01"); // Center align
-            invoiceLines.push("Terima kasih atas kunjungan Anda\n");
+            invoiceLines.push("Terima kasih atas kerjasamanya\n");
             invoiceLines.push("Barang yang sudah dibeli\n");
             invoiceLines.push("tidak dapat dikembalikan\n");
             invoiceLines.push("\n\n\n");
@@ -1228,203 +1016,6 @@
             }
         }
 
-        // Payment Modal Functions
-        function openPaymentModal() {
-            const modal = document.getElementById('paymentModal');
-            modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-
-            // Reset form and preview
-            document.getElementById('paymentForm').reset();
-            document.getElementById('paymentAmount').value = {{ $penjualan->sisa_pembayaran }};
-            updatePaymentInfo();
-        }
-
-        function closePaymentModal() {
-            const modal = document.getElementById('paymentModal');
-            modal.classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-
-        function updatePaymentInfo() {
-            const paymentAmount = parseFloat(document.getElementById('paymentAmount').value) || 0;
-            const remainingAmount = {{ $penjualan->sisa_pembayaran }} - paymentAmount;
-
-            // Update preview
-            document.getElementById('previewAmount').textContent = `Rp ${paymentAmount.toLocaleString('id-ID')}`;
-            document.getElementById('previewRemaining').textContent = `Rp ${remainingAmount.toLocaleString('id-ID')}`;
-
-            // Update status
-            const statusElement = document.getElementById('previewStatus');
-            if (remainingAmount <= 0) {
-                statusElement.textContent = 'Lunas';
-                statusElement.className = 'font-medium text-green-600';
-            } else {
-                statusElement.textContent = 'DP';
-                statusElement.className = 'font-medium text-blue-600';
-            }
-        }
-
-        function submitPayment(event) {
-            event.preventDefault();
-
-            const form = event.target;
-            const formData = new FormData(form);
-            const submitBtn = document.getElementById('submitPaymentBtn');
-            const submitBtnText = document.getElementById('submitBtnText');
-
-            // Validate form data before submission
-            const jumlah = formData.get('jumlah');
-            const metode_pembayaran = formData.get('metode_pembayaran');
-            const tanggal = formData.get('tanggal');
-
-            if (!jumlah || jumlah <= 0) {
-                showPaymentError('Jumlah pembayaran harus diisi dan lebih dari 0');
-                return;
-            }
-
-            if (!metode_pembayaran) {
-                showPaymentError('Metode pembayaran harus dipilih');
-                return;
-            }
-
-            if (!tanggal) {
-                showPaymentError('Tanggal pembayaran harus diisi');
-                return;
-            }
-
-            // Disable button and show loading
-            submitBtn.disabled = true;
-            submitBtnText.innerHTML = '<i class="ti ti-loader animate-spin mr-2"></i>Menyimpan...';
-
-            // Log form data for debugging
-            console.log('Submitting payment:', {
-                jumlah: jumlah,
-                metode_pembayaran: metode_pembayaran,
-                tanggal: tanggal,
-                penjualan_id: formData.get('penjualan_id'),
-                keterangan: formData.get('keterangan')
-            });
-
-            // Submit payment
-            fetch('{{ route('pembayaran.store') }}', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
-                    },
-                    credentials: 'same-origin'
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(err => {
-                            throw new Error(err.message || 'Terjadi kesalahan pada server');
-                        });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        // Show success message
-                        showPaymentSuccess(data.message);
-
-                        // Close modal
-                        closePaymentModal();
-
-                        // Reload page after short delay to show updated data
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1500);
-                    } else {
-                        throw new Error(data.message || 'Terjadi kesalahan saat menyimpan pembayaran');
-                    }
-                })
-                .catch(error => {
-                    console.error('Payment submission error:', error);
-                    showPaymentError(error.message);
-
-                    // Reset button
-                    submitBtn.disabled = false;
-                    submitBtnText.textContent = 'Simpan Pembayaran';
-                });
-        }
-
-        function showPaymentSuccess(message) {
-            // Create success notification
-            const notification = document.createElement('div');
-            notification.className =
-                'fixed top-4 right-4 z-50 p-4 bg-green-500 text-white rounded-lg shadow-lg transform transition-all duration-300 translate-x-full';
-            notification.innerHTML = `
-                <div class="flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                    </svg>
-                    ${message}
-                </div>
-            `;
-
-            document.body.appendChild(notification);
-
-            // Animate in
-            setTimeout(() => {
-                notification.classList.remove('translate-x-full');
-            }, 100);
-
-            // Animate out and remove
-            setTimeout(() => {
-                notification.classList.add('translate-x-full');
-                setTimeout(() => {
-                    document.body.removeChild(notification);
-                }, 300);
-            }, 3000);
-        }
-
-        function showPaymentError(message) {
-            // Create error notification
-            const notification = document.createElement('div');
-            notification.className =
-                'fixed top-4 right-4 z-50 p-4 bg-red-500 text-white rounded-lg shadow-lg transform transition-all duration-300 translate-x-full';
-            notification.innerHTML = `
-                <div class="flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                    ${message}
-                </div>
-            `;
-
-            document.body.appendChild(notification);
-
-            // Animate in
-            setTimeout(() => {
-                notification.classList.remove('translate-x-full');
-            }, 100);
-
-            // Animate out and remove
-            setTimeout(() => {
-                notification.classList.add('translate-x-full');
-                setTimeout(() => {
-                    document.body.removeChild(notification);
-                }, 300);
-            }, 5000);
-        }
-
-        // Close modal when clicking outside
-        document.addEventListener('click', function(event) {
-            const modal = document.getElementById('paymentModal');
-            if (event.target === modal) {
-                closePaymentModal();
-            }
-        });
-
-        // Close modal with Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closePaymentModal();
-            }
-        });
-
         // Print Invoice Raw via Browser
         function printInvoiceRaw() {
             // Generate raw invoice content
@@ -1438,7 +1029,7 @@
                 <!DOCTYPE html>
                 <html>
                 <head>
-                    <title>Invoice {{ $penjualan->no_faktur }}</title>
+                    <title>Purchase Order {{ $pembelian->no_faktur }}</title>
                     <style>
                         body {
                             font-family: 'Courier New', monospace;
@@ -1491,18 +1082,18 @@
             content += '================================\n\n';
 
             // Invoice info
-            content += 'INVOICE\n';
-            content += 'No. Faktur: {{ $penjualan->no_faktur }}\n';
-            content += 'Tanggal: {{ $penjualan->tanggal->format('d/m/Y H:i') }}\n';
-            content += 'Pelanggan: {{ $penjualan->pelanggan->nama }}\n';
-            content += 'Kasir: {{ $penjualan->kasir->name }}\n';
+            content += 'PURCHASE ORDER\n';
+            content += 'No. Faktur: {{ $pembelian->no_faktur }}\n';
+            content += 'Tanggal: {{ $pembelian->tanggal->format('d/m/Y H:i') }}\n';
+            content += 'Supplier: {{ $pembelian->supplier->nama }}\n';
+            content += 'Dibuat: {{ $pembelian->user->name }}\n';
             content += '================================\n\n';
 
             // Items
-            @foreach ($penjualan->detailPenjualan as $detail)
+            @foreach ($pembelian->detailPembelian as $detail)
                 content += '{{ substr($detail->produk->nama_produk, 0, 30) }}\n';
                 content +=
-                    '  {{ number_format($detail->qty, 0) }} {{ $detail->produk->satuan->nama ?? 'pcs' }} x {{ number_format($detail->harga, 0) }} = {{ number_format($detail->subtotal, 0) }}\n';
+                    '  {{ number_format($detail->qty, 0) }} {{ $detail->produk->satuan->nama ?? 'pcs' }} x {{ number_format($detail->harga_beli, 0) }} = {{ number_format($detail->subtotal, 0) }}\n';
                 @if ($detail->discount > 0)
                     content += '  Diskon: -{{ number_format($detail->discount, 0) }}\n';
                 @endif
@@ -1513,31 +1104,31 @@
 
             // Totals
             @php
-                $subtotalSebelumDiskon = $penjualan->total + $penjualan->diskon;
+                $subtotalSebelumDiskon = $pembelian->total + $pembelian->diskon;
             @endphp
             content += 'Subtotal: Rp {{ number_format($subtotalSebelumDiskon, 0) }}\n';
 
-            @if ($penjualan->diskon > 0)
-                content += 'Diskon: -Rp {{ number_format($penjualan->diskon, 0) }}\n';
+            @if ($pembelian->diskon > 0)
+                content += 'Diskon: -Rp {{ number_format($pembelian->diskon, 0) }}\n';
             @endif
 
-            content += 'TOTAL: Rp {{ number_format($penjualan->total, 0) }}\n\n';
+            content += 'TOTAL: Rp {{ number_format($pembelian->total, 0) }}\n\n';
 
             // Payment info
             @php
-                $totalBayar = $penjualan->pembayaranPenjualan->sum('jumlah_bayar');
+                $totalBayar = $pembelian->pembayaranPembelian->sum('jumlah_bayar');
             @endphp
             @if ($totalBayar > 0)
                 content += 'Bayar: Rp {{ number_format($totalBayar, 0) }}\n';
 
-                @if ($totalBayar >= $penjualan->total)
+                @if ($totalBayar >= $pembelian->total)
                     @php
-                        $kembalian = $totalBayar - $penjualan->total;
+                        $lunas = $totalBayar - $pembelian->total;
                     @endphp
-                    content += 'Kembalian: Rp {{ number_format($kembalian, 0) }}\n';
+                    content += 'Lunas: Rp {{ number_format($lunas, 0) }}\n';
                 @else
                     @php
-                        $sisa = $penjualan->total - $totalBayar;
+                        $sisa = $pembelian->total - $totalBayar;
                     @endphp
                     content += 'Sisa: Rp {{ number_format($sisa, 0) }}\n';
                 @endif
@@ -1545,7 +1136,7 @@
             @endif
 
             content += '================================\n';
-            content += '   Terima kasih atas kunjungan Anda\n';
+            content += '   Terima kasih atas kerjasamanya\n';
             content += '     Barang yang sudah dibeli\n';
             content += '     tidak dapat dikembalikan\n';
             content += '================================\n';
@@ -1553,40 +1144,118 @@
             return content;
         }
 
-        // Delete Payment Functions
-        function confirmDeletePayment(paymentId, noBukti) {
+        // Notification function
+        function showNotification(message, type = 'info') {
             Swal.fire({
-                title: 'Hapus Pembayaran?',
-                text: `Apakah Anda yakin ingin menghapus pembayaran "${noBukti}"?`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Ya, Hapus!',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    deletePayment(paymentId);
-                }
+                title: type === 'success' ? 'Berhasil!' : type === 'warning' ? 'Peringatan!' : 'Info',
+                text: message,
+                icon: type,
+                timer: type === 'success' ? 2000 : null,
+                showConfirmButton: type !== 'success'
             });
         }
 
-        function deletePayment(paymentId) {
-            const formData = new FormData();
-            formData.append('_token', '{{ csrf_token() }}');
-            formData.append('_method', 'DELETE');
+        // Payment Modal Functions
+        function openPaymentModal() {
+            const modal = document.getElementById('paymentModal');
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
 
-            // Show loading state
-            Swal.fire({
-                title: 'Menghapus...',
-                text: 'Mohon tunggu sebentar',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
+            // Reset form and preview
+            document.getElementById('paymentForm').reset();
+            document.getElementById('paymentAmount').value = {{ $sisaPembayaran }};
+            updatePaymentInfo();
+        }
+
+        function closePaymentModal() {
+            const modal = document.getElementById('paymentModal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function updatePaymentInfo() {
+            const paymentAmount = parseFloat(document.getElementById('paymentAmount').value) || 0;
+            const remainingAmount = {{ $sisaPembayaran }} - paymentAmount;
+            const totalTransaksi = {{ $pembelian->total }};
+            const sudahDibayar = {{ $pembelian->pembayaranPembelian->sum('jumlah_bayar') }};
+
+            // Update preview
+            document.getElementById('previewAmount').textContent = `Rp ${paymentAmount.toLocaleString('id-ID')}`;
+            document.getElementById('previewRemaining').textContent = `Rp ${remainingAmount.toLocaleString('id-ID')}`;
+
+            // Update status berdasarkan logika yang sama dengan backend
+            const statusElement = document.getElementById('previewStatus');
+            let statusText = 'DP';
+            let statusClass = 'font-medium text-blue-600';
+
+            if (sudahDibayar == 0) {
+                // First payment
+                if (paymentAmount >= totalTransaksi) {
+                    statusText = 'Lunas';
+                    statusClass = 'font-medium text-green-600';
+                } else {
+                    statusText = 'DP';
+                    statusClass = 'font-medium text-blue-600';
                 }
+            } else {
+                // Subsequent payments
+                const totalAfterPayment = sudahDibayar + paymentAmount;
+                if (totalAfterPayment >= totalTransaksi) {
+                    statusText = 'Lunas';
+                    statusClass = 'font-medium text-green-600';
+                } else {
+                    statusText = 'Angsuran';
+                    statusClass = 'font-medium text-orange-600';
+                }
+            }
+
+            statusElement.textContent = statusText;
+            statusElement.className = statusClass;
+        }
+
+        function submitPayment(event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+            const submitBtn = document.getElementById('submitPaymentBtn');
+            const submitBtnText = document.getElementById('submitBtnText');
+
+            // Validate form data before submission
+            const jumlah = formData.get('jumlah');
+            const metode_pembayaran = formData.get('metode_pembayaran');
+            const tanggal = formData.get('tanggal');
+
+            if (!jumlah || jumlah <= 0) {
+                showPaymentError('Jumlah pembayaran harus diisi dan lebih dari 0');
+                return;
+            }
+
+            if (!metode_pembayaran) {
+                showPaymentError('Metode pembayaran harus dipilih');
+                return;
+            }
+
+            if (!tanggal) {
+                showPaymentError('Tanggal pembayaran harus diisi');
+                return;
+            }
+
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtnText.innerHTML = '<i class="ti ti-loader animate-spin mr-2"></i>Menyimpan...';
+
+            // Log form data for debugging
+            console.log('Submitting payment:', {
+                jumlah: jumlah,
+                metode_pembayaran: metode_pembayaran,
+                tanggal: tanggal,
+                pembelian_id: formData.get('pembelian_id'),
+                keterangan: formData.get('keterangan')
             });
 
-            fetch(`/pembayaran/${paymentId}`, {
+            // Submit payment
+            fetch('{{ route('pembayaran-pembelian.store') }}', {
                     method: 'POST',
                     body: formData,
                     headers: {
@@ -1595,32 +1264,113 @@
                     },
                     credentials: 'same-origin'
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => {
+                            throw new Error(err.message || 'Terjadi kesalahan pada server');
+                        });
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
-                        Swal.fire({
-                            title: 'Berhasil!',
-                            text: 'Pembayaran berhasil dihapus',
-                            icon: 'success',
-                            timer: 2000,
-                            showConfirmButton: false
-                        }).then(() => {
-                            // Reload page to show updated data
+                        // Show success message
+                        showPaymentSuccess(data.message);
+
+                        // Close modal
+                        closePaymentModal();
+
+                        // Reload page after short delay to show updated data
+                        setTimeout(() => {
                             window.location.reload();
-                        });
+                        }, 1500);
                     } else {
-                        throw new Error(data.message || 'Terjadi kesalahan saat menghapus pembayaran');
+                        throw new Error(data.message || 'Terjadi kesalahan saat menyimpan pembayaran');
                     }
                 })
                 .catch(error => {
-                    console.error('Delete payment error:', error);
-                    Swal.fire({
-                        title: 'Error!',
-                        text: error.message,
-                        icon: 'error',
-                        confirmButtonText: 'OK'
-                    });
+                    console.error('Payment submission error:', error);
+                    showPaymentError(error.message);
+
+                    // Reset button
+                    submitBtn.disabled = false;
+                    submitBtnText.textContent = 'Simpan Pembayaran';
                 });
         }
+
+        function showPaymentSuccess(message) {
+            // Create success notification
+            const notification = document.createElement('div');
+            notification.className =
+                'fixed top-4 right-4 z-50 p-4 bg-green-500 text-white rounded-lg shadow-lg transform transition-all duration-300 translate-x-full';
+            notification.innerHTML = `
+                 <div class="flex items-center">
+                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                     </svg>
+                     ${message}
+                 </div>
+             `;
+
+            document.body.appendChild(notification);
+
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+
+            // Animate out and remove
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        function showPaymentError(message) {
+            // Create error notification
+            const notification = document.createElement('div');
+            notification.className =
+                'fixed top-4 right-4 z-50 p-4 bg-red-500 text-white rounded-lg shadow-lg transform transition-all duration-300 translate-x-full';
+            notification.innerHTML = `
+                 <div class="flex items-center">
+                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                     </svg>
+                     ${message}
+                 </div>
+             `;
+
+            document.body.appendChild(notification);
+
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+
+            // Animate out and remove
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 5000);
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('paymentModal');
+            if (event.target === modal) {
+                closePaymentModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closePaymentModal();
+            }
+        });
     </script>
-@endpush
+@endsection

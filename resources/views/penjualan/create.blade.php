@@ -201,6 +201,20 @@
                             </select>
                         </div>
 
+                        <!-- Payment Method -->
+                        <div class="mb-2">
+                            <select name="metode_pembayaran" id="metodePembayaran"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                required>
+                                <option value="">Pilih metode pembayaran...</option>
+                                @foreach($metodePembayaran as $metode)
+                                    <option value="{{ $metode->kode }}" {{ old('metode_pembayaran') == $metode->kode ? 'selected' : '' }}>
+                                        <i class="ti {{ $metode->icon_display }}"></i> {{ $metode->nama }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <!-- DP Amount (shown only for kredit) -->
                         <div class="mb-2 hidden" id="dpContainer">
                             <label for="dpAmountDisplay" class="block text-sm font-medium text-gray-700 mb-2">
@@ -1215,6 +1229,7 @@
 
         // Transaction type functionality
         const jenisTransaksi = document.getElementById('jenisTransaksi');
+        const metodePembayaran = document.getElementById('metodePembayaran');
         const dpContainer = document.getElementById('dpContainer');
         const dpAmountDisplay = document.getElementById('dpAmountDisplay');
         const dpAmount = document.getElementById('dpAmount');
@@ -1224,11 +1239,15 @@
             if (this.value === 'kredit') {
                 dpContainer.classList.remove('hidden');
                 dpAmountDisplay.required = true;
+                // For kredit, metode pembayaran is optional (for DP)
+                metodePembayaran.required = false;
             } else {
                 dpContainer.classList.add('hidden');
                 dpAmountDisplay.required = false;
                 dpAmountDisplay.value = '0';
                 dpAmount.value = 0;
+                // For tunai, metode pembayaran is required
+                metodePembayaran.required = true;
 
                 // Auto-fill payment for tunai (cash) transactions
                 if (this.value === 'tunai') {
@@ -1261,7 +1280,10 @@
         @if (old('jenis_transaksi') == 'kredit')
             dpContainer.classList.remove('hidden');
             dpAmountDisplay.required = true;
+            metodePembayaran.required = false;
         @else
+            // For tunai transactions, metode pembayaran is required
+            metodePembayaran.required = true;
             // Auto-fill payment for initial cash transactions
             if (jenisTransaksi.value === 'tunai') {
                 // Delay to ensure DOM is ready
@@ -1812,14 +1834,14 @@
                         </div>
                         
                         ${discount > 0 ? `
-                                                                                                                                                    <div class="flex items-center justify-between text-sm">
-                                                                                                                                                        <span class="text-orange-600 flex items-center">
-                                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                            Potongan Harga
-                                                                                                                                                        </span>
-                                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                    </div>
-                                                                                                                                                    ` : ''}
+                                                                                                                                                                            <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                    Potongan Harga
+                                                                                                                                                                                </span>
+                                                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                            </div>
+                                                                                                                                                                            ` : ''}
                         
                         <!-- Total Line -->
                         <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -1890,14 +1912,14 @@
                 </div>
                 
                 ${discount > 0 ? `
-                                                                                                                                            <div class="flex items-center justify-between text-sm">
-                                                                                                                                                <span class="text-orange-600 flex items-center">
-                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                    Potongan Harga
-                                                                                                                                                </span>
-                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                            </div>
-                                                                                                                                            ` : ''}
+                                                                                                                                                                    <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                        <span class="text-orange-600 flex items-center">
+                                                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                            Potongan Harga
+                                                                                                                                                                        </span>
+                                                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                    </div>
+                                                                                                                                                                    ` : ''}
                 
                 <!-- Total Line -->
                 <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -2356,11 +2378,11 @@
                                 <span>Rp ${formatNumber(subtotal)}</span>
                             </div>
                             ${discount > 0 ? `
-                                                                                                                                                    <div class="flex justify-between text-xs">
-                                                                                                                                                        <span class="text-orange-600">Potongan</span>
-                                                                                                                                                        <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                    </div>
-                                                                                                                                                    ` : ''}
+                                                                                                                                                                            <div class="flex justify-between text-xs">
+                                                                                                                                                                                <span class="text-orange-600">Potongan</span>
+                                                                                                                                                                                <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                            </div>
+                                                                                                                                                                            ` : ''}
                             <div class="flex justify-between text-sm font-medium">
                                 <span>Total</span>
                                 <span class="text-blue-600">Rp ${formatNumber(total)}</span>
@@ -2425,8 +2447,17 @@
                 return false;
             }
 
-            // Validate DP for kredit transactions
+            // Validate metode pembayaran for tunai transactions
             const jenisTransaksi = document.getElementById('jenisTransaksi').value;
+            const metodePembayaran = document.getElementById('metodePembayaran').value;
+
+            if (jenisTransaksi === 'tunai' && !metodePembayaran) {
+                showToast('Silakan pilih metode pembayaran!', 'error');
+                document.getElementById('metodePembayaran').focus();
+                return false;
+            }
+
+            // Validate DP for kredit transactions
             if (jenisTransaksi === 'kredit') {
                 const subtotal = orderItems.reduce((total, item) => {
                     const itemSubtotal = item.price * item.qty;

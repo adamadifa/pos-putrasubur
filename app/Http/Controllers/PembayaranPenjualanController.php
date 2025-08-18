@@ -23,7 +23,7 @@ class PembayaranPenjualanController extends Controller
                 'penjualan_id' => 'required|exists:penjualan,id',
                 'jumlah' => 'required|numeric|min:1000',
                 'tanggal' => 'required|date',
-                'metode_pembayaran' => 'required|string|in:tunai,transfer,qris,kartu,ewallet',
+                'metode_pembayaran' => 'required|string|exists:metode_pembayaran,kode',
                 'keterangan' => 'nullable|string|max:255',
             ], [
                 'penjualan_id.required' => 'ID penjualan wajib diisi.',
@@ -34,7 +34,7 @@ class PembayaranPenjualanController extends Controller
                 'tanggal.required' => 'Tanggal pembayaran wajib diisi.',
                 'tanggal.date' => 'Format tanggal tidak valid.',
                 'metode_pembayaran.required' => 'Metode pembayaran wajib dipilih.',
-                'metode_pembayaran.in' => 'Metode pembayaran tidak valid.',
+                'metode_pembayaran.exists' => 'Metode pembayaran tidak valid.',
                 'keterangan.max' => 'Keterangan maksimal 255 karakter.',
             ]);
 

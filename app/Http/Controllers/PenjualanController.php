@@ -129,6 +129,12 @@ class PenjualanController extends Controller
             ->orderBy('nama_produk')
             ->get();
 
+        // Get active payment methods
+        $metodePembayaran = \App\Models\MetodePembayaran::where('status', true)
+            ->orderBy('urutan')
+            ->orderBy('nama')
+            ->get();
+
         // Generate next invoice number
         $lastInvoice = Penjualan::whereDate('created_at', today())
             ->orderBy('id', 'desc')
@@ -136,7 +142,7 @@ class PenjualanController extends Controller
 
         $invoiceNumber = $this->generateInvoiceNumber($lastInvoice);
 
-        return view('penjualan.create', compact('pelanggan', 'produk', 'invoiceNumber'));
+        return view('penjualan.create', compact('pelanggan', 'produk', 'metodePembayaran', 'invoiceNumber'));
     }
 
     /**
@@ -149,6 +155,7 @@ class PenjualanController extends Controller
             'tanggal' => 'required|date',
             'pelanggan_id' => 'required|exists:pelanggan,id',
             'jenis_transaksi' => 'required|in:tunai,kredit',
+            'metode_pembayaran' => 'nullable|string|exists:metode_pembayaran,kode',
             'dp_amount' => 'nullable|numeric|min:0',
             'diskon' => 'nullable|numeric|min:0',
             'jatuh_tempo' => 'nullable|date|after_or_equal:tanggal',
@@ -242,8 +249,8 @@ class PenjualanController extends Controller
                 // Generate payment reference number
                 $noBukti = 'PAY-' . date('Ymd') . '-' . str_pad($penjualan->id, 4, '0', STR_PAD_LEFT);
 
-                // Determine payment method based on transaction type
-                $metodePembayaran = $jenisTransaksi === 'tunai' ? 'tunai' : 'dp';
+                // Use metode_pembayaran from form if available, otherwise determine based on transaction type
+                $metodePembayaran = $validated['metode_pembayaran'] ?? ($jenisTransaksi === 'tunai' ? 'tunai' : 'dp');
 
                 PembayaranPenjualan::create([
                     'penjualan_id' => $penjualan->id,
@@ -300,7 +307,13 @@ class PenjualanController extends Controller
         $penjualan = Penjualan::findByEncryptedId($encryptedId);
         $penjualan->load(['pelanggan', 'kasir', 'detailPenjualan.produk.kategori', 'detailPenjualan.produk.satuan', 'pembayaranPenjualan.user']);
 
-        return view('penjualan.show', compact('penjualan'));
+        // Get active payment methods
+        $metodePembayaran = \App\Models\MetodePembayaran::where('status', true)
+            ->orderBy('urutan')
+            ->orderBy('nama')
+            ->get();
+
+        return view('penjualan.show', compact('penjualan', 'metodePembayaran'));
     }
 
     /**

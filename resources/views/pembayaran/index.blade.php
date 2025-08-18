@@ -77,9 +77,9 @@
             </div>
         @endif
 
-        <!-- Stats Cards -->
+        <!-- Stats Cards - Hari Ini -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-            <!-- Total Pembayaran Card -->
+            <!-- Total Pembayaran Hari Ini Card -->
             <div
                 class="relative bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
@@ -94,10 +94,11 @@
                             </div>
                             <div class="ml-4">
                                 <h3 class="text-sm font-medium text-blue-100">Total Pembayaran</h3>
-                                <p class="text-3xl font-bold text-white">{{ $pembayaran->total() }}</p>
+                                <p class="text-3xl font-bold text-white">
+                                    {{ $pembayaran->where('tanggal', date('Y-m-d'))->count() }}</p>
                                 <div class="flex items-center mt-1">
-                                    <i class="ti ti-trending-up text-green-300 text-sm mr-1"></i>
-                                    <span class="text-xs text-blue-200">Semua waktu</span>
+                                    <i class="ti ti-calendar text-blue-300 text-sm mr-1"></i>
+                                    <span class="text-xs text-blue-200">Hari ini</span>
                                 </div>
                             </div>
                         </div>
@@ -105,7 +106,7 @@
                 </div>
             </div>
 
-            <!-- Pembayaran Hari Ini Card -->
+            <!-- Total Nilai Pembayaran Hari Ini Card -->
             <div
                 class="relative bg-gradient-to-br from-green-500 via-green-600 to-green-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
@@ -115,16 +116,18 @@
                             <div class="flex-shrink-0">
                                 <div
                                     class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                    <i class="ti ti-calendar text-2xl text-white"></i>
+                                    <i class="ti ti-currency-dollar text-2xl text-white"></i>
                                 </div>
                             </div>
                             <div class="ml-4">
-                                <h3 class="text-sm font-medium text-green-100">Hari Ini</h3>
+                                <h3 class="text-sm font-medium text-green-100">Total Nilai</h3>
                                 <p class="text-3xl font-bold text-white">
-                                    {{ $pembayaran->where('tanggal', date('Y-m-d'))->count() }}</p>
+                                    Rp
+                                    {{ number_format($pembayaran->where('tanggal', date('Y-m-d'))->sum('jumlah_bayar'), 0, ',', '.') }}
+                                </p>
                                 <div class="flex items-center mt-1">
-                                    <i class="ti ti-clock text-green-300 text-sm mr-1"></i>
-                                    <span class="text-xs text-green-200">Tanggal {{ date('d/m/Y') }}</span>
+                                    <i class="ti ti-trending-up text-green-300 text-sm mr-1"></i>
+                                    <span class="text-xs text-green-200">Hari ini</span>
                                 </div>
                             </div>
                         </div>
@@ -132,7 +135,7 @@
                 </div>
             </div>
 
-            <!-- Pembayaran Tunai Card -->
+            <!-- Pembayaran Tunai Hari Ini Card -->
             <div
                 class="relative bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
@@ -148,10 +151,11 @@
                             <div class="ml-4">
                                 <h3 class="text-sm font-medium text-emerald-100">Pembayaran Tunai</h3>
                                 <p class="text-3xl font-bold text-white">
-                                    {{ $pembayaran->where('metode_pembayaran', 'tunai')->count() }}</p>
+                                    {{ $pembayaran->where('tanggal', date('Y-m-d'))->where('metode_pembayaran', 'tunai')->count() }}
+                                </p>
                                 <div class="flex items-center mt-1">
                                     <i class="ti ti-credit-card text-emerald-300 text-sm mr-1"></i>
-                                    <span class="text-xs text-emerald-200">Metode pembayaran</span>
+                                    <span class="text-xs text-emerald-200">Hari ini</span>
                                 </div>
                             </div>
                         </div>
@@ -159,7 +163,7 @@
                 </div>
             </div>
 
-            <!-- Pembayaran Transfer Card -->
+            <!-- Pembayaran Transfer Hari Ini Card -->
             <div
                 class="relative bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
@@ -175,10 +179,11 @@
                             <div class="ml-4">
                                 <h3 class="text-sm font-medium text-purple-100">Pembayaran Transfer</h3>
                                 <p class="text-3xl font-bold text-white">
-                                    {{ $pembayaran->where('metode_pembayaran', 'transfer')->count() }}</p>
+                                    {{ $pembayaran->where('tanggal', date('Y-m-d'))->where('metode_pembayaran', 'transfer')->count() }}
+                                </p>
                                 <div class="flex items-center mt-1">
                                     <i class="ti ti-bank text-purple-300 text-sm mr-1"></i>
-                                    <span class="text-xs text-purple-200">Bank transfer</span>
+                                    <span class="text-xs text-purple-200">Hari ini</span>
                                 </div>
                             </div>
                         </div>
@@ -186,7 +191,7 @@
                 </div>
             </div>
 
-            <!-- Status Pembayaran Card -->
+            <!-- Status Pembayaran Hari Ini Card -->
             <div
                 class="relative bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
@@ -204,12 +209,14 @@
                                 <div class="flex items-center space-x-3 mt-2">
                                     <div class="text-center">
                                         <p class="text-lg font-bold text-white">
-                                            {{ $pembayaran->where('status_bayar', 'P')->count() }}</p>
+                                            {{ $pembayaran->where('tanggal', date('Y-m-d'))->where('status_bayar', 'P')->count() }}
+                                        </p>
                                         <p class="text-xs text-orange-200">Pelunasan</p>
                                     </div>
                                     <div class="text-center">
                                         <p class="text-lg font-bold text-white">
-                                            {{ $pembayaran->where('status_bayar', 'D')->count() }}</p>
+                                            {{ $pembayaran->where('tanggal', date('Y-m-d'))->where('status_bayar', 'D')->count() }}
+                                        </p>
                                         <p class="text-xs text-orange-200">DP</p>
                                     </div>
                                 </div>
@@ -440,7 +447,7 @@
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap text-right">
                                     <div class="text-sm font-bold text-gray-900">
-                                        Rp {{ number_format($p->jumlah_bayar) }}
+                                        Rp {{ number_format($p->jumlah_bayar, 0, ',', '.') }}
                                     </div>
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap text-center">
@@ -490,28 +497,21 @@
                                 <td class="px-4 py-4 whitespace-nowrap text-center">
                                     <div class="flex items-center justify-center space-x-2">
                                         <!-- View Button -->
-                                        <a href="{{ route('pembayaran.show', $p->id) }}"
-                                            class="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition-all duration-200"
-                                            title="Lihat Detail">
+                                        <button type="button"
+                                            class="view-detail-btn inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition-all duration-200"
+                                            title="Lihat Detail" data-pembayaran-id="{{ $p->id }}">
                                             <i class="ti ti-eye text-sm"></i>
-                                        </a>
+                                        </button>
 
-                                        <!-- Edit Button -->
-                                        <a href="{{ route('pembayaran.edit', $p->id) }}"
-                                            class="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-emerald-600 hover:to-emerald-700 transform hover:scale-105 transition-all duration-200"
-                                            title="Edit Pembayaran">
-                                            <i class="ti ti-edit text-sm"></i>
-                                        </a>
-
-                                        <!-- Delete Button -->
+                                        <!-- Delete Button - Disabled if payment date is not today -->
                                         <form action="{{ route('pembayaran.destroy', $p->id) }}" method="POST"
-                                            class="inline"
-                                            onsubmit="return confirm('Yakin ingin menghapus pembayaran ini?')">
+                                            class="inline delete-form" data-pembayaran-id="{{ $p->id }}">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
-                                                class="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-red-600 hover:to-red-700 transform hover:scale-105 transition-all duration-200"
-                                                title="Hapus Pembayaran">
+                                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg shadow-sm transition-all duration-200 {{ $p->tanggal->format('Y-m-d') === date('Y-m-d') ? 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:shadow-lg hover:from-red-600 hover:to-red-700 transform hover:scale-105' : 'bg-gray-300 text-gray-500 cursor-not-allowed' }}"
+                                                title="{{ $p->tanggal->format('Y-m-d') === date('Y-m-d') ? 'Hapus Pembayaran' : 'Hanya bisa dihapus pada hari yang sama' }}"
+                                                {{ $p->tanggal->format('Y-m-d') !== date('Y-m-d') ? 'disabled' : '' }}>
                                                 <i class="ti ti-trash text-sm"></i>
                                             </button>
                                         </form>
@@ -549,9 +549,68 @@
             @endif
         </div>
     </div>
+
+    <!-- Detail Pembayaran Modal -->
+    <div id="detailModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+                <!-- Modal Header -->
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-2 bg-blue-100 rounded-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-blue-600">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800">Detail Pembayaran</h3>
+                                <p class="text-sm text-gray-600">Informasi lengkap pembayaran</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button type="button" id="printBtn"
+                                class="inline-flex items-center px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229.243A2.25 2.25 0 0021 20.25V19.5a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 19.5v.75a2.25 2.25 0 002.25 2.25h13.5A2.25 2.25 0 0021 20.25V19.5a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 19.5v.75a2.25 2.25 0 002.25 2.25h13.5z" />
+                                </svg>
+                                Cetak
+                            </button>
+                            <button type="button" id="closeDetailModal"
+                                class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="p-6" id="modalContent">
+                    <div class="flex items-center justify-center">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <span class="ml-2 text-gray-600">Memuat data...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- QZ Tray -->
+    <script src="{{ asset('js/qz/qz-tray.js') }}"></script>
+    <script src="{{ asset('js/qz/qz-config.js') }}"></script>
+
     <script>
         // Initialize Flatpickr for date inputs
         document.addEventListener('DOMContentLoaded', function() {
@@ -592,6 +651,350 @@
                     }
                 }
             });
+
+            // SweetAlert Delete Confirmation
+            document.querySelectorAll('.delete-form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    const pembayaranId = this.getAttribute('data-pembayaran-id');
+
+                    Swal.fire({
+                        title: 'Konfirmasi Hapus',
+                        text: 'Apakah Anda yakin ingin menghapus pembayaran ini?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Ya, Hapus!',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.submit();
+                        }
+                    });
+                });
+            });
+
+            // Detail Modal Functionality
+            const detailModal = document.getElementById('detailModal');
+            const closeDetailModal = document.getElementById('closeDetailModal');
+            const modalContent = document.getElementById('modalContent');
+            const printBtn = document.getElementById('printBtn');
+
+            // Open modal when view button is clicked
+            document.querySelectorAll('.view-detail-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const pembayaranId = this.getAttribute('data-pembayaran-id');
+                    openDetailModal(pembayaranId);
+                });
+            });
+
+            // Close modal
+            closeDetailModal.addEventListener('click', function() {
+                detailModal.classList.add('hidden');
+            });
+
+            // Close modal when clicking outside
+            detailModal.addEventListener('click', function(e) {
+                if (e.target === detailModal) {
+                    detailModal.classList.add('hidden');
+                }
+            });
+
+            // Print functionality with QZ Tray
+            printBtn.addEventListener('click', function() {
+                // Get pembayaran ID from the current modal data
+                const currentPembayaranId = this.getAttribute('data-current-pembayaran-id');
+                if (currentPembayaranId) {
+                    printPembayaran(currentPembayaranId);
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'ID pembayaran tidak ditemukan',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            });
+
+            async function printPembayaran(pembayaranId) {
+                try {
+                    // Show loading
+                    printBtn.disabled = true;
+                    printBtn.innerHTML = `
+                        <svg class="animate-spin w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Mencetak...
+                    `;
+
+                    // Fetch print data
+                    const response = await fetch(`/pembayaran/${pembayaranId}/print`);
+                    const result = await response.json();
+
+                    if (!result.success) {
+                        throw new Error(result.message);
+                    }
+
+                    const data = result.data;
+
+                    // Check if QZ Tray is available
+                    if (typeof qz === 'undefined') {
+                        Swal.fire({
+                            title: 'QZ Tray Tidak Tersedia',
+                            text: 'Pastikan QZ Tray sudah terinstall dan berjalan di komputer Anda.',
+                            icon: 'warning',
+                            confirmButtonText: 'OK'
+                        });
+                        return;
+                    }
+
+                    // Connect to QZ Tray
+                    if (!qz.websocket.isActive()) {
+                        await qz.websocket.connect();
+                    }
+
+                    // Find printer
+                    const printers = await qz.printers.get();
+                    const printerName = data.printer.name;
+
+                    if (!printers.includes(printerName)) {
+                        Swal.fire({
+                            title: 'Printer Tidak Ditemukan',
+                            text: `Printer "${printerName}" tidak ditemukan. Printer yang tersedia: ${printers.join(', ')}`,
+                            icon: 'warning',
+                            confirmButtonText: 'OK'
+                        });
+                        return;
+                    }
+
+                    // Generate receipt content
+                    const receiptContent = generateReceiptContent(data);
+
+                    // Configure print job
+                    const config = qz.configs.create(printerName, {
+                        scaleContent: true,
+                        rasterize: false,
+                        orientation: data.printer.orientation,
+                        paperThickness: 0,
+                        margins: {
+                            top: data.printer.margin_top,
+                            bottom: data.printer.margin_bottom,
+                            left: data.printer.margin_left,
+                            right: data.printer.margin_right
+                        }
+                    });
+
+                    // Print
+                    await qz.print(config, [receiptContent]);
+
+                    // Success message
+                    Swal.fire({
+                        title: 'Berhasil Dicetak',
+                        text: 'Struk pembayaran berhasil dicetak!',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    });
+
+                } catch (error) {
+                    console.error('Print error:', error);
+                    Swal.fire({
+                        title: 'Gagal Mencetak',
+                        text: error.message || 'Terjadi kesalahan saat mencetak',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                } finally {
+                    // Reset button
+                    printBtn.disabled = false;
+                    printBtn.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229.243A2.25 2.25 0 0021 20.25V19.5a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 19.5v.75a2.25 2.25 0 002.25 2.25h13.5A2.25 2.25 0 0021 20.25V19.5a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 19.5v.75a2.25 2.25 0 002.25 2.25h13.5z" />
+                        </svg>
+                        Cetak
+                    `;
+                }
+            }
+
+            function generateReceiptContent(data) {
+                const {
+                    pembayaran,
+                    penjualan,
+                    company
+                } = data;
+
+                let content = '';
+
+                // Header
+                content += `${company.name}\n`;
+                content += `${company.address}\n`;
+                content += `Telp: ${company.phone}\n`;
+                if (company.website) {
+                    content += `${company.website}\n`;
+                }
+                content += '='.repeat(32) + '\n';
+
+                // Receipt title
+                content += 'BUKTI PEMBAYARAN\n';
+                content += '='.repeat(32) + '\n';
+
+                // Payment info
+                content += `No. Bukti  : ${pembayaran.no_bukti}\n`;
+                content += `Tanggal    : ${pembayaran.tanggal}\n`;
+                content += `Kasir      : ${pembayaran.user_name}\n`;
+                content += '-'.repeat(32) + '\n';
+
+                // Transaction info
+                content += `No. Faktur : ${penjualan.no_faktur}\n`;
+                content += `Pelanggan  : ${penjualan.pelanggan}\n`;
+                content += `Total Trans: Rp ${penjualan.total}\n`;
+                content += '-'.repeat(32) + '\n';
+
+                // Payment details
+                content += `Jumlah Bayar: Rp ${pembayaran.jumlah_bayar}\n`;
+                content += `Metode      : ${pembayaran.metode_pembayaran}\n`;
+                content += `Status      : ${pembayaran.status_bayar}\n`;
+
+                if (pembayaran.keterangan) {
+                    content += `Keterangan  : ${pembayaran.keterangan}\n`;
+                }
+
+                content += '='.repeat(32) + '\n';
+                content += `Terima kasih atas pembayaran Anda\n`;
+                content += `Semoga hari Anda menyenangkan!\n`;
+                content += '='.repeat(32) + '\n';
+                content += `\n\n\n\n\n`; // Feed paper
+
+                return content;
+            }
+
+            function openDetailModal(pembayaranId) {
+                detailModal.classList.remove('hidden');
+
+                // Set pembayaran ID to print button
+                printBtn.setAttribute('data-current-pembayaran-id', pembayaranId);
+
+                // Show loading
+                modalContent.innerHTML = `
+                    <div class="flex items-center justify-center">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <span class="ml-2 text-gray-600">Memuat data...</span>
+                    </div>
+                `;
+
+                // Fetch pembayaran detail
+                fetch(`/pembayaran/${pembayaranId}/detail`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            modalContent.innerHTML = generateDetailHTML(data.pembayaran);
+                        } else {
+                            modalContent.innerHTML = `
+                                <div class="text-center py-8">
+                                    <div class="text-red-500 mb-4">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12 mx-auto">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-gray-600">Gagal memuat data pembayaran</p>
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(error => {
+                        modalContent.innerHTML = `
+                            <div class="text-center py-8">
+                                <div class="text-red-500 mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12 mx-auto">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                                    </svg>
+                                </div>
+                                <p class="text-gray-600">Terjadi kesalahan saat memuat data</p>
+                            </div>
+                        `;
+                    });
+            }
+
+            function generateDetailHTML(pembayaran) {
+                return `
+                    <div class="space-y-6">
+                        <!-- Header Info -->
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="text-lg font-semibold text-gray-800">No. Bukti: ${pembayaran.no_bukti}</h4>
+                                    <p class="text-sm text-gray-600">Tanggal: ${pembayaran.tanggal_formatted}</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                                        ${pembayaran.status_bayar === 'P' ? 'bg-green-100 text-green-800' : 
+                                          pembayaran.status_bayar === 'D' ? 'bg-blue-100 text-blue-800' : 
+                                          'bg-orange-100 text-orange-800'}">
+                                        ${pembayaran.status_bayar_display}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Details -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-white border border-gray-200 rounded-lg p-4">
+                                <h5 class="font-semibold text-gray-800 mb-3">Informasi Pembayaran</h5>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Jumlah Bayar:</span>
+                                        <span class="font-semibold">Rp ${pembayaran.jumlah_bayar_formatted}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Metode Pembayaran:</span>
+                                        <span class="font-semibold">${pembayaran.metode_pembayaran_display}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Status:</span>
+                                        <span class="font-semibold">${pembayaran.status_bayar_display}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Dibuat Oleh:</span>
+                                        <span class="font-semibold">${pembayaran.user_name}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white border border-gray-200 rounded-lg p-4">
+                                <h5 class="font-semibold text-gray-800 mb-3">Informasi Transaksi</h5>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">No. Faktur:</span>
+                                        <span class="font-semibold">${pembayaran.penjualan.no_faktur}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Pelanggan:</span>
+                                        <span class="font-semibold">${pembayaran.penjualan.pelanggan.nama}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Total Transaksi:</span>
+                                        <span class="font-semibold">Rp ${pembayaran.penjualan.total_formatted}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Tanggal Transaksi:</span>
+                                        <span class="font-semibold">${pembayaran.penjualan.tanggal_formatted}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        ${pembayaran.keterangan ? `
+                                    <div class="bg-white border border-gray-200 rounded-lg p-4">
+                                        <h5 class="font-semibold text-gray-800 mb-2">Keterangan</h5>
+                                        <p class="text-gray-700">${pembayaran.keterangan}</p>
+                                    </div>
+                                    ` : ''}
+                    </div>
+                `;
+            }
         });
     </script>
 @endpush
