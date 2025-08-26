@@ -11,6 +11,7 @@ use App\Http\Controllers\PembelianController;
 use App\Http\Controllers\PembayaranPembelianController;
 use App\Http\Controllers\MetodePembayaranController;
 use App\Http\Controllers\PrinterSettingController;
+use App\Http\Controllers\KasBankController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -28,9 +29,7 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -111,6 +110,9 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{encryptedId}', [SupplierController::class, 'destroy'])->name('destroy');
     });
     Route::get('supplier/search', [SupplierController::class, 'getSuppliers'])->name('supplier.search');
+
+    // Kas & Bank Routes
+    Route::resource('kas-bank', KasBankController::class);
 
     // Transaksi Pembelian Routes
     Route::prefix('pembelian')->name('pembelian.')->group(function () {

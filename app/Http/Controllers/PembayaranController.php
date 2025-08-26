@@ -46,7 +46,12 @@ class PembayaranController extends Controller
             })
             ->values(); // Reset array keys
 
-        return view('pembayaran.create', compact('penjualan'));
+        // Get active payment methods
+        $metodePembayaran = \App\Models\MetodePembayaran::where('status', true)
+            ->orderBy('nama')
+            ->get();
+
+        return view('pembayaran.create', compact('penjualan', 'metodePembayaran'));
     }
 
     /**
@@ -54,6 +59,12 @@ class PembayaranController extends Controller
      */
     public function store(Request $request)
     {
+        // Log the request data for debugging
+        Log::info('Payment creation request', [
+            'request_data' => $request->all(),
+            'headers' => $request->headers->all()
+        ]);
+
         // Clean and parse jumlah input
         $jumlahInput = $request->input('jumlah');
         $jumlahClean = preg_replace('/[^\d]/', '', $jumlahInput);
@@ -75,16 +86,33 @@ class PembayaranController extends Controller
             'keterangan.max' => 'Keterangan maksimal 255 karakter.',
         ]);
 
+        // Validate metode pembayaran exists
+        $metodePembayaran = \App\Models\MetodePembayaran::where('kode', $validated['metode_pembayaran'])
+            ->where('status', true)
+            ->first();
+
+        if (!$metodePembayaran) {
+            return back()->withInput()
+                ->with('error', 'Metode pembayaran yang dipilih tidak valid atau tidak aktif.');
+        }
+
         // Custom validation for jumlah
         if ($jumlahNumeric < 1000) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Jumlah pembayaran minimal Rp 1.000.'
-            ], 422);
+            return back()->withInput()
+                ->with('error', 'Jumlah pembayaran minimal Rp 1.000.');
         }
 
         // Update validated data with clean numeric value
         $validated['jumlah_raw'] = $jumlahNumeric;
+
+        // Convert datetime-local to proper format
+        try {
+            $tanggal = \Carbon\Carbon::parse($validated['tanggal']);
+            $validated['tanggal'] = $tanggal->format('Y-m-d H:i:s');
+        } catch (\Exception $e) {
+            return back()->withInput()
+                ->with('error', 'Format tanggal tidak valid.');
+        }
 
         DB::beginTransaction();
 

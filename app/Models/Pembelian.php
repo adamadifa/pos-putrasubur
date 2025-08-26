@@ -32,10 +32,12 @@ class Pembelian extends Model
         'total' => 'decimal:2',
     ];
 
+    protected $appends = ['encrypted_id'];
+
     // Accessor untuk encrypted ID
     public function getEncryptedIdAttribute()
     {
-        return Crypt::encryptString($this->id);
+        return encrypt($this->id);
     }
 
     // Relationships
@@ -121,5 +123,26 @@ class Pembelian extends Model
     public function scopeKredit($query)
     {
         return $query->where('jenis_transaksi', 'kredit');
+    }
+
+    /**
+     * Decrypt ID dari URL
+     */
+    public static function decryptId($encryptedId)
+    {
+        try {
+            return decrypt($encryptedId);
+        } catch (\Exception $e) {
+            abort(404, 'ID tidak valid');
+        }
+    }
+
+    /**
+     * Find by encrypted ID
+     */
+    public static function findByEncryptedId($encryptedId)
+    {
+        $id = self::decryptId($encryptedId);
+        return self::findOrFail($id);
     }
 }

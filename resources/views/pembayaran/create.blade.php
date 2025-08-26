@@ -157,198 +157,191 @@
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
-
-                                <!-- Payment Amount -->
-                                <div class="space-y-2">
-                                    <label for="jumlah" class="block text-sm font-semibold text-gray-700">
-                                        Jumlah Bayar <span class="text-red-500">*</span>
-                                    </label>
-                                    <div class="relative group">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <span
-                                                class="text-gray-500 font-medium group-hover:text-green-500 transition-colors">Rp</span>
-                                        </div>
-                                        <input type="text" id="jumlah" name="jumlah"
-                                            class="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('jumlah') border-red-500 @enderror text-right"
-                                            placeholder="0">
-                                        <input type="hidden" id="jumlah_raw" name="jumlah_raw" value="">
-                                    </div>
-                                    @error('jumlah')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
-
-                                <!-- Payment Method -->
-                                <div class="space-y-2">
-                                    <label for="metode_pembayaran" class="block text-sm font-semibold text-gray-700">
-                                        Metode Pembayaran <span class="text-red-500">*</span>
-                                    </label>
-                                    <div class="relative group">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                stroke-width="1.5" stroke="currentColor"
-                                                class="w-5 h-5 text-gray-400 group-hover:text-green-500 transition-colors">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-                                            </svg>
-                                        </div>
-                                        <select id="metode_pembayaran" name="metode_pembayaran"
-                                            class="w-full pl-11 pr-10 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('metode_pembayaran') border-red-500 @enderror appearance-none">
-                                            <option value="">Pilih metode pembayaran...</option>
-                                            <option value="tunai">💵 Tunai</option>
-                                            <option value="transfer">🏦 Transfer Bank</option>
-                                            <option value="qris">📱 QRIS</option>
-                                            <option value="kartu">💳 Kartu Debit/Credit</option>
-                                            <option value="ewallet">📱 E-Wallet</option>
-                                        </select>
-                                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    @error('metode_pembayaran')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
                             </div>
 
-                            <!-- Transaction Details (will be shown when transaction is selected) -->
-                            <div id="transaction-details"
-                                class="hidden bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
-                                <div class="flex items-center space-x-3 mb-4">
-                                    <div class="p-2 bg-blue-100 rounded-lg">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-blue-600">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                                        </svg>
-                                    </div>
-                                    <h4 class="text-lg font-semibold text-gray-800">Detail Transaksi</h4>
-                                </div>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    <div class="bg-white rounded-lg p-4 border border-blue-200">
-                                        <div class="flex items-center space-x-3">
-                                            <div class="p-2 bg-blue-100 rounded-lg">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                    class="w-4 h-4 text-blue-600">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                            </div>
-                                            <div>
-                                                <p class="text-sm text-gray-600">Total Transaksi</p>
-                                                <p id="total-transaksi" class="text-lg font-bold text-gray-900"></p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="bg-white rounded-lg p-4 border border-green-200">
-                                        <div class="flex items-center space-x-3">
-                                            <div class="p-2 bg-green-100 rounded-lg">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                    class="w-4 h-4 text-green-600">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                            </div>
-                                            <div>
-                                                <p class="text-sm text-gray-600">Sudah Dibayar</p>
-                                                <p id="sudah-dibayar" class="text-lg font-bold text-gray-900"></p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="bg-white rounded-lg p-4 border border-red-200">
-                                        <div class="flex items-center space-x-3">
-                                            <div class="p-2 bg-red-100 rounded-lg">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                    class="w-4 h-4 text-red-600">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                                                </svg>
-                                            </div>
-                                            <div>
-                                                <p class="text-sm text-gray-600">Sisa Bayar</p>
-                                                <p id="sisa-bayar" class="text-lg font-bold text-red-600"></p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Notes -->
+                            <!-- Payment Amount - Full Width -->
                             <div class="space-y-2">
-                                <label for="keterangan" class="block text-sm font-semibold text-gray-700">
-                                    Keterangan
+                                <label for="jumlah" class="block text-sm font-semibold text-gray-700">
+                                    Jumlah Bayar <span class="text-red-500">*</span>
                                 </label>
                                 <div class="relative group">
-                                    <div class="absolute inset-y-0 left-0 pl-3 pt-3 flex items-start pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor"
-                                            class="w-5 h-5 text-gray-400 group-hover:text-purple-500 transition-colors">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-                                        </svg>
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span
+                                            class="text-gray-500 font-medium group-hover:text-green-500 transition-colors">Rp</span>
                                     </div>
-                                    <textarea id="keterangan" name="keterangan" rows="3"
-                                        class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('keterangan') border-red-500 @enderror"
-                                        placeholder="Catatan tambahan (opsional)"></textarea>
+                                    <input type="text" id="jumlah" name="jumlah"
+                                        class="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('jumlah') border-red-500 @enderror text-right text-lg font-semibold"
+                                        placeholder="0">
+                                    <input type="hidden" id="jumlah_raw" name="jumlah_raw" value="">
                                 </div>
-                                <p class="text-xs text-gray-500 flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="w-3 h-3 mr-1">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.847a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.847.813a4.5 4.5 0 0 0-3.09 3.09Z" />
-                                    </svg>
-                                    Catatan tambahan untuk pembayaran ini
-                                </p>
-                                @error('keterangan')
+                                @error('jumlah')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
+
+                        </div>
+
+                        <!-- Metode Pembayaran -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Metode Pembayaran <span class="text-red-500">*</span>
+                            </label>
+                            <div class="grid grid-cols-2 gap-3">
+                                @foreach ($metodePembayaran as $metode)
+                                                                         <label class="relative cursor-pointer payment-method-option">
+                                         <input type="radio" name="metode_pembayaran" id="metode_pembayaran_{{ $metode->kode }}" value="{{ $metode->kode }}"
+                                             {{ old('metode_pembayaran') == $metode->kode ? 'checked' : '' }}
+                                             class="sr-only payment-method-radio">
+                                        <div
+                                            class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 payment-method-card">
+                                            <div class="flex flex-col items-center text-center">
+                                                <div
+                                                    class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-2">
+                                                    <i class="ti {{ $metode->icon_display }} text-blue-600 text-lg"></i>
+                                                </div>
+                                                <span class="text-sm font-medium text-gray-900">{{ $metode->nama }}</span>
+                                                <span class="text-xs text-gray-500">{{ $metode->kode }}</span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                            @error('metode_pembayaran')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
 
-                    <!-- Action Buttons -->
-                    <div class="flex items-center justify-between pt-8 mt-8 border-t border-gray-200">
-                        <a href="{{ route('pembayaran.index') }}"
-                            class="inline-flex items-center px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold text-base rounded-xl hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 group">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-3 group-hover:text-gray-600">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                            Batal
-                        </a>
+                    <!-- Transaction Details (will be shown when transaction is selected) -->
+                    <div id="transaction-details"
+                        class="hidden bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="p-2 bg-blue-100 rounded-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-blue-600">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                </svg>
+                            </div>
+                            <h4 class="text-lg font-semibold text-gray-800">Detail Transaksi</h4>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="bg-white rounded-lg p-4 border border-blue-200">
+                                <div class="flex items-center space-x-3">
+                                    <div class="p-2 bg-blue-100 rounded-lg">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-blue-600">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">Total Transaksi</p>
+                                        <p id="total-transaksi" class="text-lg font-bold text-gray-900"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 border border-green-200">
+                                <div class="flex items-center space-x-3">
+                                    <div class="p-2 bg-green-100 rounded-lg">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-green-600">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">Sudah Dibayar</p>
+                                        <p id="sudah-dibayar" class="text-lg font-bold text-gray-900"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 border border-red-200">
+                                <div class="flex items-center space-x-3">
+                                    <div class="p-2 bg-red-100 rounded-lg">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-red-600">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">Sisa Bayar</p>
+                                        <p id="sisa-bayar" class="text-lg font-bold text-red-600"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                        <div class="flex items-center space-x-4">
-                            <button type="reset"
-                                class="inline-flex items-center px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold text-base rounded-xl hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 group">
+                    <!-- Notes -->
+                    <div class="space-y-2">
+                        <label for="keterangan" class="block text-sm font-semibold text-gray-700">
+                            Keterangan
+                        </label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-3 pt-3 flex items-start pointer-events-none">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor"
-                                    class="w-6 h-6 mr-3 group-hover:text-gray-600">
+                                    class="w-5 h-5 text-gray-400 group-hover:text-purple-500 transition-colors">
                                     <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                        d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
                                 </svg>
-                                Reset Form
-                            </button>
-                            <button type="submit"
-                                class="inline-flex items-center px-10 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold text-base rounded-xl shadow-lg hover:from-green-700 hover:to-emerald-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transform hover:scale-[1.02] transition-all duration-200">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-3">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-                                </svg>
-                                Simpan Pembayaran
-                            </button>
+                            </div>
+                            <textarea id="keterangan" name="keterangan" rows="3"
+                                class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('keterangan') border-red-500 @enderror"
+                                placeholder="Catatan tambahan (opsional)"></textarea>
                         </div>
+                        <p class="text-xs text-gray-500 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor" class="w-3 h-3 mr-1">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.847a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.847.813a4.5 4.5 0 0 0-3.09 3.09Z" />
+                            </svg>
+                            Catatan tambahan untuk pembayaran ini
+                        </p>
+                        @error('keterangan')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
-                </form>
             </div>
         </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center justify-between pt-8 mt-8 border-t border-gray-200">
+            <a href="{{ route('pembayaran.index') }}"
+                class="inline-flex items-center px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold text-base rounded-xl hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 group">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-6 h-6 mr-3 group-hover:text-gray-600">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Batal
+            </a>
+
+            <div class="flex items-center space-x-4">
+                <button type="reset"
+                    class="inline-flex items-center px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold text-base rounded-xl hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 group">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-6 h-6 mr-3 group-hover:text-gray-600">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    </svg>
+                    Reset Form
+                </button>
+                <button type="submit"
+                    class="inline-flex items-center px-10 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold text-base rounded-xl shadow-lg hover:from-green-700 hover:to-emerald-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transform hover:scale-[1.02] transition-all duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-6 h-6 mr-3">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+                    </svg>
+                    Simpan Pembayaran
+                </button>
+            </div>
+        </div>
+        </form>
+    </div>
+    </div>
     </div>
 
     <!-- Transaction Selection Modal -->
@@ -517,43 +510,68 @@
             const fieldsToValidate = ['penjualan_id', 'metode_pembayaran', 'jumlah', 'tanggal', 'keterangan'];
 
             fieldsToValidate.forEach(function(fieldName) {
-                const field = $(`#${fieldName}`);
                 let validationTimeout;
 
-                field.on('input change blur', function() {
-                    const value = $(this).val();
+                // Special handling for radio buttons
+                if (fieldName === 'metode_pembayaran') {
+                    $('input[name="metode_pembayaran"]').on('change', function() {
+                        const value = $('input[name="metode_pembayaran"]:checked').val();
+                        clearTimeout(validationTimeout);
+                        validationTimeout = setTimeout(function() {
+                            validateField(fieldName, value);
+                        }, 300);
+                    });
+                } else {
+                    const field = $(`#${fieldName}`);
+                    
+                    field.on('input change blur', function() {
+                        const value = $(this).val();
 
-                    // Clear previous timeout
-                    clearTimeout(validationTimeout);
+                        // Clear previous timeout
+                        clearTimeout(validationTimeout);
 
-                    // Don't validate empty fields on input (only on blur)
-                    if (!value && $(this)[0].type !== 'blur') {
-                        return;
-                    }
+                        // Don't validate empty fields on input (only on blur)
+                        if (!value && $(this)[0].type !== 'blur') {
+                            return;
+                        }
 
-                    // Set timeout to avoid too many validations
-                    validationTimeout = setTimeout(function() {
+                        // Set timeout to avoid too many validations
+                        validationTimeout = setTimeout(function() {
+                            validateField(fieldName, value);
+                        }, 300);
+                    });
+
+                    // Immediate validation on blur for required fields
+                    field.on('blur', function() {
+                        const value = $(this).val();
+                        clearTimeout(validationTimeout);
                         validateField(fieldName, value);
-                    }, 300);
-                });
-
-                // Immediate validation on blur for required fields
-                field.on('blur', function() {
-                    const value = $(this).val();
-                    clearTimeout(validationTimeout);
-                    validateField(fieldName, value);
-                });
+                    });
+                }
             });
 
             // Frontend Validate field function
             function validateField(fieldName, value) {
-                const field = $(`#${fieldName}`);
-                const fieldContainer = field.closest('.space-y-2');
+                let field, fieldContainer;
+                
+                // Special handling for radio buttons
+                if (fieldName === 'metode_pembayaran') {
+                    field = $('input[name="metode_pembayaran"]:checked');
+                    fieldContainer = $('.payment-method-option').first().closest('.space-y-2');
+                } else {
+                    field = $(`#${fieldName}`);
+                    fieldContainer = field.closest('.space-y-2');
+                }
+                
                 const rules = validationRules[fieldName];
                 const messages = validationMessages[fieldName];
 
                 // Remove existing error and success states
-                field.removeClass('border-red-500 border-green-500').addClass('border-gray-300');
+                if (fieldName === 'metode_pembayaran') {
+                    $('.payment-method-card').removeClass('border-red-500 border-green-500').addClass('border-gray-200');
+                } else {
+                    field.removeClass('border-red-500 border-green-500').addClass('border-gray-300');
+                }
                 fieldContainer.find('.error-message').remove();
 
                 // Skip validation for empty optional fields
@@ -596,7 +614,11 @@
 
                 if (!isValid) {
                     // Add error styling
-                    field.removeClass('border-gray-300 border-green-500').addClass('border-red-500');
+                    if (fieldName === 'metode_pembayaran') {
+                        $('.payment-method-card').removeClass('border-gray-200 border-green-500').addClass('border-red-500');
+                    } else {
+                        field.removeClass('border-gray-300 border-green-500').addClass('border-red-500');
+                    }
 
                     // Add error message
                     const errorHtml = `
@@ -610,7 +632,11 @@
                     fieldContainer.append(errorHtml);
                 } else {
                     // Add success styling (green border only)
-                    field.removeClass('border-gray-300 border-red-500').addClass('border-green-500');
+                    if (fieldName === 'metode_pembayaran') {
+                        $('.payment-method-card').removeClass('border-gray-200 border-red-500').addClass('border-green-500');
+                    } else {
+                        field.removeClass('border-gray-300 border-red-500').addClass('border-green-500');
+                    }
                 }
             }
 
@@ -936,12 +962,19 @@
 
                 // Check for empty required fields
                 fieldsToValidate.forEach(function(fieldName) {
-                    const field = $(`#${fieldName}`);
-                    let fieldValue = field.val();
+                    let fieldValue;
 
-                    // For jumlah field, check the raw value
-                    if (fieldName === 'jumlah') {
-                        fieldValue = document.getElementById('jumlah_raw').value;
+                    // Special handling for radio buttons
+                    if (fieldName === 'metode_pembayaran') {
+                        fieldValue = $('input[name="metode_pembayaran"]:checked').val();
+                    } else {
+                        const field = $(`#${fieldName}`);
+                        fieldValue = field.val();
+
+                        // For jumlah field, check the raw value
+                        if (fieldName === 'jumlah') {
+                            fieldValue = document.getElementById('jumlah_raw').value;
+                        }
                     }
 
                     if (!fieldValue && fieldName !== 'keterangan') {
@@ -1054,6 +1087,56 @@
                     }, 300);
                 }, 4000);
             }
+
+                    // Initialize payment method selection
+        function initializePaymentMethod() {
+            const paymentMethodRadios = document.querySelectorAll('.payment-method-radio');
+
+            paymentMethodRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    // Remove selected class from all cards
+                    document.querySelectorAll('.payment-method-card').forEach(card => {
+                        card.classList.remove('selected');
+                    });
+
+                    // Add selected class to checked card
+                    if (this.checked) {
+                        this.closest('.payment-method-option').querySelector(
+                                '.payment-method-card')
+                            .classList.add('selected');
+                    }
+
+                    // Trigger validation
+                    const value = this.value;
+                    validateField('metode_pembayaran', value);
+                });
+            });
+        }
+
+            // Initialize when DOM is loaded
+            document.addEventListener('DOMContentLoaded', function() {
+                initializePaymentMethod();
+            });
         });
     </script>
+
+    <style>
+        .payment-method-card {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .payment-method-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .payment-method-radio:checked+.payment-method-card {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
+        }
+
+        .payment-method-radio:checked+.payment-method-card .text-blue-600 {
+            color: #2563eb;
+        }
+    </style>
 @endsection

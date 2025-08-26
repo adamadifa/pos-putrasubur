@@ -1563,6 +1563,7 @@
 
         // Close quantity modal
         function closeQuantityModalHandler() {
+            // Only close if user explicitly wants to close (not during input)
             quantityModal.classList.add('hidden');
             currentProduct = null;
             editingItemIndex = null;
@@ -1612,19 +1613,19 @@
         closeQuantityModal.addEventListener('click', closeQuantityModalHandler);
         cancelQuantity.addEventListener('click', closeQuantityModalHandler);
 
-        // Close modal when clicking outside
-        quantityModal.addEventListener('click', (e) => {
-            if (e.target === quantityModal) {
-                closeQuantityModalHandler();
-            }
-        });
+        // Disable closing modal when clicking outside - user must use buttons to close
+        // quantityModal.addEventListener('click', (e) => {
+        //     if (e.target === quantityModal) {
+        //         closeQuantityModalHandler();
+        //     }
+        // });
 
-        // Close modal with ESC key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && !quantityModal.classList.contains('hidden')) {
-                closeQuantityModalHandler();
-            }
-        });
+        // Disable closing modal with ESC key - user must use buttons to close
+        // document.addEventListener('keydown', (e) => {
+        //     if (e.key === 'Escape' && !quantityModal.classList.contains('hidden')) {
+        //         closeQuantityModalHandler();
+        //     }
+        // });
 
         // Setup quantity input with decimal formatting
         setupDecimalInput(quantityInput);
@@ -1655,6 +1656,8 @@
         discountInput.addEventListener('input', function() {
             updateModalTotalPrice();
         });
+
+        // No need for editing flags since modal won't close on outside click
 
         // Decrease quantity button
         decreaseQty.addEventListener('click', function() {
@@ -1737,6 +1740,21 @@
             if (e.key === 'Enter') {
                 confirmQuantity.click();
             }
+        });
+
+        // Prevent Enter key from closing modal on other inputs
+        [priceInput, discountInput].forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // Prevent form submission or modal closing
+                    // Optionally, you can move focus to the next input or confirm button
+                    if (this.id === 'modalPriceInput') {
+                        discountInput.focus();
+                    } else if (this.id === 'discountInput') {
+                        confirmQuantity.focus();
+                    }
+                }
+            });
         });
 
         function addToOrder(product, quantity = 1, discount = 0, customPrice = null) {
@@ -1874,14 +1892,14 @@
                         </div>
                         
                         ${discount > 0 ? `
-                                                                                                                                                                                                                    <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                                                                        <span class="text-orange-600 flex items-center">
-                                                                                                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                                                                            Potongan Harga
-                                                                                                                                                                                                                        </span>
-                                                                                                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                    ` : ''}
+                                                                                                                                                                                                                            <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                                <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                                    Potongan Harga
+                                                                                                                                                                                                                                </span>
+                                                                                                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                            ` : ''}
                         
                         <!-- Total Line -->
                         <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -1947,14 +1965,14 @@
                 </div>
                 
                 ${discount > 0 ? `
-                                                                                                                                                                                                            <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                                                                <span class="text-orange-600 flex items-center">
-                                                                                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                                                                    Potongan Harga
-                                                                                                                                                                                                                </span>
-                                                                                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                            ` : ''}
+                                                                                                                                                                                                                    <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                        <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                            Potongan Harga
+                                                                                                                                                                                                                        </span>
+                                                                                                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                    ` : ''}
                 
                 <!-- Total Line -->
                 <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -2413,11 +2431,11 @@
                                 <span>Rp ${formatNumber(subtotal)}</span>
                             </div>
                             ${discount > 0 ? `
-                                                                                                                                                                                                                    <div class="flex justify-between text-xs">
-                                                                                                                                                                                                                        <span class="text-orange-600">Potongan</span>
-                                                                                                                                                                                                                        <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                    ` : ''}
+                                                                                                                                                                                                                            <div class="flex justify-between text-xs">
+                                                                                                                                                                                                                                <span class="text-orange-600">Potongan</span>
+                                                                                                                                                                                                                                <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                            ` : ''}
                             <div class="flex justify-between text-sm font-medium">
                                 <span>Total</span>
                                 <span class="text-blue-600">Rp ${formatNumber(total)}</span>

@@ -8,8 +8,10 @@ use App\Models\Produk;
 use App\Models\DetailPembelian;
 use App\Models\PembayaranPembelian;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class PembelianController extends Controller
@@ -106,10 +108,16 @@ class PembelianController extends Controller
         $suppliers = Supplier::where('status', true)->orderBy('nama')->get();
         $produk = Produk::with(['kategori', 'satuan'])->orderBy('nama_produk')->get();
 
+        // Get active payment methods
+        $metodePembayaran = \App\Models\MetodePembayaran::where('status', true)
+            ->orderBy('urutan')
+            ->orderBy('nama')
+            ->get();
+
         // Generate invoice number
         $invoiceNumber = 'PO-' . date('YmdHis');
 
-        return view('pembelian.create', compact('suppliers', 'produk', 'invoiceNumber'));
+        return view('pembelian.create', compact('suppliers', 'produk', 'metodePembayaran', 'invoiceNumber'));
     }
 
     /**
@@ -122,6 +130,7 @@ class PembelianController extends Controller
             'supplier_id' => 'required|exists:supplier,id',
             'tanggal' => 'required|date',
             'jenis_transaksi' => 'required|in:tunai,kredit',
+            'metode_pembayaran' => 'nullable|string|exists:metode_pembayaran,kode',
             'dp_amount' => 'nullable|numeric|min:0',
             'diskon' => 'nullable|numeric|min:0',
             'keterangan' => 'nullable|string',
@@ -138,6 +147,7 @@ class PembelianController extends Controller
             'supplier_id.exists' => 'Supplier tidak valid.',
             'jenis_transaksi.required' => 'Jenis transaksi wajib dipilih.',
             'jenis_transaksi.in' => 'Jenis transaksi tidak valid.',
+            'metode_pembayaran.exists' => 'Metode pembayaran tidak valid.',
             'dp_amount.min' => 'Jumlah pembayaran tidak boleh negatif.',
             'items.required' => 'Minimal harus ada 1 produk.',
             'items.min' => 'Minimal harus ada 1 produk.',
@@ -149,6 +159,18 @@ class PembelianController extends Controller
             'items.*.harga_beli.min' => 'Harga tidak boleh negatif.',
             'items.*.discount.min' => 'Diskon tidak boleh negatif.',
         ]);
+
+        // Additional validation for metode_pembayaran to ensure it's active
+        if ($validated['metode_pembayaran']) {
+            $metodeExists = \App\Models\MetodePembayaran::where('kode', $validated['metode_pembayaran'])
+                ->where('status', true)
+                ->exists();
+
+            if (!$metodeExists) {
+                return back()->withInput()
+                    ->withErrors(['metode_pembayaran' => 'Metode pembayaran yang dipilih tidak aktif.']);
+            }
+        }
 
         try {
             DB::beginTransaction();
@@ -216,8 +238,36 @@ class PembelianController extends Controller
                 // Generate payment reference number
                 $noBukti = 'PAY-PO-' . date('Ymd') . '-' . str_pad($pembelian->id, 4, '0', STR_PAD_LEFT);
 
-                // Determine payment method based on transaction type
-                $metodePembayaran = $jenisTransaksi === 'tunai' ? 'tunai' : 'dp';
+                // Get metode_pembayaran from form, with proper validation
+                $metodePembayaran = $validated['metode_pembayaran'] ?? null;
+
+                // If no metode_pembayaran selected, get default based on transaction type
+                if (!$metodePembayaran) {
+                    if ($jenisTransaksi === 'tunai') {
+                        // For cash transactions, get the first active 'tunai' method
+                        $defaultMetode = \App\Models\MetodePembayaran::where('status', true)
+                            ->where('kode', 'like', '%tunai%')
+                            ->first();
+                        $metodePembayaran = $defaultMetode ? $defaultMetode->kode : null;
+                    } else {
+                        // For credit transactions, get the first active method
+                        $defaultMetode = \App\Models\MetodePembayaran::where('status', true)
+                            ->orderBy('urutan')
+                            ->first();
+                        $metodePembayaran = $defaultMetode ? $defaultMetode->kode : null;
+                    }
+                }
+
+                // Validate that metode_pembayaran exists in database
+                if ($metodePembayaran) {
+                    $metodeExists = \App\Models\MetodePembayaran::where('kode', $metodePembayaran)
+                        ->where('status', true)
+                        ->exists();
+
+                    if (!$metodeExists) {
+                        throw new \Exception('Metode pembayaran yang dipilih tidak valid atau tidak aktif.');
+                    }
+                }
 
                 \App\Models\PembayaranPembelian::create([
                     'pembelian_id' => $pembelian->id,
@@ -231,6 +281,22 @@ class PembelianController extends Controller
                         : 'Pembayaran DP awal',
                     'user_id' => auth()->id(),
                 ]);
+
+                Log::info('Created payment record', [
+                    'pembelian_id' => $pembelian->id,
+                    'no_bukti' => $noBukti,
+                    'amount' => $dpAmount,
+                    'jenis_transaksi' => $jenisTransaksi,
+                    'metode_pembayaran' => $metodePembayaran
+                ]);
+            } else {
+                // No payment amount - this could be a pure credit transaction
+                Log::info('No payment record created', [
+                    'pembelian_id' => $pembelian->id,
+                    'jenis_transaksi' => $jenisTransaksi,
+                    'dp_amount' => $dpAmount,
+                    'status_pembayaran' => $statusPembayaran
+                ]);
             }
 
             DB::commit();
@@ -241,7 +307,7 @@ class PembelianController extends Controller
                 $successMessage .= ' Pembayaran ' . number_format($dpAmount, 0, ',', '.') . ' telah dicatat.';
             }
 
-            return redirect()->route('pembelian.index')
+            return redirect()->route('pembelian.show', $pembelian->encrypted_id)
                 ->with('success', $successMessage);
         } catch (\Exception $e) {
             DB::rollback();
@@ -254,16 +320,22 @@ class PembelianController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($id)
+    public function show($encryptedId)
     {
         try {
-            $pembelian = Pembelian::with(['supplier', 'detailPembelian.produk', 'pembayaranPembelian', 'user'])
-                ->findOrFail(Crypt::decryptString($id));
+            $pembelian = Pembelian::findByEncryptedId($encryptedId);
+            $pembelian->load(['supplier', 'detailPembelian.produk', 'pembayaranPembelian', 'user']);
 
             // Calculate sisa pembayaran
             $sisaPembayaran = $pembelian->sisa_pembayaran;
 
-            return view('pembelian.show', compact('pembelian', 'sisaPembayaran'));
+            // Get active payment methods
+            $metodePembayaran = \App\Models\MetodePembayaran::where('status', true)
+                ->orderBy('urutan')
+                ->orderBy('nama')
+                ->get();
+
+            return view('pembelian.show', compact('pembelian', 'sisaPembayaran', 'metodePembayaran'));
         } catch (\Exception $e) {
             return redirect()->route('pembelian.index')
                 ->with('error', 'Pembelian tidak ditemukan.');
@@ -273,10 +345,22 @@ class PembelianController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit($id)
+    public function edit($encryptedId)
     {
         try {
-            $pembelian = Pembelian::with(['detailPembelian.produk', 'supplier'])->findOrFail(Crypt::decryptString($id));
+            $pembelian = Pembelian::findByEncryptedId($encryptedId);
+            $pembelian->load(['detailPembelian.produk', 'supplier']);
+
+            // Check if transaction is within H+1 (today and yesterday)
+            $today = Carbon::today();
+            $transactionDate = Carbon::parse($pembelian->created_at)->startOfDay();
+            $isMoreThanOneDay = $today->diffInDays($transactionDate) > 1;
+
+            if ($isMoreThanOneDay) {
+                return redirect()->route('pembelian.show', $encryptedId)
+                    ->with('error', 'Transaksi yang sudah lebih dari H+1 tidak dapat diedit.');
+            }
+
             $suppliers = Supplier::where('status', true)->orderBy('nama')->get();
             $produk = Produk::with(['kategori', 'satuan'])->orderBy('nama_produk')->get();
 
@@ -290,10 +374,20 @@ class PembelianController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $encryptedId): RedirectResponse
     {
         try {
-            $pembelian = Pembelian::findOrFail(Crypt::decryptString($id));
+            $pembelian = Pembelian::findByEncryptedId($encryptedId);
+
+            // Check if transaction is within H+1 (today and yesterday)
+            $today = Carbon::today();
+            $transactionDate = Carbon::parse($pembelian->created_at)->startOfDay();
+            $isMoreThanOneDay = $today->diffInDays($transactionDate) > 1;
+
+            if ($isMoreThanOneDay) {
+                return redirect()->route('pembelian.show', $encryptedId)
+                    ->with('error', 'Transaksi yang sudah lebih dari H+1 tidak dapat diedit.');
+            }
 
             $validated = $request->validate([
                 'no_faktur' => 'required|string|max:50|unique:pembelian,no_faktur,' . $pembelian->id,
@@ -309,6 +403,11 @@ class PembelianController extends Controller
             ]);
 
             DB::beginTransaction();
+            // Restore stock from old details
+            foreach ($pembelian->detailPembelian as $detail) {
+                $produk = Produk::find($detail->produk_id);
+                $produk->decrement('stok', $detail->qty);
+            }
 
             // Delete existing detail pembelian
             $pembelian->detailPembelian()->delete();
@@ -351,6 +450,10 @@ class PembelianController extends Controller
                     'subtotal' => $itemSubtotal,
                     'discount' => $itemDiscount,
                 ]);
+
+                // Update stock
+                $produk = Produk::find($item['produk_id']);
+                $produk->increment('stok', $item['qty']);
             }
 
             DB::commit();
@@ -368,24 +471,40 @@ class PembelianController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id)
+    public function destroy($encryptedId): RedirectResponse
     {
         try {
-            $pembelian = Pembelian::findOrFail(Crypt::decryptString($id));
+            $pembelian = Pembelian::findByEncryptedId($encryptedId);
 
-            // Check if pembelian has payments
-            if ($pembelian->pembayaranPembelian()->count() > 0) {
+            // Check if transaction is within H+1 (today and yesterday)
+            $today = Carbon::today();
+            $transactionDate = Carbon::parse($pembelian->created_at)->startOfDay();
+            $isMoreThanOneDay = $today->diffInDays($transactionDate) > 1;
+
+            if ($isMoreThanOneDay) {
                 return redirect()->route('pembelian.index')
-                    ->with('error', 'Pembelian tidak dapat dihapus karena sudah memiliki pembayaran.');
+                    ->with('error', 'Transaksi yang sudah lebih dari H+1 tidak dapat dihapus.');
             }
 
+            DB::beginTransaction();
+
+            // Restore stock
+            foreach ($pembelian->detailPembelian as $detail) {
+                $produk = Produk::find($detail->produk_id);
+                $produk->decrement('stok', $detail->qty);
+            }
+
+            // Delete the purchase (details will be deleted automatically due to cascade)
             $pembelian->delete();
 
+            DB::commit();
+
             return redirect()->route('pembelian.index')
-                ->with('success', 'Pembelian berhasil dihapus.');
+                ->with('success', 'Transaksi pembelian berhasil dihapus.');
         } catch (\Exception $e) {
+            DB::rollback();
             return redirect()->route('pembelian.index')
-                ->with('error', 'Pembelian tidak ditemukan.');
+                ->with('error', 'Terjadi kesalahan saat menghapus transaksi: ' . $e->getMessage());
         }
     }
 

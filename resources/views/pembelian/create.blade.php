@@ -199,6 +199,36 @@
                             </select>
                         </div>
 
+                        <!-- Payment Method -->
+                        <div class="mb-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Metode Pembayaran <span class="text-red-500">*</span>
+                            </label>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="paymentMethodContainer">
+                                @foreach ($metodePembayaran as $metode)
+                                    <label class="relative cursor-pointer payment-method-option">
+                                        <input type="radio" name="metode_pembayaran" value="{{ $metode->kode }}"
+                                            {{ old('metode_pembayaran') == $metode->kode ? 'checked' : '' }}
+                                            class="sr-only payment-method-radio">
+                                        <div
+                                            class="p-4 border-2 border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 payment-method-card">
+                                            <div class="flex flex-col items-center text-center">
+                                                <div
+                                                    class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-2">
+                                                    <i class="ti {{ $metode->icon_display }} text-orange-600 text-xl"></i>
+                                                </div>
+                                                <span class="text-sm font-medium text-gray-900">{{ $metode->nama }}</span>
+                                                <span class="text-xs text-gray-500">{{ $metode->kode }}</span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                            @error('metode_pembayaran')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         <!-- DP Amount (shown only for kredit) -->
                         <div class="mb-2 hidden" id="dpContainer">
                             <label for="dpAmountDisplay" class="block text-sm font-medium text-gray-700 mb-2">
@@ -606,6 +636,28 @@
             box-shadow: 0 8px 25px rgba(234, 88, 12, 0.3);
         }
 
+        /* Payment Method Styling */
+        .payment-method-card {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .payment-method-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .payment-method-card.selected {
+            border-color: #ea580c !important;
+            background-color: #fff7ed !important;
+            box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2);
+        }
+
+        .payment-method-radio:checked+.payment-method-card {
+            border-color: #ea580c !important;
+            background-color: #fff7ed !important;
+        }
+
         /* Price breakdown styling */
         .order-item .text-orange-600 {
             font-weight: 500;
@@ -789,6 +841,7 @@
             initializeFormSubmission();
             initializeDiscountInput();
             initializeTransactionType();
+            initializePaymentMethod();
             updateOrderSummary();
         });
 
@@ -1004,19 +1057,19 @@
             closeQuantityModal.addEventListener('click', closeQuantityModalHandler);
             cancelQuantity.addEventListener('click', closeQuantityModalHandler);
 
-            // Close modal when clicking outside
-            quantityModal.addEventListener('click', (e) => {
-                if (e.target === quantityModal) {
-                    closeQuantityModalHandler();
-                }
-            });
+            // Disable closing modal when clicking outside - user must use buttons to close
+            // quantityModal.addEventListener('click', (e) => {
+            //     if (e.target === quantityModal) {
+            //         closeQuantityModalHandler();
+            //     }
+            // });
 
-            // Close modal with ESC key
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && !quantityModal.classList.contains('hidden')) {
-                    closeQuantityModalHandler();
-                }
-            });
+            // Disable closing modal with ESC key - user must use buttons to close
+            // document.addEventListener('keydown', (e) => {
+            //     if (e.key === 'Escape' && !quantityModal.classList.contains('hidden')) {
+            //         closeQuantityModalHandler();
+            //     }
+            // });
 
             // Setup input formatting
             setupDecimalInput(quantityInput);
@@ -1073,6 +1126,21 @@
                 if (e.key === 'Enter') {
                     confirmQuantity.click();
                 }
+            });
+
+            // Prevent Enter key from closing modal on other inputs
+            [priceInput, discountInput].forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault(); // Prevent form submission or modal closing
+                        // Optionally, you can move focus to the next input or confirm button
+                        if (this.id === 'modalPriceInput') {
+                            discountInput.focus();
+                        } else if (this.id === 'discountInput') {
+                            confirmQuantity.focus();
+                        }
+                    }
+                });
             });
         }
 
@@ -1272,14 +1340,14 @@
                                 </div>
                                 
                                 ${discount > 0 ? `
-                                            <div class="flex items-center justify-between text-sm">
-                                                <span class="text-orange-600 flex items-center">
-                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                    Potongan Harga
-                                                </span>
-                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                            </div>
-                                        ` : ''}
+                                                <div class="flex items-center justify-between text-sm">
+                                                    <span class="text-orange-600 flex items-center">
+                                                        <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                        Potongan Harga
+                                                    </span>
+                                                    <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                </div>
+                                            ` : ''}
                                 
                                 <!-- Total Line -->
                                 <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -1482,6 +1550,47 @@
             }
         }
 
+        // Payment method functionality
+        function initializePaymentMethod() {
+            const paymentMethodRadios = document.querySelectorAll('input[name="metode_pembayaran"]');
+            const paymentMethodCards = document.querySelectorAll('.payment-method-card');
+
+            // Handle payment method selection
+            paymentMethodRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    // Remove active state from all cards
+                    paymentMethodCards.forEach(card => {
+                        card.classList.remove('border-orange-500', 'bg-orange-50');
+                        card.classList.add('border-gray-200');
+                    });
+
+                    // Add active state to selected card
+                    if (this.checked) {
+                        const card = this.closest('.payment-method-option').querySelector(
+                            '.payment-method-card');
+                        card.classList.remove('border-gray-200');
+                        card.classList.add('border-orange-500', 'bg-orange-50');
+                    }
+                });
+            });
+
+            // Handle card click to select radio
+            paymentMethodCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const radio = this.closest('.payment-method-option').querySelector(
+                        'input[type="radio"]');
+                    radio.checked = true;
+                    radio.dispatchEvent(new Event('change'));
+                });
+            });
+
+            // Set initial selection based on old value
+            const initialSelection = document.querySelector('input[name="metode_pembayaran"]:checked');
+            if (initialSelection) {
+                initialSelection.dispatchEvent(new Event('change'));
+            }
+        }
+
         // Form submission
         function initializeFormSubmission() {
             const form = document.getElementById('purchaseForm');
@@ -1496,6 +1605,13 @@
 
                 if (!document.getElementById('supplierId').value) {
                     showToast('Pilih supplier terlebih dahulu!', 'error');
+                    return;
+                }
+
+                // Validate payment method
+                const selectedPaymentMethod = document.querySelector('input[name="metode_pembayaran"]:checked');
+                if (!selectedPaymentMethod) {
+                    showToast('Pilih metode pembayaran terlebih dahulu!', 'error');
                     return;
                 }
 

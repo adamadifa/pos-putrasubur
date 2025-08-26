@@ -27,6 +27,8 @@ class PembayaranPembelian extends Model
         'jumlah_bayar' => 'decimal:2',
     ];
 
+    protected $appends = ['encrypted_id'];
+
     // Relationships
     public function pembelian()
     {
@@ -72,5 +74,20 @@ class PembayaranPembelian extends Model
                 return ucfirst($this->metode_pembayaran);
         }
     }
-}
 
+    // Encryption methods
+    public function getEncryptedIdAttribute()
+    {
+        return encrypt($this->id);
+    }
+
+    public static function findByEncryptedId($encryptedId)
+    {
+        try {
+            $id = decrypt($encryptedId);
+            return static::find($id);
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+}
