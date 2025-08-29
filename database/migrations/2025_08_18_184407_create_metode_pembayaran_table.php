@@ -11,17 +11,34 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('metode_pembayaran', function (Blueprint $table) {
+        Schema::create('pembayaran_penjualan', function (Blueprint $table) {
             $table->id();
-            $table->string('kode')->unique();
-            $table->string('nama');
-            $table->text('deskripsi')->nullable();
-            $table->string('icon')->nullable();
-            $table->boolean('status')->default(true);
-            $table->integer('urutan')->default(0);
+            $table->unsignedBigInteger('penjualan_id');
+            $table->string('no_bukti', 50)->unique();
+            $table->datetime('tanggal');
+            $table->decimal('jumlah_bayar', 15, 2);
+            $table->string('metode_pembayaran', 50);
+            $table->enum('status_bayar', ['D', 'A', 'P'])->comment('D=DP, A=Angsuran, P=Pelunasan');
+            $table->string('keterangan', 255)->nullable();
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('kas_bank_id')->nullable();
+            $table->unsignedBigInteger('transaksi_kas_bank_id')->nullable();
             $table->timestamps();
 
-            $table->index(['status', 'urutan']);
+            // Foreign Keys
+            $table->foreign('penjualan_id')->references('id')->on('penjualan')->onUpdate('cascade')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('restrict');
+            $table->foreign('kas_bank_id')->references('id')->on('kas_bank')->onUpdate('cascade')->onDelete('restrict');
+            $table->foreign('transaksi_kas_bank_id')->references('id')->on('transaksi_kas_bank')->onUpdate('cascade')->onDelete('restrict');
+
+            // Indexes
+            $table->index('penjualan_id');
+            $table->index('tanggal');
+            $table->index('metode_pembayaran');
+            $table->index('status_bayar');
+            $table->index('user_id');
+            $table->index('kas_bank_id');
+            $table->index('transaksi_kas_bank_id');
         });
     }
 
@@ -30,6 +47,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('metode_pembayaran');
+        Schema::dropIfExists('pembayaran_penjualan');
     }
 };

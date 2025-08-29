@@ -51,7 +51,10 @@ class PembayaranController extends Controller
             ->orderBy('nama')
             ->get();
 
-        return view('pembayaran.create', compact('penjualan', 'metodePembayaran'));
+        // Get kas/bank data
+        $kasBanks = \App\Models\KasBank::orderBy('nama')->get();
+
+        return view('pembayaran.create', compact('penjualan', 'metodePembayaran', 'kasBanks'));
     }
 
     /**
@@ -74,6 +77,7 @@ class PembayaranController extends Controller
             'penjualan_id' => 'required|exists:penjualan,id',
             'jumlah' => 'required|string',
             'metode_pembayaran' => 'required|string|max:50',
+            'kas_bank_id' => 'nullable|exists:kas_bank,id',
             'tanggal' => 'required|date',
             'keterangan' => 'nullable|string|max:255',
         ], [
@@ -82,6 +86,7 @@ class PembayaranController extends Controller
             'jumlah.required' => 'Jumlah bayar wajib diisi.',
             'metode_pembayaran.required' => 'Metode pembayaran wajib dipilih.',
             'tanggal.required' => 'Tanggal pembayaran wajib diisi.',
+            'kas_bank_id.exists' => 'Kas/Bank yang dipilih tidak valid.',
             'tanggal.date' => 'Format tanggal tidak valid.',
             'keterangan.max' => 'Keterangan maksimal 255 karakter.',
         ]);
@@ -94,6 +99,25 @@ class PembayaranController extends Controller
         if (!$metodePembayaran) {
             return back()->withInput()
                 ->with('error', 'Metode pembayaran yang dipilih tidak valid atau tidak aktif.');
+        }
+
+        // Validate kas_bank_id based on payment method
+        if (in_array($validated['metode_pembayaran'], ['tunai', 'transfer', 'qris'])) {
+            if (empty($validated['kas_bank_id'])) {
+                return back()->withInput()
+                    ->with('error', 'Kas/Bank wajib dipilih untuk metode pembayaran ' . $metodePembayaran->nama . '.');
+            }
+
+            // Validate kas_bank exists
+            $kasBank = \App\Models\KasBank::find($validated['kas_bank_id']);
+
+            if (!$kasBank) {
+                return back()->withInput()
+                    ->with('error', 'Kas/Bank yang dipilih tidak valid.');
+            }
+        } else {
+            // For other payment methods, set kas_bank_id to null
+            $validated['kas_bank_id'] = null;
         }
 
         // Custom validation for jumlah
@@ -122,7 +146,7 @@ class PembayaranController extends Controller
 
             // Calculate total already paid
             $sudahDibayar = $penjualan->pembayaranPenjualan->sum('jumlah_bayar');
-            $totalTransaksi = $penjualan->total;
+            $totalTransaksi = $penjualan->total_setelah_diskon; // Gunakan total setelah diskon
             $sisaBayar = $totalTransaksi - $sudahDibayar;
 
             // Validate payment amount
@@ -138,17 +162,19 @@ class PembayaranController extends Controller
              * LOGIKA STATUS PEMBAYARAN:
              * 
              * 1. PEMBAYARAN PERTAMA (sudahDibayar == 0):
-             *    - Jika bayar >= total transaksi → P (Pelunasan)
-             *    - Jika bayar < total transaksi → D (DP)
+             *    - Jika bayar >= total setelah diskon → P (Pelunasan)
+             *    - Jika bayar < total setelah diskon → D (DP)
              * 
              * 2. PEMBAYARAN SELANJUTNYA (sudahDibayar > 0):
-             *    - Jika (sudahDibayar + bayar) >= total transaksi → P (Pelunasan)
-             *    - Jika (sudahDibayar + bayar) < total transaksi → A (Angsuran)
+             *    - Jika (sudahDibayar + bayar) >= total setelah diskon → P (Pelunasan)
+             *    - Jika (sudahDibayar + bayar) < total setelah diskon → A (Angsuran)
              * 
              * KODE STATUS:
              * P = Pelunasan (Lunas)
              * D = DP (Down Payment)
              * A = Angsuran
+             * 
+             * CATATAN: Total transaksi menggunakan total_setelah_diskon untuk perhitungan yang benar
              */
             $statusBayar = 'D'; // Default to DP
 
@@ -176,6 +202,7 @@ class PembayaranController extends Controller
                 'tanggal' => $validated['tanggal'],
                 'jumlah_bayar' => $validated['jumlah_raw'],
                 'metode_pembayaran' => $validated['metode_pembayaran'],
+                'kas_bank_id' => $validated['kas_bank_id'],
                 'status_bayar' => $statusBayar,
                 'keterangan' => $validated['keterangan'],
                 'user_id' => Auth::id(),
@@ -202,6 +229,8 @@ class PembayaranController extends Controller
                 'status_bayar' => $statusBayar,
                 'payment_logic' => [
                     'sudah_dibayar' => $sudahDibayar,
+                    'total_sebelum_diskon' => $penjualan->total,
+                    'total_setelah_diskon' => $penjualan->total_setelah_diskon,
                     'total_transaksi' => $totalTransaksi,
                     'is_first_payment' => $sudahDibayar == 0,
                     'total_after_payment' => $totalDibayar,

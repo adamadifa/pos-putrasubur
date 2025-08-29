@@ -189,62 +189,35 @@
                                 value="{{ old('pelanggan_id') }}" required>
                         </div>
 
-                        <!-- Transaction Type -->
+                        <!-- Payment Configuration Info -->
                         <div class="mb-2">
-                            <select name="jenis_transaksi" id="jenisTransaksi"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required>
-                                <option value="tunai" {{ old('jenis_transaksi', 'tunai') == 'tunai' ? 'selected' : '' }}>
-                                    Tunai</option>
-                                <option value="kredit" {{ old('jenis_transaksi') == 'kredit' ? 'selected' : '' }}>Kredit
-                                </option>
-                            </select>
-                        </div>
-
-                        <!-- Payment Method -->
-                        <div class="mb-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Metode Pembayaran <span class="text-red-500">*</span>
-                            </label>
-                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="paymentMethodContainer">
-                                @foreach ($metodePembayaran as $metode)
-                                    <label class="relative cursor-pointer payment-method-option">
-                                        <input type="radio" name="metode_pembayaran" value="{{ $metode->kode }}"
-                                            {{ old('metode_pembayaran') == $metode->kode ? 'checked' : '' }}
-                                            class="sr-only payment-method-radio">
-                                        <div
-                                            class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 payment-method-card">
-                                            <div class="flex flex-col items-center text-center">
-                                                <div
-                                                    class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-2">
-                                                    <i class="ti {{ $metode->icon_display }} text-blue-600 text-xl"></i>
-                                                </div>
-                                                <span class="text-sm font-medium text-gray-900">{{ $metode->nama }}</span>
-                                                <span class="text-xs text-gray-500">{{ $metode->kode }}</span>
-                                            </div>
-                                        </div>
-                                    </label>
-                                @endforeach
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                <div class="flex items-center">
+                                    <i class="ti ti-info-circle text-blue-600 mr-2"></i>
+                                    <p class="text-sm text-blue-800">
+                                        <strong>Konfigurasi pembayaran</strong> akan diatur di halaman ringkasan transaksi
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- DP Amount (shown only for kredit) -->
-                        <div class="mb-2 hidden" id="dpContainer">
-                            <label for="dpAmountDisplay" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="ti ti-credit-card mr-1"></i>
-                                Jumlah Down Payment (DP)
-                            </label>
-                            <input type="text" id="dpAmountDisplay"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-right"
-                                placeholder="Jumlah DP (Rp)" value="{{ old('dp_amount', 0) }}">
-                            <input type="hidden" name="dp_amount" id="dpAmount" value="{{ old('dp_amount', 0) }}">
-                            <p class="text-xs text-gray-500 mt-1">
-                                <i class="ti ti-info-circle mr-1"></i>
-                                Masukkan jumlah uang muka yang akan dibayar pelanggan. DP harus lebih dari 0 dan tidak boleh
-                                melebihi total transaksi.
-                            </p>
-                        </div>
+                        <!-- Hidden inputs for modal data -->
+                        <input type="hidden" name="modal_jenis_transaksi" id="modalJenisTransaksi"
+                            value="{{ old('jenis_transaksi', 'tunai') }}">
+                        <input type="hidden" name="modal_metode_pembayaran" id="modalMetodePembayaran"
+                            value="{{ old('metode_pembayaran') }}">
+                        <input type="hidden" name="modal_kas_bank_id" id="modalKasBankId"
+                            value="{{ old('kas_bank_id') }}">
+                        <input type="hidden" name="modal_dp_amount" id="modalDpAmount"
+                            value="{{ old('dp_amount', 0) }}">
 
+                        <!-- Hidden inputs for controller -->
+                        <input type="hidden" name="jenis_transaksi" id="jenisTransaksi"
+                            value="{{ old('jenis_transaksi', 'tunai') }}">
+                        <input type="hidden" name="metode_pembayaran" id="metodePembayaran"
+                            value="{{ old('metode_pembayaran') }}">
+                        <input type="hidden" name="dp_amount" id="dpAmount" value="{{ old('dp_amount', 0) }}">
+                        <input type="hidden" name="kas_bank_id" id="kasBankId" value="{{ old('kas_bank_id') }}">
 
                     </div>
 
@@ -292,17 +265,7 @@
                                 <span id="totalDisplay">Rp 0</span>
                             </div>
 
-                            <!-- DP & Remaining Payment (for kredit) -->
-                            <div id="paymentBreakdown" class="hidden border-t border-gray-200 pt-2 space-y-2">
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-green-600">DP Dibayar</span>
-                                    <span class="font-medium text-green-600" id="dpDisplay">Rp 0</span>
-                                </div>
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-orange-600">Sisa Pembayaran</span>
-                                    <span class="font-medium text-orange-600" id="remainingDisplay">Rp 0</span>
-                                </div>
-                            </div>
+
                         </div>
 
                         <!-- Action Buttons -->
@@ -573,6 +536,143 @@
                     <h4 class="font-semibold text-gray-900 mb-3">Detail Pesanan</h4>
                     <div class="max-h-64 overflow-y-auto" id="previewOrderItems">
                         <!-- Items will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Payment Configuration -->
+                <div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+                    <h4 class="font-semibold text-gray-900 mb-3">Konfigurasi Pembayaran</h4>
+
+                    <div class="space-y-4">
+                        <!-- Jenis Transaksi -->
+                        <div>
+                            <div class="grid grid-cols-2 gap-3" id="previewTransactionTypeContainer">
+                                <label class="relative cursor-pointer preview-transaction-type-option">
+                                    <input type="radio" name="preview_jenis_transaksi" value="tunai"
+                                        class="sr-only preview-transaction-type-radio">
+                                    <div
+                                        class="p-3 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 preview-transaction-type-card">
+                                        <div class="flex flex-col items-center text-center">
+                                            <div
+                                                class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mb-2">
+                                                <i class="ti ti-cash text-green-600 text-sm"></i>
+                                            </div>
+                                            <span class="text-sm font-medium text-gray-900">Tunai</span>
+                                            <span class="text-xs text-gray-500">Bayar Langsung</span>
+                                        </div>
+                                    </div>
+                                </label>
+                                <label class="relative cursor-pointer preview-transaction-type-option">
+                                    <input type="radio" name="preview_jenis_transaksi" value="kredit"
+                                        class="sr-only preview-transaction-type-radio">
+                                    <div
+                                        class="p-3 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 preview-transaction-type-card">
+                                        <div class="flex flex-col items-center text-center">
+                                            <div
+                                                class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mb-2">
+                                                <i class="ti ti-credit-card text-orange-600 text-sm"></i>
+                                            </div>
+                                            <span class="text-sm font-medium text-gray-900">Kredit</span>
+                                            <span class="text-xs text-gray-500">Bayar Nanti</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Metode Pembayaran -->
+                        <div>
+                            <div class="grid grid-cols-1 gap-3" id="previewPaymentMethodContainer">
+                                @foreach ($metodePembayaran as $metode)
+                                    <label class="relative cursor-pointer preview-payment-method-option">
+                                        <input type="radio" name="preview_metode_pembayaran"
+                                            value="{{ $metode->kode }}" class="sr-only preview-payment-method-radio">
+                                        <div
+                                            class="p-3 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 preview-payment-method-card">
+                                            <div class="flex items-center">
+                                                <div
+                                                    class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                                    <i class="ti {{ $metode->icon_display }} text-blue-600 text-sm"></i>
+                                                </div>
+                                                <span class="text-sm font-medium text-gray-900">{{ $metode->nama }}</span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- Kas/Bank Selection -->
+                        <div>
+                            <!-- Message when no payment method selected -->
+                            <div id="kasBankMessage" class="text-center py-8 text-gray-500">
+                                <i class="ti ti-arrow-up text-2xl mb-2"></i>
+                                <p class="text-sm">Pilih metode pembayaran terlebih dahulu untuk melihat pilihan kas/bank
+                                </p>
+                            </div>
+
+                            <div class="grid gap-3" id="previewKasBankContainer">
+                                @foreach ($kasBank ?? [] as $kas)
+                                    <label class="relative cursor-pointer preview-kas-bank-option">
+                                        <input type="radio" name="preview_kas_bank" value="{{ $kas->id }}"
+                                            data-saldo="{{ $kas->saldo_terkini }}" data-jenis="{{ $kas->jenis }}"
+                                            data-image="{{ $kas->image_url ?? '' }}"
+                                            class="sr-only preview-kas-bank-radio">
+                                        <div
+                                            class="p-4 border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 transition-all duration-300 preview-kas-bank-card flex items-center justify-between shadow-sm hover:shadow-md">
+                                            <div class="flex items-center flex-1">
+                                                <div
+                                                    class="w-16 h-16 rounded-xl flex items-center justify-center mr-4 overflow-hidden shadow-sm flex-shrink-0">
+                                                    @if ($kas->jenis === 'KAS')
+                                                        <div
+                                                            class="w-full h-full bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
+                                                            <i class="ti ti-cash text-green-600 text-xl"></i>
+                                                        </div>
+                                                    @else
+                                                        @if ($kas->image)
+                                                            <img src="{{ asset('storage/' . $kas->image) }}"
+                                                                alt="Logo {{ $kas->nama }}"
+                                                                class="w-full h-full object-contain">
+                                                        @else
+                                                            <div
+                                                                class="w-full h-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
+                                                                <i class="ti ti-building-bank text-purple-600 text-xl"></i>
+                                                            </div>
+                                                        @endif
+                                                    @endif
+                                                </div>
+                                                <div class="flex-1 flex flex-col justify-center">
+                                                    <div class="text-base font-bold text-gray-900 leading-tight">
+                                                        {{ $kas->nama }}
+                                                    </div>
+                                                    @if ($kas->no_rekening)
+                                                        <div class="text-sm text-gray-500 font-medium">
+                                                            {{ $kas->no_rekening }}
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            <div class="text-right ml-4 flex flex-col justify-center flex-shrink-0">
+                                                <div class="text-sm text-gray-500 font-medium">Saldo</div>
+                                                <div class="text-base font-bold text-green-600">
+                                                    Rp {{ number_format($kas->saldo_terkini, 0, ',', '.') }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- Payment Amount -->
+                        <div class="hidden" id="previewDpContainer">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <span id="paymentAmountLabel">Jumlah Pembayaran</span>
+                            </label>
+                            <input type="text" id="previewDpAmount"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-right text-sm"
+                                placeholder="Jumlah (Rp)" value="0">
+                        </div>
                     </div>
                 </div>
 
@@ -1240,116 +1340,13 @@
             }
         @endif
 
-        // Payment Method Radio Button Handling
-        const paymentRadios = document.querySelectorAll('.payment-method-radio');
-        const paymentCards = document.querySelectorAll('.payment-method-card');
 
-        // Function to update payment method card styling
-        function updatePaymentMethodCards() {
-            paymentCards.forEach((card, index) => {
-                const radio = paymentRadios[index];
-                if (radio.checked) {
-                    card.classList.remove('border-gray-200', 'bg-white', 'border-red-500', 'bg-red-50',
-                        'animate-pulse');
-                    card.classList.add('border-blue-500', 'bg-blue-50');
-                } else {
-                    card.classList.remove('border-blue-500', 'bg-blue-50', 'border-red-500', 'bg-red-50',
-                        'animate-pulse');
-                    card.classList.add('border-gray-200', 'bg-white');
-                }
-            });
-        }
-
-        // Add event listeners to radio buttons
-        paymentRadios.forEach((radio, index) => {
-            radio.addEventListener('change', function() {
-                updatePaymentMethodCards();
-            });
-
-            // Add click event to card for better UX
-            const card = paymentCards[index];
-            card.addEventListener('click', function() {
-                radio.checked = true;
-                updatePaymentMethodCards();
-            });
-        });
-
-        // Initialize card states
-        updatePaymentMethodCards();
-
-        // Transaction type functionality
-        const jenisTransaksi = document.getElementById('jenisTransaksi');
-        const dpContainer = document.getElementById('dpContainer');
-        const dpAmountDisplay = document.getElementById('dpAmountDisplay');
-        const dpAmount = document.getElementById('dpAmount');
-
-        // Handle transaction type change
-        jenisTransaksi.addEventListener('change', function() {
-            if (this.value === 'kredit') {
-                dpContainer.classList.remove('hidden');
-                dpAmountDisplay.required = true;
-                // For kredit, metode pembayaran is optional (for DP)
-            } else {
-                dpContainer.classList.add('hidden');
-                dpAmountDisplay.required = false;
-                dpAmountDisplay.value = '0';
-                dpAmount.value = 0;
-                // For tunai, metode pembayaran validation will be handled by custom validation
-
-                // Auto-fill payment for tunai (cash) transactions
-                if (this.value === 'tunai') {
-                    autoFillCashPayment();
-                }
-            }
-            updateOrderSummary();
-        });
-
-        // Auto-fill cash payment function
-        function autoFillCashPayment() {
-            // Get the current total
-            const totalText = document.getElementById('totalDisplay').textContent;
-            const totalAmount = parseFormattedNumber(totalText.replace('Rp ', ''));
-
-            if (totalAmount > 0) {
-                // Set DP amount to equal the total for cash transactions
-                dpAmountDisplay.value = formatNumberInput(totalAmount);
-                dpAmount.value = totalAmount;
-
-                // Update the summary to reflect the payment
-                updateOrderSummary();
-
-                // Show a subtle notification
-                showToast('Pembayaran tunai otomatis diisi sesuai total', 'info');
-            }
-        }
-
-        // Set initial DP visibility based on old value
-        @if (old('jenis_transaksi') == 'kredit')
-            dpContainer.classList.remove('hidden');
-            dpAmountDisplay.required = true;
-        @else
-            // For tunai transactions, metode pembayaran validation will be handled by custom validation
-            // Auto-fill payment for initial cash transactions
-            if (jenisTransaksi.value === 'tunai') {
-                // Delay to ensure DOM is ready
-                setTimeout(() => {
-                    autoFillCashPayment();
-                }, 100);
-            }
-        @endif
-
-        // Update DP when amount changes
-        dpAmountDisplay.addEventListener('input', function() {
-            dpAmount.value = parseFormattedNumber(this.value);
-            updateOrderSummary();
-        });
 
         // Setup number formatting for input fields
         const diskonDisplay = document.getElementById('diskonDisplay');
         const diskonHidden = document.getElementById('diskon');
 
         setupNumberInput(diskonDisplay);
-        setupNumberInput(dpAmountDisplay);
 
         // Update hidden fields when display fields change
         diskonDisplay.addEventListener('input', function() {
@@ -1360,10 +1357,6 @@
         // Format initial values
         if (diskonDisplay.value && diskonDisplay.value !== '0') {
             diskonDisplay.value = formatNumberInput(diskonDisplay.value);
-        }
-
-        if (dpAmountDisplay.value && dpAmountDisplay.value !== '0') {
-            dpAmountDisplay.value = formatNumberInput(dpAmountDisplay.value);
         }
 
         // Category filter functionality
@@ -1892,14 +1885,14 @@
                         </div>
                         
                         ${discount > 0 ? `
-                                                                                                                                                                                                                            <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                                                                                <span class="text-orange-600 flex items-center">
-                                                                                                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                                                                                    Potongan Harga
-                                                                                                                                                                                                                                </span>
-                                                                                                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                            ` : ''}
+                                                                                                                                                                                                                                                                                                                                <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                                                                                                                                    <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                                                                                                                                        <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                                                                                                                                        Potongan Harga
+                                                                                                                                                                                                                                                                                                                                    </span>
+                                                                                                                                                                                                                                                                                                                                    <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                                </div>
+                                                                                                                                                                                                                                                                                                                                ` : ''}
                         
                         <!-- Total Line -->
                         <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -1965,14 +1958,14 @@
                 </div>
                 
                 ${discount > 0 ? `
-                                                                                                                                                                                                                    <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                                                                        <span class="text-orange-600 flex items-center">
-                                                                                                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                                                                            Potongan Harga
-                                                                                                                                                                                                                        </span>
-                                                                                                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                    ` : ''}
+                                                                                                                                                                                                                                                                                                                        <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                                                                                                                            <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                                                                                                                                <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                                                                                                                                Potongan Harga
+                                                                                                                                                                                                                                                                                                                            </span>
+                                                                                                                                                                                                                                                                                                                            <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                        </div>
+                                                                                                                                                                                                                                                                                                                        ` : ''}
                 
                 <!-- Total Line -->
                 <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -2074,36 +2067,13 @@
             // Update product card states based on order items
             updateProductCardStates();
 
-
             const discount = parseFormattedNumber(document.getElementById('diskonDisplay').value);
             const total = subtotal - discount;
-
-            // Get transaction type and DP amount
-            const jenisTransaksi = document.getElementById('jenisTransaksi').value;
-            const dpAmount = parseFormattedNumber(document.getElementById('dpAmountDisplay').value);
-            const paymentBreakdown = document.getElementById('paymentBreakdown');
 
             document.getElementById('orderCount').textContent = `${orderItems.length} item`;
             document.getElementById('subtotalDisplay').textContent = `Rp ${formatNumber(subtotal)}`;
             document.getElementById('discountDisplay').textContent = `Rp ${formatNumber(discount)}`;
             document.getElementById('totalDisplay').textContent = `Rp ${formatNumber(total)}`;
-
-            // Auto-update payment for cash transactions when total changes
-            if (jenisTransaksi === 'tunai' && total > 0) {
-                // Always update payment amount to match total for cash transactions
-                document.getElementById('dpAmountDisplay').value = formatNumberInput(total);
-                document.getElementById('dpAmount').value = total;
-            }
-
-            // Show/hide payment breakdown for kredit
-            if (jenisTransaksi === 'kredit' && total > 0) {
-                paymentBreakdown.classList.remove('hidden');
-                const remaining = Math.max(0, total - dpAmount);
-                document.getElementById('dpDisplay').textContent = `Rp ${formatNumber(dpAmount)}`;
-                document.getElementById('remainingDisplay').textContent = `Rp ${formatNumber(remaining)}`;
-            } else {
-                paymentBreakdown.classList.add('hidden');
-            }
         }
 
 
@@ -2404,6 +2374,20 @@
             document.getElementById('previewTransactionType').textContent =
                 jenisTransaksi === 'kredit' ? 'Kredit' : 'Tunai';
 
+            // Initialize modal form with current values (no auto-select for transaction type)
+            // User must choose transaction type manually
+            updatePreviewTransactionTypeCards();
+
+            // Set DP amount based on transaction type (will be updated when user selects transaction type)
+            document.getElementById('previewDpAmount').value = '0';
+            document.getElementById('previewDpAmount').readOnly = false;
+            document.getElementById('paymentAmountLabel').textContent = 'Jumlah Pembayaran';
+            document.getElementById('previewDpAmount').placeholder = 'Jumlah (Rp)';
+
+            // Show/hide DP container based on transaction type (will be updated when user selects transaction type)
+            const previewDpContainer = document.getElementById('previewDpContainer');
+            previewDpContainer.classList.add('hidden'); // Hide initially until user selects transaction type
+
             // Populate order items
             const previewOrderItems = document.getElementById('previewOrderItems');
             previewOrderItems.innerHTML = '';
@@ -2431,11 +2415,11 @@
                                 <span>Rp ${formatNumber(subtotal)}</span>
                             </div>
                             ${discount > 0 ? `
-                                                                                                                                                                                                                            <div class="flex justify-between text-xs">
-                                                                                                                                                                                                                                <span class="text-orange-600">Potongan</span>
-                                                                                                                                                                                                                                <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                            ` : ''}
+                                                                                                                                                                                                                                                                                                                                <div class="flex justify-between text-xs">
+                                                                                                                                                                                                                                                                                                                                    <span class="text-orange-600">Potongan</span>
+                                                                                                                                                                                                                                                                                                                                    <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                                </div>
+                                                                                                                                                                                                                                                                                                                                ` : ''}
                             <div class="flex justify-between text-sm font-medium">
                                 <span>Total</span>
                                 <span class="text-blue-600">Rp ${formatNumber(total)}</span>
@@ -2483,6 +2467,22 @@
 
             // Show modal
             orderPreviewModal.classList.remove('hidden');
+
+            // Initialize kas/bank logos
+            const selectedKasBank = document.querySelector('.preview-kas-bank-radio:checked');
+            if (selectedKasBank) {
+                updateKasBankLogo(selectedKasBank);
+            }
+
+            // Initialize kas/bank filter based on payment method
+            filterKasBankByPaymentMethod();
+
+            // Uncheck any selected kas/bank when modal opens
+            const selectedKasBankRadio = document.querySelector('.preview-kas-bank-radio:checked');
+            if (selectedKasBankRadio) {
+                selectedKasBankRadio.checked = false;
+                updatePreviewKasBankCards();
+            }
         }
 
         // Form validation and preview
@@ -2500,36 +2500,75 @@
                 return false;
             }
 
-            // Validate metode pembayaran for tunai transactions
-            const jenisTransaksi = document.getElementById('jenisTransaksi').value;
-            const selectedPaymentMethod = document.querySelector('.payment-method-radio:checked');
 
-            if (jenisTransaksi === 'tunai' && !selectedPaymentMethod) {
-                showToast('Metode pembayaran wajib dipilih untuk transaksi tunai!', 'error');
 
-                // Add error highlight to all payment method cards
-                const paymentCards = document.querySelectorAll('.payment-method-card');
-                paymentCards.forEach(card => {
-                    card.classList.add('border-red-500', 'bg-red-50', 'animate-pulse');
-                    // Remove error highlight after 3 seconds
-                    setTimeout(() => {
-                        card.classList.remove('border-red-500', 'bg-red-50', 'animate-pulse');
-                    }, 3000);
-                });
+            // Show preview modal instead of submitting directly
+            showOrderPreview();
+        });
 
-                // Focus on the first payment method card
-                const firstPaymentCard = document.querySelector('.payment-method-card');
-                if (firstPaymentCard) {
-                    firstPaymentCard.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center'
-                    });
+        // Modal form event listeners
+        const previewDpContainer = document.getElementById('previewDpContainer');
+        const previewDpAmount = document.getElementById('previewDpAmount');
+
+        // Preview transaction type radio button handling
+        const previewTransactionTypeRadios = document.querySelectorAll('.preview-transaction-type-radio');
+        const previewTransactionTypeCards = document.querySelectorAll('.preview-transaction-type-card');
+
+        // Function to update preview transaction type card styling
+        function updatePreviewTransactionTypeCards() {
+            previewTransactionTypeCards.forEach((card, index) => {
+                const radio = previewTransactionTypeRadios[index];
+                if (radio.checked) {
+                    card.classList.remove('border-gray-200', 'bg-white', 'border-red-500', 'bg-red-50',
+                        'animate-pulse');
+                    card.classList.add('border-blue-500', 'bg-blue-50');
+                } else {
+                    card.classList.remove('border-blue-500', 'bg-blue-50', 'border-red-500', 'bg-red-50',
+                        'animate-pulse');
+                    card.classList.add('border-gray-200', 'bg-white');
                 }
-                return false;
-            }
+            });
+        }
 
-            // Validate DP for kredit transactions
-            if (jenisTransaksi === 'kredit') {
+        // Add event listeners to preview transaction type radio buttons
+        previewTransactionTypeRadios.forEach((radio, index) => {
+            radio.addEventListener('change', function() {
+                updatePreviewTransactionTypeCards();
+                handleTransactionTypeChange();
+            });
+
+            // Add click event to card for better UX
+            const card = previewTransactionTypeCards[index];
+            card.addEventListener('click', function() {
+                radio.checked = true;
+                updatePreviewTransactionTypeCards();
+                handleTransactionTypeChange();
+            });
+        });
+
+        // Initialize preview transaction type card states
+        updatePreviewTransactionTypeCards();
+
+        // Handle transaction type change in modal
+        function handleTransactionTypeChange() {
+            const selectedTransactionType = document.querySelector('.preview-transaction-type-radio:checked').value;
+            if (selectedTransactionType === 'kredit') {
+                previewDpContainer.classList.remove('hidden');
+                previewDpAmount.required = true;
+                previewDpAmount.readOnly = false;
+
+                // Reset DP amount to 0 for kredit
+                previewDpAmount.value = '0';
+                previewDpAmount.focus();
+
+                // Update labels for kredit
+                document.getElementById('paymentAmountLabel').textContent = 'Jumlah Down Payment (DP)';
+                document.getElementById('previewDpAmount').placeholder = 'Jumlah DP (Rp)';
+
+                // Show info message
+                showToast('Jumlah DP direset ke 0. Silakan isi jumlah DP yang diinginkan.', 'info');
+            } else {
+                // For tunai transactions, auto-fill with total amount
                 const subtotal = orderItems.reduce((total, item) => {
                     const itemSubtotal = item.price * item.qty;
                     const itemDiscount = item.discount || 0;
@@ -2537,27 +2576,306 @@
                 }, 0);
                 const discount = parseFormattedNumber(document.getElementById('diskonDisplay').value);
                 const total = subtotal - discount;
-                const dpAmount = parseFormattedNumber(document.getElementById('dpAmountDisplay').value);
 
-                if (dpAmount > total) {
-                    showToast('DP tidak boleh melebihi total transaksi!', 'error');
-                    document.getElementById('dpAmountDisplay').focus();
-                    return false;
-                }
+                previewDpContainer.classList.remove('hidden');
+                previewDpAmount.required = false;
+                previewDpAmount.value = formatNumberInput(total.toString());
+                previewDpAmount.readOnly = true;
 
-                if (dpAmount < 0) {
-                    showToast('DP tidak boleh kurang dari 0!', 'error');
-                    document.getElementById('dpAmountDisplay').focus();
-                    return false;
+                // Update labels for tunai
+                document.getElementById('paymentAmountLabel').textContent = 'Jumlah Pembayaran';
+                document.getElementById('previewDpAmount').placeholder = 'Jumlah (Rp)';
+
+                // Show info message
+                showToast('Pembayaran tunai otomatis diisi sesuai total transaksi', 'info');
+            }
+        }
+
+        // Setup number formatting for DP input in modal
+        setupNumberInput(previewDpAmount);
+
+        // Preview payment method radio button handling
+        const previewPaymentRadios = document.querySelectorAll('.preview-payment-method-radio');
+        const previewPaymentCards = document.querySelectorAll('.preview-payment-method-card');
+
+        // Function to update preview payment method card styling
+        function updatePreviewPaymentMethodCards() {
+            previewPaymentCards.forEach((card, index) => {
+                const radio = previewPaymentRadios[index];
+                if (radio.checked) {
+                    card.classList.remove('border-gray-200', 'bg-white', 'border-red-500', 'bg-red-50',
+                        'animate-pulse');
+                    card.classList.add('border-blue-500', 'bg-blue-50');
+                } else {
+                    card.classList.remove('border-blue-500', 'bg-blue-50', 'border-red-500', 'bg-red-50',
+                        'animate-pulse');
+                    card.classList.add('border-gray-200', 'bg-white');
                 }
+            });
+        }
+
+        // Add event listeners to preview radio buttons
+        previewPaymentRadios.forEach((radio, index) => {
+            radio.addEventListener('change', function() {
+                updatePreviewPaymentMethodCards();
+                filterKasBankByPaymentMethod();
+            });
+
+            // Add click event to card for better UX
+            const card = previewPaymentCards[index];
+            card.addEventListener('click', function() {
+                radio.checked = true;
+                updatePreviewPaymentMethodCards();
+                filterKasBankByPaymentMethod();
+            });
+        });
+
+        // Initialize preview card states
+        updatePreviewPaymentMethodCards();
+
+        // Preview kas/bank radio button handling
+        const previewKasBankRadios = document.querySelectorAll('.preview-kas-bank-radio');
+        const previewKasBankCards = document.querySelectorAll('.preview-kas-bank-card');
+
+        // Function to update preview kas/bank card styling
+        function updatePreviewKasBankCards() {
+            previewKasBankCards.forEach((card, index) => {
+                const radio = previewKasBankRadios[index];
+                if (radio.checked) {
+                    card.classList.remove('border-gray-200', 'bg-white', 'border-red-500', 'bg-red-50',
+                        'animate-pulse');
+                    card.classList.add('border-blue-500', 'bg-blue-50');
+                } else {
+                    card.classList.remove('border-blue-500', 'bg-blue-50', 'border-red-500', 'bg-red-50',
+                        'animate-pulse');
+                    card.classList.add('border-gray-200', 'bg-white');
+                }
+            });
+        }
+
+        // Add event listeners to preview kas/bank radio buttons
+        previewKasBankRadios.forEach((radio, index) => {
+            radio.addEventListener('change', function() {
+                updatePreviewKasBankCards();
+                updateKasBankLogo(radio);
+            });
+
+            // Add click event to card for better UX
+            const card = previewKasBankCards[index];
+            card.addEventListener('click', function() {
+                radio.checked = true;
+                updatePreviewKasBankCards();
+                updateKasBankLogo(radio);
+            });
+        });
+
+        // Function to update kas/bank logo
+        function updateKasBankLogo(selectedRadio) {
+            const jenis = selectedRadio.getAttribute('data-jenis');
+            const image = selectedRadio.getAttribute('data-image');
+
+            // Find the icon container in the selected card
+            const card = selectedRadio.closest('.preview-kas-bank-option').querySelector('.preview-kas-bank-card');
+            const iconContainer = card.querySelector('.w-16.h-16');
+
+            if (!iconContainer) {
+                console.warn('Icon container not found for kas/bank card');
+                return;
             }
 
-            // Show preview modal instead of submitting directly
-            showOrderPreview();
-        });
+            if (jenis === 'KAS') {
+                iconContainer.innerHTML = `
+                    <div class="w-full h-full bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
+                        <i class="ti ti-cash text-green-600 text-xl"></i>
+                    </div>
+                `;
+            } else {
+                if (image) {
+                    iconContainer.innerHTML = `
+                        <img src="${image}" alt="Logo" class="w-full h-full object-contain">
+                    `;
+                } else {
+                    iconContainer.innerHTML = `
+                        <div class="w-full h-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
+                            <i class="ti ti-building-bank text-purple-600 text-xl"></i>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Initialize preview kas/bank card states
+        updatePreviewKasBankCards();
+
+        // Function to filter kas/bank based on payment method
+        function filterKasBankByPaymentMethod() {
+            const selectedPaymentMethod = document.querySelector('.preview-payment-method-radio:checked');
+            const kasBankMessage = document.getElementById('kasBankMessage');
+            const kasBankContainer = document.getElementById('previewKasBankContainer');
+
+            if (!selectedPaymentMethod) {
+                // If no payment method selected, hide all kas/bank and show message
+                previewKasBankCards.forEach((card, index) => {
+                    card.classList.add('hidden');
+                });
+                kasBankMessage.classList.remove('hidden');
+                return;
+            }
+
+            // Hide message when payment method is selected
+            kasBankMessage.classList.add('hidden');
+
+            const paymentMethodCode = selectedPaymentMethod.value;
+            const isTransfer = paymentMethodCode.toLowerCase().includes('transfer') ||
+                paymentMethodCode.toLowerCase().includes('bank') ||
+                paymentMethodCode.toLowerCase().includes('bca') ||
+                paymentMethodCode.toLowerCase().includes('mandiri') ||
+                paymentMethodCode.toLowerCase().includes('bni') ||
+                paymentMethodCode.toLowerCase().includes('bri');
+            const isCash = paymentMethodCode.toLowerCase().includes('cash') ||
+                paymentMethodCode.toLowerCase().includes('tunai') ||
+                paymentMethodCode.toLowerCase().includes('kas');
+
+            let visibleCount = 0;
+
+            previewKasBankCards.forEach((card, index) => {
+                const radio = previewKasBankRadios[index];
+                const kasBankJenis = radio.getAttribute('data-jenis');
+
+                if (isTransfer && kasBankJenis === 'BANK') {
+                    // Show only BANK for transfer methods
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                } else if (isCash && kasBankJenis === 'KAS') {
+                    // Show only KAS for cash methods
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                } else if (!isTransfer && !isCash) {
+                    // If payment method is not clearly transfer or cash, show all
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    // Hide the card
+                    card.classList.add('hidden');
+                }
+            });
+
+            // Update grid columns based on visible count
+            if (visibleCount === 1) {
+                kasBankContainer.className = 'grid gap-3 grid-cols-1';
+            } else if (visibleCount === 2) {
+                kasBankContainer.className = 'grid gap-3 grid-cols-2';
+            } else if (visibleCount === 3) {
+                kasBankContainer.className = 'grid gap-3 grid-cols-3';
+            } else if (visibleCount >= 4) {
+                kasBankContainer.className = 'grid gap-3 grid-cols-4';
+            }
+
+            // Uncheck any hidden kas/bank selections
+            previewKasBankRadios.forEach((radio, index) => {
+                const card = previewKasBankCards[index];
+                if (card.classList.contains('hidden') && radio.checked) {
+                    radio.checked = false;
+                    updatePreviewKasBankCards();
+                }
+            });
+
+            // Show appropriate message
+            if (isTransfer) {
+                showToast('Menampilkan kas/bank jenis BANK untuk metode transfer', 'info');
+            } else if (isCash) {
+                showToast('Menampilkan kas/bank jenis KAS untuk metode tunai', 'info');
+            }
+        }
 
         // Confirm order save
         confirmOrderSave.addEventListener('click', function() {
+            // Validate modal form first
+            const selectedModalTransactionType = document.querySelector('.preview-transaction-type-radio:checked');
+            const selectedModalPaymentMethod = document.querySelector('.preview-payment-method-radio:checked');
+            const selectedModalKasBank = document.querySelector('.preview-kas-bank-radio:checked');
+            const modalDpAmount = parseFormattedNumber(document.getElementById('previewDpAmount').value);
+
+            // Validate transaction type
+            if (!selectedModalTransactionType) {
+                showToast('Jenis transaksi wajib dipilih!', 'error');
+
+                // Add error highlight to all transaction type cards
+                const previewTransactionTypeCards = document.querySelectorAll('.preview-transaction-type-card');
+                previewTransactionTypeCards.forEach(card => {
+                    card.classList.add('border-red-500', 'bg-red-50', 'animate-pulse');
+                    setTimeout(() => {
+                        card.classList.remove('border-red-500', 'bg-red-50', 'animate-pulse');
+                    }, 3000);
+                });
+                return;
+            }
+
+            // Validate payment method
+            if (!selectedModalPaymentMethod) {
+                showToast('Metode pembayaran wajib dipilih!', 'error');
+
+                // Add error highlight to all payment method cards
+                const previewPaymentCards = document.querySelectorAll('.preview-payment-method-card');
+                previewPaymentCards.forEach(card => {
+                    card.classList.add('border-red-500', 'bg-red-50', 'animate-pulse');
+                    setTimeout(() => {
+                        card.classList.remove('border-red-500', 'bg-red-50', 'animate-pulse');
+                    }, 3000);
+                });
+                return;
+            }
+
+            // Validate kas/bank selection
+            if (!selectedModalKasBank) {
+                showToast('Kas/Bank wajib dipilih!', 'error');
+
+                // Add error highlight to all kas/bank cards
+                const previewKasBankCards = document.querySelectorAll('.preview-kas-bank-card');
+                previewKasBankCards.forEach(card => {
+                    card.classList.add('border-red-500', 'bg-red-50', 'animate-pulse');
+                    setTimeout(() => {
+                        card.classList.remove('border-red-500', 'bg-red-50', 'animate-pulse');
+                    }, 3000);
+                });
+                return;
+            }
+
+            // Validate DP for kredit transactions
+            if (modalJenisTransaksi === 'kredit') {
+                const subtotal = orderItems.reduce((total, item) => {
+                    const itemSubtotal = item.price * item.qty;
+                    const itemDiscount = item.discount || 0;
+                    return total + (itemSubtotal - itemDiscount);
+                }, 0);
+                const discount = parseFormattedNumber(document.getElementById('diskonDisplay').value);
+                const total = subtotal - discount;
+
+                if (modalDpAmount > total) {
+                    showToast('DP tidak boleh melebihi total transaksi!', 'error');
+                    document.getElementById('previewDpAmount').focus();
+                    return;
+                }
+
+                if (modalDpAmount < 0) {
+                    showToast('DP tidak boleh kurang dari 0!', 'error');
+                    document.getElementById('previewDpAmount').focus();
+                    return;
+                }
+            }
+
+            // Update hidden inputs with modal values
+            document.getElementById('modalJenisTransaksi').value = modalJenisTransaksi;
+            document.getElementById('modalMetodePembayaran').value = selectedModalPaymentMethod.value;
+            document.getElementById('modalKasBankId').value = selectedModalKasBank.value;
+            document.getElementById('modalDpAmount').value = modalDpAmount;
+
+            // Update controller inputs
+            document.getElementById('jenisTransaksi').value = selectedModalTransactionType.value;
+            document.getElementById('metodePembayaran').value = selectedModalPaymentMethod.value;
+            document.getElementById('dpAmount').value = modalDpAmount;
+            document.getElementById('kasBankId').value = selectedModalKasBank.value;
+
             const button = this;
             const originalText = button.innerHTML;
             const cancelButton = document.getElementById('cancelOrderPreview');

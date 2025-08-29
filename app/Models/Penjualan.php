@@ -4,10 +4,28 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class Penjualan extends Model
 {
     use HasFactory;
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Cascade delete saat model dihapus
+        static::deleting(function ($penjualan) {
+            // Log sebelum penghapusan untuk audit trail
+            Log::info('Penjualan akan dihapus', [
+                'penjualan_id' => $penjualan->id,
+                'no_faktur' => $penjualan->no_faktur,
+                'total' => $penjualan->total,
+                'user_id' => auth()->id(),
+                'deleted_at' => now()
+            ]);
+        });
+    }
 
     protected $table = 'penjualan';
 

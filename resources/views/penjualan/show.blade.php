@@ -534,7 +534,7 @@
                                 <span class="text-gray-600">Subtotal</span>
                             </div>
                             <span class="font-semibold text-gray-900">
-                                Rp {{ number_format($penjualan->detailPenjualan->sum('subtotal'), 0, ',', '.') }}
+                                Rp {{ number_format($penjualan->total, 0, ',', '.') }}
                             </span>
                         </div>
 
@@ -575,7 +575,7 @@
                                 <span class="font-bold text-gray-900">Total</span>
                             </div>
                             <span class="font-bold text-xl text-blue-600">
-                                Rp {{ number_format($penjualan->total, 0, ',', '.') }}
+                                Rp {{ number_format($penjualan->total_setelah_diskon, 0, ',', '.') }}
                             </span>
                         </div>
 
@@ -804,6 +804,75 @@
                                                         <span
                                                             class="text-sm font-medium text-gray-900">{{ $metode->nama }}</span>
                                                         <span class="text-xs text-gray-500">{{ $metode->kode }}</span>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+
+                                <!-- Row 4: Kas/Bank Selection -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Kas/Bank <span class="text-red-500">*</span>
+                                    </label>
+
+                                    <!-- Message when no payment method selected -->
+                                    <div id="kasBankMessage" class="text-center py-4 text-gray-500">
+                                        <i class="ti ti-arrow-up text-xl mb-2"></i>
+                                        <p class="text-sm">Pilih metode pembayaran terlebih dahulu untuk melihat pilihan
+                                            kas/bank</p>
+                                    </div>
+
+                                    <div class="grid gap-3" id="kasBankContainer">
+                                        @foreach ($kasBank as $kas)
+                                            <label class="relative cursor-pointer kas-bank-option">
+                                                <input type="radio" name="kas_bank_id" value="{{ $kas->id }}"
+                                                    data-saldo="{{ $kas->saldo_terkini }}"
+                                                    data-jenis="{{ $kas->jenis }}"
+                                                    data-image="{{ $kas->image_url ?? '' }}"
+                                                    class="sr-only kas-bank-radio">
+                                                <div
+                                                    class="p-4 border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 transition-all duration-300 kas-bank-card flex items-center justify-between shadow-sm hover:shadow-md">
+                                                    <div class="flex items-center flex-1">
+                                                        <div
+                                                            class="w-16 h-16 rounded-xl flex items-center justify-center mr-4 overflow-hidden shadow-sm flex-shrink-0">
+                                                            @if ($kas->jenis === 'KAS')
+                                                                <div
+                                                                    class="w-full h-full bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
+                                                                    <i class="ti ti-cash text-green-600 text-xl"></i>
+                                                                </div>
+                                                            @else
+                                                                @if ($kas->image)
+                                                                    <img src="{{ asset('storage/' . $kas->image) }}"
+                                                                        alt="Logo {{ $kas->nama }}"
+                                                                        class="w-full h-full object-contain">
+                                                                @else
+                                                                    <div
+                                                                        class="w-full h-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
+                                                                        <i
+                                                                            class="ti ti-building-bank text-purple-600 text-xl"></i>
+                                                                    </div>
+                                                                @endif
+                                                            @endif
+                                                        </div>
+                                                        <div class="flex-1 flex flex-col justify-center">
+                                                            <div class="text-base font-bold text-gray-900 leading-tight">
+                                                                {{ $kas->nama }}
+                                                            </div>
+                                                            @if ($kas->no_rekening)
+                                                                <div class="text-sm text-gray-500 font-medium">
+                                                                    {{ $kas->no_rekening }}
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                    <div
+                                                        class="text-right ml-4 flex flex-col justify-center flex-shrink-0">
+                                                        <div class="text-sm text-gray-500 font-medium">Saldo</div>
+                                                        <div class="text-base font-bold text-green-600">
+                                                            Rp {{ number_format($kas->saldo_terkini, 0, ',', '.') }}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </label>
@@ -1173,16 +1242,13 @@
             invoiceLines.push("--------------------------------\n");
 
             // Totals
-            @php
-                $subtotalSebelumDiskon = $penjualan->total + $penjualan->diskon;
-            @endphp
-            invoiceLines.push("Subtotal: Rp {{ number_format($subtotalSebelumDiskon, 0) }}\n");
+            invoiceLines.push("Subtotal: Rp {{ number_format($penjualan->total, 0) }}\n");
 
             @if ($penjualan->diskon > 0)
                 invoiceLines.push("Diskon: -Rp {{ number_format($penjualan->diskon, 0) }}\n");
             @endif
 
-            invoiceLines.push("TOTAL: Rp {{ number_format($penjualan->total, 0) }}\n");
+            invoiceLines.push("TOTAL: Rp {{ number_format($penjualan->total_setelah_diskon, 0) }}\n");
 
             // Payment info
             @php
@@ -1191,14 +1257,14 @@
             @if ($totalBayar > 0)
                 invoiceLines.push("Bayar: Rp {{ number_format($totalBayar, 0) }}\n");
 
-                @if ($totalBayar >= $penjualan->total)
+                @if ($totalBayar >= $penjualan->total_setelah_diskon)
                     @php
-                        $kembalian = $totalBayar - $penjualan->total;
+                        $kembalian = $totalBayar - $penjualan->total_setelah_diskon;
                     @endphp
                     invoiceLines.push("Kembalian: Rp {{ number_format($kembalian, 0) }}\n");
                 @else
                     @php
-                        $sisa = $penjualan->total - $totalBayar;
+                        $sisa = $penjualan->total_setelah_diskon - $totalBayar;
                     @endphp
                     invoiceLines.push("Sisa: Rp {{ number_format($sisa, 0) }}\n");
                 @endif
@@ -1309,8 +1375,8 @@
 
         function updatePaymentInfo() {
             const paymentAmount = parseFormattedNumber(document.getElementById('paymentAmount').value) || 0;
-            const remainingAmount = {{ $penjualan->sisa_pembayaran }} - paymentAmount;
-            const totalTransaksi = {{ $penjualan->total }};
+            const sisaPembayaran = {{ $penjualan->sisa_pembayaran }};
+            const remainingAmount = sisaPembayaran - paymentAmount;
             const sudahDibayar = {{ $penjualan->pembayaranPenjualan->sum('jumlah_bayar') }};
 
             // Update preview
@@ -1322,7 +1388,7 @@
 
             if (sudahDibayar == 0) {
                 // Pembayaran pertama
-                if (paymentAmount >= totalTransaksi) {
+                if (paymentAmount >= sisaPembayaran) {
                     statusElement.textContent = 'P (Pelunasan)';
                     statusElement.className = 'font-medium text-green-600';
                 } else {
@@ -1331,8 +1397,7 @@
                 }
             } else {
                 // Pembayaran selanjutnya
-                const totalAfterPayment = sudahDibayar + paymentAmount;
-                if (totalAfterPayment >= totalTransaksi) {
+                if (paymentAmount >= sisaPembayaran) {
                     statusElement.textContent = 'P (Pelunasan)';
                     statusElement.className = 'font-medium text-green-600';
                 } else {
@@ -1354,6 +1419,7 @@
             const jumlahRaw = formData.get('jumlah');
             const jumlah = parseFormattedNumber(jumlahRaw);
             const metode_pembayaran = formData.get('metode_pembayaran');
+            const kas_bank_id = formData.get('kas_bank_id');
             const tanggal = formData.get('tanggal');
 
 
@@ -1405,6 +1471,32 @@
                 return;
             }
 
+            if (!kas_bank_id) {
+                showPaymentError('Kas/Bank wajib dipilih!');
+
+                // Add error highlight to all kas/bank cards
+                const kasBankCards = document.querySelectorAll('.kas-bank-card');
+                kasBankCards.forEach(card => {
+                    if (!card.classList.contains('hidden')) {
+                        card.classList.add('border-red-500', 'bg-red-50', 'animate-pulse');
+                        // Remove error highlight after 3 seconds
+                        setTimeout(() => {
+                            card.classList.remove('border-red-500', 'bg-red-50', 'animate-pulse');
+                        }, 3000);
+                    }
+                });
+
+                // Focus on the first visible kas/bank card
+                const firstKasBankCard = document.querySelector('.kas-bank-card:not(.hidden)');
+                if (firstKasBankCard) {
+                    firstKasBankCard.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+                return;
+            }
+
             if (!tanggal) {
                 showPaymentError('Tanggal pembayaran wajib diisi!');
                 document.querySelector('input[name="tanggal"]').focus();
@@ -1422,10 +1514,17 @@
             console.log('Submitting payment:', {
                 jumlah: jumlah,
                 metode_pembayaran: metode_pembayaran,
+                kas_bank_id: kas_bank_id,
                 tanggal: tanggal,
                 penjualan_id: formData.get('penjualan_id'),
                 keterangan: formData.get('keterangan')
             });
+
+            // Log all form data
+            console.log('All form data:');
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}: ${value}`);
+            }
 
             // Submit payment
             fetch('{{ route('pembayaran.store') }}', {
@@ -1633,16 +1732,13 @@
             content += '--------------------------------\n';
 
             // Totals
-            @php
-                $subtotalSebelumDiskon = $penjualan->total + $penjualan->diskon;
-            @endphp
-            content += 'Subtotal: Rp {{ number_format($subtotalSebelumDiskon, 0) }}\n';
+            content += 'Subtotal: Rp {{ number_format($penjualan->total, 0) }}\n';
 
             @if ($penjualan->diskon > 0)
                 content += 'Diskon: -Rp {{ number_format($penjualan->diskon, 0) }}\n';
             @endif
 
-            content += 'TOTAL: Rp {{ number_format($penjualan->total, 0) }}\n\n';
+            content += 'TOTAL: Rp {{ number_format($penjualan->total_setelah_diskon, 0) }}\n\n';
 
             // Payment info
             @php
@@ -1651,14 +1747,14 @@
             @if ($totalBayar > 0)
                 content += 'Bayar: Rp {{ number_format($totalBayar, 0) }}\n';
 
-                @if ($totalBayar >= $penjualan->total)
+                @if ($totalBayar >= $penjualan->total_setelah_diskon)
                     @php
-                        $kembalian = $totalBayar - $penjualan->total;
+                        $kembalian = $totalBayar - $penjualan->total_setelah_diskon;
                     @endphp
                     content += 'Kembalian: Rp {{ number_format($kembalian, 0) }}\n';
                 @else
                     @php
-                        $sisa = $penjualan->total - $totalBayar;
+                        $sisa = $penjualan->total_setelah_diskon - $totalBayar;
                     @endphp
                     content += 'Sisa: Rp {{ number_format($sisa, 0) }}\n';
                 @endif
@@ -1725,6 +1821,133 @@
                 // Initialize preview on page load
                 updatePaymentInfo();
             }
+
+            // Kas/Bank filtering functionality
+            const kasBankRadios = document.querySelectorAll('.kas-bank-radio');
+            const kasBankCards = document.querySelectorAll('.kas-bank-card');
+            const kasBankContainer = document.getElementById('kasBankContainer');
+            const kasBankMessage = document.getElementById('kasBankMessage');
+
+            // Function to update kas/bank card styling
+            function updateKasBankCards() {
+                kasBankCards.forEach((card, index) => {
+                    const radio = kasBankRadios[index];
+                    if (radio.checked) {
+                        card.classList.remove('border-gray-200', 'bg-white', 'border-red-500', 'bg-red-50',
+                            'animate-pulse');
+                        card.classList.add('border-blue-500', 'bg-blue-50');
+                    } else {
+                        card.classList.remove('border-blue-500', 'bg-blue-50', 'border-red-500',
+                            'bg-red-50', 'animate-pulse');
+                        card.classList.add('border-gray-200', 'bg-white');
+                    }
+                });
+            }
+
+            // Function to filter kas/bank based on payment method
+            function filterKasBankByPaymentMethod() {
+                const selectedPaymentMethod = document.querySelector('.payment-method-radio:checked');
+
+                if (!selectedPaymentMethod) {
+                    // If no payment method selected, hide all kas/bank and show message
+                    kasBankCards.forEach((card, index) => {
+                        card.classList.add('hidden');
+                    });
+                    kasBankMessage.classList.remove('hidden');
+                    return;
+                }
+
+                // Hide message when payment method is selected
+                kasBankMessage.classList.add('hidden');
+
+                const paymentMethodCode = selectedPaymentMethod.value;
+                const isTransfer = paymentMethodCode.toLowerCase().includes('transfer') ||
+                    paymentMethodCode.toLowerCase().includes('bank') ||
+                    paymentMethodCode.toLowerCase().includes('bca') ||
+                    paymentMethodCode.toLowerCase().includes('mandiri') ||
+                    paymentMethodCode.toLowerCase().includes('bni') ||
+                    paymentMethodCode.toLowerCase().includes('bri');
+                const isCash = paymentMethodCode.toLowerCase().includes('cash') ||
+                    paymentMethodCode.toLowerCase().includes('tunai') ||
+                    paymentMethodCode.toLowerCase().includes('kas');
+
+                let visibleCount = 0;
+
+                kasBankCards.forEach((card, index) => {
+                    const radio = kasBankRadios[index];
+                    const kasBankJenis = radio.getAttribute('data-jenis');
+
+                    if (isTransfer && kasBankJenis === 'BANK') {
+                        // Show only BANK for transfer methods
+                        card.classList.remove('hidden');
+                        visibleCount++;
+                    } else if (isCash && kasBankJenis === 'KAS') {
+                        // Show only KAS for cash methods
+                        card.classList.remove('hidden');
+                        visibleCount++;
+                    } else if (!isTransfer && !isCash) {
+                        // If payment method is not clearly transfer or cash, show all
+                        card.classList.remove('hidden');
+                        visibleCount++;
+                    } else {
+                        // Hide the card
+                        card.classList.add('hidden');
+                    }
+                });
+
+                // Update grid columns based on visible count
+                if (visibleCount === 1) {
+                    kasBankContainer.className = 'grid gap-3 grid-cols-1';
+                } else if (visibleCount === 2) {
+                    kasBankContainer.className = 'grid gap-3 grid-cols-2';
+                } else if (visibleCount === 3) {
+                    kasBankContainer.className = 'grid gap-3 grid-cols-3';
+                } else if (visibleCount >= 4) {
+                    kasBankContainer.className = 'grid gap-3 grid-cols-4';
+                }
+
+                // Uncheck any hidden kas/bank selections
+                kasBankRadios.forEach((radio, index) => {
+                    const card = kasBankCards[index];
+                    if (card.classList.contains('hidden') && radio.checked) {
+                        radio.checked = false;
+                        updateKasBankCards();
+                    }
+                });
+            }
+
+            // Add event listeners to payment method radio buttons
+            paymentRadios.forEach((radio, index) => {
+                radio.addEventListener('change', function() {
+                    updatePaymentMethodCards();
+                    filterKasBankByPaymentMethod();
+                });
+
+                // Add click event to card for better UX
+                const card = paymentCards[index];
+                card.addEventListener('click', function() {
+                    radio.checked = true;
+                    updatePaymentMethodCards();
+                    filterKasBankByPaymentMethod();
+                });
+            });
+
+            // Add event listeners to kas/bank radio buttons
+            kasBankRadios.forEach((radio, index) => {
+                radio.addEventListener('change', function() {
+                    updateKasBankCards();
+                });
+
+                // Add click event to card for better UX
+                const card = kasBankCards[index];
+                card.addEventListener('click', function() {
+                    radio.checked = true;
+                    updateKasBankCards();
+                });
+            });
+
+            // Initialize kas/bank filter
+            filterKasBankByPaymentMethod();
         });
 
         // Delete Payment Functions

@@ -148,6 +148,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Kode
                             </th>
+
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Deskripsi
                             </th>
@@ -184,6 +185,7 @@
                                         {{ $metode->kode }}
                                     </span>
                                 </td>
+
                                 <td class="px-6 py-4">
                                     <div class="text-sm text-gray-900">
                                         {{ Str::limit($metode->deskripsi, 50) ?: '-' }}

@@ -5,10 +5,28 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Log;
 
 class Pembelian extends Model
 {
     use HasFactory;
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Cascade delete saat model dihapus
+        static::deleting(function ($pembelian) {
+            // Log sebelum penghapusan untuk audit trail
+            Log::info('Pembelian akan dihapus', [
+                'pembelian_id' => $pembelian->id,
+                'no_faktur' => $pembelian->no_faktur,
+                'total' => $pembelian->total,
+                'user_id' => auth()->id(),
+                'deleted_at' => now()
+            ]);
+        });
+    }
 
     protected $table = 'pembelian';
 

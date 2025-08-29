@@ -237,6 +237,14 @@
                                     Jenis
                                 </th>
                                 <th scope="col"
+                                    class="w-2/12 px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Saldo Terkini
+                                </th>
+                                <th scope="col"
+                                    class="w-1/12 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Logo
+                                </th>
+                                <th scope="col"
                                     class="w-2/12 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Aksi
                                 </th>
@@ -272,24 +280,33 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        @if (str_starts_with(strtoupper($item->kode), 'KAS'))
+                                        @if ($item->jenis === 'KAS')
                                             <span
                                                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                 <i class="ti ti-cash text-sm mr-1"></i>
-                                                Kas
-                                            </span>
-                                        @elseif(str_starts_with(strtoupper($item->kode), 'BANK'))
-                                            <span
-                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                                <i class="ti ti-building-bank text-sm mr-1"></i>
-                                                Bank
+                                                KAS
                                             </span>
                                         @else
                                             <span
-                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                                <i class="ti ti-credit-card text-sm mr-1"></i>
-                                                Lainnya
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                <i class="ti ti-building-bank text-sm mr-1"></i>
+                                                BANK
                                             </span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right">
+                                        <div class="text-sm font-semibold text-gray-900">
+                                            Rp {{ number_format($item->saldo_terkini, 0, ',', '.') }}
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if ($item->image)
+                                            <img src="{{ $item->image_url }}" alt="Logo {{ $item->nama }}"
+                                                class="h-8 w-8 object-cover rounded-lg border">
+                                        @else
+                                            <div class="h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                                                <i class="ti ti-image text-gray-400 text-xs"></i>
+                                            </div>
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">

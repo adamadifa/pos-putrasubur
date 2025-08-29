@@ -114,10 +114,13 @@ class PembelianController extends Controller
             ->orderBy('nama')
             ->get();
 
+        // Get kas/bank data
+        $kasBank = \App\Models\KasBank::orderBy('nama')->get();
+
         // Generate invoice number
         $invoiceNumber = 'PO-' . date('YmdHis');
 
-        return view('pembelian.create', compact('suppliers', 'produk', 'metodePembayaran', 'invoiceNumber'));
+        return view('pembelian.create', compact('suppliers', 'produk', 'metodePembayaran', 'kasBank', 'invoiceNumber'));
     }
 
     /**
@@ -130,7 +133,8 @@ class PembelianController extends Controller
             'supplier_id' => 'required|exists:supplier,id',
             'tanggal' => 'required|date',
             'jenis_transaksi' => 'required|in:tunai,kredit',
-            'metode_pembayaran' => 'nullable|string|exists:metode_pembayaran,kode',
+            'metode_pembayaran' => 'required|string|exists:metode_pembayaran,kode',
+            'kas_bank_id' => 'required|exists:kas_bank,id',
             'dp_amount' => 'nullable|numeric|min:0',
             'diskon' => 'nullable|numeric|min:0',
             'keterangan' => 'nullable|string',
@@ -147,7 +151,10 @@ class PembelianController extends Controller
             'supplier_id.exists' => 'Supplier tidak valid.',
             'jenis_transaksi.required' => 'Jenis transaksi wajib dipilih.',
             'jenis_transaksi.in' => 'Jenis transaksi tidak valid.',
+            'metode_pembayaran.required' => 'Metode pembayaran wajib dipilih.',
             'metode_pembayaran.exists' => 'Metode pembayaran tidak valid.',
+            'kas_bank_id.required' => 'Kas/Bank wajib dipilih.',
+            'kas_bank_id.exists' => 'Kas/Bank tidak valid.',
             'dp_amount.min' => 'Jumlah pembayaran tidak boleh negatif.',
             'items.required' => 'Minimal harus ada 1 produk.',
             'items.min' => 'Minimal harus ada 1 produk.',
@@ -275,6 +282,7 @@ class PembelianController extends Controller
                     'tanggal' => $validated['tanggal'],
                     'jumlah_bayar' => $dpAmount,
                     'metode_pembayaran' => $metodePembayaran,
+                    'kas_bank_id' => $validated['kas_bank_id'],
                     'status_bayar' => $jenisTransaksi === 'tunai' ? 'P' : 'D', // P = Pelunasan, D = DP
                     'keterangan' => $jenisTransaksi === 'tunai'
                         ? 'Pembayaran tunai penuh'
@@ -287,7 +295,8 @@ class PembelianController extends Controller
                     'no_bukti' => $noBukti,
                     'amount' => $dpAmount,
                     'jenis_transaksi' => $jenisTransaksi,
-                    'metode_pembayaran' => $metodePembayaran
+                    'metode_pembayaran' => $metodePembayaran,
+                    'kas_bank_id' => $validated['kas_bank_id']
                 ]);
             } else {
                 // No payment amount - this could be a pure credit transaction
@@ -471,40 +480,24 @@ class PembelianController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($encryptedId): RedirectResponse
+    public function destroy($encryptedId)
     {
         try {
+            // Decrypt ID dan cari pembelian
             $pembelian = Pembelian::findByEncryptedId($encryptedId);
 
-            // Check if transaction is within H+1 (today and yesterday)
-            $today = Carbon::today();
-            $transactionDate = Carbon::parse($pembelian->created_at)->startOfDay();
-            $isMoreThanOneDay = $today->diffInDays($transactionDate) > 1;
+            // Gunakan TransactionService untuk menghapus pembelian
+            $transactionService = new \App\Services\TransactionService();
+            $result = $transactionService->deletePembelian($pembelian);
 
-            if ($isMoreThanOneDay) {
+            if ($result['success']) {
                 return redirect()->route('pembelian.index')
-                    ->with('error', 'Transaksi yang sudah lebih dari H+1 tidak dapat dihapus.');
+                    ->with('success', $result['message']);
+            } else {
+                return back()->withErrors(['error' => $result['message']]);
             }
-
-            DB::beginTransaction();
-
-            // Restore stock
-            foreach ($pembelian->detailPembelian as $detail) {
-                $produk = Produk::find($detail->produk_id);
-                $produk->decrement('stok', $detail->qty);
-            }
-
-            // Delete the purchase (details will be deleted automatically due to cascade)
-            $pembelian->delete();
-
-            DB::commit();
-
-            return redirect()->route('pembelian.index')
-                ->with('success', 'Transaksi pembelian berhasil dihapus.');
         } catch (\Exception $e) {
-            DB::rollback();
-            return redirect()->route('pembelian.index')
-                ->with('error', 'Terjadi kesalahan saat menghapus transaksi: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
         }
     }
 

@@ -131,8 +131,8 @@
                     </div>
                 </div>
 
-                <form action="{{ route('kas-bank.update', $kasBank->id) }}" method="POST" class="p-8"
-                    id="editKasBankForm">
+                <form action="{{ route('kas-bank.update', $kasBank->id) }}" method="POST" enctype="multipart/form-data"
+                    class="p-8" id="editKasBankForm">
                     @csrf
                     @method('PUT')
 
@@ -193,6 +193,46 @@
                             @enderror
                         </div>
 
+                        <!-- Jenis -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Jenis <span class="text-red-500">*</span>
+                            </label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label
+                                    class="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                    <input type="radio" name="jenis" value="KAS"
+                                        {{ old('jenis', $kasBank->jenis ?? 'KAS') === 'KAS' ? 'checked' : '' }}
+                                        class="mr-3 text-blue-600 focus:ring-blue-500" required>
+                                    <div class="flex items-center">
+                                        <i class="ti ti-cash text-lg text-green-600 mr-2"></i>
+                                        <span class="text-sm font-medium">KAS</span>
+                                    </div>
+                                </label>
+                                <label
+                                    class="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                    <input type="radio" name="jenis" value="BANK"
+                                        {{ old('jenis', $kasBank->jenis) === 'BANK' ? 'checked' : '' }}
+                                        class="mr-3 text-blue-600 focus:ring-blue-500" required>
+                                    <div class="flex items-center">
+                                        <i class="ti ti-building-bank text-lg text-blue-600 mr-2"></i>
+                                        <span class="text-sm font-medium">BANK</span>
+                                    </div>
+                                </label>
+                            </div>
+                            @error('jenis')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                            <p class="text-xs text-gray-500 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="w-3 h-3 mr-1">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.847a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.847.813a4.5 4.5 0 0 0-3.09 3.09Z" />
+                                </svg>
+                                Pilih jenis kas atau bank
+                            </p>
+                        </div>
+
                         <!-- No Rekening -->
                         <div class="space-y-2">
                             <label for="no_rekening" class="block text-sm font-semibold text-gray-700">
@@ -219,6 +259,44 @@
                             @error('no_rekening')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
+                        </div>
+
+                        <!-- Image -->
+                        <div class="space-y-2">
+                            <label for="image" class="block text-sm font-semibold text-gray-700">
+                                Logo Bank
+                            </label>
+                            <div class="flex items-center space-x-4">
+                                <div class="flex-1">
+                                    <input type="file" name="image" id="image" accept="image/*"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('image') border-red-500 @enderror">
+                                    @error('image')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                    <p class="text-xs text-gray-500 flex items-center mt-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="w-3 h-3 mr-1">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.847a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.847.813a4.5 4.5 0 0 0-3.09 3.09Z" />
+                                        </svg>
+                                        Upload logo bank (opsional, maksimal 2MB, format: jpeg, png, jpg, gif, svg)
+                                    </p>
+                                </div>
+                                <div id="imagePreview" class="{{ $kasBank->image ? '' : 'hidden' }}">
+                                    <img id="previewImg" src="{{ $kasBank->image_url ?? '' }}" alt="Preview"
+                                        class="w-16 h-16 object-cover rounded-lg border">
+                                </div>
+                            </div>
+                            @if ($kasBank->image)
+                                <p class="mt-2 text-xs text-gray-500 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="w-3 h-3 mr-1">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.847a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.847.813a4.5 4.5 0 0 0-3.09 3.09Z" />
+                                    </svg>
+                                    Logo saat ini: {{ basename($kasBank->image) }}
+                                </p>
+                            @endif
                         </div>
 
                         <!-- Preview Card -->
@@ -576,6 +654,24 @@
                     showNotification('{{ session('success') }}', 'success');
                 }, 500);
             @endif
+
+            // Image preview functionality
+            document.getElementById('image').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                const preview = document.getElementById('imagePreview');
+                const previewImg = document.getElementById('previewImg');
+
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImg.src = e.target.result;
+                        preview.classList.remove('hidden');
+                    }
+                    reader.readAsDataURL(file);
+                } else {
+                    preview.classList.add('hidden');
+                }
+            });
         });
     </script>
 @endsection

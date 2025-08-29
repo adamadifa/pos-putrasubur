@@ -17,6 +17,7 @@ class PembayaranPembelian extends Model
         'tanggal',
         'jumlah_bayar',
         'metode_pembayaran',
+        'kas_bank_id',
         'status_bayar',
         'keterangan',
         'user_id',
@@ -38,6 +39,17 @@ class PembayaranPembelian extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function kasBank()
+    {
+        return $this->belongsTo(KasBank::class, 'kas_bank_id');
+    }
+
+    public function transaksiKasBank()
+    {
+        return $this->hasOne(TransaksiKasBank::class, 'referensi_id')
+            ->where('referensi_tipe', 'PPB');
     }
 
     // Accessors

@@ -7,6 +7,7 @@ use App\Models\Pelanggan;
 use App\Models\Produk;
 use App\Models\DetailPenjualan;
 use App\Models\PembayaranPenjualan;
+
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -63,11 +64,15 @@ class PenjualanController extends Controller
 
         // Get statistics - semua data
         $totalPenjualan = Penjualan::count();
-        $totalNilai = Penjualan::sum('total');
+        $totalNilai = Penjualan::get()->sum(function ($penjualan) {
+            return $penjualan->total_setelah_diskon;
+        });
 
         // Get statistics - hari ini
         $penjualanHariIni = Penjualan::whereDate('tanggal', today())->count();
-        $nilaiHariIni = Penjualan::whereDate('tanggal', today())->sum('total');
+        $nilaiHariIni = Penjualan::whereDate('tanggal', today())->get()->sum(function ($penjualan) {
+            return $penjualan->total_setelah_diskon;
+        });
 
         // Status counts - hari ini
         $statusCountsHariIni = [
@@ -94,7 +99,9 @@ class PenjualanController extends Controller
         // Perbandingan dengan kemarin
         $kemarin = Carbon::yesterday();
         $penjualanKemarin = Penjualan::whereDate('tanggal', $kemarin)->count();
-        $nilaiKemarin = Penjualan::whereDate('tanggal', $kemarin)->sum('total');
+        $nilaiKemarin = Penjualan::whereDate('tanggal', $kemarin)->get()->sum(function ($penjualan) {
+            return $penjualan->total_setelah_diskon;
+        });
 
         // Hitung persentase perubahan
         $perubahanPenjualan = $penjualanKemarin > 0 ? (($penjualanHariIni - $penjualanKemarin) / $penjualanKemarin) * 100 : 0;
@@ -135,6 +142,9 @@ class PenjualanController extends Controller
             ->orderBy('nama')
             ->get();
 
+        // Get kas/bank data
+        $kasBank = \App\Models\KasBank::orderBy('nama')->get();
+
         // Generate next invoice number
         $lastInvoice = Penjualan::whereDate('created_at', today())
             ->orderBy('id', 'desc')
@@ -142,7 +152,7 @@ class PenjualanController extends Controller
 
         $invoiceNumber = $this->generateInvoiceNumber($lastInvoice);
 
-        return view('penjualan.create', compact('pelanggan', 'produk', 'metodePembayaran', 'invoiceNumber'));
+        return view('penjualan.create', compact('pelanggan', 'produk', 'metodePembayaran', 'kasBank', 'invoiceNumber'));
     }
 
     /**
@@ -156,6 +166,7 @@ class PenjualanController extends Controller
             'pelanggan_id' => 'required|exists:pelanggan,id',
             'jenis_transaksi' => 'required|in:tunai,kredit',
             'metode_pembayaran' => 'nullable|string|exists:metode_pembayaran,kode',
+            'kas_bank_id' => 'required|exists:kas_bank,id',
             'dp_amount' => 'nullable|numeric|min:0',
             'diskon' => 'nullable|numeric|min:0',
             'jatuh_tempo' => 'nullable|date|after_or_equal:tanggal',
@@ -173,6 +184,8 @@ class PenjualanController extends Controller
             'jenis_transaksi.required' => 'Jenis transaksi wajib dipilih.',
             'jenis_transaksi.in' => 'Jenis transaksi tidak valid.',
             'metode_pembayaran.exists' => 'Metode pembayaran tidak valid.',
+            'kas_bank_id.required' => 'Kas/Bank wajib dipilih.',
+            'kas_bank_id.exists' => 'Kas/Bank tidak valid.',
             'dp_amount.min' => 'Jumlah pembayaran tidak boleh negatif.',
             'items.required' => 'Minimal harus ada 1 produk.',
             'items.min' => 'Minimal harus ada 1 produk.',
@@ -216,11 +229,17 @@ class PenjualanController extends Controller
             $jenisTransaksi = $validated['jenis_transaksi'];
             $dpAmount = $validated['dp_amount'] ?? 0;
 
-            // Determine payment status
+            // Determine payment status and amount
             $statusPembayaran = 'belum_bayar';
-            if ($jenisTransaksi === 'tunai' && $dpAmount >= $totalSetelahDiskon) {
+            $paymentAmount = 0;
+
+            if ($jenisTransaksi === 'tunai') {
+                // For cash transactions, payment amount equals total after discount
+                $paymentAmount = $totalSetelahDiskon;
                 $statusPembayaran = 'lunas';
             } elseif ($dpAmount > 0) {
+                // For credit transactions, use DP amount
+                $paymentAmount = $dpAmount;
                 $statusPembayaran = $dpAmount < $totalSetelahDiskon ? 'dp' : 'lunas';
             }
 
@@ -230,7 +249,7 @@ class PenjualanController extends Controller
                 'tanggal' => $validated['tanggal'],
                 'pelanggan_id' => $validated['pelanggan_id'],
                 'jenis_transaksi' => $validated['jenis_transaksi'],
-                'total' => $totalSetelahDiskon,
+                'total' => $total, // Simpan total sebelum diskon
                 'diskon' => $diskon,
                 'status_pembayaran' => $statusPembayaran,
                 'jatuh_tempo' => $validated['jatuh_tempo'] ?? null,
@@ -258,7 +277,7 @@ class PenjualanController extends Controller
             }
 
             // Create payment record if there's payment amount
-            if ($dpAmount > 0) {
+            if ($paymentAmount > 0) {
                 // Generate payment reference number
                 $noBukti = 'PAY-' . date('Ymd') . '-' . str_pad($penjualan->id, 4, '0', STR_PAD_LEFT);
 
@@ -293,23 +312,26 @@ class PenjualanController extends Controller
                     }
                 }
 
-                PembayaranPenjualan::create([
+                $pembayaranPenjualan = PembayaranPenjualan::create([
                     'penjualan_id' => $penjualan->id,
                     'no_bukti' => $noBukti,
                     'tanggal' => $validated['tanggal'],
-                    'jumlah_bayar' => $dpAmount,
+                    'jumlah_bayar' => $paymentAmount,
                     'metode_pembayaran' => $metodePembayaran,
                     'status_bayar' => $jenisTransaksi === 'tunai' ? 'P' : 'D', // P = Pelunasan, D = DP
                     'keterangan' => $jenisTransaksi === 'tunai'
                         ? 'Pembayaran tunai penuh'
                         : 'Pembayaran DP awal',
                     'user_id' => Auth::id(),
+                    'kas_bank_id' => $validated['kas_bank_id'],
                 ]);
+
+                // Note: Saldo kas/bank akan otomatis terupdate melalui database trigger
 
                 Log::info('Created payment record', [
                     'penjualan_id' => $penjualan->id,
                     'no_bukti' => $noBukti,
-                    'amount' => $dpAmount,
+                    'amount' => $paymentAmount,
                     'jenis_transaksi' => $jenisTransaksi,
                     'metode_pembayaran' => $metodePembayaran
                 ]);
@@ -354,7 +376,10 @@ class PenjualanController extends Controller
             ->orderBy('nama')
             ->get();
 
-        return view('penjualan.show', compact('penjualan', 'metodePembayaran'));
+        // Get kas/bank data
+        $kasBank = \App\Models\KasBank::orderBy('nama')->get();
+
+        return view('penjualan.show', compact('penjualan', 'metodePembayaran', 'kasBank'));
     }
 
     /**
@@ -433,7 +458,7 @@ class PenjualanController extends Controller
             // Delete old details
             $penjualan->detailPenjualan()->delete();
 
-            // Delete old pembayaran
+            // Delete old pembayaran (saldo kas/bank akan otomatis terupdate melalui database trigger)
             $penjualan->pembayaranPenjualan()->delete();
 
             // Calculate new total with item discounts
@@ -510,7 +535,7 @@ class PenjualanController extends Controller
                     $noBukti = 'PAY-' . date('Ymd') . '-' . str_pad($penjualan->id, 4, '0', STR_PAD_LEFT);
 
                     // Create DP payment record
-                    PembayaranPenjualan::create([
+                    $pembayaranPenjualan = PembayaranPenjualan::create([
                         'penjualan_id' => $penjualan->id,
                         'no_bukti' => $noBukti,
                         'tanggal' => $validated['tanggal'],
@@ -519,7 +544,10 @@ class PenjualanController extends Controller
                         'status_bayar' => 'D', // D = DP
                         'keterangan' => 'Pembayaran DP',
                         'user_id' => Auth::id(),
+                        'kas_bank_id' => $validated['kas_bank_id'],
                     ]);
+
+                    // Note: Saldo kas/bank akan otomatis terupdate melalui database trigger
 
                     Log::info('Created DP payment record', ['no_bukti' => $noBukti, 'amount' => $dpAmount]);
                 }
@@ -555,7 +583,7 @@ class PenjualanController extends Controller
                 // For cash transactions, create full payment record
                 $noBukti = 'PAY-' . date('Ymd') . '-' . str_pad($penjualan->id, 4, '0', STR_PAD_LEFT);
 
-                PembayaranPenjualan::create([
+                $pembayaranPenjualan = PembayaranPenjualan::create([
                     'penjualan_id' => $penjualan->id,
                     'no_bukti' => $noBukti,
                     'tanggal' => $validated['tanggal'],
@@ -564,7 +592,10 @@ class PenjualanController extends Controller
                     'status_bayar' => 'P', // P = Pelunasan
                     'keterangan' => 'Pembayaran tunai',
                     'user_id' => Auth::id(),
+                    'kas_bank_id' => $validated['kas_bank_id'],
                 ]);
+
+                // Note: Saldo kas/bank akan otomatis terupdate melalui database trigger
             }
 
             DB::commit();
@@ -581,40 +612,24 @@ class PenjualanController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($encryptedId): RedirectResponse
+    public function destroy($encryptedId)
     {
-        $penjualan = Penjualan::findByEncryptedId($encryptedId);
-
-        // Check if transaction is within H+1 (today and yesterday)
-        $today = Carbon::today();
-        $transactionDate = Carbon::parse($penjualan->created_at)->startOfDay();
-        $isMoreThanOneDay = $today->diffInDays($transactionDate) > 1;
-
-        if ($isMoreThanOneDay) {
-            return redirect()->route('penjualan.index')
-                ->with('error', 'Transaksi yang sudah lebih dari H+1 tidak dapat dihapus.');
-        }
-
-        DB::beginTransaction();
-
         try {
-            // Restore stock
-            foreach ($penjualan->detailPenjualan as $detail) {
-                $produk = Produk::find($detail->produk_id);
-                $produk->increment('stok', $detail->qty);
+            // Decrypt ID dan cari penjualan
+            $penjualan = Penjualan::findByEncryptedId($encryptedId);
+
+            // Gunakan TransactionService untuk menghapus penjualan
+            $transactionService = new \App\Services\TransactionService();
+            $result = $transactionService->deletePenjualan($penjualan);
+
+            if ($result['success']) {
+                return redirect()->route('penjualan.index')
+                    ->with('success', $result['message']);
+            } else {
+                return back()->withErrors(['error' => $result['message']]);
             }
-
-            // Delete the sale (details will be deleted automatically due to cascade)
-            $penjualan->delete();
-
-            DB::commit();
-
-            return redirect()->route('penjualan.index')
-                ->with('success', 'Transaksi penjualan berhasil dihapus.');
         } catch (\Exception $e) {
-            DB::rollback();
-            return redirect()->route('penjualan.index')
-                ->with('error', 'Terjadi kesalahan saat menghapus transaksi: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
         }
     }
 

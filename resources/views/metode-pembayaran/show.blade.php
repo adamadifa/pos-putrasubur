@@ -49,6 +49,7 @@
                                 <label class="block text-sm font-medium text-gray-500 mb-1">Nama</label>
                                 <p class="text-lg font-semibold text-gray-900">{{ $metodePembayaran->nama }}</p>
                             </div>
+
                             <div>
                                 <label class="block text-sm font-medium text-gray-500 mb-1">Status</label>
                                 <div class="mt-1">
@@ -126,6 +127,8 @@
                         <p class="text-sm text-gray-600">{{ $metodePembayaran->icon ?: 'ti-credit-card' }}</p>
                     </div>
                 </div>
+
+
 
                 <!-- Quick Actions -->
                 <div class="bg-white rounded-lg shadow border">

@@ -151,7 +151,8 @@
 
                         <!-- Invoice Number -->
                         <div class="mb-2">
-                            <input type="text" name="no_faktur" value="{{ old('no_faktur', $invoiceNumber) }}"
+                            <input type="text" name="no_faktur" id="noFaktur"
+                                value="{{ old('no_faktur', $invoiceNumber) }}"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
                                 placeholder="Nomor Faktur" readonly>
                         </div>
@@ -187,64 +188,22 @@
                                 required>
                         </div>
 
-                        <!-- Transaction Type -->
-                        <div class="mb-2">
-                            <select name="jenis_transaksi" id="jenisTransaksi"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                required>
-                                <option value="tunai" {{ old('jenis_transaksi', 'tunai') == 'tunai' ? 'selected' : '' }}>
-                                    Tunai</option>
-                                <option value="kredit" {{ old('jenis_transaksi') == 'kredit' ? 'selected' : '' }}>Kredit
-                                </option>
-                            </select>
-                        </div>
-
-                        <!-- Payment Method -->
-                        <div class="mb-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Metode Pembayaran <span class="text-red-500">*</span>
-                            </label>
-                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="paymentMethodContainer">
-                                @foreach ($metodePembayaran as $metode)
-                                    <label class="relative cursor-pointer payment-method-option">
-                                        <input type="radio" name="metode_pembayaran" value="{{ $metode->kode }}"
-                                            {{ old('metode_pembayaran') == $metode->kode ? 'checked' : '' }}
-                                            class="sr-only payment-method-radio">
-                                        <div
-                                            class="p-4 border-2 border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 payment-method-card">
-                                            <div class="flex flex-col items-center text-center">
-                                                <div
-                                                    class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-2">
-                                                    <i class="ti {{ $metode->icon_display }} text-orange-600 text-xl"></i>
-                                                </div>
-                                                <span class="text-sm font-medium text-gray-900">{{ $metode->nama }}</span>
-                                                <span class="text-xs text-gray-500">{{ $metode->kode }}</span>
-                                            </div>
-                                        </div>
-                                    </label>
-                                @endforeach
+                        <!-- Info Box -->
+                        <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="ti ti-info-circle text-blue-600 mr-2"></i>
+                                <span class="text-sm text-blue-800">Konfigurasi pembayaran akan diatur pada preview
+                                    pesanan</span>
                             </div>
-                            @error('metode_pembayaran')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
                         </div>
 
-                        <!-- DP Amount (shown only for kredit) -->
-                        <div class="mb-2 hidden" id="dpContainer">
-                            <label for="dpAmountDisplay" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="ti ti-credit-card mr-1"></i>
-                                Jumlah Down Payment (DP)
-                            </label>
-                            <input type="text" id="dpAmountDisplay"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-right"
-                                placeholder="Jumlah DP (Rp)" value="{{ old('dp_amount', 0) }}">
-                            <input type="hidden" name="dp_amount" id="dpAmount" value="{{ old('dp_amount', 0) }}">
-                            <p class="text-xs text-gray-500 mt-1">
-                                <i class="ti ti-info-circle mr-1"></i>
-                                Masukkan jumlah uang muka yang akan dibayar. DP harus lebih dari 0 dan tidak boleh
-                                melebihi total transaksi.
-                            </p>
-                        </div>
+                        <!-- Hidden inputs for form submission -->
+                        <input type="hidden" name="jenis_transaksi" id="jenisTransaksi"
+                            value="{{ old('jenis_transaksi', 'tunai') }}">
+                        <input type="hidden" name="metode_pembayaran" id="metodePembayaran"
+                            value="{{ old('metode_pembayaran') }}">
+                        <input type="hidden" name="kas_bank_id" id="kasBankId" value="{{ old('kas_bank_id') }}">
+                        <input type="hidden" name="dp_amount" id="dpAmount" value="{{ old('dp_amount', 0) }}">
 
                         <!-- Keterangan -->
                         <div class="mb-2">
@@ -313,14 +272,245 @@
 
                         <!-- Action Buttons -->
                         <div class="space-y-2">
-                            <button type="submit"
-                                class="w-full py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors btn-primary">
-                                <i class="ti ti-device-floppy text-lg mr-2"></i>
-                                Simpan Pembelian
+                            <button type="button" id="showOrderPreview"
+                                class="w-full py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors">
+                                <i class="ti ti-eye text-lg mr-2"></i>
+                                Preview Pesanan
                             </button>
                         </div>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Preview Modal -->
+    <div id="orderPreviewModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 xl:w-1/2 shadow-lg rounded-xl bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">Preview Pesanan Pembelian</h3>
+                    <button type="button" id="closeOrderPreviewModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="ti ti-x text-2xl"></i>
+                    </button>
+                </div>
+
+                <!-- Supplier Info -->
+                <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-orange-600 rounded-full flex items-center justify-center">
+                            <i class="ti ti-building text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900" id="previewSupplierName">-</h4>
+                            <p class="text-sm text-gray-600" id="previewSupplierCode">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transaction Info -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <p class="text-xs text-gray-500 mb-1">No. Faktur</p>
+                        <p class="font-semibold text-gray-900" id="previewInvoiceNumber">-</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <p class="text-xs text-gray-500 mb-1">Tanggal</p>
+                        <p class="font-semibold text-gray-900" id="previewDate">-</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <p class="text-xs text-gray-500 mb-1">Jenis Transaksi</p>
+                        <p class="font-semibold text-gray-900" id="previewTransactionType">-</p>
+                    </div>
+                </div>
+
+                <!-- Order Items -->
+                <div class="mb-6">
+                    <h4 class="font-semibold text-gray-900 mb-3">Detail Pesanan</h4>
+                    <div class="max-h-64 overflow-y-auto" id="previewOrderItems">
+                        <!-- Items will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Payment Configuration -->
+                <div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+                    <h4 class="font-semibold text-gray-900 mb-3">Konfigurasi Pembayaran</h4>
+
+                    <div class="space-y-4">
+                        <!-- Jenis Transaksi -->
+                        <div>
+                            <div class="grid grid-cols-2 gap-3" id="previewTransactionTypeContainer">
+                                <label class="relative cursor-pointer preview-transaction-type-option">
+                                    <input type="radio" name="preview_jenis_transaksi" value="tunai"
+                                        class="sr-only preview-transaction-type-radio">
+                                    <div
+                                        class="p-3 border-2 border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 preview-transaction-type-card">
+                                        <div class="flex flex-col items-center text-center">
+                                            <div
+                                                class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mb-2">
+                                                <i class="ti ti-cash text-green-600 text-sm"></i>
+                                            </div>
+                                            <span class="text-sm font-medium text-gray-900">Tunai</span>
+                                            <span class="text-xs text-gray-500">Bayar Langsung</span>
+                                        </div>
+                                    </div>
+                                </label>
+                                <label class="relative cursor-pointer preview-transaction-type-option">
+                                    <input type="radio" name="preview_jenis_transaksi" value="kredit"
+                                        class="sr-only preview-transaction-type-radio">
+                                    <div
+                                        class="p-3 border-2 border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 preview-transaction-type-card">
+                                        <div class="flex flex-col items-center text-center">
+                                            <div
+                                                class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mb-2">
+                                                <i class="ti ti-credit-card text-orange-600 text-sm"></i>
+                                            </div>
+                                            <span class="text-sm font-medium text-gray-900">Kredit</span>
+                                            <span class="text-xs text-gray-500">Bayar Nanti</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Metode Pembayaran -->
+                        <div>
+                            <div class="grid grid-cols-1 gap-3" id="previewPaymentMethodContainer">
+                                @foreach ($metodePembayaran as $metode)
+                                    <label class="relative cursor-pointer preview-payment-method-option">
+                                        <input type="radio" name="preview_metode_pembayaran"
+                                            value="{{ $metode->kode }}" class="sr-only preview-payment-method-radio">
+                                        <div
+                                            class="p-3 border-2 border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 preview-payment-method-card">
+                                            <div class="flex items-center">
+                                                <div
+                                                    class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                                                    <i class="ti {{ $metode->icon_display }} text-orange-600 text-sm"></i>
+                                                </div>
+                                                <span class="text-sm font-medium text-gray-900">{{ $metode->nama }}</span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- Kas/Bank Selection -->
+                        <div>
+                            <!-- Message when no payment method selected -->
+                            <div id="kasBankMessage" class="text-center py-8 text-gray-500">
+                                <i class="ti ti-arrow-up text-2xl mb-2"></i>
+                                <p class="text-sm">Pilih metode pembayaran terlebih dahulu untuk melihat pilihan kas/bank
+                                </p>
+                            </div>
+
+                            <div class="grid gap-3" id="previewKasBankContainer">
+                                @foreach ($kasBank ?? [] as $kas)
+                                    <label class="relative cursor-pointer preview-kas-bank-option">
+                                        <input type="radio" name="preview_kas_bank_id" value="{{ $kas->id }}"
+                                            data-saldo="{{ $kas->saldo_terkini }}" data-jenis="{{ $kas->jenis }}"
+                                            data-image="{{ $kas->image_url ?? '' }}"
+                                            class="sr-only preview-kas-bank-radio">
+                                        <div
+                                            class="p-4 border-2 border-gray-200 rounded-xl hover:border-orange-400 hover:bg-gradient-to-br hover:from-orange-50 hover:to-red-50 transition-all duration-300 preview-kas-bank-card flex items-center justify-between shadow-sm hover:shadow-md">
+                                            <div class="flex items-center flex-1">
+                                                <div
+                                                    class="w-16 h-16 rounded-xl flex items-center justify-center mr-4 overflow-hidden shadow-sm flex-shrink-0">
+                                                    @if ($kas->jenis === 'KAS')
+                                                        <div
+                                                            class="w-full h-full bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
+                                                            <i class="ti ti-cash text-green-600 text-xl"></i>
+                                                        </div>
+                                                    @else
+                                                        @if ($kas->image)
+                                                            <img src="{{ asset('storage/' . $kas->image) }}"
+                                                                alt="Logo {{ $kas->nama }}"
+                                                                class="w-full h-full object-contain">
+                                                        @else
+                                                            <div
+                                                                class="w-full h-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
+                                                                <i class="ti ti-building-bank text-purple-600 text-xl"></i>
+                                                            </div>
+                                                        @endif
+                                                    @endif
+                                                </div>
+                                                <div class="flex-1 flex flex-col justify-center">
+                                                    <div class="text-base font-bold text-gray-900 leading-tight">
+                                                        {{ $kas->nama }}
+                                                    </div>
+                                                    @if ($kas->no_rekening)
+                                                        <div class="text-sm text-gray-500 font-medium">
+                                                            {{ $kas->no_rekening }}
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            <div class="text-right ml-4 flex flex-col justify-center flex-shrink-0">
+                                                <div class="text-sm text-gray-500 font-medium">Saldo</div>
+                                                <div class="text-base font-bold text-green-600">
+                                                    Rp {{ number_format($kas->saldo_terkini, 0, ',', '.') }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- DP Amount (shown only for kredit) -->
+                        <div id="previewDpContainer" class="hidden">
+                            <label for="previewDpAmount" class="block text-sm font-medium text-gray-700 mb-2">
+                                Jumlah Down Payment (DP)
+                            </label>
+                            <input type="text" id="previewDpAmount"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-right"
+                                placeholder="Jumlah DP (Rp)" value="0">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                    <h4 class="font-semibold text-gray-900 mb-3">Ringkasan Pesanan</h4>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Subtotal</span>
+                            <span class="font-medium" id="previewSubtotal">Rp 0</span>
+                        </div>
+                        <div class="flex justify-between text-sm" id="previewDiscountRow" style="display: none;">
+                            <span class="text-gray-600">Diskon</span>
+                            <span class="font-medium text-red-600" id="previewDiscount">Rp 0</span>
+                        </div>
+                        <div class="flex justify-between text-lg font-bold border-t border-gray-200 pt-2">
+                            <span>Total</span>
+                            <span id="previewTotal">Rp 0</span>
+                        </div>
+                        <div id="previewPaymentBreakdown" class="hidden border-t border-gray-200 pt-2 space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-green-600">DP Dibayar</span>
+                                <span class="font-medium text-green-600" id="previewDpDisplay">Rp 0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-orange-600">Sisa Pembayaran</span>
+                                <span class="font-medium text-orange-600" id="previewRemainingDisplay">Rp 0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex space-x-3">
+                    <button type="button" id="closePreviewModal"
+                        class="flex-1 py-3 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600 transition-colors">
+                        <i class="ti ti-x text-lg mr-2"></i>
+                        Batal
+                    </button>
+                    <button type="button" id="confirmOrderSave"
+                        class="flex-1 py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors">
+                        <i class="ti ti-device-floppy text-lg mr-2"></i>
+                        Simpan Pembelian
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -631,6 +821,50 @@
         }
 
         /* Order item highlight styles */
+
+        /* Order Preview Modal Styles */
+        #orderPreviewModal {
+            backdrop-filter: blur(4px);
+        }
+
+        #orderPreviewModal>div {
+            animation: slideInDown 0.3s ease-out;
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Preview card styles */
+        .preview-transaction-type-card,
+        .preview-payment-method-card,
+        .preview-kas-bank-card {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .preview-transaction-type-card:hover,
+        .preview-payment-method-card:hover,
+        .preview-kas-bank-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-transaction-type-card.selected,
+        .preview-payment-method-card.selected,
+        .preview-kas-bank-card.selected {
+            border-color: #ea580c !important;
+            background-color: #fff7ed !important;
+        }
+
         .order-item.ring-2 {
             transform: scale(1.02);
             box-shadow: 0 8px 25px rgba(234, 88, 12, 0.3);
@@ -1340,14 +1574,14 @@
                                 </div>
                                 
                                 ${discount > 0 ? `
-                                                <div class="flex items-center justify-between text-sm">
-                                                    <span class="text-orange-600 flex items-center">
-                                                        <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                        Potongan Harga
-                                                    </span>
-                                                    <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                </div>
-                                            ` : ''}
+                                                                                                            <div class="flex items-center justify-between text-sm">
+                                                                                                                <span class="text-orange-600 flex items-center">
+                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                    Potongan Harga
+                                                                                                                </span>
+                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                            </div>
+                                                                                                        ` : ''}
                                 
                                 <!-- Total Line -->
                                 <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -2047,5 +2281,498 @@
                 document.getElementById('productSearch').focus();
             }, 500);
         });
+
+        // Order Preview Modal Functions
+        const orderPreviewModal = document.getElementById('orderPreviewModal');
+        const closeOrderPreviewModal = document.getElementById('closeOrderPreviewModal');
+        const closePreviewModalBtn = document.getElementById('closePreviewModal');
+        const showOrderPreviewBtn = document.getElementById('showOrderPreview');
+        const confirmOrderSaveBtn = document.getElementById('confirmOrderSave');
+
+        function closePreviewModal() {
+            orderPreviewModal.classList.add('hidden');
+        }
+
+        // Close modal events
+        closeOrderPreviewModal.addEventListener('click', closePreviewModal);
+        closePreviewModalBtn.addEventListener('click', closePreviewModal);
+
+        orderPreviewModal.addEventListener('click', (e) => {
+            if (e.target === orderPreviewModal) {
+                closePreviewModal();
+            }
+        });
+
+        // Close on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !orderPreviewModal.classList.contains('hidden')) {
+                closePreviewModal();
+            }
+        });
+
+        // Show order preview
+        showOrderPreviewBtn.addEventListener('click', function() {
+            if (cart.length === 0) {
+                showToast('Pilih produk terlebih dahulu', 'error');
+                return;
+            }
+
+            const supplierId = document.getElementById('supplierId');
+            const supplierDisplay = document.getElementById('supplierDisplay');
+
+            if (!supplierId || !supplierId.value) {
+                showToast('Pilih supplier terlebih dahulu', 'error');
+                return;
+            }
+
+            if (!supplierDisplay || !supplierDisplay.value) {
+                showToast('Supplier belum dipilih dengan benar', 'error');
+                return;
+            }
+
+            showOrderPreview();
+        });
+
+        function showOrderPreview() {
+            // Get supplier info
+            const supplierName = document.getElementById('supplierDisplay').value || 'Belum dipilih';
+            const selectedSupplier = document.querySelector('.supplier-item.bg-orange-100');
+
+            document.getElementById('previewSupplierName').textContent = supplierName;
+            document.getElementById('previewSupplierCode').textContent = selectedSupplier ?
+                selectedSupplier.dataset.code : '-';
+
+            // Get transaction info
+            document.getElementById('previewInvoiceNumber').textContent = document.getElementById('noFaktur').value;
+            document.getElementById('previewDate').textContent = new Date(document.getElementById('tanggal').value)
+                .toLocaleDateString('id-ID');
+
+            const jenisTransaksi = document.getElementById('jenisTransaksi').value;
+            document.getElementById('previewTransactionType').textContent = jenisTransaksi === 'kredit' ? 'Kredit' :
+                'Tunai';
+
+            // Initialize modal form with current values (no auto-select for transaction type)
+            // User must choose transaction type manually
+            updatePreviewTransactionTypeCards();
+
+            // Set DP amount based on transaction type (will be updated when user selects transaction type)
+            document.getElementById('previewDpAmount').value = '0';
+            document.getElementById('previewDpAmount').readOnly = false;
+            document.getElementById('previewDpAmount').placeholder = 'Jumlah DP (Rp)';
+
+            // Show/hide DP container based on transaction type (will be updated when user selects transaction type)
+            const previewDpContainer = document.getElementById('previewDpContainer');
+            previewDpContainer.classList.add('hidden'); // Hide initially until user selects transaction type
+
+            // Populate order items
+            const previewOrderItems = document.getElementById('previewOrderItems');
+            previewOrderItems.innerHTML = '';
+
+            cart.forEach(item => {
+                const subtotal = item.price * item.qty;
+                const discount = item.discount || 0;
+                const total = subtotal - discount;
+
+                const itemHtml = `
+                    <div class="bg-white border border-gray-200 rounded-lg p-3 mb-2">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <h5 class="font-medium text-gray-900 text-sm">${item.name}</h5>
+                                <p class="text-xs text-gray-500">${item.code}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-medium text-gray-900">${formatDecimalInput(item.qty)} ${item.unit}</p>
+                                <p class="text-xs text-gray-500">@ Rp ${formatNumber(item.price)}</p>
+                            </div>
+                        </div>
+                        <div class="mt-2 pt-2 border-t border-gray-100 space-y-1">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-gray-600">Subtotal</span>
+                                <span>Rp ${formatNumber(subtotal)}</span>
+                            </div>
+                            ${discount > 0 ? `
+                                                            <div class="flex justify-between text-xs">
+                                                                <span class="text-orange-600">Potongan</span>
+                                                                <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                            </div>
+                                                        ` : ''}
+                            <div class="flex justify-between text-sm font-medium">
+                                <span>Total</span>
+                                <span class="text-blue-600">Rp ${formatNumber(total)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                previewOrderItems.insertAdjacentHTML('beforeend', itemHtml);
+            });
+
+            // Calculate totals
+            const subtotalItems = cart.reduce((total, item) => {
+                const itemSubtotal = item.price * item.qty;
+                const itemDiscount = item.discount || 0;
+                return total + (itemSubtotal - itemDiscount);
+            }, 0);
+            const discount = parseFormattedNumber(document.getElementById('diskonDisplay').value);
+            const total = subtotalItems - discount;
+
+            // Update summary
+            document.getElementById('previewSubtotal').textContent = `Rp ${formatNumber(subtotalItems)}`;
+
+            const previewDiscountRow = document.getElementById('previewDiscountRow');
+            if (discount > 0) {
+                previewDiscountRow.style.display = 'flex';
+                document.getElementById('previewDiscount').textContent = `Rp ${formatNumber(discount)}`;
+            } else {
+                previewDiscountRow.style.display = 'none';
+            }
+
+            document.getElementById('previewTotal').textContent = `Rp ${formatNumber(total)}`;
+
+            // Show/hide payment breakdown for kredit
+            const previewPaymentBreakdown = document.getElementById('previewPaymentBreakdown');
+            if (jenisTransaksi === 'kredit') {
+                const dpAmount = parseFormattedNumber(document.getElementById('dpAmount').value);
+                const remaining = Math.max(0, total - dpAmount);
+
+                previewPaymentBreakdown.classList.remove('hidden');
+                document.getElementById('previewDpDisplay').textContent = `Rp ${formatNumber(dpAmount)}`;
+                document.getElementById('previewRemainingDisplay').textContent = `Rp ${formatNumber(remaining)}`;
+            } else {
+                previewPaymentBreakdown.classList.add('hidden');
+            }
+
+            // Show modal
+            orderPreviewModal.classList.remove('hidden');
+
+            // Initialize kas/bank filter based on payment method
+            filterKasBankByPaymentMethod();
+
+            // Show message initially when no payment method selected
+            const kasBankMessage = document.getElementById('kasBankMessage');
+            const selectedPaymentMethod = document.querySelector('input[name="preview_metode_pembayaran"]:checked');
+            if (!selectedPaymentMethod) {
+                kasBankMessage.classList.remove('hidden');
+            }
+
+            // Uncheck any selected kas/bank when modal opens
+            const selectedKasBankRadio = document.querySelector('.preview-kas-bank-radio:checked');
+            if (selectedKasBankRadio) {
+                selectedKasBankRadio.checked = false;
+                updatePreviewKasBankCards();
+            }
+        }
+
+        // Initialize transaction type elements
+        const previewTransactionTypeRadios = document.querySelectorAll('input[name="preview_jenis_transaksi"]');
+        const previewTransactionTypeCards = document.querySelectorAll('.preview-transaction-type-card');
+
+        // Transaction type change handler
+        previewTransactionTypeRadios.forEach(radio => {
+            radio.addEventListener('change', handleTransactionTypeChange);
+        });
+
+        // Add click event to transaction type cards for better UX
+        previewTransactionTypeCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const radio = this.closest('.preview-transaction-type-option').querySelector(
+                    'input[type="radio"]');
+                radio.checked = true;
+                handleTransactionTypeChange();
+            });
+        });
+
+        function handleTransactionTypeChange() {
+            const selectedType = document.querySelector('input[name="preview_jenis_transaksi"]:checked');
+            const dpContainer = document.getElementById('previewDpContainer');
+            const dpAmount = document.getElementById('previewDpAmount');
+            const total = parseFormattedNumber(document.getElementById('previewTotal').textContent.replace('Rp ', '')
+                .replace(/\./g, ''));
+
+            if (selectedType && selectedType.value === 'tunai') {
+                dpContainer.classList.remove('hidden');
+                dpAmount.required = false;
+                dpAmount.value = formatNumber(total);
+                dpAmount.readOnly = true;
+                dpAmount.placeholder = 'Jumlah (Rp)';
+            } else if (selectedType && selectedType.value === 'kredit') {
+                dpContainer.classList.remove('hidden');
+                dpAmount.required = true;
+                dpAmount.value = '0';
+                dpAmount.readOnly = false;
+                dpAmount.placeholder = 'Jumlah DP (Rp)';
+            }
+
+            updatePreviewTransactionTypeCards();
+        }
+
+        // Initialize payment method elements
+        const previewPaymentMethodRadios = document.querySelectorAll('input[name="preview_metode_pembayaran"]');
+        const previewPaymentMethodCards = document.querySelectorAll('.preview-payment-method-card');
+
+        // Payment method change handler
+        previewPaymentMethodRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                filterKasBankByPaymentMethod();
+                updatePreviewPaymentMethodCards();
+            });
+        });
+
+        function filterKasBankByPaymentMethod() {
+            const selectedPaymentMethod = document.querySelector('input[name="preview_metode_pembayaran"]:checked');
+            const kasBankMessage = document.getElementById('kasBankMessage');
+            const kasBankContainer = document.getElementById('previewKasBankContainer');
+
+            if (!selectedPaymentMethod) {
+                // If no payment method selected, hide all kas/bank and show message
+                previewKasBankCards.forEach((card, index) => {
+                    card.classList.add('hidden');
+                });
+                kasBankMessage.classList.remove('hidden');
+                return;
+            }
+
+            // Hide message when payment method is selected
+            kasBankMessage.classList.add('hidden');
+
+            const paymentMethodCode = selectedPaymentMethod.value;
+            const isTransfer = paymentMethodCode.toLowerCase().includes('transfer') ||
+                paymentMethodCode.toLowerCase().includes('bank') ||
+                paymentMethodCode.toLowerCase().includes('bca') ||
+                paymentMethodCode.toLowerCase().includes('mandiri') ||
+                paymentMethodCode.toLowerCase().includes('bni') ||
+                paymentMethodCode.toLowerCase().includes('bri');
+            const isCash = paymentMethodCode.toLowerCase().includes('cash') ||
+                paymentMethodCode.toLowerCase().includes('tunai') ||
+                paymentMethodCode.toLowerCase().includes('kas');
+
+            let visibleCount = 0;
+
+            previewKasBankCards.forEach((card, index) => {
+                const radio = previewKasBankRadios[index];
+                const kasBankJenis = radio.getAttribute('data-jenis');
+
+                if (isTransfer && kasBankJenis === 'BANK') {
+                    // Show only BANK for transfer methods
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                } else if (isCash && kasBankJenis === 'KAS') {
+                    // Show only KAS for cash methods
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                } else if (!isTransfer && !isCash) {
+                    // If payment method is not clearly transfer or cash, show all
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    // Hide the card
+                    card.classList.add('hidden');
+                }
+            });
+
+            // Update grid columns based on visible count
+            if (visibleCount === 1) {
+                kasBankContainer.className = 'grid gap-3 grid-cols-1';
+            } else if (visibleCount === 2) {
+                kasBankContainer.className = 'grid gap-3 grid-cols-2';
+            } else if (visibleCount === 3) {
+                kasBankContainer.className = 'grid gap-3 grid-cols-3';
+            } else if (visibleCount >= 4) {
+                kasBankContainer.className = 'grid gap-3 grid-cols-4';
+            }
+
+            // Uncheck any hidden kas/bank selections
+            previewKasBankRadios.forEach((radio, index) => {
+                const card = previewKasBankCards[index];
+                if (card.classList.contains('hidden') && radio.checked) {
+                    radio.checked = false;
+                    updatePreviewKasBankCards();
+                }
+            });
+        }
+
+        // Initialize kas/bank elements
+        const previewKasBankRadios = document.querySelectorAll('.preview-kas-bank-radio');
+        const previewKasBankCards = document.querySelectorAll('.preview-kas-bank-card');
+
+        // Kas/Bank selection handler
+        previewKasBankRadios.forEach(radio => {
+            radio.addEventListener('change', updatePreviewKasBankCards);
+        });
+
+        // Add click event to kas/bank cards for better UX
+        previewKasBankCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const radio = this.closest('.preview-kas-bank-option').querySelector('input[type="radio"]');
+                radio.checked = true;
+                updatePreviewKasBankCards();
+            });
+        });
+
+        function updatePreviewKasBankCards() {
+            previewKasBankCards.forEach(card => {
+                card.classList.remove('border-orange-500', 'bg-orange-50');
+                card.classList.add('border-gray-200');
+            });
+
+            const selectedRadio = document.querySelector('input[name="preview_kas_bank_id"]:checked');
+            if (selectedRadio) {
+                const selectedCard = selectedRadio.parentElement.querySelector('.preview-kas-bank-card');
+                selectedCard.classList.remove('border-gray-200');
+                selectedCard.classList.add('border-orange-500', 'bg-orange-50');
+            }
+        }
+
+        // Update transaction type cards
+        function updatePreviewTransactionTypeCards() {
+            previewTransactionTypeCards.forEach(card => {
+                card.classList.remove('border-orange-500', 'bg-orange-50');
+                card.classList.add('border-gray-200');
+            });
+
+            const selectedRadio = document.querySelector('input[name="preview_jenis_transaksi"]:checked');
+            if (selectedRadio) {
+                const selectedCard = selectedRadio.parentElement.querySelector('.preview-transaction-type-card');
+                selectedCard.classList.remove('border-gray-200');
+                selectedCard.classList.add('border-orange-500', 'bg-orange-50');
+            }
+        }
+
+        // Update payment method cards
+        function updatePreviewPaymentMethodCards() {
+            previewPaymentMethodCards.forEach(card => {
+                card.classList.remove('border-orange-500', 'bg-orange-50');
+                card.classList.add('border-gray-200');
+            });
+
+            const selectedRadio = document.querySelector('input[name="preview_metode_pembayaran"]:checked');
+            if (selectedRadio) {
+                const selectedCard = selectedRadio.parentElement.querySelector('.preview-payment-method-card');
+                selectedCard.classList.remove('border-gray-200');
+                selectedCard.classList.add('border-orange-500', 'bg-orange-50');
+            }
+        }
+
+        // Add click event to payment method cards for better UX
+        previewPaymentMethodCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const radio = this.closest('.preview-payment-method-option').querySelector(
+                    'input[type="radio"]');
+                radio.checked = true;
+                filterKasBankByPaymentMethod();
+                updatePreviewPaymentMethodCards();
+            });
+        });
+
+        // Setup number formatting for DP amount input
+        setupNumberInput(document.getElementById('previewDpAmount'));
+
+        // DP amount input handler
+        document.getElementById('previewDpAmount').addEventListener('input', function(e) {
+            const value = e.target.value;
+            const formattedValue = formatNumber(value);
+            e.target.value = formattedValue;
+
+            // Update payment breakdown
+            const dpAmount = parseFormattedNumber(formattedValue);
+            const total = parseFormattedNumber(document.getElementById('previewTotal').textContent.replace('Rp ',
+                '').replace(/\./g, ''));
+            const remaining = Math.max(0, total - dpAmount);
+
+            document.getElementById('previewDpDisplay').textContent = `Rp ${formatNumber(dpAmount)}`;
+            document.getElementById('previewRemainingDisplay').textContent = `Rp ${formatNumber(remaining)}`;
+
+            if (dpAmount > 0) {
+                document.getElementById('previewPaymentBreakdown').classList.remove('hidden');
+            } else {
+                document.getElementById('previewPaymentBreakdown').classList.add('hidden');
+            }
+        });
+
+        // Confirm order save
+        confirmOrderSaveBtn.addEventListener('click', function() {
+            const selectedTransactionType = document.querySelector('input[name="preview_jenis_transaksi"]:checked');
+            const selectedPaymentMethod = document.querySelector('input[name="preview_metode_pembayaran"]:checked');
+            const selectedKasBank = document.querySelector('input[name="preview_kas_bank_id"]:checked');
+
+            if (!selectedTransactionType) {
+                showToast('Pilih jenis transaksi', 'error');
+                highlightCard('preview-transaction-type-card');
+                return;
+            }
+
+            if (!selectedPaymentMethod) {
+                showToast('Pilih metode pembayaran', 'error');
+                highlightCard('preview-payment-method-card');
+                return;
+            }
+
+            if (!selectedKasBank) {
+                showToast('Pilih kas/bank', 'error');
+                highlightCard('preview-kas-bank-card');
+                return;
+            }
+
+            // Validate cart items
+            if (cart.length === 0) {
+                showToast('Minimal harus ada 1 produk!', 'error');
+                return;
+            }
+
+            // Update hidden inputs
+            document.getElementById('jenisTransaksi').value = selectedTransactionType.value;
+            document.getElementById('metodePembayaran').value = selectedPaymentMethod.value;
+            document.getElementById('kasBankId').value = selectedKasBank.value;
+
+            const dpAmount = parseFormattedNumber(document.getElementById('previewDpAmount').value);
+            document.getElementById('dpAmount').value = dpAmount;
+
+            // Add cart items to form
+            const form = document.getElementById('purchaseForm');
+
+            // Remove any existing cart item inputs
+            form.querySelectorAll('input[name^="items["]').forEach(input => input.remove());
+
+            // Add cart items to form
+            cart.forEach((item, index) => {
+                const productIdInput = document.createElement('input');
+                productIdInput.type = 'hidden';
+                productIdInput.name = `items[${index}][produk_id]`;
+                productIdInput.value = item.id;
+                form.appendChild(productIdInput);
+
+                const qtyInput = document.createElement('input');
+                qtyInput.type = 'hidden';
+                qtyInput.name = `items[${index}][qty]`;
+                qtyInput.value = item.qty;
+                form.appendChild(qtyInput);
+
+                const priceInput = document.createElement('input');
+                priceInput.type = 'hidden';
+                priceInput.name = `items[${index}][harga_beli]`;
+                priceInput.value = item.price;
+                form.appendChild(priceInput);
+
+                const discountInput = document.createElement('input');
+                discountInput.type = 'hidden';
+                discountInput.name = `items[${index}][discount]`;
+                discountInput.value = item.discount || 0;
+                form.appendChild(discountInput);
+            });
+
+            // Submit form
+            form.submit();
+        });
+
+        function highlightCard(className) {
+            const cards = document.querySelectorAll('.' + className);
+            cards.forEach(card => {
+                card.style.borderColor = '#ef4444';
+                card.style.backgroundColor = '#fef2f2';
+                setTimeout(() => {
+                    card.style.borderColor = '';
+                    card.style.backgroundColor = '';
+                }, 2000);
+            });
+        }
     </script>
 @endpush

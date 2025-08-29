@@ -57,6 +57,24 @@
                             {{ $kasBank->no_rekening ?: 'Tidak ada' }}
                         </p>
                     </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">Jenis</label>
+                        <div class="mt-1">
+                            @if ($kasBank->jenis === 'KAS')
+                                <span
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                    <i class="ti ti-cash mr-1"></i>
+                                    KAS
+                                </span>
+                            @else
+                                <span
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                                    <i class="ti ti-building-bank mr-1"></i>
+                                    BANK
+                                </span>
+                            @endif
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -72,29 +90,27 @@
                         <label class="block text-sm font-medium text-gray-500 mb-1">Terakhir Diupdate</label>
                         <p class="text-sm text-gray-900">{{ $kasBank->updated_at->format('d/m/Y H:i') }}</p>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-500 mb-1">Jenis</label>
-                        <p class="text-sm text-gray-900">
-                            @if (str_starts_with(strtoupper($kasBank->kode), 'KAS'))
-                                <span
-                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    Kas
-                                </span>
-                            @elseif(str_starts_with(strtoupper($kasBank->kode), 'BANK'))
-                                <span
-                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                    Bank
-                                </span>
-                            @else
-                                <span
-                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                    Lainnya
-                                </span>
-                            @endif
-                        </p>
-                    </div>
                 </div>
             </div>
+
+            <!-- Logo Bank -->
+            @if ($kasBank->jenis === 'BANK')
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Logo Bank</h3>
+                    <div class="text-center">
+                        @if ($kasBank->image)
+                            <img src="{{ $kasBank->image_url }}" alt="Logo {{ $kasBank->nama }}"
+                                class="w-20 h-20 mx-auto object-cover rounded-lg border mb-4">
+                            <p class="text-sm text-gray-600">{{ basename($kasBank->image) }}</p>
+                        @else
+                            <div class="w-20 h-20 mx-auto bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+                                <i class="ti ti-image text-gray-400 text-2xl"></i>
+                            </div>
+                            <p class="text-sm text-gray-500">Tidak ada logo</p>
+                        @endif
+                    </div>
+                </div>
+            @endif
         </div>
 
         <!-- Action Buttons -->
@@ -128,5 +144,3 @@
         </div>
     </div>
 @endsection
-
-

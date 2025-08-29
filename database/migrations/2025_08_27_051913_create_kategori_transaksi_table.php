@@ -11,14 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('kas_bank', function (Blueprint $table) {
+        Schema::create('kategori_transaksi', function (Blueprint $table) {
             $table->id();
-            $table->string('kode', 20)->unique();
+            $table->string('kode', 10)->unique();
             $table->string('nama', 100);
-            $table->string('no_rekening', 50)->nullable();
-            $table->decimal('saldo_awal', 15, 2)->default(0);
-            $table->decimal('saldo_terkini', 15, 2)->default(0);
+            $table->enum('jenis', ['D', 'K'])->comment('D=Debet, K=Kredit');
+            $table->text('deskripsi')->nullable();
+            $table->boolean('status')->default(true);
             $table->timestamps();
+
+            // Indexes
+            $table->index(['jenis', 'status']);
+            $table->index('kode');
         });
     }
 
@@ -27,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('kas_bank');
+        Schema::dropIfExists('kategori_transaksi');
     }
 };

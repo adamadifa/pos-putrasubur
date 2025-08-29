@@ -26,7 +26,8 @@
                             <div>
                                 <h1
                                     class="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                                    Buat Pembayaran Baru</h1>
+                                    Buat Pembayaran Baru
+                                </h1>
                                 <p class="text-gray-500 mt-1">Input pembayaran untuk transaksi yang belum lunas</p>
                             </div>
                         </div>
@@ -99,38 +100,121 @@
 
                 <form action="{{ route('pembayaran.store') }}" method="POST" class="p-8">
                     @csrf
-
                     <div class="space-y-8">
-                        <div class="space-y-6">
+                        <!-- Pilihan Transaksi -->
+                        <div class="space-y-2">
+                            <label for="penjualan_id" class="block text-sm font-semibold text-gray-700">
+                                Pilih Transaksi <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor"
+                                        class="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                    </svg>
+                                </div>
+                                <input type="text" id="penjualan_display" readonly
+                                    class="w-full pl-11 pr-20 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('penjualan_id') border-red-500 @enderror"
+                                    placeholder="Klik tombol cari untuk memilih transaksi...">
+                                <input type="hidden" id="penjualan_id" name="penjualan_id" value="">
+                                <button type="button" id="search_transaction_btn"
+                                    class="absolute inset-y-0 right-0 px-4 flex items-center bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-r-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 group-hover:shadow-md">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                                    </svg>
+                                </button>
+                            </div>
+                            @error('penjualan_id')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Detail Transaksi (akan muncul setelah transaksi dipilih) -->
+                        <div id="transaction-details"
+                            class="hidden bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+                            <div class="flex items-center space-x-3 mb-4">
+                                <div class="p-2 bg-blue-100 rounded-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-blue-600">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                    </svg>
+                                </div>
+                                <h4 class="text-lg font-semibold text-gray-800">Detail Transaksi</h4>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="bg-white rounded-lg p-4 border border-blue-200">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="p-2 bg-blue-100 rounded-lg">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-blue-600">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-600">Total Transaksi</p>
+                                            <p id="total-transaksi" class="text-lg font-bold text-gray-900"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 border border-green-200">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="p-2 bg-green-100 rounded-lg">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-green-600">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-600">Sudah Dibayar</p>
+                                            <p id="sudah-dibayar" class="text-lg font-bold text-gray-900"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 border border-red-200">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="p-2 bg-red-100 rounded-lg">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-red-600">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-600">Sisa Bayar</p>
+                                            <p id="sisa-bayar" class="text-lg font-bold text-red-600"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Pembayaran -->
+                        <div id="payment-form" class="hidden space-y-6">
+                            <!-- Jumlah dan Tanggal -->
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                <!-- Transaksi Selection -->
+                                <!-- Payment Amount -->
                                 <div class="space-y-2">
-                                    <label for="penjualan_id" class="block text-sm font-semibold text-gray-700">
-                                        Pilih Transaksi <span class="text-red-500">*</span>
+                                    <label for="jumlah" class="block text-sm font-semibold text-gray-700">
+                                        Jumlah Bayar <span class="text-red-500">*</span>
                                     </label>
                                     <div class="relative group">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                stroke-width="1.5" stroke="currentColor"
-                                                class="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                                            </svg>
+                                            <span
+                                                class="text-gray-500 font-medium group-hover:text-green-500 transition-colors">Rp</span>
                                         </div>
-                                        <input type="text" id="penjualan_display" readonly
-                                            class="w-full pl-11 pr-20 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('penjualan_id') border-red-500 @enderror"
-                                            placeholder="Klik tombol cari untuk memilih transaksi...">
-                                        <input type="hidden" id="penjualan_id" name="penjualan_id" value="">
-                                        <button type="button" id="search_transaction_btn"
-                                            class="absolute inset-y-0 right-0 px-4 flex items-center bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-r-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 group-hover:shadow-md">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                                            </svg>
-                                        </button>
+                                        <input type="text" id="jumlah" name="jumlah"
+                                            class="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('jumlah') border-red-500 @enderror text-right text-lg font-semibold"
+                                            placeholder="0">
+                                        <input type="hidden" id="jumlah_raw" name="jumlah_raw" value="">
                                     </div>
-                                    @error('penjualan_id')
+                                    @error('jumlah')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
@@ -159,189 +243,166 @@
                                 </div>
                             </div>
 
-                            <!-- Payment Amount - Full Width -->
+                            <!-- Metode Pembayaran -->
                             <div class="space-y-2">
-                                <label for="jumlah" class="block text-sm font-semibold text-gray-700">
-                                    Jumlah Bayar <span class="text-red-500">*</span>
+                                <label class="block text-sm font-semibold text-gray-700">
+                                    Metode Pembayaran <span class="text-red-500">*</span>
                                 </label>
-                                <div class="relative group">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <span
-                                            class="text-gray-500 font-medium group-hover:text-green-500 transition-colors">Rp</span>
-                                    </div>
-                                    <input type="text" id="jumlah" name="jumlah"
-                                        class="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('jumlah') border-red-500 @enderror text-right text-lg font-semibold"
-                                        placeholder="0">
-                                    <input type="hidden" id="jumlah_raw" name="jumlah_raw" value="">
+                                <div class="grid grid-cols-2 gap-3">
+                                    @foreach ($metodePembayaran as $metode)
+                                        <label class="relative cursor-pointer payment-method-option">
+                                            <input type="radio" name="metode_pembayaran"
+                                                id="metode_pembayaran_{{ $metode->kode }}" value="{{ $metode->kode }}"
+                                                {{ old('metode_pembayaran') == $metode->kode ? 'checked' : '' }}
+                                                class="sr-only payment-method-radio">
+                                            <div
+                                                class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 payment-method-card">
+                                                <div class="flex flex-col items-center text-center">
+                                                    <div
+                                                        class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-2">
+                                                        <i
+                                                            class="ti {{ $metode->icon_display }} text-blue-600 text-lg"></i>
+                                                    </div>
+                                                    <span
+                                                        class="text-sm font-medium text-gray-900">{{ $metode->nama }}</span>
+                                                    <span class="text-xs text-gray-500">{{ $metode->kode }}</span>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    @endforeach
                                 </div>
-                                @error('jumlah')
+                                @error('metode_pembayaran')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
 
-                        </div>
-
-                        <!-- Metode Pembayaran -->
-                        <div class="space-y-2">
-                            <label class="block text-sm font-semibold text-gray-700">
-                                Metode Pembayaran <span class="text-red-500">*</span>
-                            </label>
-                            <div class="grid grid-cols-2 gap-3">
-                                @foreach ($metodePembayaran as $metode)
-                                                                         <label class="relative cursor-pointer payment-method-option">
-                                         <input type="radio" name="metode_pembayaran" id="metode_pembayaran_{{ $metode->kode }}" value="{{ $metode->kode }}"
-                                             {{ old('metode_pembayaran') == $metode->kode ? 'checked' : '' }}
-                                             class="sr-only payment-method-radio">
-                                        <div
-                                            class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 payment-method-card">
-                                            <div class="flex flex-col items-center text-center">
-                                                <div
-                                                    class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-2">
-                                                    <i class="ti {{ $metode->icon_display }} text-blue-600 text-lg"></i>
-                                                </div>
-                                                <span class="text-sm font-medium text-gray-900">{{ $metode->nama }}</span>
-                                                <span class="text-xs text-gray-500">{{ $metode->kode }}</span>
-                                            </div>
-                                        </div>
+                            <!-- Kas & Bank Selection -->
+                            <div id="kas-bank-selection" class="space-y-4 hidden">
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-semibold text-gray-700">
+                                        Pilih Kas/Bank <span class="text-red-500">*</span>
                                     </label>
-                                @endforeach
+                                    <div id="kas-bank-container"
+                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        @foreach ($kasBanks as $kasBank)
+                                            @php
+                                                $jenis = str_contains(strtoupper($kasBank->nama), 'KAS')
+                                                    ? 'KAS'
+                                                    : 'BANK';
+                                                $image = $kasBank->gambar ? asset('storage/' . $kasBank->gambar) : null;
+                                            @endphp
+                                            <label class="relative cursor-pointer kas-bank-option">
+                                                <input type="radio" name="kas_bank_id"
+                                                    id="kas_bank_{{ $kasBank->id }}" value="{{ $kasBank->id }}"
+                                                    data-jenis="{{ $jenis }}" data-image="{{ $image }}"
+                                                    class="sr-only kas-bank-radio">
+                                                <div
+                                                    class="kas-bank-card p-4 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200">
+                                                    <div class="flex items-center space-x-3">
+                                                        <div class="flex-shrink-0">
+                                                            @if ($kasBank->gambar)
+                                                                <img src="{{ asset('storage/' . $kasBank->gambar) }}"
+                                                                    alt="{{ $kasBank->nama }}"
+                                                                    class="w-10 h-10 rounded-lg object-cover border border-gray-200">
+                                                            @else
+                                                                <div
+                                                                    class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                                        viewBox="0 0 24 24" stroke-width="1.5"
+                                                                        stroke="currentColor" class="w-5 h-5 text-white">
+                                                                        <path stroke-linecap="round"
+                                                                            stroke-linejoin="round"
+                                                                            d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+                                                                    </svg>
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                        <div class="flex-1 min-w-0">
+                                                            <p class="text-sm font-medium text-gray-900 truncate">
+                                                                {{ $kasBank->nama }}</p>
+                                                            <p class="text-xs text-gray-500">Saldo: Rp
+                                                                {{ number_format($kasBank->saldo_terkini, 0, ',', '.') }}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                    @error('kas_bank_id')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
                             </div>
-                            @error('metode_pembayaran')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+
+                            <!-- Notes -->
+                            <div class="space-y-2">
+                                <label for="keterangan" class="block text-sm font-semibold text-gray-700">
+                                    Keterangan
+                                </label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 pl-3 pt-3 flex items-start pointer-events-none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor"
+                                            class="w-5 h-5 text-gray-400 group-hover:text-purple-500 transition-colors">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+                                        </svg>
+                                    </div>
+                                    <textarea id="keterangan" name="keterangan" rows="3"
+                                        class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('keterangan') border-red-500 @enderror"
+                                        placeholder="Catatan tambahan (opsional)"></textarea>
+                                </div>
+                                <p class="text-xs text-gray-500 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="w-3 h-3 mr-1">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.847a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.847.813a4.5 4.5 0 0 0-3.09 3.09Z" />
+                                    </svg>
+                                    Catatan tambahan untuk pembayaran ini
+                                </p>
+                                @error('keterangan')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
                     </div>
+                </form>
 
-                    <!-- Transaction Details (will be shown when transaction is selected) -->
-                    <div id="transaction-details"
-                        class="hidden bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
-                        <div class="flex items-center space-x-3 mb-4">
-                            <div class="p-2 bg-blue-100 rounded-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-blue-600">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                                </svg>
-                            </div>
-                            <h4 class="text-lg font-semibold text-gray-800">Detail Transaksi</h4>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div class="bg-white rounded-lg p-4 border border-blue-200">
-                                <div class="flex items-center space-x-3">
-                                    <div class="p-2 bg-blue-100 rounded-lg">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-blue-600">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600">Total Transaksi</p>
-                                        <p id="total-transaksi" class="text-lg font-bold text-gray-900"></p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 border border-green-200">
-                                <div class="flex items-center space-x-3">
-                                    <div class="p-2 bg-green-100 rounded-lg">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-green-600">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600">Sudah Dibayar</p>
-                                        <p id="sudah-dibayar" class="text-lg font-bold text-gray-900"></p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 border border-red-200">
-                                <div class="flex items-center space-x-3">
-                                    <div class="p-2 bg-red-100 rounded-lg">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-red-600">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600">Sisa Bayar</p>
-                                        <p id="sisa-bayar" class="text-lg font-bold text-red-600"></p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Action Buttons -->
+                <div class="flex items-center justify-between pt-8 mt-8 border-t border-gray-200 px-8 pb-8">
+                    <a href="{{ route('pembayaran.index') }}"
+                        class="inline-flex items-center px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold text-base rounded-xl hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 group">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-6 h-6 mr-3 group-hover:text-gray-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Batal
+                    </a>
 
-                    <!-- Notes -->
-                    <div class="space-y-2">
-                        <label for="keterangan" class="block text-sm font-semibold text-gray-700">
-                            Keterangan
-                        </label>
-                        <div class="relative group">
-                            <div class="absolute inset-y-0 left-0 pl-3 pt-3 flex items-start pointer-events-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor"
-                                    class="w-5 h-5 text-gray-400 group-hover:text-purple-500 transition-colors">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-                                </svg>
-                            </div>
-                            <textarea id="keterangan" name="keterangan" rows="3"
-                                class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('keterangan') border-red-500 @enderror"
-                                placeholder="Catatan tambahan (opsional)"></textarea>
-                        </div>
-                        <p class="text-xs text-gray-500 flex items-center">
+                    <div class="flex items-center space-x-4">
+                        <button type="reset"
+                            class="inline-flex items-center px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold text-base rounded-xl hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 group">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="w-3 h-3 mr-1">
+                                stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-3 group-hover:text-gray-600">
                                 <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.847a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.847.813a4.5 4.5 0 0 0-3.09 3.09Z" />
+                                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
                             </svg>
-                            Catatan tambahan untuk pembayaran ini
-                        </p>
-                        @error('keterangan')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
+                            Reset Form
+                        </button>
+                        <button type="submit"
+                            class="inline-flex items-center px-10 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold text-base rounded-xl shadow-lg hover:from-green-700 hover:to-emerald-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transform hover:scale-[1.02] transition-all duration-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-3">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+                            </svg>
+                            Simpan Pembayaran
+                        </button>
                     </div>
+                </div>
             </div>
         </div>
-
-        <!-- Action Buttons -->
-        <div class="flex items-center justify-between pt-8 mt-8 border-t border-gray-200">
-            <a href="{{ route('pembayaran.index') }}"
-                class="inline-flex items-center px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold text-base rounded-xl hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 group">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="w-6 h-6 mr-3 group-hover:text-gray-600">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                Batal
-            </a>
-
-            <div class="flex items-center space-x-4">
-                <button type="reset"
-                    class="inline-flex items-center px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold text-base rounded-xl hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 group">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-6 h-6 mr-3 group-hover:text-gray-600">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-                    </svg>
-                    Reset Form
-                </button>
-                <button type="submit"
-                    class="inline-flex items-center px-10 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold text-base rounded-xl shadow-lg hover:from-green-700 hover:to-emerald-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transform hover:scale-[1.02] transition-all duration-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-6 h-6 mr-3">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-                    </svg>
-                    Simpan Pembayaran
-                </button>
-            </div>
-        </div>
-        </form>
-    </div>
-    </div>
     </div>
 
     <!-- Transaction Selection Modal -->
@@ -464,182 +525,6 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script>
         $(document).ready(function() {
-            // Frontend Validation Rules and Messages
-            const validationRules = {
-                penjualan_id: {
-                    required: true
-                },
-                metode_pembayaran: {
-                    required: true
-                },
-                jumlah: {
-                    required: true,
-                    numeric: true,
-                    min: 0.01
-                },
-                tanggal: {
-                    required: true
-                },
-                keterangan: {
-                    required: false,
-                    maxLength: 255
-                }
-            };
-
-            const validationMessages = {
-                penjualan_id: {
-                    required: 'Transaksi wajib dipilih.'
-                },
-                metode_pembayaran: {
-                    required: 'Metode pembayaran wajib dipilih.'
-                },
-                jumlah: {
-                    required: 'Jumlah bayar wajib diisi.',
-                    numeric: 'Jumlah bayar harus berupa angka.',
-                    min: 'Jumlah bayar minimal 0.01.'
-                },
-                tanggal: {
-                    required: 'Tanggal pembayaran wajib diisi.'
-                },
-                keterangan: {
-                    maxLength: 'Keterangan maksimal 255 karakter.'
-                }
-            };
-
-            // Real-time validation for form fields
-            const fieldsToValidate = ['penjualan_id', 'metode_pembayaran', 'jumlah', 'tanggal', 'keterangan'];
-
-            fieldsToValidate.forEach(function(fieldName) {
-                let validationTimeout;
-
-                // Special handling for radio buttons
-                if (fieldName === 'metode_pembayaran') {
-                    $('input[name="metode_pembayaran"]').on('change', function() {
-                        const value = $('input[name="metode_pembayaran"]:checked').val();
-                        clearTimeout(validationTimeout);
-                        validationTimeout = setTimeout(function() {
-                            validateField(fieldName, value);
-                        }, 300);
-                    });
-                } else {
-                    const field = $(`#${fieldName}`);
-                    
-                    field.on('input change blur', function() {
-                        const value = $(this).val();
-
-                        // Clear previous timeout
-                        clearTimeout(validationTimeout);
-
-                        // Don't validate empty fields on input (only on blur)
-                        if (!value && $(this)[0].type !== 'blur') {
-                            return;
-                        }
-
-                        // Set timeout to avoid too many validations
-                        validationTimeout = setTimeout(function() {
-                            validateField(fieldName, value);
-                        }, 300);
-                    });
-
-                    // Immediate validation on blur for required fields
-                    field.on('blur', function() {
-                        const value = $(this).val();
-                        clearTimeout(validationTimeout);
-                        validateField(fieldName, value);
-                    });
-                }
-            });
-
-            // Frontend Validate field function
-            function validateField(fieldName, value) {
-                let field, fieldContainer;
-                
-                // Special handling for radio buttons
-                if (fieldName === 'metode_pembayaran') {
-                    field = $('input[name="metode_pembayaran"]:checked');
-                    fieldContainer = $('.payment-method-option').first().closest('.space-y-2');
-                } else {
-                    field = $(`#${fieldName}`);
-                    fieldContainer = field.closest('.space-y-2');
-                }
-                
-                const rules = validationRules[fieldName];
-                const messages = validationMessages[fieldName];
-
-                // Remove existing error and success states
-                if (fieldName === 'metode_pembayaran') {
-                    $('.payment-method-card').removeClass('border-red-500 border-green-500').addClass('border-gray-200');
-                } else {
-                    field.removeClass('border-red-500 border-green-500').addClass('border-gray-300');
-                }
-                fieldContainer.find('.error-message').remove();
-
-                // Skip validation for empty optional fields
-                if (!value && !rules.required) {
-                    return;
-                }
-
-                let isValid = true;
-                let errorMessage = '';
-
-                // Required validation
-                if (rules.required && (!value || value.toString().trim() === '')) {
-                    isValid = false;
-                    errorMessage = messages.required;
-                }
-                // Max length validation
-                else if (rules.maxLength && value && value.length > rules.maxLength) {
-                    isValid = false;
-                    errorMessage = messages.maxLength;
-                }
-                // Numeric validation
-                else if (rules.numeric && value) {
-                    // For jumlah field, get the raw value from hidden input
-                    let numValue;
-                    if (fieldName === 'jumlah') {
-                        const rawValue = document.getElementById('jumlah_raw').value;
-                        numValue = parseFloat(rawValue) || 0;
-                    } else {
-                        numValue = parseFloat(value) || 0;
-                    }
-
-                    if (isNaN(numValue)) {
-                        isValid = false;
-                        errorMessage = messages.numeric;
-                    } else if (numValue < rules.min) {
-                        isValid = false;
-                        errorMessage = messages.min;
-                    }
-                }
-
-                if (!isValid) {
-                    // Add error styling
-                    if (fieldName === 'metode_pembayaran') {
-                        $('.payment-method-card').removeClass('border-gray-200 border-green-500').addClass('border-red-500');
-                    } else {
-                        field.removeClass('border-gray-300 border-green-500').addClass('border-red-500');
-                    }
-
-                    // Add error message
-                    const errorHtml = `
-                <p class="mt-2 text-sm text-red-600 flex items-center error-message">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-2 flex-shrink-0">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                    </svg>
-                    ${errorMessage}
-                </p>
-            `;
-                    fieldContainer.append(errorHtml);
-                } else {
-                    // Add success styling (green border only)
-                    if (fieldName === 'metode_pembayaran') {
-                        $('.payment-method-card').removeClass('border-gray-200 border-red-500').addClass('border-green-500');
-                    } else {
-                        field.removeClass('border-gray-300 border-red-500').addClass('border-green-500');
-                    }
-                }
-            }
-
             // Modal functionality
             const modal = document.getElementById('transactionModal');
             const searchBtn = document.getElementById('search_transaction_btn');
@@ -651,6 +536,7 @@
             const penjualanDisplay = document.getElementById('penjualan_display');
             const penjualanIdInput = document.getElementById('penjualan_id');
             const transactionDetails = document.getElementById('transaction-details');
+            const paymentForm = document.getElementById('payment-form');
             const totalTransaksi = document.getElementById('total-transaksi');
             const sudahDibayar = document.getElementById('sudah-dibayar');
             const sisaBayar = document.getElementById('sisa-bayar');
@@ -728,14 +614,116 @@
                     jumlahInput.setAttribute('data-max', sisa);
                     jumlahInput.placeholder = 'Maksimal: Rp ' + sisa.toLocaleString('id-ID');
 
+                    // Show transaction details and payment form
                     transactionDetails.classList.remove('hidden');
+                    paymentForm.classList.remove('hidden');
 
                     // Close modal
                     closeModalFunction();
                 });
             });
 
-            // Format number input with automatic formatting (using the same logic as penjualan/create)
+            // Payment method selection
+            $('input[name="metode_pembayaran"]').on('change', function() {
+                const selectedMethod = this.value;
+                const kasBankSelection = document.getElementById('kas-bank-selection');
+
+                // Show/hide kas/bank selection based on payment method
+                if (selectedMethod === 'TUNAI' || selectedMethod === 'TRANSFER' || selectedMethod ===
+                    'QRIS') {
+                    kasBankSelection.classList.remove('hidden');
+                    filterKasBankByPaymentMethod();
+                } else {
+                    kasBankSelection.classList.add('hidden');
+                    // Clear kas/bank selection
+                    $('input[name="kas_bank_id"]').prop('checked', false);
+                    $('.kas-bank-card').removeClass('border-blue-500 bg-blue-50').addClass(
+                        'border-gray-200');
+                }
+            });
+
+            // Function to filter kas/bank based on payment method
+            function filterKasBankByPaymentMethod() {
+                const selectedPaymentMethod = $('input[name="metode_pembayaran"]:checked').val();
+                const kasBankCards = $('.kas-bank-card');
+                const kasBankRadios = $('.kas-bank-radio');
+
+                if (!selectedPaymentMethod) {
+                    kasBankCards.addClass('hidden');
+                    return;
+                }
+
+                const paymentMethodCode = selectedPaymentMethod.toLowerCase();
+                const isTransfer = paymentMethodCode.includes('transfer') ||
+                    paymentMethodCode.includes('bank') ||
+                    paymentMethodCode.includes('bca') ||
+                    paymentMethodCode.includes('mandiri') ||
+                    paymentMethodCode.includes('bni') ||
+                    paymentMethodCode.includes('bri');
+                const isCash = paymentMethodCode.includes('cash') ||
+                    paymentMethodCode.includes('tunai') ||
+                    paymentMethodCode.includes('kas');
+
+                let visibleCount = 0;
+
+                kasBankCards.each(function(index) {
+                    const card = $(this);
+                    const radio = kasBankRadios.eq(index);
+                    const kasBankJenis = radio.attr('data-jenis');
+
+                    if (isTransfer && kasBankJenis === 'BANK') {
+                        card.removeClass('hidden');
+                        visibleCount++;
+                    } else if (isCash && kasBankJenis === 'KAS') {
+                        card.removeClass('hidden');
+                        visibleCount++;
+                    } else if (!isTransfer && !isCash) {
+                        // For QRIS or other methods, show all
+                        card.removeClass('hidden');
+                        visibleCount++;
+                    } else {
+                        card.addClass('hidden');
+                    }
+                });
+
+                // Update grid columns based on visible count
+                const container = $('#kas-bank-container');
+                if (visibleCount === 1) {
+                    container.removeClass().addClass('grid gap-4 grid-cols-1');
+                } else if (visibleCount === 2) {
+                    container.removeClass().addClass('grid gap-4 grid-cols-2');
+                } else if (visibleCount >= 3) {
+                    container.removeClass().addClass('grid gap-4 grid-cols-3');
+                }
+
+                // Uncheck hidden selections
+                kasBankRadios.each(function(index) {
+                    const radio = $(this);
+                    const card = kasBankCards.eq(index);
+                    if (card.hasClass('hidden') && radio.is(':checked')) {
+                        radio.prop('checked', false);
+                        card.removeClass('border-blue-500 bg-blue-50').addClass('border-gray-200');
+                    }
+                });
+
+                // Show notification
+                if (isTransfer) {
+                    showNotification('Menampilkan kas/bank jenis BANK untuk metode transfer', 'info');
+                } else if (isCash) {
+                    showNotification('Menampilkan kas/bank jenis KAS untuk metode tunai', 'info');
+                }
+            }
+
+            // Kas/Bank selection
+            $('.kas-bank-radio').on('change', function() {
+                $('.kas-bank-card').removeClass('border-blue-500 bg-blue-50').addClass('border-gray-200');
+                if (this.checked) {
+                    $(this).closest('.kas-bank-option').find('.kas-bank-card')
+                        .removeClass('border-gray-200').addClass('border-blue-500 bg-blue-50');
+                }
+            });
+
+            // Number formatting for payment amount
             let isFormatting = false;
             let lastValidValue = '0';
 
@@ -745,16 +733,15 @@
                 const cursorPosition = e.target.selectionStart;
                 const oldValue = e.target.value;
 
-                // Get the raw numeric value by removing all formatting
-                let rawValue = e.target.value.replace(/[^\d,]/g, ''); // Keep digits and comma only
+                // Get the raw numeric value
+                let rawValue = e.target.value.replace(/[^\d,]/g, '');
 
-                // If input is empty, don't format yet
                 if (!rawValue) {
                     document.getElementById('jumlah_raw').value = '';
                     return;
                 }
 
-                // Handle decimal separator (comma)
+                // Handle decimal separator
                 let hasDecimal = rawValue.includes(',');
                 let integerPart = '';
                 let decimalPart = '';
@@ -764,7 +751,6 @@
                     integerPart = parts[0] || '';
                     decimalPart = parts[1] || '';
 
-                    // If multiple commas, keep only the first one
                     if (parts.length > 2) {
                         decimalPart = parts.slice(1).join('');
                     }
@@ -775,14 +761,12 @@
                 // Format the value
                 let newValue = '';
                 if (integerPart) {
-                    // Add thousand separators to integer part
                     if (integerPart.length >= 4) {
                         integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
                     }
                     newValue = integerPart;
                 }
 
-                // Add decimal part if exists
                 if (hasDecimal) {
                     newValue += ',' + decimalPart;
                 }
@@ -800,52 +784,12 @@
                     newValue = formatDecimalInput(max);
                 }
 
-                // Store raw value in hidden input for form submission
+                // Store raw value
                 document.getElementById('jumlah_raw').value = numericValue;
 
                 if (newValue !== oldValue) {
                     isFormatting = true;
                     e.target.value = newValue;
-
-                    // Calculate new cursor position
-                    let newCursorPos = cursorPosition;
-
-                    // Count dots before cursor in old and new values
-                    let oldDots = (oldValue.substring(0, cursorPosition).match(/\./g) || []).length;
-                    let newDots = (newValue.substring(0, cursorPosition).match(/\./g) || []).length;
-
-                    // Adjust cursor position based on dot difference
-                    if (newValue.length > oldValue.length) {
-                        // Text was added (likely a dot for thousand separator)
-                        let addedDots = (newValue.match(/\./g) || []).length - (oldValue.match(/\./g) || [])
-                            .length;
-                        if (addedDots > 0) {
-                            // Find where the dot was added relative to cursor
-                            let textBeforeCursor = oldValue.substring(0, cursorPosition);
-                            let digitsBeforeCursor = textBeforeCursor.replace(/[^\d]/g, '').length;
-
-                            // Count how many dots should be before this many digits in the new value
-                            let newTextUpToDigits = newValue.replace(/[^\d.]/g, '');
-                            let dotsBeforeDigits = 0;
-                            let digitCount = 0;
-
-                            for (let i = 0; i < newTextUpToDigits.length && digitCount <
-                                digitsBeforeCursor; i++) {
-                                if (newTextUpToDigits[i] === '.') {
-                                    dotsBeforeDigits++;
-                                } else {
-                                    digitCount++;
-                                }
-                            }
-
-                            newCursorPos = cursorPosition + dotsBeforeDigits - oldDots;
-                        }
-                    }
-
-                    // Make sure cursor position is within bounds
-                    newCursorPos = Math.max(0, Math.min(newCursorPos, newValue.length));
-
-                    e.target.setSelectionRange(newCursorPos, newCursorPos);
                     isFormatting = false;
                 }
             });
@@ -854,51 +798,38 @@
             function formatDecimalInput(value) {
                 if (!value && value !== 0) return '';
 
-                // Convert to string first
                 let strValue = value.toString();
-
-                // If value already contains comma, handle it carefully
                 if (strValue.includes(',')) {
                     let parts = strValue.split(',');
-                    let integerPart = parts[0];
+                    let integerPart = parts[0].replace(/\./g, '');
                     let decimalPart = parts[1] || '';
 
-                    // Remove existing dots from integer part and format
-                    integerPart = integerPart.replace(/\./g, '');
-
-                    // Format integer part with thousand separator
                     if (integerPart && integerPart !== '0') {
                         integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
                     }
 
-                    // Return with decimal part
                     if (decimalPart !== '') {
                         return integerPart + ',' + decimalPart;
                     } else {
                         return integerPart;
                     }
                 } else {
-                    // Handle numeric input
                     let numValue;
                     if (typeof value === 'number') {
                         numValue = value;
                     } else {
-                        // Convert string to number, handle both comma and dot as decimal separator
                         let cleanValue = strValue.replace(',', '.');
                         numValue = parseFloat(cleanValue);
                     }
 
                     if (isNaN(numValue)) return '';
 
-                    // Split integer and decimal parts
                     let parts = numValue.toString().split('.');
                     let integerPart = parts[0];
                     let decimalPart = parts[1] || '';
 
-                    // Format integer part with thousand separator
                     integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
-                    // Return formatted number
                     if (decimalPart) {
                         return integerPart + ',' + decimalPart;
                     } else {
@@ -910,30 +841,26 @@
             function parseFormattedDecimal(value) {
                 if (!value) return 0;
 
-                // Remove thousand separators and convert comma to dot
                 let cleanValue = value.toString()
-                    .replace(/\./g, '') // Remove thousand separators
-                    .replace(',', '.'); // Convert comma to dot for decimal
+                    .replace(/\./g, '')
+                    .replace(',', '.');
 
                 let numValue = parseFloat(cleanValue);
                 return isNaN(numValue) ? 0 : numValue;
             }
 
-            // Handle focus to show raw number for editing
+            // Handle focus and blur for payment amount
             jumlahInput.addEventListener('focus', function() {
                 const rawValue = document.getElementById('jumlah_raw').value;
                 if (rawValue && rawValue !== '0') {
                     this.value = rawValue;
-                    // Select all text for easy editing
                     this.select();
                 }
             });
 
-            // Handle blur to format the number
             jumlahInput.addEventListener('blur', function() {
                 let inputValue = this.value.trim();
 
-                // If empty, set to last valid value or 0
                 if (!inputValue) {
                     this.value = lastValidValue || '0';
                     return;
@@ -941,95 +868,113 @@
 
                 let value = parseFormattedDecimal(inputValue);
                 if (value <= 0 || isNaN(value)) {
-                    // Use last valid value instead of defaulting to 0
                     this.value = lastValidValue || '0';
                 } else {
-                    // Format the value properly
                     let formattedValue = formatDecimalInput(value);
                     this.value = formattedValue;
                     lastValidValue = formattedValue;
                 }
             });
 
-            // Form submission validation
-            $('form').on('submit', function(e) {
-                let hasErrors = false;
+            // Form validation function
+            function validateForm() {
+                let isValid = true;
 
-                // Check for any visible error messages
-                if ($('.error-message').length > 0) {
-                    hasErrors = true;
+                // Reset all error states
+                $('.border-red-500').removeClass('border-red-500').addClass('border-gray-300');
+                $('.error-message').remove();
+
+                // Validate transaction selection
+                const penjualanId = $('#penjualan_id').val();
+                if (!penjualanId) {
+                    $('#penjualan_display').removeClass('border-gray-300').addClass('border-red-500');
+                    $('#penjualan_display').after(
+                        '<p class="mt-1 text-sm text-red-600 error-message">Pilih transaksi terlebih dahulu</p>'
+                        );
+                    isValid = false;
                 }
 
-                // Check for empty required fields
-                fieldsToValidate.forEach(function(fieldName) {
-                    let fieldValue;
+                // Validate payment amount
+                const jumlah = $('#jumlah_raw').val();
+                if (!jumlah || parseFloat(jumlah) <= 0) {
+                    $('#jumlah').removeClass('border-gray-300').addClass('border-red-500');
+                    $('#jumlah').after(
+                        '<p class="mt-1 text-sm text-red-600 error-message">Jumlah bayar harus diisi</p>');
+                    isValid = false;
+                }
 
-                    // Special handling for radio buttons
-                    if (fieldName === 'metode_pembayaran') {
-                        fieldValue = $('input[name="metode_pembayaran"]:checked').val();
-                    } else {
-                        const field = $(`#${fieldName}`);
-                        fieldValue = field.val();
+                // Validate payment date
+                const tanggal = $('#tanggal').val();
+                if (!tanggal) {
+                    $('#tanggal').removeClass('border-gray-300').addClass('border-red-500');
+                    $('#tanggal').after(
+                        '<p class="mt-1 text-sm text-red-600 error-message">Tanggal pembayaran harus diisi</p>');
+                    isValid = false;
+                }
 
-                        // For jumlah field, check the raw value
-                        if (fieldName === 'jumlah') {
-                            fieldValue = document.getElementById('jumlah_raw').value;
-                        }
+                // Validate payment method
+                const metodePembayaran = $('input[name="metode_pembayaran"]:checked').val();
+                if (!metodePembayaran) {
+                    $('.payment-method-card').addClass('border-red-500');
+                    $('.payment-method-card').first().after(
+                        '<p class="mt-1 text-sm text-red-600 error-message">Pilih metode pembayaran</p>');
+                    isValid = false;
+                }
+
+                // Validate kas/bank selection for specific payment methods
+                if (metodePembayaran && ['TUNAI', 'TRANSFER', 'QRIS'].includes(metodePembayaran)) {
+                    const kasBankId = $('input[name="kas_bank_id"]:checked').val();
+                    if (!kasBankId) {
+                        $('.kas-bank-card').addClass('border-red-500');
+                        $('.kas-bank-card').first().after(
+                            '<p class="mt-1 text-sm text-red-600 error-message">Pilih kas/bank</p>');
+                        isValid = false;
                     }
+                }
 
-                    if (!fieldValue && fieldName !== 'keterangan') {
-                        hasErrors = true;
-                        validateField(fieldName, fieldValue);
-                    }
-                });
+                return isValid;
+            }
 
-                if (hasErrors) {
+            // Form submit handler
+            $('form').on('submit', function(e) {
+                if (!validateForm()) {
                     e.preventDefault();
+                    showNotification('Mohon lengkapi semua field yang wajib diisi', 'error');
 
                     // Scroll to first error
-                    const firstError = $('.error-message').first();
+                    const firstError = $('.border-red-500').first();
                     if (firstError.length) {
                         $('html, body').animate({
                             scrollTop: firstError.offset().top - 100
                         }, 500);
                     }
-
-                    // Show notification
-                    showNotification('Harap perbaiki kesalahan pada form sebelum melanjutkan.', 'error');
-                } else {
-                    // Disable submit button and show loading state
-                    const submitButton = $('button[type="submit"]');
-                    const originalText = submitButton.html();
-
-                    submitButton.prop('disabled', true);
-                    submitButton.removeClass(
-                        'hover:from-green-700 hover:to-emerald-700 hover:shadow-xl hover:scale-[1.02]');
-                    submitButton.addClass('opacity-75 cursor-not-allowed');
-
-                    // Change button content to loading state
-                    submitButton.html(`
-                        <svg class="animate-spin w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Menyimpan...
-                    `);
-
-                    // Show notification
-                    showNotification('Sedang menyimpan pembayaran...', 'info');
-
-                    // Re-enable button if form submission fails (fallback)
-                    setTimeout(function() {
-                        if (submitButton.prop('disabled')) {
-                            submitButton.prop('disabled', false);
-                            submitButton.removeClass('opacity-75 cursor-not-allowed');
-                            submitButton.addClass(
-                                'hover:from-green-700 hover:to-emerald-700 hover:shadow-xl hover:scale-[1.02]'
-                            );
-                            submitButton.html(originalText);
-                        }
-                    }, 10000); // 10 seconds fallback
                 }
+            });
+
+            // Clear error states when user starts typing/selecting
+            $('#penjualan_display').on('click', function() {
+                $(this).removeClass('border-red-500').addClass('border-gray-300');
+                $(this).siblings('.error-message').remove();
+            });
+
+            $('#jumlah').on('input', function() {
+                $(this).removeClass('border-red-500').addClass('border-gray-300');
+                $(this).siblings('.error-message').remove();
+            });
+
+            $('#tanggal').on('change', function() {
+                $(this).removeClass('border-red-500').addClass('border-gray-300');
+                $(this).siblings('.error-message').remove();
+            });
+
+            $('input[name="metode_pembayaran"]').on('change', function() {
+                $('.payment-method-card').removeClass('border-red-500');
+                $('.payment-method-card').siblings('.error-message').remove();
+            });
+
+            $('input[name="kas_bank_id"]').on('change', function() {
+                $('.kas-bank-card').removeClass('border-red-500');
+                $('.kas-bank-card').siblings('.error-message').remove();
             });
 
             // Show notification function
@@ -1051,26 +996,25 @@
                         break;
                     case 'info':
                         bgColor = 'bg-blue-500';
-                        icon = `<svg class="animate-spin w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        icon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
                             </svg>`;
                         break;
                     default:
                         bgColor = 'bg-blue-500';
                         icon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
-                              <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.20a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
                             </svg>`;
                 }
 
                 const notification = $(`
-            <div class="fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-xl z-50 notification transform transition-all duration-300 translate-x-full">
-                <div class="flex items-center">
-                    ${icon}
-                    ${message}
-                </div>
-            </div>
-        `);
+                    <div class="fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-xl z-50 notification transform transition-all duration-300 translate-x-full">
+                        <div class="flex items-center">
+                            ${icon}
+                            ${message}
+                        </div>
+                    </div>
+                `);
 
                 $('body').append(notification);
 
@@ -1087,36 +1031,6 @@
                     }, 300);
                 }, 4000);
             }
-
-                    // Initialize payment method selection
-        function initializePaymentMethod() {
-            const paymentMethodRadios = document.querySelectorAll('.payment-method-radio');
-
-            paymentMethodRadios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    // Remove selected class from all cards
-                    document.querySelectorAll('.payment-method-card').forEach(card => {
-                        card.classList.remove('selected');
-                    });
-
-                    // Add selected class to checked card
-                    if (this.checked) {
-                        this.closest('.payment-method-option').querySelector(
-                                '.payment-method-card')
-                            .classList.add('selected');
-                    }
-
-                    // Trigger validation
-                    const value = this.value;
-                    validateField('metode_pembayaran', value);
-                });
-            });
-        }
-
-            // Initialize when DOM is loaded
-            document.addEventListener('DOMContentLoaded', function() {
-                initializePaymentMethod();
-            });
         });
     </script>
 
@@ -1137,6 +1051,52 @@
 
         .payment-method-radio:checked+.payment-method-card .text-blue-600 {
             color: #2563eb;
+        }
+
+        .kas-bank-card {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .kas-bank-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .kas-bank-radio:checked+.kas-bank-card {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Error state styling */
+        .border-red-500 {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 1px #ef4444;
+        }
+
+        .payment-method-card.border-red-500 {
+            border-color: #ef4444 !important;
+            background-color: #fef2f2;
+        }
+
+        .kas-bank-card.border-red-500 {
+            border-color: #ef4444 !important;
+            background-color: #fef2f2;
+        }
+
+        .error-message {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 @endsection
