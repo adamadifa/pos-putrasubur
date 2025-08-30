@@ -138,9 +138,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{id}/detail', [PembayaranPembelianController::class, 'detail'])->name('detail');
         Route::get('/{id}/print', [PembayaranPembelianController::class, 'print'])->name('print');
         
-        // AJAX routes for create form
-        Route::get('/get-transactions', [PembayaranPembelianController::class, 'getTransactions'])->name('get-transactions');
-        Route::get('/get-transaction-details', [PembayaranPembelianController::class, 'getTransactionDetails'])->name('get-transaction-details');
+
     });
 
     // Laporan Routes

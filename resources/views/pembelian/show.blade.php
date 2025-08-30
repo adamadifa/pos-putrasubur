@@ -664,130 +664,130 @@
                                 Hapus Transaksi
                             </button>
                         @endif
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Payment Modal -->
-    <div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-auto">
-                <!-- Modal Header -->
-                <div class="px-6 py-4 border-b bg-gradient-to-r from-green-50 to-emerald-50">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-gray-800 flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                            </svg>
-                            Tambah Pembayaran
-                        </h3>
-                        <button onclick="closePaymentModal()" class="text-gray-400 hover:text-gray-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Modal Body -->
-                <div class="p-6">
-                    <!-- Payment Summary - Compact -->
-                    <div class="mb-4 p-3 bg-gray-50 rounded-lg">
-                        <div class="grid grid-cols-3 gap-3 text-sm">
-                            <div>
-                                <span class="text-gray-600 text-xs">Total:</span>
-                                <div class="font-semibold text-gray-800">Rp {{ number_format($pembelian->total, 0) }}
-                                </div>
-                            </div>
-                            <div>
-                                <span class="text-gray-600 text-xs">Sudah Bayar:</span>
-                                <div class="font-semibold text-green-600">Rp
-                                    {{ number_format($pembelian->pembayaranPembelian->sum('jumlah_bayar'), 0) }}</div>
-                            </div>
-                            <div>
-                                <span class="text-gray-600 text-xs">Sisa:</span>
-                                <div class="font-semibold text-red-600">Rp
-                                    {{ number_format($sisaPembayaran, 0) }}</div>
-                            </div>
+        <!-- Payment Modal -->
+        <div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-auto">
+                    <!-- Modal Header -->
+                    <div class="px-6 py-4 border-b bg-gradient-to-r from-green-50 to-emerald-50">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                </svg>
+                                Tambah Pembayaran
+                            </h3>
+                            <button onclick="closePaymentModal()" class="text-gray-400 hover:text-gray-600">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Payment Form -->
-                    <form id="paymentForm" onsubmit="submitPayment(event)">
-                        @csrf
-                        <input type="hidden" name="pembelian_id" value="{{ $pembelian->id }}">
-
-                        <div class="space-y-4">
-                            <!-- Row 1: Tanggal dan Nominal bersebelahan -->
-                            <div class="grid grid-cols-2 gap-4">
-                                <!-- Payment Date -->
+                    <!-- Modal Body -->
+                    <div class="p-6">
+                        <!-- Payment Summary - Compact -->
+                        <div class="mb-4 p-3 bg-gray-50 rounded-lg">
+                            <div class="grid grid-cols-3 gap-3 text-sm">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                                        Tanggal Pembayaran <span class="text-red-500">*</span>
-                                    </label>
-                                    <input type="date" name="tanggal" value="{{ date('Y-m-d') }}"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
-                                        required>
-                                </div>
-
-                                <!-- Payment Amount -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                                        Jumlah Pembayaran <span class="text-red-500">*</span>
-                                    </label>
-                                    <div class="relative">
-                                            <div
-                                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <span class="text-gray-500 text-sm font-medium">Rp</span>
-                                        </div>
-                                        <input type="text" id="paymentAmount" name="jumlah"
-                                            value="{{ number_format($sisaPembayaran, 0, ',', '.') }}"
-                                            class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200 text-right text-lg font-semibold"
-                                            placeholder="0">
+                                    <span class="text-gray-600 text-xs">Total:</span>
+                                    <div class="font-semibold text-gray-800">Rp {{ number_format($pembelian->total, 0) }}
                                     </div>
                                 </div>
-                            </div>
-
-                            <!-- Row 2: Keterangan full width -->
-                            <div>
-                                <textarea name="keterangan" rows="2"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
-                                    placeholder="Keterangan (opsional)..."></textarea>
-                            </div>
-
-                            <!-- Row 3: Metode Pembayaran -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Metode Pembayaran <span class="text-red-500">*</span>
-                                </label>
-                                <div class="grid grid-cols-2 gap-3">
-                                    @foreach ($metodePembayaran as $metode)
-                                        <label class="relative cursor-pointer payment-method-option">
-                                                <input type="radio" name="metode_pembayaran"
-                                                    value="{{ $metode->kode }}"
-                                                {{ old('metode_pembayaran') == $metode->kode ? 'checked' : '' }}
-                                                class="sr-only payment-method-radio">
-                                            <div
-                                                class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 payment-method-card">
-                                                <div class="flex flex-col items-center text-center">
-                                                    <div
-                                                        class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-2">
-                                                        <i
-                                                            class="ti {{ $metode->icon_display }} text-blue-600 text-lg"></i>
-                                                    </div>
-                                                    <span
-                                                        class="text-sm font-medium text-gray-900">{{ $metode->nama }}</span>
-                                                    <span class="text-xs text-gray-500">{{ $metode->kode }}</span>
-                                                </div>
-                                            </div>
-                                        </label>
-                                    @endforeach
+                                <div>
+                                    <span class="text-gray-600 text-xs">Sudah Bayar:</span>
+                                    <div class="font-semibold text-green-600">Rp
+                                        {{ number_format($pembelian->pembayaranPembelian->sum('jumlah_bayar'), 0) }}</div>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600 text-xs">Sisa:</span>
+                                    <div class="font-semibold text-red-600">Rp
+                                        {{ number_format($sisaPembayaran, 0) }}</div>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Payment Form -->
+                        <form id="paymentForm" onsubmit="submitPayment(event)">
+                            @csrf
+                            <input type="hidden" name="pembelian_id" value="{{ $pembelian->id }}">
+
+                            <div class="space-y-4">
+                                <!-- Row 1: Tanggal dan Nominal bersebelahan -->
+                                <div class="grid grid-cols-2 gap-4">
+                                    <!-- Payment Date -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                                            Tanggal Pembayaran <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="date" name="tanggal" value="{{ date('Y-m-d') }}"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
+                                            required>
+                                    </div>
+
+                                    <!-- Payment Amount -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                                            Jumlah Pembayaran <span class="text-red-500">*</span>
+                                        </label>
+                                        <div class="relative">
+                                            <div
+                                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span class="text-gray-500 text-sm font-medium">Rp</span>
+                                            </div>
+                                            <input type="text" id="paymentAmount" name="jumlah"
+                                                value="{{ number_format($sisaPembayaran, 0, ',', '.') }}"
+                                                class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200 text-right text-lg font-semibold"
+                                                placeholder="0">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Row 2: Keterangan full width -->
+                                <div>
+                                    <textarea name="keterangan" rows="2"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
+                                        placeholder="Keterangan (opsional)..."></textarea>
+                                </div>
+
+                                <!-- Row 3: Metode Pembayaran -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Metode Pembayaran <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        @foreach ($metodePembayaran as $metode)
+                                            <label class="relative cursor-pointer payment-method-option">
+                                                <input type="radio" name="metode_pembayaran"
+                                                    value="{{ $metode->kode }}"
+                                                    {{ old('metode_pembayaran') == $metode->kode ? 'checked' : '' }}
+                                                    class="sr-only payment-method-radio">
+                                                <div
+                                                    class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 payment-method-card">
+                                                    <div class="flex flex-col items-center text-center">
+                                                        <div
+                                                            class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-2">
+                                                            <i
+                                                                class="ti {{ $metode->icon_display }} text-blue-600 text-lg"></i>
+                                                        </div>
+                                                        <span
+                                                            class="text-sm font-medium text-gray-900">{{ $metode->nama }}</span>
+                                                        <span class="text-xs text-gray-500">{{ $metode->kode }}</span>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </div>
 
                                 <!-- Row 4: Kas/Bank Selection -->
                                 <div>
@@ -857,28 +857,28 @@
                                         @endforeach
                                     </div>
                                 </div>
-                        </div>
+                            </div>
 
-                        <!-- Payment Preview - Compact -->
-                        <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                            <h4 class="font-medium text-blue-800 mb-2 text-sm">Preview Pembayaran:</h4>
-                            <div class="grid grid-cols-3 gap-4 text-sm">
-                                <div>
-                                    <span class="text-blue-700 text-xs">Jumlah Bayar:</span>
-                                    <div class="font-medium" id="previewAmount">Rp
-                                        {{ number_format($sisaPembayaran, 0) }}</div>
-                                </div>
-                                <div>
-                                    <span class="text-blue-700 text-xs">Sisa Setelah Bayar:</span>
-                                    <div class="font-medium" id="previewRemaining">Rp 0</div>
-                                </div>
-                                <div>
-                                    <span class="text-blue-700 text-xs">Status:</span>
-                                    <div class="font-medium text-green-600" id="previewStatus">
-                                        @php
+                            <!-- Payment Preview - Compact -->
+                            <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                <h4 class="font-medium text-blue-800 mb-2 text-sm">Preview Pembayaran:</h4>
+                                <div class="grid grid-cols-3 gap-4 text-sm">
+                                    <div>
+                                        <span class="text-blue-700 text-xs">Jumlah Bayar:</span>
+                                        <div class="font-medium" id="previewAmount">Rp
+                                            {{ number_format($sisaPembayaran, 0) }}</div>
+                                    </div>
+                                    <div>
+                                        <span class="text-blue-700 text-xs">Sisa Setelah Bayar:</span>
+                                        <div class="font-medium" id="previewRemaining">Rp 0</div>
+                                    </div>
+                                    <div>
+                                        <span class="text-blue-700 text-xs">Status:</span>
+                                        <div class="font-medium text-green-600" id="previewStatus">
+                                            @php
                                                 $totalDibayar = $pembelian->pembayaranPembelian->sum('jumlah_bayar');
                                                 $sisaPembayaran = $pembelian->total - $totalDibayar;
-                                        @endphp
+                                            @endphp
                                             @if ($sisaPembayaran <= 0)
                                                 Lunas
                                             @elseif ($totalDibayar > 0)
@@ -886,23 +886,23 @@
                                             @else
                                                 Belum Bayar
                                             @endif
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
                             <!-- Submit Button -->
                             <div class="mt-6 flex justify-end space-x-3">
-                            <button type="button" onclick="closePaymentModal()"
+                                <button type="button" onclick="closePaymentModal()"
                                     class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200">
-                                Batal
-                            </button>
-                            <button type="submit" id="submitPaymentBtn"
+                                    Batal
+                                </button>
+                                <button type="submit" id="submitPaymentBtn"
                                     class="px-6 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-sm hover:shadow-md">
-                                <span id="submitBtnText">Simpan Pembayaran</span>
-                            </button>
-                        </div>
-                    </form>
+                                    <span id="submitBtnText">Simpan Pembayaran</span>
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -913,8 +913,8 @@
 @endsection
 
 @push('styles')
-                    <style>
-                        @media print {
+    <style>
+        @media print {
             body * {
                 visibility: hidden;
             }
@@ -961,7 +961,7 @@
             } else if (type === 'warning') {
                 toast.className += ' bg-orange-500 text-white';
                 toast.innerHTML = `<i class="ti ti-alert-triangle mr-2"></i>${message}`;
-                } else {
+            } else {
                 toast.className += ' bg-blue-500 text-white';
                 toast.innerHTML = `<i class="ti ti-info-circle mr-2"></i>${message}`;
             }
@@ -1137,8 +1137,8 @@
 
             // Only validate payment amount if payment method and kas/bank are selected
             if (metodePembayaran && kasBankId && paymentAmount <= 0) {
-            const paymentAmountInput = document.getElementById('paymentAmount');
-            if (paymentAmountInput) {
+                const paymentAmountInput = document.getElementById('paymentAmount');
+                if (paymentAmountInput) {
                     paymentAmountInput.style.border = '2px solid #ef4444';
                     paymentAmountInput.style.backgroundColor = '#fef2f2';
                 }
