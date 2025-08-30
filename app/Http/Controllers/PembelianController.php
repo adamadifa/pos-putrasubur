@@ -7,11 +7,14 @@ use App\Models\Supplier;
 use App\Models\Produk;
 use App\Models\DetailPembelian;
 use App\Models\PembayaranPembelian;
+use App\Models\MetodePembayaran;
+use App\Models\KasBank;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class PembelianController extends Controller
@@ -137,7 +140,7 @@ class PembelianController extends Controller
             'kas_bank_id' => 'required|exists:kas_bank,id',
             'dp_amount' => 'nullable|numeric|min:0',
             'diskon' => 'nullable|numeric|min:0',
-            'keterangan' => 'nullable|string',
+            'keterangan' => 'nullable|string|max:255',
             'items' => 'required|array|min:1',
             'items.*.produk_id' => 'required|exists:produk,id',
             'items.*.qty' => 'required|numeric|min:0.01',
@@ -180,6 +183,12 @@ class PembelianController extends Controller
         }
 
         try {
+            // Debug logging
+            Log::info('Pembelian store method called', [
+                'request_data' => $request->all(),
+                'validated_data' => $validated
+            ]);
+
             DB::beginTransaction();
 
             // Calculate totals with item discounts
@@ -216,7 +225,7 @@ class PembelianController extends Controller
                 'total' => $totalSetelahDiskon,
                 'status_pembayaran' => $statusPembayaran,
                 'jenis_transaksi' => $validated['jenis_transaksi'],
-                'keterangan' => $validated['keterangan'],
+                'keterangan' => $validated['keterangan'] ?? null,
                 'user_id' => auth()->id(),
             ]);
 
@@ -316,9 +325,22 @@ class PembelianController extends Controller
                 $successMessage .= ' Pembayaran ' . number_format($dpAmount, 0, ',', '.') . ' telah dicatat.';
             }
 
+            // Debug logging
+            Log::info('Pembelian created successfully', [
+                'pembelian_id' => $pembelian->id,
+                'encrypted_id' => $pembelian->encrypted_id,
+                'redirect_url' => route('pembelian.show', $pembelian->encrypted_id)
+            ]);
+
             return redirect()->route('pembelian.show', $pembelian->encrypted_id)
                 ->with('success', $successMessage);
         } catch (\Exception $e) {
+            Log::error('Error in Pembelian store method', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
+            ]);
+
             DB::rollback();
             return redirect()->back()
                 ->withInput()
@@ -344,7 +366,10 @@ class PembelianController extends Controller
                 ->orderBy('nama')
                 ->get();
 
-            return view('pembelian.show', compact('pembelian', 'sisaPembayaran', 'metodePembayaran'));
+            // Get kas/bank data
+            $kasBank = KasBank::orderBy('nama')->get();
+
+            return view('pembelian.show', compact('pembelian', 'sisaPembayaran', 'metodePembayaran', 'kasBank'));
         } catch (\Exception $e) {
             return redirect()->route('pembelian.index')
                 ->with('error', 'Pembelian tidak ditemukan.');
@@ -372,8 +397,10 @@ class PembelianController extends Controller
 
             $suppliers = Supplier::where('status', true)->orderBy('nama')->get();
             $produk = Produk::with(['kategori', 'satuan'])->orderBy('nama_produk')->get();
+            $metodePembayaran = MetodePembayaran::where('status', true)->orderBy('nama')->get();
+            $kasBank = KasBank::orderBy('nama')->get();
 
-            return view('pembelian.edit', compact('pembelian', 'suppliers', 'produk'));
+            return view('pembelian.edit', compact('pembelian', 'suppliers', 'produk', 'metodePembayaran', 'kasBank'));
         } catch (\Exception $e) {
             return redirect()->route('pembelian.index')
                 ->with('error', 'Pembelian tidak ditemukan.');
@@ -403,15 +430,31 @@ class PembelianController extends Controller
                 'supplier_id' => 'required|exists:supplier,id',
                 'tanggal' => 'required|date',
                 'jenis_transaksi' => 'required|in:tunai,kredit',
-                'keterangan' => 'nullable|string',
+                'metode_pembayaran' => 'nullable|string|max:50',
+                'kas_bank_id' => 'nullable|exists:kas_bank,id',
+                'dp_amount' => 'nullable|numeric|min:0',
+                'diskon' => 'nullable|numeric|min:0',
                 'items' => 'required|array|min:1',
-                'items.*.produk_id' => 'required|exists:produk,id',
+                'items.*.id' => 'required|exists:produk,id',
                 'items.*.qty' => 'required|numeric|min:0.01',
-                'items.*.harga_beli' => 'required|numeric|min:0',
+                'items.*.price' => 'required|numeric|min:0',
                 'items.*.discount' => 'nullable|numeric|min:0',
             ]);
 
+            // Additional validation for metode_pembayaran to ensure it's active
+            if ($validated['metode_pembayaran']) {
+                $metodeExists = \App\Models\MetodePembayaran::where('kode', $validated['metode_pembayaran'])
+                    ->where('status', true)
+                    ->exists();
+
+                if (!$metodeExists) {
+                    return back()->withInput()
+                        ->withErrors(['metode_pembayaran' => 'Metode pembayaran yang dipilih tidak aktif.']);
+                }
+            }
+
             DB::beginTransaction();
+
             // Restore stock from old details
             foreach ($pembelian->detailPembelian as $detail) {
                 $produk = Produk::find($detail->produk_id);
@@ -421,55 +464,157 @@ class PembelianController extends Controller
             // Delete existing detail pembelian
             $pembelian->detailPembelian()->delete();
 
-            // Calculate totals
-            $subtotal = 0;
-            $totalDiscount = 0;
+            // Delete old pembayaran (saldo kas/bank akan otomatis terupdate melalui database trigger)
+            $pembelian->pembayaranPembelian()->delete();
 
+            // Calculate totals with item discounts
+            $total = 0;
             foreach ($validated['items'] as $item) {
-                $itemSubtotal = $item['qty'] * $item['harga_beli'];
+                $itemSubtotal = $item['qty'] * $item['price'];
                 $itemDiscount = $item['discount'] ?? 0;
-                $subtotal += $itemSubtotal;
-                $totalDiscount += $itemDiscount;
+                $total += ($itemSubtotal - $itemDiscount);
             }
 
-            $total = $subtotal - $totalDiscount;
+            // Apply discount
+            $diskon = $validated['diskon'] ?? 0;
+            $totalSetelahDiskon = $total - $diskon;
+
+            // Determine payment status based on transaction type
+            $statusPembayaran = 'lunas';
+            if ($validated['jenis_transaksi'] === 'kredit') {
+                $dpAmount = $validated['dp_amount'] ?? 0;
+                if ($dpAmount > 0 && $dpAmount < $totalSetelahDiskon) {
+                    $statusPembayaran = 'dp';
+                } elseif ($dpAmount >= $totalSetelahDiskon) {
+                    $statusPembayaran = 'lunas';
+                } else {
+                    // DP = 0 means no payment has been made yet
+                    $statusPembayaran = 'belum_bayar';
+                }
+            }
 
             // Update pembelian
             $pembelian->update([
                 'no_faktur' => $validated['no_faktur'],
                 'supplier_id' => $validated['supplier_id'],
                 'tanggal' => $validated['tanggal'],
-                'subtotal' => $subtotal,
-                'diskon' => $totalDiscount,
-                'total' => $total,
+                'total' => $totalSetelahDiskon,
+                'diskon' => $diskon,
                 'jenis_transaksi' => $validated['jenis_transaksi'],
-                'keterangan' => $validated['keterangan'],
+                'status_pembayaran' => $statusPembayaran,
             ]);
 
             // Create new detail pembelian
             foreach ($validated['items'] as $item) {
-                $itemSubtotal = $item['qty'] * $item['harga_beli'];
+                $itemSubtotal = $item['qty'] * $item['price'];
                 $itemDiscount = $item['discount'] ?? 0;
+                $itemTotal = $itemSubtotal - $itemDiscount;
 
                 DetailPembelian::create([
                     'pembelian_id' => $pembelian->id,
-                    'produk_id' => $item['produk_id'],
+                    'produk_id' => $item['id'],
                     'qty' => $item['qty'],
-                    'harga_beli' => $item['harga_beli'],
-                    'subtotal' => $itemSubtotal,
+                    'harga_beli' => $item['price'],
+                    'subtotal' => $itemTotal, // Store final amount after item discount
                     'discount' => $itemDiscount,
                 ]);
 
                 // Update stock
-                $produk = Produk::find($item['produk_id']);
+                $produk = Produk::find($item['id']);
                 $produk->increment('stok', $item['qty']);
+            }
+
+            // Create payment record if there's payment amount
+            $paymentAmount = 0;
+            if ($validated['jenis_transaksi'] === 'tunai') {
+                // For cash transactions, payment amount equals total after discount
+                $paymentAmount = $totalSetelahDiskon;
+            } elseif ($validated['jenis_transaksi'] === 'kredit') {
+                $dpAmount = $validated['dp_amount'] ?? 0;
+                if ($dpAmount > 0) {
+                    $paymentAmount = $dpAmount;
+                }
+            }
+
+            if ($paymentAmount > 0) {
+                // Generate payment reference number
+                $noBukti = 'PAY-PUR-' . date('Ymd') . '-' . str_pad($pembelian->id, 4, '0', STR_PAD_LEFT);
+
+                // Get metode_pembayaran from form, with proper validation
+                $metodePembayaran = $validated['metode_pembayaran'] ?? null;
+
+                // If no metode_pembayaran selected, get default based on transaction type
+                if (!$metodePembayaran) {
+                    if ($validated['jenis_transaksi'] === 'tunai') {
+                        // For cash transactions, get the first active 'tunai' method
+                        $defaultMetode = \App\Models\MetodePembayaran::where('status', true)
+                            ->where('kode', 'like', '%tunai%')
+                            ->first();
+                        $metodePembayaran = $defaultMetode ? $defaultMetode->kode : null;
+                    } else {
+                        // For credit transactions, get the first active method
+                        $defaultMetode = \App\Models\MetodePembayaran::where('status', true)
+                            ->orderBy('urutan')
+                            ->first();
+                        $metodePembayaran = $defaultMetode ? $defaultMetode->kode : null;
+                    }
+                }
+
+                // Validate that metode_pembayaran exists in database
+                if ($metodePembayaran) {
+                    $metodeExists = \App\Models\MetodePembayaran::where('kode', $metodePembayaran)
+                        ->where('status', true)
+                        ->exists();
+
+                    if (!$metodeExists) {
+                        throw new \Exception('Metode pembayaran yang dipilih tidak valid atau tidak aktif.');
+                    }
+                }
+
+                PembayaranPembelian::create([
+                    'pembelian_id' => $pembelian->id,
+                    'no_bukti' => $noBukti,
+                    'tanggal' => $validated['tanggal'],
+                    'jumlah_bayar' => $paymentAmount,
+                    'metode_pembayaran' => $metodePembayaran,
+                    'status_bayar' => $validated['jenis_transaksi'] === 'tunai' ? 'P' : 'D', // P = Pelunasan, D = DP
+                    'keterangan' => $validated['jenis_transaksi'] === 'tunai'
+                        ? 'Pembayaran tunai penuh'
+                        : 'Pembayaran DP awal',
+                    'user_id' => auth()->id(),
+                    'kas_bank_id' => $validated['kas_bank_id'],
+                ]);
+
+                // Note: Saldo kas/bank akan otomatis terupdate melalui database trigger
+
+                Log::info('Created payment record', [
+                    'pembelian_id' => $pembelian->id,
+                    'no_bukti' => $noBukti,
+                    'amount' => $paymentAmount,
+                    'jenis_transaksi' => $validated['jenis_transaksi'],
+                    'metode_pembayaran' => $metodePembayaran
+                ]);
+            } else {
+                // No payment amount - this could be a pure credit transaction
+                Log::info('No payment record created', [
+                    'pembelian_id' => $pembelian->id,
+                    'jenis_transaksi' => $validated['jenis_transaksi'],
+                    'dp_amount' => $validated['dp_amount'] ?? 0,
+                    'status_pembayaran' => $statusPembayaran
+                ]);
             }
 
             DB::commit();
 
-            return redirect()->route('pembelian.index')
-                ->with('success', 'Pembelian berhasil diperbarui.');
+            return redirect()->route('pembelian.show', $pembelian->encrypted_id)
+                ->with('success', 'Transaksi pembelian berhasil diperbarui.');
         } catch (\Exception $e) {
+            Log::error('Error in Pembelian update method', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
+            ]);
+
             DB::rollback();
             return redirect()->back()
                 ->withInput()

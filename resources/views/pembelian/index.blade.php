@@ -5,7 +5,6 @@
 
 @section('content')
     <div class="space-y-6">
-        <!-- Header Actions -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="text-xl font-semibold text-gray-900">Daftar Transaksi Pembelian</h2>
@@ -25,7 +24,6 @@
             </div>
         </div>
 
-        <!-- Success Alert -->
         @if (session('success'))
             <div class="bg-green-50 border border-green-200 rounded-xl p-4 shadow-sm">
                 <div class="flex items-center">
@@ -51,7 +49,6 @@
             </div>
         @endif
 
-        <!-- Error Alert -->
         @if (session('error'))
             <div class="bg-red-50 border border-red-200 rounded-xl p-4 shadow-sm">
                 <div class="flex items-center">
@@ -77,9 +74,7 @@
             </div>
         @endif
 
-        <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-            <!-- Transaksi Hari Ini Card -->
             <div
                 class="relative bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
@@ -116,7 +111,6 @@
                 </div>
             </div>
 
-            <!-- Nilai Hari Ini Card -->
             <div
                 class="relative bg-gradient-to-br from-red-500 via-red-600 to-red-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
@@ -153,7 +147,6 @@
                 </div>
             </div>
 
-            <!-- Lunas Hari Ini Card -->
             <div
                 class="relative bg-gradient-to-br from-green-500 via-green-600 to-green-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
@@ -177,7 +170,6 @@
                 </div>
             </div>
 
-            <!-- Belum Bayar Hari Ini Card -->
             <div
                 class="relative bg-gradient-to-br from-yellow-500 via-yellow-600 to-yellow-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
@@ -201,7 +193,6 @@
                 </div>
             </div>
 
-            <!-- Jenis Transaksi Card -->
             <div
                 class="relative bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
@@ -233,11 +224,9 @@
             </div>
         </div>
 
-        <!-- Filters -->
         <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
             <form method="GET" action="{{ route('pembelian.index') }}"
                 class="space-y-4 lg:space-y-0 lg:flex lg:items-end lg:space-x-4">
-                <!-- Search -->
                 <div class="flex-1">
                     <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
                     <div class="relative">
@@ -250,7 +239,6 @@
                     </div>
                 </div>
 
-                <!-- Date From -->
                 <div class="lg:w-48">
                     <label for="tanggal_dari" class="block text-sm font-medium text-gray-700 mb-2">Tanggal Dari</label>
                     <div class="relative">
@@ -266,7 +254,6 @@
                         value="{{ request('tanggal_sampai') }}">
                 </div>
 
-                <!-- Date To -->
                 <div class="lg:w-48">
                     <label for="tanggal_sampai" class="block text-sm font-medium text-gray-700 mb-2">Tanggal
                         Sampai</label>
@@ -283,7 +270,6 @@
                         value="{{ request('tanggal_dari') }}">
                 </div>
 
-                <!-- Status Filter -->
                 <div class="lg:w-48">
                     <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status Pembayaran</label>
                     <select name="status" id="status"
@@ -297,7 +283,6 @@
                     </select>
                 </div>
 
-                <!-- Jenis Transaksi Filter -->
                 <div class="lg:w-48">
                     <label for="jenis_transaksi" class="block text-sm font-medium text-gray-700 mb-2">Jenis
                         Transaksi</label>
@@ -311,7 +296,6 @@
                     </select>
                 </div>
 
-                <!-- Filter Buttons -->
                 <div class="flex space-x-3">
                     <button type="submit"
                         class="inline-flex items-center px-6 py-3 bg-orange-600 border border-transparent rounded-lg font-medium text-sm text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
@@ -329,7 +313,6 @@
             </form>
         </div>
 
-        <!-- Modern Table -->
         <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
@@ -374,7 +357,7 @@
                                 class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                 <div class="flex items-center justify-end space-x-2">
                                     <i class="ti ti-currency-dollar text-orange-600"></i>
-                                    <span>Total & Diskon</span>
+                                    <span>Total</span>
                                 </div>
                             </th>
                             <th scope="col"
@@ -430,6 +413,26 @@
                                     ],
                                 ];
                                 $config = $statusConfig[$item->status_pembayaran] ?? $statusConfig['belum_bayar'];
+
+                                $jenisConfig = [
+                                    'tunai' => [
+                                        'bg' => 'bg-gradient-to-r from-green-500 to-green-600',
+                                        'text' => 'text-white',
+                                        'icon' => 'ti-cash',
+                                        'label' => 'Tunai',
+                                    ],
+                                    'kredit' => [
+                                        'bg' => 'bg-gradient-to-r from-purple-500 to-purple-600',
+                                        'text' => 'text-white',
+                                        'icon' => 'ti-credit-card',
+                                        'label' => 'Kredit',
+                                    ],
+                                ];
+                                $jenisTransaksiConfig = $jenisConfig[$item->jenis_transaksi] ?? $jenisConfig['tunai'];
+
+                                $today = \Carbon\Carbon::today();
+                                $transactionDate = \Carbon\Carbon::parse($item->created_at)->startOfDay();
+                                $isMoreThanOneDay = $today->diffInDays($transactionDate) > 1;
                             @endphp
                             <tr class="hover:bg-gray-50 transition-colors duration-200 group">
                                 <td class="px-4 py-3 whitespace-nowrap text-center">
@@ -490,17 +493,8 @@
                                     </div>
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap text-right">
-                                    <div class="space-y-1">
-                                        <div class="text-lg font-bold text-gray-900">Rp
-                                            {{ number_format($item->total, 0, ',', '.') }}</div>
-                                        @if ($item->diskon > 0)
-                                            <div
-                                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                                                <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                Diskon: Rp {{ number_format($item->diskon, 0, ',', '.') }}
-                                            </div>
-                                        @endif
-                                    </div>
+                                    <div class="text-lg font-bold text-gray-900">Rp
+                                        {{ number_format($item->total, 0, ',', '.') }}</div>
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap text-center">
                                     <span
@@ -510,24 +504,6 @@
                                     </span>
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap text-center">
-                                    @php
-                                        $jenisConfig = [
-                                            'tunai' => [
-                                                'bg' => 'bg-gradient-to-r from-green-500 to-green-600',
-                                                'text' => 'text-white',
-                                                'icon' => 'ti-cash',
-                                                'label' => 'Tunai',
-                                            ],
-                                            'kredit' => [
-                                                'bg' => 'bg-gradient-to-r from-purple-500 to-purple-600',
-                                                'text' => 'text-white',
-                                                'icon' => 'ti-credit-card',
-                                                'label' => 'Kredit',
-                                            ],
-                                        ];
-                                        $jenisTransaksiConfig =
-                                            $jenisConfig[$item->jenis_transaksi] ?? $jenisConfig['tunai'];
-                                    @endphp
                                     <span
                                         class="inline-flex items-center px-3 py-2 rounded-full text-xs font-medium {{ $jenisTransaksiConfig['bg'] }} {{ $jenisTransaksiConfig['text'] }} shadow-sm">
                                         <i class="ti {{ $jenisTransaksiConfig['icon'] }} text-xs mr-1"></i>
@@ -536,18 +512,10 @@
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap text-center">
                                     <div class="flex items-center justify-center space-x-2">
-                                        <!-- View Button -->
                                         <a href="{{ route('pembelian.show', $item->encrypted_id) }}"
                                             class="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition-all duration-200">
                                             <i class="ti ti-eye text-sm"></i>
                                         </a>
-
-                                        <!-- Edit Button -->
-                                        @php
-                                            $today = \Carbon\Carbon::today();
-                                            $transactionDate = \Carbon\Carbon::parse($item->created_at)->startOfDay();
-                                            $isMoreThanOneDay = $today->diffInDays($transactionDate) > 1;
-                                        @endphp
 
                                         @if (!$isMoreThanOneDay)
                                             <a href="{{ route('pembelian.edit', $item->encrypted_id) }}"
@@ -563,7 +531,6 @@
                                             </button>
                                         @endif
 
-                                        <!-- Delete Button -->
                                         @if (!$isMoreThanOneDay)
                                             <button type="button"
                                                 onclick="confirmDelete('{{ $item->encrypted_id }}', '{{ $item->no_faktur }}')"
@@ -597,7 +564,6 @@
             </div>
         </div>
 
-        <!-- Pagination -->
         @if (isset($pembelian) && $pembelian->hasPages())
             <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
                 <div class="flex-1 flex justify-between sm:hidden">
@@ -643,9 +609,7 @@
 @endsection
 
 @push('styles')
-    <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-
     <style>
         /* Custom Flatpickr Styling - Tema Orange untuk Pembelian */
         .flatpickr-calendar {
@@ -813,7 +777,6 @@
 @endpush
 
 @push('scripts')
-    <!-- Flatpickr JS -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
 

@@ -367,40 +367,41 @@
                             </div>
                         </div>
                     </div>
-                </form>
 
-                <!-- Action Buttons -->
-                <div class="flex items-center justify-between pt-8 mt-8 border-t border-gray-200 px-8 pb-8">
-                    <a href="{{ route('pembayaran.index') }}"
-                        class="inline-flex items-center px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold text-base rounded-xl hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 group">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-6 h-6 mr-3 group-hover:text-gray-600">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                        Batal
-                    </a>
-
-                    <div class="flex items-center space-x-4">
-                        <button type="reset"
+                    <!-- Action Buttons -->
+                    <div class="flex items-center justify-between pt-8 mt-8 border-t border-gray-200">
+                        <a href="{{ route('pembayaran.index') }}"
                             class="inline-flex items-center px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold text-base rounded-xl hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 group">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-3 group-hover:text-gray-600">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                             </svg>
-                            Reset Form
-                        </button>
-                        <button type="submit"
-                            class="inline-flex items-center px-10 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold text-base rounded-xl shadow-lg hover:from-green-700 hover:to-emerald-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transform hover:scale-[1.02] transition-all duration-200">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-3">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-                            </svg>
-                            Simpan Pembayaran
-                        </button>
+                            Batal
+                        </a>
+
+                        <div class="flex items-center space-x-4">
+                            <button type="reset" id="resetBtn"
+                                class="inline-flex items-center px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold text-base rounded-xl hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 group">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor"
+                                    class="w-6 h-6 mr-3 group-hover:text-gray-600">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                </svg>
+                                Reset Form
+                            </button>
+                            <button type="submit" id="submitBtn"
+                                class="inline-flex items-center px-10 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold text-base rounded-xl shadow-lg hover:from-green-700 hover:to-emerald-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transform hover:scale-[1.02] transition-all duration-200">
+                                <svg id="submitIcon" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-3">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+                                </svg>
+                                <span id="submitBtnText">Simpan Pembayaran</span>
+                            </button>
+                        </div>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>
@@ -458,10 +459,10 @@
                         @foreach ($penjualan as $p)
                             @php
                                 $sudahDibayar = $p->pembayaranPenjualan->sum('jumlah_bayar');
-                                $sisaBayar = $p->total - $sudahDibayar;
+                                $sisaBayar = $p->total_setelah_diskon - $sudahDibayar;
                             @endphp
                             <div class="transaction-item border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:bg-blue-50 cursor-pointer transition-all duration-200"
-                                data-id="{{ $p->id }}" data-total="{{ $p->total }}"
+                                data-id="{{ $p->id }}" data-total="{{ $p->total_setelah_diskon }}"
                                 data-sudah-dibayar="{{ $sudahDibayar }}" data-sisa="{{ $sisaBayar }}"
                                 data-faktur="{{ $p->no_faktur }}"
                                 data-pelanggan="{{ $p->pelanggan->nama ?? 'Pelanggan Umum' }}">
@@ -486,7 +487,7 @@
                                     <div class="text-right">
                                         <div class="text-sm text-gray-600">Total: <span
                                                 class="font-semibold text-gray-900">Rp
-                                                {{ number_format($p->total, 0, ',', '.') }}</span></div>
+                                                {{ number_format($p->total_setelah_diskon, 0, ',', '.') }}</span></div>
                                         <div class="text-sm text-gray-600">Sisa: <span
                                                 class="font-semibold text-red-600">Rp
                                                 {{ number_format($sisaBayar, 0, ',', '.') }}</span></div>
@@ -525,6 +526,8 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script>
         $(document).ready(function() {
+            console.log('Document ready, initializing payment form...');
+
             // Modal functionality
             const modal = document.getElementById('transactionModal');
             const searchBtn = document.getElementById('search_transaction_btn');
@@ -878,6 +881,7 @@
 
             // Form validation function
             function validateForm() {
+                console.log('Validating form...');
                 let isValid = true;
 
                 // Reset all error states
@@ -886,17 +890,21 @@
 
                 // Validate transaction selection
                 const penjualanId = $('#penjualan_id').val();
+                console.log('Penjualan ID:', penjualanId);
                 if (!penjualanId) {
+                    console.log('Penjualan ID validation failed');
                     $('#penjualan_display').removeClass('border-gray-300').addClass('border-red-500');
                     $('#penjualan_display').after(
                         '<p class="mt-1 text-sm text-red-600 error-message">Pilih transaksi terlebih dahulu</p>'
-                        );
+                    );
                     isValid = false;
                 }
 
                 // Validate payment amount
                 const jumlah = $('#jumlah_raw').val();
+                console.log('Jumlah:', jumlah);
                 if (!jumlah || parseFloat(jumlah) <= 0) {
+                    console.log('Jumlah validation failed');
                     $('#jumlah').removeClass('border-gray-300').addClass('border-red-500');
                     $('#jumlah').after(
                         '<p class="mt-1 text-sm text-red-600 error-message">Jumlah bayar harus diisi</p>');
@@ -905,7 +913,9 @@
 
                 // Validate payment date
                 const tanggal = $('#tanggal').val();
+                console.log('Tanggal:', tanggal);
                 if (!tanggal) {
+                    console.log('Tanggal validation failed');
                     $('#tanggal').removeClass('border-gray-300').addClass('border-red-500');
                     $('#tanggal').after(
                         '<p class="mt-1 text-sm text-red-600 error-message">Tanggal pembayaran harus diisi</p>');
@@ -914,7 +924,9 @@
 
                 // Validate payment method
                 const metodePembayaran = $('input[name="metode_pembayaran"]:checked').val();
+                console.log('Metode Pembayaran:', metodePembayaran);
                 if (!metodePembayaran) {
+                    console.log('Metode pembayaran validation failed');
                     $('.payment-method-card').addClass('border-red-500');
                     $('.payment-method-card').first().after(
                         '<p class="mt-1 text-sm text-red-600 error-message">Pilih metode pembayaran</p>');
@@ -924,7 +936,9 @@
                 // Validate kas/bank selection for specific payment methods
                 if (metodePembayaran && ['TUNAI', 'TRANSFER', 'QRIS'].includes(metodePembayaran)) {
                     const kasBankId = $('input[name="kas_bank_id"]:checked').val();
+                    console.log('Kas/Bank ID:', kasBankId);
                     if (!kasBankId) {
+                        console.log('Kas/Bank validation failed');
                         $('.kas-bank-card').addClass('border-red-500');
                         $('.kas-bank-card').first().after(
                             '<p class="mt-1 text-sm text-red-600 error-message">Pilih kas/bank</p>');
@@ -932,12 +946,17 @@
                     }
                 }
 
+                console.log('Form validation result:', isValid);
                 return isValid;
             }
 
             // Form submit handler
             $('form').on('submit', function(e) {
+                console.log('Form submit triggered');
+                console.log('Form data:', $(this).serialize());
+
                 if (!validateForm()) {
+                    console.log('Validation failed');
                     e.preventDefault();
                     showNotification('Mohon lengkapi semua field yang wajib diisi', 'error');
 
@@ -948,7 +967,80 @@
                             scrollTop: firstError.offset().top - 100
                         }, 500);
                     }
+                } else {
+                    console.log('Validation passed, submitting form');
+
+                    // Disable submit button and show loading animation
+                    const submitBtn = $('#submitBtn');
+                    const submitIcon = $('#submitIcon');
+                    const submitBtnText = $('#submitBtnText');
+
+                    // Disable button
+                    submitBtn.prop('disabled', true);
+                    submitBtn.addClass('opacity-50 cursor-not-allowed');
+                    submitBtn.removeClass(
+                        'hover:from-green-700 hover:to-emerald-700 hover:shadow-xl hover:scale-[1.02]');
+
+                    // Change icon to loading spinner
+                    submitIcon.html(`
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    `);
+                    submitIcon.addClass('animate-spin');
+
+                    // Change text
+                    submitBtnText.text('Menyimpan...');
+
+                    // Add loading overlay to form
+                    const formCard = $(
+                        '.bg-white.rounded-xl.shadow-lg.border.border-gray-100.overflow-hidden');
+                    const loadingOverlay = $(`
+                        <div class="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50 rounded-xl">
+                            <div class="text-center">
+                                <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                                    <i class="ti ti-loader animate-spin text-2xl text-green-600"></i>
+                                </div>
+                                <p class="text-lg font-semibold text-gray-800" id="loadingText">Menyimpan pembayaran...</p>
+                                <p class="text-sm text-gray-500 mt-1">Mohon tunggu sebentar</p>
+                                
+                                <!-- Progress Bar -->
+                                <div class="w-64 bg-gray-200 rounded-full h-2 mt-4 mx-auto">
+                                    <div id="progressBar" class="bg-green-600 h-2 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-2" id="progressText">0%</p>
+                            </div>
+                        </div>
+                    `);
+
+                    formCard.css('position', 'relative');
+                    formCard.append(loadingOverlay);
+
+                    // Simple loading animation
+                    let progress = 0;
+                    const progressInterval = setInterval(() => {
+                        progress += 10;
+                        $('#progressBar').css('width', progress + '%');
+                        $('#progressText').text(progress + '%');
+
+                        if (progress >= 100) {
+                            clearInterval(progressInterval);
+                            // Form will submit normally after this
+                        }
+                    }, 200);
                 }
+            });
+
+            // Handle form submission errors (if any)
+            $(document).on('ajaxError', function() {
+                resetSubmitButton();
+                showNotification('Terjadi kesalahan saat menyimpan pembayaran', 'error');
+            });
+
+            // Reset form button handler
+            $('#resetBtn').on('click', function() {
+                // Reset submit button state when form is reset
+                setTimeout(function() {
+                    resetSubmitButton();
+                }, 100);
             });
 
             // Clear error states when user starts typing/selecting
@@ -976,6 +1068,30 @@
                 $('.kas-bank-card').removeClass('border-red-500');
                 $('.kas-bank-card').siblings('.error-message').remove();
             });
+
+            // Function to reset submit button state
+            function resetSubmitButton() {
+                const submitBtn = $('#submitBtn');
+                const submitIcon = $('#submitIcon');
+                const submitBtnText = $('#submitBtnText');
+
+                // Enable button
+                submitBtn.prop('disabled', false);
+                submitBtn.removeClass('opacity-50 cursor-not-allowed');
+                submitBtn.addClass('hover:from-green-700 hover:to-emerald-700 hover:shadow-xl hover:scale-[1.02]');
+
+                // Reset icon
+                submitIcon.html(`
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+                `);
+                submitIcon.removeClass('animate-spin');
+
+                // Reset text
+                submitBtnText.text('Simpan Pembayaran');
+
+                // Remove loading overlay if exists
+                $('.bg-white\\/80.backdrop-blur-sm').remove();
+            }
 
             // Show notification function
             function showNotification(message, type = 'info') {
@@ -1097,6 +1213,36 @@
                 opacity: 1;
                 transform: translateY(0);
             }
+        }
+
+        /* Loading animation */
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Disabled button styles */
+        .opacity-50 {
+            opacity: 0.5;
+        }
+
+        .cursor-not-allowed {
+            cursor: not-allowed;
+        }
+
+        /* Backdrop blur support */
+        .backdrop-blur-sm {
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
         }
     </style>
 @endsection

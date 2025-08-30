@@ -317,39 +317,37 @@
                                         <!-- Payment Icon -->
                                         <div class="flex-shrink-0">
                                             @php
-                                                $paymentIcons = [
-                                                    'tunai' => [
-                                                        'icon' => 'ti-cash',
-                                                        'color' => 'from-green-400 to-emerald-500',
-                                                    ],
-                                                    'transfer' => [
-                                                        'icon' => 'ti-credit-card',
-                                                        'color' => 'from-blue-400 to-indigo-500',
-                                                    ],
-                                                    'kartu_kredit' => [
-                                                        'icon' => 'ti-credit-card',
-                                                        'color' => 'from-purple-400 to-pink-500',
-                                                    ],
-                                                    'kartu_debit' => [
-                                                        'icon' => 'ti-credit-card',
-                                                        'color' => 'from-orange-400 to-red-500',
-                                                    ],
-                                                    'e_wallet' => [
-                                                        'icon' => 'ti-device-mobile',
-                                                        'color' => 'from-cyan-400 to-blue-500',
-                                                    ],
-                                                    'dp' => [
-                                                        'icon' => 'ti-credit-card',
-                                                        'color' => 'from-blue-400 to-indigo-500',
-                                                    ],
+                                                // Get payment method from database
+                                                $metodePembayaranData = \App\Models\MetodePembayaran::where(
+                                                    'kode',
+                                                    $pembayaran->metode_pembayaran,
+                                                )->first();
+
+                                                // Default icon and color if not found
+                                                $icon = $metodePembayaranData
+                                                    ? $metodePembayaranData->icon_display
+                                                    : 'ti-credit-card';
+                                                $color = 'from-blue-400 to-indigo-500'; // Default color
+
+                                                // Color mapping based on common payment methods
+                                                $colorMap = [
+                                                    'tunai' => 'from-green-400 to-emerald-500',
+                                                    'transfer' => 'from-blue-400 to-indigo-500',
+                                                    'qris' => 'from-purple-400 to-pink-500',
+                                                    'kartu' => 'from-orange-400 to-red-500',
+                                                    'ewallet' => 'from-cyan-400 to-blue-500',
                                                 ];
-                                                $paymentConfig =
-                                                    $paymentIcons[strtolower($pembayaran->metode_pembayaran)] ??
-                                                    $paymentIcons['tunai'];
+
+                                                if (
+                                                    $metodePembayaranData &&
+                                                    isset($colorMap[strtolower($metodePembayaranData->kode)])
+                                                ) {
+                                                    $color = $colorMap[strtolower($metodePembayaranData->kode)];
+                                                }
                                             @endphp
                                             <div
-                                                class="w-12 h-12 bg-gradient-to-br {{ $paymentConfig['color'] }} rounded-xl flex items-center justify-center shadow-sm">
-                                                <i class="ti {{ $paymentConfig['icon'] }} text-white text-lg"></i>
+                                                class="w-12 h-12 bg-gradient-to-br {{ $color }} rounded-xl flex items-center justify-center shadow-sm">
+                                                <i class="ti {{ $icon }} text-white text-lg"></i>
                                             </div>
                                         </div>
 
@@ -418,11 +416,19 @@
                                             <div class="flex items-center space-x-4 text-sm text-gray-600">
                                                 <div class="flex items-center">
                                                     <i class="ti ti-calendar text-blue-500 mr-1"></i>
-                                                    <span>{{ $pembayaran->tanggal->format('d M Y, H:i') }}</span>
+                                                    <span>{{ $pembayaran->tanggal->format('d M Y') }}</span>
                                                 </div>
                                                 <div class="flex items-center">
                                                     <i class="ti ti-credit-card text-purple-500 mr-1"></i>
-                                                    <span class="capitalize">{{ $pembayaran->metode_pembayaran }}</span>
+                                                    <span class="capitalize">
+                                                        @php
+                                                            $metodePembayaranData = \App\Models\MetodePembayaran::where(
+                                                                'kode',
+                                                                $pembayaran->metode_pembayaran,
+                                                            )->first();
+                                                        @endphp
+                                                        {{ $metodePembayaranData ? $metodePembayaranData->nama : $pembayaran->metode_pembayaran }}
+                                                    </span>
                                                 </div>
                                                 <div class="flex items-center">
                                                     <i class="ti ti-clock text-gray-500 mr-1"></i>
@@ -445,16 +451,13 @@
                                             <div class="text-lg font-bold text-gray-900">
                                                 Rp {{ number_format($pembayaran->jumlah_bayar, 0, ',', '.') }}
                                             </div>
-                                            <div class="text-xs text-gray-500">
-                                                {{ $pembayaran->tanggal->format('H:i') }}
-                                            </div>
                                         </div>
 
                                         <!-- Action Buttons -->
                                         <div class="flex items-center space-x-2 ml-4">
                                             @if ($canDelete)
                                                 <button
-                                                    onclick="confirmDeletePayment({{ $pembayaran->id }}, '{{ $pembayaran->no_bukti }}')"
+                                                    onclick="confirmDeletePayment('{{ $pembayaran->encrypted_id }}', '{{ $pembayaran->no_bukti }}')"
                                                     class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors duration-200"
                                                     title="Hapus Pembayaran">
                                                     <i class="ti ti-trash text-sm"></i>
@@ -661,7 +664,6 @@
                                 Hapus Transaksi
                             </button>
                         @endif
-                    </div>
                 </div>
             </div>
         </div>
@@ -738,7 +740,8 @@
                                         Jumlah Pembayaran <span class="text-red-500">*</span>
                                     </label>
                                     <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <div
+                                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <span class="text-gray-500 text-sm font-medium">Rp</span>
                                         </div>
                                         <input type="text" id="paymentAmount" name="jumlah"
@@ -764,7 +767,8 @@
                                 <div class="grid grid-cols-2 gap-3">
                                     @foreach ($metodePembayaran as $metode)
                                         <label class="relative cursor-pointer payment-method-option">
-                                            <input type="radio" name="metode_pembayaran" value="{{ $metode->kode }}"
+                                                <input type="radio" name="metode_pembayaran"
+                                                    value="{{ $metode->kode }}"
                                                 {{ old('metode_pembayaran') == $metode->kode ? 'checked' : '' }}
                                                 class="sr-only payment-method-radio">
                                             <div
@@ -784,6 +788,75 @@
                                     @endforeach
                                 </div>
                             </div>
+
+                                <!-- Row 4: Kas/Bank Selection -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Kas/Bank <span class="text-red-500">*</span>
+                                    </label>
+
+                                    <!-- Message when no payment method selected -->
+                                    <div id="kasBankMessage" class="text-center py-4 text-gray-500">
+                                        <i class="ti ti-arrow-up text-xl mb-2"></i>
+                                        <p class="text-sm">Pilih metode pembayaran terlebih dahulu untuk melihat pilihan
+                                            kas/bank</p>
+                                    </div>
+
+                                    <div class="grid gap-3 hidden" id="kasBankContainer">
+                                        @foreach ($kasBank as $kas)
+                                            <label class="relative cursor-pointer kas-bank-option">
+                                                <input type="radio" name="kas_bank_id" value="{{ $kas->id }}"
+                                                    data-saldo="{{ $kas->saldo_terkini }}"
+                                                    data-jenis="{{ $kas->jenis }}"
+                                                    data-image="{{ $kas->image_url ?? '' }}"
+                                                    class="sr-only kas-bank-radio">
+                                                <div
+                                                    class="p-4 border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 transition-all duration-300 kas-bank-card hidden flex items-center justify-between shadow-sm hover:shadow-md">
+                                                    <div class="flex items-center flex-1">
+                                                        <div
+                                                            class="w-16 h-16 rounded-xl flex items-center justify-center mr-4 overflow-hidden shadow-sm flex-shrink-0">
+                                                            @if ($kas->jenis === 'KAS')
+                                                                <div
+                                                                    class="w-full h-full bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
+                                                                    <i class="ti ti-cash text-green-600 text-xl"></i>
+                                                                </div>
+                                                            @else
+                                                                @if ($kas->image)
+                                                                    <img src="{{ asset('storage/' . $kas->image) }}"
+                                                                        alt="Logo {{ $kas->nama }}"
+                                                                        class="w-full h-full object-contain">
+                                                                @else
+                                                                    <div
+                                                                        class="w-full h-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
+                                                                        <i
+                                                                            class="ti ti-building-bank text-purple-600 text-xl"></i>
+                                                                    </div>
+                                                                @endif
+                                                            @endif
+                                                        </div>
+                                                        <div class="flex-1 flex flex-col justify-center">
+                                                            <div class="text-base font-bold text-gray-900 leading-tight">
+                                                                {{ $kas->nama }}
+                                                            </div>
+                                                            @if ($kas->no_rekening)
+                                                                <div class="text-sm text-gray-500 font-medium">
+                                                                    {{ $kas->no_rekening }}
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                    <div
+                                                        class="text-right ml-4 flex flex-col justify-center flex-shrink-0">
+                                                        <div class="text-sm text-gray-500 font-medium">Saldo</div>
+                                                        <div class="text-base font-bold text-green-600">
+                                                            Rp {{ number_format($kas->saldo_terkini, 0, ',', '.') }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </div>
                         </div>
 
                         <!-- Payment Preview - Compact -->
@@ -803,713 +876,114 @@
                                     <span class="text-blue-700 text-xs">Status:</span>
                                     <div class="font-medium text-green-600" id="previewStatus">
                                         @php
-                                            $sudahDibayar = $pembelian->pembayaranPembelian->sum('jumlah_bayar');
-                                            $totalTransaksi = $pembelian->total;
-                                            $sisaPembayaran = $pembelian->sisa_pembayaran;
-
-                                            if ($sudahDibayar == 0) {
-                                                // Pembayaran pertama
-                                                if ($sisaPembayaran == 0) {
-                                                    echo 'P (Pelunasan)';
-                                                } else {
-                                                    echo 'D (DP)';
-                                                }
-                                            } else {
-                                                // Pembayaran selanjutnya
-                                                if ($sisaPembayaran == 0) {
-                                                    echo 'P (Pelunasan)';
-                                                } else {
-                                                    echo 'A (Angsuran)';
-                                                }
-                                            }
+                                                $totalDibayar = $pembelian->pembayaranPembelian->sum('jumlah_bayar');
+                                                $sisaPembayaran = $pembelian->total - $totalDibayar;
                                         @endphp
+                                            @if ($sisaPembayaran <= 0)
+                                                Lunas
+                                            @elseif ($totalDibayar > 0)
+                                                DP
+                                            @else
+                                                Belum Bayar
+                                            @endif
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Action Buttons -->
-                        <div class="flex space-x-3 mt-4">
+                            <!-- Submit Button -->
+                            <div class="mt-6 flex justify-end space-x-3">
                             <button type="button" onclick="closePaymentModal()"
-                                class="flex-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">
+                                    class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200">
                                 Batal
                             </button>
                             <button type="submit" id="submitPaymentBtn"
-                                class="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-colors duration-200 font-medium">
+                                    class="px-6 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-sm hover:shadow-md">
                                 <span id="submitBtnText">Simpan Pembayaran</span>
                             </button>
                         </div>
                     </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <!-- QZ Tray -->
-    <script src="{{ asset('js/qz/qz-tray.js') }}"></script>
-    <script src="{{ asset('js/qz/qz-config.js') }}"></script>
+@endsection
 
-    <script>
-        // Confirm delete function
-        function confirmDelete(id, faktur) {
-            Swal.fire({
-                title: 'Konfirmasi Hapus',
-                text: `Apakah Anda yakin ingin menghapus pembelian "${faktur}"?`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Ya, Hapus!',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Create form and submit
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = `/pembelian/${id}`;
-
-                    const csrfToken = document.createElement('input');
-                    csrfToken.type = 'hidden';
-                    csrfToken.name = '_token';
-                    csrfToken.value = '{{ csrf_token() }}';
-
-                    const methodField = document.createElement('input');
-                    methodField.type = 'hidden';
-                    methodField.name = '_method';
-                    methodField.value = 'DELETE';
-
-                    form.appendChild(csrfToken);
-                    form.appendChild(methodField);
-                    document.body.appendChild(form);
-                    form.submit();
-                }
-            });
-        }
-
-        // Print Invoice with QZ Tray functionality
-        function printInvoiceWithQZTray(event) {
-            const button = event.target.closest('button');
-            const buttonText = document.getElementById('printButtonText');
-
-            // Disable button and show loading
-            button.disabled = true;
-            button.classList.add('opacity-50', 'cursor-not-allowed');
-            buttonText.innerHTML = '<i class="ti ti-loader animate-spin mr-2"></i>Mencetak...';
-
-            // Check if QZ Tray is available
-            if (typeof qz === 'undefined') {
-                console.log('QZ Tray not loaded, loading script...');
-                loadQZTrayAndPrintInvoice();
-                return;
-            }
-
-            // Setup QZ security (unsigned mode)
-            qz.security.setCertificatePromise(function(resolve, reject) {
-                resolve(); // Allow unsigned requests
-            });
-
-            qz.security.setSignaturePromise(function(toSign) {
-                return function(resolve, reject) {
-                    resolve(toSign); // Allow unsigned requests
-                };
-            });
-
-            // Connect and print
-            qz.websocket.connect({
-                retries: 2,
-                delay: 1
-            }).then(function() {
-                console.log('QZ Tray connected for invoice printing');
-
-                // Get default printer from settings or find any printer
-                const defaultPrinter = @json(session('printer_settings.default_printer', ''));
-
-                if (defaultPrinter) {
-                    printInvoice(defaultPrinter);
-                } else {
-                    // Find any available printer
-                    qz.printers.find().then(function(printers) {
-                        if (printers.length > 0) {
-                            printInvoice(printers[0]);
-                        } else {
-                            console.log('No printers found for invoice printing');
-                            showPrintError('Tidak ada printer yang tersedia');
-                        }
-                    });
-                }
-            }).catch(function(err) {
-                console.log('QZ Tray connection failed for invoice printing:', err);
-                showPrintError('Koneksi QZ Tray gagal: ' + err.message);
-            });
-        }
-
-        function printInvoice(printerName) {
-            // Generate invoice content for thermal printer
-            const invoiceData = generateInvoiceData();
-
-            const config = qz.configs.create(printerName);
-
-            qz.print(config, invoiceData).then(function() {
-                console.log(`Invoice printed to ${printerName}`);
-
-                // Update printer info
-                updatePrinterInfo(printerName);
-
-                // Show success notification
-                showNotification('✅ Invoice berhasil dicetak ke ' + printerName, 'success');
-
-                // Reset button
-                resetPrintButton();
-            }).catch(function(err) {
-                console.log('Invoice printing failed:', err);
-                showNotification('⚠️ Cetak invoice gagal: ' + err.message, 'warning');
-
-                // Reset button
-                resetPrintButton();
-            });
-        }
-
-        function generateInvoiceData() {
-            const invoiceLines = [];
-
-            // Header
-            invoiceLines.push("\x1B\x40"); // Initialize printer
-            invoiceLines.push("\x1B\x61\x01"); // Center align
-            invoiceLines.push("PUTRA SUBUR\n");
-            invoiceLines.push("Toko Kelontong\n");
-            invoiceLines.push("Jl. Raya No. 123\n");
-            invoiceLines.push("Telp: 021-1234567\n");
-            invoiceLines.push("================================\n");
-
-            // Invoice info
-            invoiceLines.push("\x1B\x61\x00"); // Left align
-            invoiceLines.push("PURCHASE ORDER\n");
-            invoiceLines.push("No. Faktur: {{ $pembelian->no_faktur }}\n");
-            invoiceLines.push("Tanggal: {{ $pembelian->tanggal->format('d/m/Y H:i') }}\n");
-            invoiceLines.push("Supplier: {{ $pembelian->supplier->nama }}\n");
-            invoiceLines.push("Dibuat: {{ $pembelian->user->name }}\n");
-            invoiceLines.push("================================\n");
-
-            // Items
-            @foreach ($pembelian->detailPembelian as $detail)
-                invoiceLines.push("{{ substr($detail->produk->nama_produk, 0, 20) }}\n");
-                invoiceLines.push(
-                    "  {{ number_format($detail->qty, 0) }} {{ $detail->produk->satuan->nama ?? 'pcs' }} x {{ number_format($detail->harga_beli, 0) }} = {{ number_format($detail->subtotal, 0) }}\n"
-                );
-                @if ($detail->discount > 0)
-                    invoiceLines.push("  Diskon: -{{ number_format($detail->discount, 0) }}\n");
-                @endif
-            @endforeach
-
-            invoiceLines.push("--------------------------------\n");
-
-            // Totals
-            @php
-                $subtotalSebelumDiskon = $pembelian->total + $pembelian->diskon;
-            @endphp
-            invoiceLines.push("Subtotal: Rp {{ number_format($subtotalSebelumDiskon, 0) }}\n");
-
-            @if ($pembelian->diskon > 0)
-                invoiceLines.push("Diskon: -Rp {{ number_format($pembelian->diskon, 0) }}\n");
-            @endif
-
-            invoiceLines.push("TOTAL: Rp {{ number_format($pembelian->total, 0) }}\n");
-
-            // Payment info
-            @php
-                $totalBayar = $pembelian->pembayaranPembelian->sum('jumlah_bayar');
-            @endphp
-            @if ($totalBayar > 0)
-                invoiceLines.push("Bayar: Rp {{ number_format($totalBayar, 0) }}\n");
-
-                @if ($totalBayar >= $pembelian->total)
-                    @php
-                        $lunas = $totalBayar - $pembelian->total;
-                    @endphp
-                    invoiceLines.push("Lunas: Rp {{ number_format($lunas, 0) }}\n");
-                @else
-                    @php
-                        $sisa = $pembelian->total - $totalBayar;
-                    @endphp
-                    invoiceLines.push("Sisa: Rp {{ number_format($sisa, 0) }}\n");
-                @endif
-            @endif
-
-            invoiceLines.push("================================\n");
-            invoiceLines.push("\x1B\x61\x01"); // Center align
-            invoiceLines.push("Terima kasih atas kerjasamanya\n");
-            invoiceLines.push("Barang yang sudah dibeli\n");
-            invoiceLines.push("tidak dapat dikembalikan\n");
-            invoiceLines.push("\n\n\n");
-            invoiceLines.push("\x1D\x56\x42\x00"); // Cut paper
-
-            return invoiceLines;
-        }
-
-        function loadQZTrayAndPrintInvoice() {
-            const script = document.createElement('script');
-            script.src = '{{ asset('js/qz/qz-tray.js') }}';
-            script.onload = function() {
-                // Create a dummy event object for the delayed call
-                const dummyEvent = {
-                    target: document.querySelector('button[onclick="printInvoiceWithQZTray(event)"]')
-                };
-                setTimeout(() => printInvoiceWithQZTray(dummyEvent), 1000);
-            };
-            script.onerror = function() {
-                showPrintError('Gagal memuat QZ Tray library');
-                resetPrintButton();
-            };
-            document.head.appendChild(script);
-        }
-
-        function showPrintError(message) {
-            showNotification('⚠️ ' + message, 'warning');
-        }
-
-        function resetPrintButton() {
-            const button = document.querySelector('button[onclick="printInvoiceWithQZTray(event)"]');
-            const buttonText = document.getElementById('printButtonText');
-
-            if (button && buttonText) {
-                button.disabled = false;
-                button.classList.remove('opacity-50', 'cursor-not-allowed');
-                buttonText.textContent = 'Cetak Invoice (QZ Tray)';
-            }
-        }
-
-        // Update printer info when QZ Tray connects
-        function updatePrinterInfo(printerName) {
-            const printerInfo = document.getElementById('printerInfo');
-            if (printerInfo) {
-                printerInfo.textContent = `Printer: ${printerName}`;
-            }
-        }
-
-        // Print Invoice Raw via Browser
-        function printInvoiceRaw() {
-            // Generate raw invoice content
-            const rawContent = generateRawInvoiceContent();
-
-            // Create new window for printing
-            const printWindow = window.open('', '_blank', 'width=800,height=600');
-
-            // Write raw content with monospace font
-            printWindow.document.write(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Purchase Order {{ $pembelian->no_faktur }}</title>
+@push('styles')
                     <style>
-                        body {
-                            font-family: 'Courier New', monospace;
-                            font-size: 12px;
-                            line-height: 1.2;
-                            margin: 20px;
-                            background: white;
-                            color: black;
-                        }
-                        .invoice-content {
-                            white-space: pre;
-                            font-size: 11px;
-                            line-height: 1.1;
-                        }
                         @media print {
-                            body { margin: 0; }
-                            .no-print { display: none; }
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="invoice-content">${rawContent}</div>
-                    <div class="no-print" style="margin-top: 20px; text-align: center;">
-                        <button onclick="window.print()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                            🖨️ Print Invoice
-                        </button>
-                        <button onclick="window.close()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">
-                            ❌ Close
-                        </button>
-                    </div>
-                </body>
-                </html>
-            `);
+            body * {
+                visibility: hidden;
+            }
 
-            printWindow.document.close();
+            .print-section,
+            .print-section * {
+                visibility: visible;
+            }
 
-            // Focus on the new window
-            printWindow.focus();
+            .print-section {
+                position: absolute;
+                left: 0;
+                top: 0;
+            }
         }
 
-        function generateRawInvoiceContent() {
-            let content = '';
-
-            // Header
-            content += '================================\n';
-            content += '        PUTRA SUBUR\n';
-            content += '       Toko Kelontong\n';
-            content += '      Jl. Raya No. 123\n';
-            content += '      Telp: 021-1234567\n';
-            content += '================================\n\n';
-
-            // Invoice info
-            content += 'PURCHASE ORDER\n';
-            content += 'No. Faktur: {{ $pembelian->no_faktur }}\n';
-            content += 'Tanggal: {{ $pembelian->tanggal->format('d/m/Y H:i') }}\n';
-            content += 'Supplier: {{ $pembelian->supplier->nama }}\n';
-            content += 'Dibuat: {{ $pembelian->user->name }}\n';
-            content += '================================\n\n';
-
-            // Items
-            @foreach ($pembelian->detailPembelian as $detail)
-                content += '{{ substr($detail->produk->nama_produk, 0, 30) }}\n';
-                content +=
-                    '  {{ number_format($detail->qty, 0) }} {{ $detail->produk->satuan->nama ?? 'pcs' }} x {{ number_format($detail->harga_beli, 0) }} = {{ number_format($detail->subtotal, 0) }}\n';
-                @if ($detail->discount > 0)
-                    content += '  Diskon: -{{ number_format($detail->discount, 0) }}\n';
-                @endif
-                content += '\n';
-            @endforeach
-
-            content += '--------------------------------\n';
-
-            // Totals
-            @php
-                $subtotalSebelumDiskon = $pembelian->total + $pembelian->diskon;
-            @endphp
-            content += 'Subtotal: Rp {{ number_format($subtotalSebelumDiskon, 0) }}\n';
-
-            @if ($pembelian->diskon > 0)
-                content += 'Diskon: -Rp {{ number_format($pembelian->diskon, 0) }}\n';
-            @endif
-
-            content += 'TOTAL: Rp {{ number_format($pembelian->total, 0) }}\n\n';
-
-            // Payment info
-            @php
-                $totalBayar = $pembelian->pembayaranPembelian->sum('jumlah_bayar');
-            @endphp
-            @if ($totalBayar > 0)
-                content += 'Bayar: Rp {{ number_format($totalBayar, 0) }}\n';
-
-                @if ($totalBayar >= $pembelian->total)
-                    @php
-                        $lunas = $totalBayar - $pembelian->total;
-                    @endphp
-                    content += 'Lunas: Rp {{ number_format($lunas, 0) }}\n';
-                @else
-                    @php
-                        $sisa = $pembelian->total - $totalBayar;
-                    @endphp
-                    content += 'Sisa: Rp {{ number_format($sisa, 0) }}\n';
-                @endif
-                content += '\n';
-            @endif
-
-            content += '================================\n';
-            content += '   Terima kasih atas kerjasamanya\n';
-            content += '     Barang yang sudah dibeli\n';
-            content += '     tidak dapat dikembalikan\n';
-            content += '================================\n';
-
-            return content;
+        /* Toast animation */
+        .toast {
+            min-width: 250px;
         }
+    </style>
+@endpush
 
-        // Notification function
-        function showNotification(message, type = 'info') {
-            Swal.fire({
-                title: type === 'success' ? 'Berhasil!' : type === 'warning' ? 'Peringatan!' : 'Info',
-                text: message,
-                icon: type,
-                timer: type === 'success' ? 2000 : null,
-                showConfirmButton: type !== 'success'
-            });
-        }
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function showToast(message, type = 'info') {
+            // Remove existing toast
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
 
-        // Payment Modal Functions
-        function openPaymentModal() {
-            const modal = document.getElementById('paymentModal');
-            modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
+            const toast = document.createElement('div');
+            toast.className =
+                `toast fixed top-4 right-4 px-4 py-3 rounded-lg shadow-lg z-50 transition-all duration-300 transform translate-x-full`;
 
-            // Reset form and preview
-            document.getElementById('paymentForm').reset();
-            document.getElementById('paymentAmount').value = {{ $sisaPembayaran }};
-            updatePaymentInfo();
-        }
-
-        function closePaymentModal() {
-            const modal = document.getElementById('paymentModal');
-            modal.classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-
-        function updatePaymentInfo() {
-            const paymentAmount = parseFloat(document.getElementById('paymentAmount').value) || 0;
-            const remainingAmount = {{ $sisaPembayaran }} - paymentAmount;
-            const totalTransaksi = {{ $pembelian->total }};
-            const sudahDibayar = {{ $pembelian->pembayaranPembelian->sum('jumlah_bayar') }};
-
-            // Update preview
-            document.getElementById('previewAmount').textContent = `Rp ${paymentAmount.toLocaleString('id-ID')}`;
-            document.getElementById('previewRemaining').textContent = `Rp ${remainingAmount.toLocaleString('id-ID')}`;
-
-            // Update status berdasarkan logika yang sama dengan backend
-            const statusElement = document.getElementById('previewStatus');
-            let statusText = 'DP';
-            let statusClass = 'font-medium text-blue-600';
-
-            if (sudahDibayar == 0) {
-                // First payment
-                if (paymentAmount >= totalTransaksi) {
-                    statusText = 'Lunas';
-                    statusClass = 'font-medium text-green-600';
+            if (type === 'success') {
+                toast.className += ' bg-green-500 text-white';
+                toast.innerHTML = `<i class="ti ti-check-circle mr-2"></i>${message}`;
+            } else if (type === 'error') {
+                toast.className += ' bg-red-500 text-white';
+                toast.innerHTML = `<i class="ti ti-alert-circle mr-2"></i>${message}`;
+            } else if (type === 'warning') {
+                toast.className += ' bg-orange-500 text-white';
+                toast.innerHTML = `<i class="ti ti-alert-triangle mr-2"></i>${message}`;
                 } else {
-                    statusText = 'DP';
-                    statusClass = 'font-medium text-blue-600';
-                }
-            } else {
-                // Subsequent payments
-                const totalAfterPayment = sudahDibayar + paymentAmount;
-                if (totalAfterPayment >= totalTransaksi) {
-                    statusText = 'Lunas';
-                    statusClass = 'font-medium text-green-600';
-                } else {
-                    statusText = 'Angsuran';
-                    statusClass = 'font-medium text-orange-600';
-                }
+                toast.className += ' bg-blue-500 text-white';
+                toast.innerHTML = `<i class="ti ti-info-circle mr-2"></i>${message}`;
             }
 
-            statusElement.textContent = statusText;
-            statusElement.className = statusClass;
-        }
-
-        function submitPayment(event) {
-            event.preventDefault();
-
-            const form = event.target;
-            const formData = new FormData(form);
-            const submitBtn = document.getElementById('submitPaymentBtn');
-            const submitBtnText = document.getElementById('submitBtnText');
-
-            // Validate form data before submission
-            const jumlahRaw = formData.get('jumlah');
-            const jumlah = parseFormattedNumber(jumlahRaw);
-            const metode_pembayaran = formData.get('metode_pembayaran');
-            const tanggal = formData.get('tanggal');
-
-            // Validate jumlah pembayaran
-            if (!jumlahRaw || jumlahRaw.trim() === '') {
-                showPaymentError('Jumlah pembayaran wajib diisi!');
-                document.getElementById('paymentAmount').focus();
-                return;
-            }
-
-            if (!jumlah || jumlah <= 0) {
-                showPaymentError('Jumlah pembayaran harus lebih dari 0!');
-                document.getElementById('paymentAmount').focus();
-                return;
-            }
-
-            // Validate maksimum pembayaran
-            const maxPayment = {{ $sisaPembayaran }};
-            if (jumlah > maxPayment) {
-                showPaymentError(
-                    `Jumlah pembayaran tidak boleh melebihi sisa pembayaran (Rp ${maxPayment.toLocaleString('id-ID')})!`
-                );
-                document.getElementById('paymentAmount').focus();
-                return;
-            }
-
-            if (!metode_pembayaran) {
-                showPaymentError('Metode pembayaran wajib dipilih!');
-
-                // Add error highlight to all payment method cards
-                const paymentCards = document.querySelectorAll('.payment-method-card');
-                paymentCards.forEach(card => {
-                    card.classList.add('border-red-500', 'bg-red-50', 'animate-pulse');
-                    // Remove error highlight after 3 seconds
-                    setTimeout(() => {
-                        card.classList.remove('border-red-500', 'bg-red-50', 'animate-pulse');
-                    }, 3000);
-                });
-
-                // Focus on the first payment method card
-                const firstPaymentCard = document.querySelector('.payment-method-card');
-                if (firstPaymentCard) {
-                    firstPaymentCard.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center'
-                    });
-                }
-                return;
-            }
-
-            if (!tanggal) {
-                showPaymentError('Tanggal pembayaran wajib diisi!');
-                document.querySelector('input[name="tanggal"]').focus();
-                return;
-            }
-
-            // Disable button and show loading
-            submitBtn.disabled = true;
-            submitBtnText.innerHTML = '<i class="ti ti-loader animate-spin mr-2"></i>Menyimpan...';
-
-            // Update form data with parsed values
-            formData.set('jumlah', jumlah);
-
-            // Log form data for debugging
-            console.log('Submitting payment:', {
-                jumlah: jumlah,
-                metode_pembayaran: metode_pembayaran,
-                tanggal: tanggal,
-                pembelian_id: formData.get('pembelian_id'),
-                keterangan: formData.get('keterangan')
-            });
-
-            // Submit payment
-            fetch('{{ route('pembayaran-pembelian.store') }}', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
-                    },
-                    credentials: 'same-origin'
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(err => {
-                            throw new Error(err.message || 'Terjadi kesalahan pada server');
-                        });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        // Show success message
-                        showPaymentSuccess(data.message);
-
-                        // Close modal
-                        closePaymentModal();
-
-                        // Reload page after short delay to show updated data
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1500);
-                    } else {
-                        throw new Error(data.message || 'Terjadi kesalahan saat menyimpan pembayaran');
-                    }
-                })
-                .catch(error => {
-                    console.error('Payment submission error:', error);
-                    showPaymentError(error.message);
-
-                    // Reset button
-                    submitBtn.disabled = false;
-                    submitBtnText.textContent = 'Simpan Pembayaran';
-                });
-        }
-
-        function showPaymentSuccess(message) {
-            // Create success notification
-            const notification = document.createElement('div');
-            notification.className =
-                'fixed top-4 right-4 z-50 p-4 bg-green-500 text-white rounded-lg shadow-lg transform transition-all duration-300 translate-x-full';
-            notification.innerHTML = `
-                 <div class="flex items-center">
-                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                     </svg>
-                     ${message}
-                 </div>
-             `;
-
-            document.body.appendChild(notification);
+            document.body.appendChild(toast);
 
             // Animate in
             setTimeout(() => {
-                notification.classList.remove('translate-x-full');
+                toast.classList.remove('translate-x-full');
             }, 100);
 
-            // Animate out and remove
+            // Remove after 3 seconds
             setTimeout(() => {
-                notification.classList.add('translate-x-full');
+                toast.classList.add('translate-x-full');
                 setTimeout(() => {
-                    document.body.removeChild(notification);
+                    if (toast.parentNode) {
+                        toast.remove();
+                    }
                 }, 300);
             }, 3000);
         }
 
-        function showPaymentError(message) {
-            // Create error notification
-            const notification = document.createElement('div');
-            notification.className =
-                'fixed top-4 right-4 z-50 p-4 bg-red-500 text-white rounded-lg shadow-lg transform transition-all duration-300 translate-x-full';
-            notification.innerHTML = `
-                 <div class="flex items-center">
-                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                     </svg>
-                     ${message}
-                 </div>
-             `;
-
-            document.body.appendChild(notification);
-
-            // Animate in
-            setTimeout(() => {
-                notification.classList.remove('translate-x-full');
-            }, 100);
-
-            // Animate out and remove
-            setTimeout(() => {
-                notification.classList.add('translate-x-full');
-                setTimeout(() => {
-                    document.body.removeChild(notification);
-                }, 300);
-            }, 5000);
-        }
-
-        // Close modal when clicking outside
-        document.addEventListener('click', function(event) {
-            const modal = document.getElementById('paymentModal');
-            if (event.target === modal) {
-                closePaymentModal();
-            }
-        });
-
-        // Close modal with Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closePaymentModal();
-            }
-        });
-    </script>
-
-    <style>
-        .payment-method-card {
-            transition: all 0.2s ease-in-out;
-        }
-
-        .payment-method-card:hover {
-            transform: translateY(-2px);
-        }
-
-        .payment-method-radio:checked+.payment-method-card {
-            border-color: #3b82f6;
-            background-color: #eff6ff;
-            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
-        }
-
-        .payment-method-radio:checked+.payment-method-card .text-blue-600 {
-            color: #2563eb;
-        }
-    </style>
-
-    <script>
         // Payment Modal Functions
         function openPaymentModal() {
             const modal = document.getElementById('paymentModal');
@@ -1518,14 +992,41 @@
 
             // Reset form and preview
             document.getElementById('paymentForm').reset();
-            document.getElementById('paymentAmount').value = {{ $sisaPembayaran }};
+            document.getElementById('paymentAmount').value =
+                {{ $pembelian->total - $pembelian->pembayaranPembelian->sum('jumlah_bayar') }};
             updatePaymentInfo();
         }
+
+
 
         function closePaymentModal() {
             const modal = document.getElementById('paymentModal');
             modal.classList.add('hidden');
             document.body.style.overflow = 'auto';
+            resetValidationStyles();
+        }
+
+        function resetValidationStyles() {
+            // Reset payment method validation
+            const paymentMethodCards = document.querySelectorAll('.payment-method-card');
+            paymentMethodCards.forEach(card => {
+                card.style.border = '';
+                card.style.backgroundColor = '';
+            });
+
+            // Reset kas/bank validation
+            const kasBankCards = document.querySelectorAll('.kas-bank-card');
+            kasBankCards.forEach(card => {
+                card.style.border = '';
+                card.style.backgroundColor = '';
+            });
+
+            // Reset payment amount validation
+            const paymentAmountInput = document.getElementById('paymentAmount');
+            if (paymentAmountInput) {
+                paymentAmountInput.style.border = '';
+                paymentAmountInput.style.backgroundColor = '';
+            }
         }
 
         // Format number input with thousand separator
@@ -1564,8 +1065,8 @@
 
         function updatePaymentInfo() {
             const paymentAmount = parseFormattedNumber(document.getElementById('paymentAmount').value) || 0;
-            const remainingAmount = {{ $sisaPembayaran }} - paymentAmount;
-            const totalTransaksi = {{ $pembelian->total }};
+            const sisaPembayaran = {{ $pembelian->total - $pembelian->pembayaranPembelian->sum('jumlah_bayar') }};
+            const remainingAmount = sisaPembayaran - paymentAmount;
             const sudahDibayar = {{ $pembelian->pembayaranPembelian->sum('jumlah_bayar') }};
 
             // Update preview
@@ -1577,7 +1078,7 @@
 
             if (sudahDibayar == 0) {
                 // Pembayaran pertama
-                if (paymentAmount >= totalTransaksi) {
+                if (paymentAmount >= sisaPembayaran) {
                     statusElement.textContent = 'P (Pelunasan)';
                     statusElement.className = 'font-medium text-green-600';
                 } else {
@@ -1586,8 +1087,7 @@
                 }
             } else {
                 // Pembayaran selanjutnya
-                const totalAfterPayment = sudahDibayar + paymentAmount;
-                if (totalAfterPayment >= totalTransaksi) {
+                if (paymentAmount >= sisaPembayaran) {
                     statusElement.textContent = 'P (Pelunasan)';
                     statusElement.className = 'font-medium text-green-600';
                 } else {
@@ -1597,44 +1097,104 @@
             }
         }
 
-        // Initialize payment method selection
-        function initializePaymentMethod() {
-            const paymentMethodRadios = document.querySelectorAll('.payment-method-radio');
+        // Form submission
+        function submitPayment(event) {
+            event.preventDefault();
 
-            paymentMethodRadios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    // Remove selected class from all cards
-                    document.querySelectorAll('.payment-method-card').forEach(card => {
-                        card.classList.remove('selected');
-                    });
+            const form = event.target;
+            const formData = new FormData(form);
 
-                    // Add selected class to checked card
-                    if (this.checked) {
-                        this.closest('.payment-method-option').querySelector('.payment-method-card')
-                            .classList.add('selected');
-                    }
+            // Reset validation styles
+            resetValidationStyles();
+
+            // Validation
+            const paymentAmount = parseFormattedNumber(formData.get('jumlah'));
+            const metodePembayaran = formData.get('metode_pembayaran');
+            const kasBankId = formData.get('kas_bank_id');
+            let isValid = true;
+
+            // Validate payment method first
+            if (!metodePembayaran) {
+                const paymentMethodCards = document.querySelectorAll('.payment-method-card');
+                paymentMethodCards.forEach(card => {
+                    card.style.border = '2px solid #ef4444';
+                    card.style.backgroundColor = '#fef2f2';
                 });
-            });
-        }
-
-        // Initialize when DOM is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            // Setup number input formatting
-            const paymentAmountInput = document.getElementById('paymentAmount');
-            if (paymentAmountInput) {
-                setupNumberInput(paymentAmountInput);
-                paymentAmountInput.addEventListener('input', updatePaymentInfo);
+                showToast('Pilih metode pembayaran terlebih dahulu!', 'error');
+                isValid = false;
             }
 
-            // Initialize payment method selection
-            initializePaymentMethod();
-        });
+            // Only validate kas/bank if payment method is selected
+            if (metodePembayaran && !kasBankId) {
+                const kasBankCards = document.querySelectorAll('.kas-bank-card');
+                kasBankCards.forEach(card => {
+                    card.style.border = '2px solid #ef4444';
+                    card.style.backgroundColor = '#fef2f2';
+                });
+                showToast('Pilih kas/bank terlebih dahulu!', 'error');
+                isValid = false;
+            }
 
-        // Delete Payment Functions
-        function confirmDeletePayment(paymentId, noBukti) {
+            // Only validate payment amount if payment method and kas/bank are selected
+            if (metodePembayaran && kasBankId && paymentAmount <= 0) {
+            const paymentAmountInput = document.getElementById('paymentAmount');
+            if (paymentAmountInput) {
+                    paymentAmountInput.style.border = '2px solid #ef4444';
+                    paymentAmountInput.style.backgroundColor = '#fef2f2';
+                }
+                showToast('Jumlah pembayaran harus lebih dari 0!', 'error');
+                isValid = false;
+            }
+
+            if (!isValid) {
+                return;
+            }
+
+            // Disable button and show loading
+            const submitBtn = document.getElementById('submitPaymentBtn');
+            const submitBtnText = document.getElementById('submitBtnText');
+            submitBtn.disabled = true;
+            submitBtnText.innerHTML = '<i class="ti ti-loader animate-spin mr-2"></i>Menyimpan...';
+
+            // Debug: Log form data
+            console.log('Form Data being sent:');
+            for (let [key, value] of formData.entries()) {
+                console.log(key + ': ' + value);
+            }
+
+            // Submit form
+            fetch('{{ route('pembayaran-pembelian.store') }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000);
+                    } else {
+                        throw new Error(data.message || 'Terjadi kesalahan');
+                    }
+                })
+                .catch(error => {
+                    showToast(error.message || 'Terjadi kesalahan saat menyimpan pembayaran', 'error');
+                    // Reset button
+                    submitBtn.disabled = false;
+                    submitBtnText.textContent = 'Simpan Pembayaran';
+                });
+        }
+
+        // Delete payment confirmation
+        function confirmDeletePayment(paymentId, paymentNumber) {
             Swal.fire({
                 title: 'Hapus Pembayaran?',
-                text: `Apakah Anda yakin ingin menghapus pembayaran "${noBukti}"?`,
+                text: `Apakah Anda yakin ingin menghapus pembayaran "${paymentNumber}"?`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
@@ -1663,7 +1223,7 @@
                 }
             });
 
-            fetch(`/pembayaran-pembelian/${paymentId}`, {
+            fetch(`{{ route('pembayaran-pembelian.destroy', '') }}/${paymentId}`, {
                     method: 'POST',
                     body: formData,
                     headers: {
@@ -1672,9 +1232,16 @@
                     },
                     credentials: 'same-origin'
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (response.redirected) {
+                        // If redirected, follow the redirect
+                        window.location.href = response.url;
+                    } else {
+                        return response.json();
+                    }
+                })
                 .then(data => {
-                    if (data.success) {
+                    if (data && data.success) {
                         Swal.fire({
                             title: 'Berhasil!',
                             text: 'Pembayaran berhasil dihapus',
@@ -1685,7 +1252,7 @@
                             // Reload page to show updated data
                             window.location.reload();
                         });
-                    } else {
+                    } else if (data) {
                         throw new Error(data.message || 'Terjadi kesalahan saat menghapus pembayaran');
                     }
                 })
@@ -1699,5 +1266,270 @@
                     });
                 });
         }
+
+        // Delete transaction confirmation
+        function confirmDelete(purchaseId, invoiceNumber) {
+            Swal.fire({
+                title: 'Konfirmasi Hapus',
+                text: `Apakah Anda yakin ingin menghapus transaksi "${invoiceNumber}"?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `{{ route('pembelian.destroy', '') }}/${purchaseId}`;
+
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
+
+                    const methodField = document.createElement('input');
+                    methodField.type = 'hidden';
+                    methodField.name = '_method';
+                    methodField.value = 'DELETE';
+
+                    form.appendChild(csrfToken);
+                    form.appendChild(methodField);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
+        // Print functions
+        function printInvoiceWithQZTray(event) {
+            event.preventDefault();
+            // Implementation for QZ Tray printing
+            console.log('QZ Tray printing not implemented yet');
+        }
+
+        function printInvoiceRaw() {
+            window.print();
+        }
+
+        // Payment Method Option Buttons Styling
+        document.addEventListener('DOMContentLoaded', function() {
+            const paymentRadios = document.querySelectorAll('.payment-method-radio');
+            const paymentCards = document.querySelectorAll('.payment-method-card');
+
+            // Function to update payment method card styling
+            function updatePaymentMethodCards() {
+                paymentCards.forEach((card, index) => {
+                    const radio = paymentRadios[index];
+                    if (radio.checked) {
+                        card.classList.remove('border-gray-200', 'bg-white', 'border-red-500', 'bg-red-50',
+                            'animate-pulse');
+                        card.classList.add('border-blue-500', 'bg-blue-50');
+                    } else {
+                        card.classList.remove('border-blue-500', 'bg-blue-50', 'border-red-500',
+                            'bg-red-50', 'animate-pulse');
+                        card.classList.add('border-gray-200', 'bg-white');
+                    }
+                });
+            }
+
+            // Add event listeners to radio buttons
+            paymentRadios.forEach((radio, index) => {
+                radio.addEventListener('change', function() {
+                    updatePaymentMethodCards();
+                });
+
+                // Add click event to card for better UX
+                const card = paymentCards[index];
+                card.addEventListener('click', function() {
+                    radio.checked = true;
+                    updatePaymentMethodCards();
+                });
+            });
+
+            // Initialize card states
+            updatePaymentMethodCards();
+
+            // Setup number input formatting
+            const paymentAmountInput = document.getElementById('paymentAmount');
+            if (paymentAmountInput) {
+                setupNumberInput(paymentAmountInput);
+
+                // Add event listener for real-time preview update
+                paymentAmountInput.addEventListener('input', function() {
+                    updatePaymentInfo();
+                    // Clear validation error when user types
+                    this.style.border = '';
+                    this.style.backgroundColor = '';
+                });
+
+                // Initialize preview on page load
+                updatePaymentInfo();
+            }
+
+            // Kas/Bank filtering functionality
+            const kasBankRadios = document.querySelectorAll('.kas-bank-radio');
+            const kasBankCards = document.querySelectorAll('.kas-bank-card');
+            const kasBankContainer = document.getElementById('kasBankContainer');
+            const kasBankMessage = document.getElementById('kasBankMessage');
+
+            // Function to update kas/bank card styling
+            function updateKasBankCards() {
+                kasBankCards.forEach((card, index) => {
+                    const radio = kasBankRadios[index];
+                    if (radio.checked) {
+                        card.classList.remove('border-gray-200', 'bg-white', 'border-red-500', 'bg-red-50',
+                            'animate-pulse');
+                        card.classList.add('border-blue-500', 'bg-blue-50');
+                    } else {
+                        card.classList.remove('border-blue-500', 'bg-blue-50', 'border-red-500',
+                            'bg-red-50', 'animate-pulse');
+                        card.classList.add('border-gray-200', 'bg-white');
+                    }
+                });
+            }
+
+            // Function to filter kas/bank based on payment method
+            function filterKasBankByPaymentMethod() {
+                const selectedPaymentMethod = document.querySelector('.payment-method-radio:checked');
+
+                if (!selectedPaymentMethod) {
+                    // If no payment method selected, hide all kas/bank and show message
+                    kasBankCards.forEach((card, index) => {
+                        card.classList.add('hidden');
+                    });
+                    kasBankMessage.classList.remove('hidden');
+                    return;
+                }
+
+                // Hide message when payment method is selected
+                kasBankMessage.classList.add('hidden');
+
+                const paymentMethodCode = selectedPaymentMethod.value;
+                const isTransfer = paymentMethodCode.toLowerCase().includes('transfer') ||
+                    paymentMethodCode.toLowerCase().includes('bank') ||
+                    paymentMethodCode.toLowerCase().includes('bca') ||
+                    paymentMethodCode.toLowerCase().includes('mandiri') ||
+                    paymentMethodCode.toLowerCase().includes('bni') ||
+                    paymentMethodCode.toLowerCase().includes('bri');
+                const isCash = paymentMethodCode.toLowerCase().includes('cash') ||
+                    paymentMethodCode.toLowerCase().includes('tunai') ||
+                    paymentMethodCode.toLowerCase().includes('kas');
+
+                let visibleCount = 0;
+
+                kasBankCards.forEach((card, index) => {
+                    const radio = kasBankRadios[index];
+                    const kasBankJenis = radio.getAttribute('data-jenis');
+
+                    if (isTransfer && kasBankJenis === 'BANK') {
+                        // Show only BANK for transfer methods
+                        card.classList.remove('hidden');
+                        visibleCount++;
+                    } else if (isCash && kasBankJenis === 'KAS') {
+                        // Show only KAS for cash methods
+                        card.classList.remove('hidden');
+                        visibleCount++;
+                    } else if (!isTransfer && !isCash) {
+                        // If payment method is not clearly transfer or cash, show all
+                        card.classList.remove('hidden');
+                        visibleCount++;
+                    } else {
+                        // Hide the card
+                        card.classList.add('hidden');
+                    }
+                });
+
+                // Update grid columns based on visible count
+                if (visibleCount === 1) {
+                    kasBankContainer.className = 'grid gap-3 grid-cols-1';
+                } else if (visibleCount === 2) {
+                    kasBankContainer.className = 'grid gap-3 grid-cols-2';
+                } else if (visibleCount === 3) {
+                    kasBankContainer.className = 'grid gap-3 grid-cols-3';
+                } else if (visibleCount >= 4) {
+                    kasBankContainer.className = 'grid gap-3 grid-cols-4';
+                }
+
+                // Uncheck any hidden kas/bank selections
+                kasBankRadios.forEach((radio, index) => {
+                    const card = kasBankCards[index];
+                    if (card.classList.contains('hidden') && radio.checked) {
+                        radio.checked = false;
+                        updateKasBankCards();
+                    }
+                });
+            }
+
+            // Add event listeners to payment method radio buttons
+            paymentRadios.forEach((radio, index) => {
+                radio.addEventListener('change', function() {
+                    updatePaymentMethodCards();
+                    filterKasBankByPaymentMethod();
+                    // Clear validation error when payment method is selected
+                    const paymentMethodCards = document.querySelectorAll('.payment-method-card');
+                    paymentMethodCards.forEach(card => {
+                        card.style.border = '';
+                        card.style.backgroundColor = '';
+                    });
+                    // Show info toast
+                    showToast(`Metode pembayaran "${this.value}" telah dipilih`, 'info');
+                });
+
+                // Add click event to card for better UX
+                const card = paymentCards[index];
+                card.addEventListener('click', function() {
+                    radio.checked = true;
+                    updatePaymentMethodCards();
+                    filterKasBankByPaymentMethod();
+                    // Clear validation error when payment method is selected
+                    const paymentMethodCards = document.querySelectorAll('.payment-method-card');
+                    paymentMethodCards.forEach(card => {
+                        card.style.border = '';
+                        card.style.backgroundColor = '';
+                    });
+                    // Show info toast
+                    showToast(`Metode pembayaran "${radio.value}" telah dipilih`, 'info');
+                });
+            });
+
+            // Add event listeners to kas/bank radio buttons
+            kasBankRadios.forEach((radio, index) => {
+                radio.addEventListener('change', function() {
+                    updateKasBankCards();
+                    // Clear validation error when kas/bank is selected
+                    const kasBankCards = document.querySelectorAll('.kas-bank-card');
+                    kasBankCards.forEach(card => {
+                        card.style.border = '';
+                        card.style.backgroundColor = '';
+                    });
+                    // Show info toast
+                    const kasBankName = this.closest('.kas-bank-option').querySelector('.text-base')
+                        .textContent.trim();
+                    showToast(`Kas/Bank "${kasBankName}" telah dipilih`, 'info');
+                });
+
+                // Add click event to card for better UX
+                const card = kasBankCards[index];
+                card.addEventListener('click', function() {
+                    radio.checked = true;
+                    updateKasBankCards();
+                    // Clear validation error when kas/bank is selected
+                    const kasBankCards = document.querySelectorAll('.kas-bank-card');
+                    kasBankCards.forEach(card => {
+                        card.style.border = '';
+                        card.style.backgroundColor = '';
+                    });
+                    // Show info toast
+                    const kasBankName = this.closest('.kas-bank-option').querySelector('.text-base')
+                        .textContent.trim();
+                    showToast(`Kas/Bank "${kasBankName}" telah dipilih`, 'info');
+                });
+            });
+
+            // Initialize kas/bank filter
+            filterKasBankByPaymentMethod();
+        });
     </script>
-@endsection
+@endpush

@@ -1,16 +1,16 @@
 @extends('layouts.pos')
 
-@section('title', 'Edit Transaksi')
-@section('page-title', 'Edit Transaksi Penjualan')
+@section('title', 'Edit Pembelian')
+@section('page-title', 'Edit Transaksi Pembelian')
 
 @section('content')
     <div class="min-h-screen">
         <!-- Back Button -->
         <div class="px-6 pt-6 pb-2">
-            <a href="{{ route('penjualan.index') }}"
-                class="inline-flex items-center text-gray-600 hover:text-blue-600 transition-colors">
+            <a href="{{ route('pembelian.index') }}"
+                class="inline-flex items-center text-gray-600 hover:text-orange-600 transition-colors">
                 <i class="ti ti-arrow-left text-lg mr-2"></i>
-                Kembali ke Daftar Penjualan
+                Kembali ke Daftar Pembelian
             </a>
         </div>
 
@@ -49,7 +49,7 @@
                                     <i class="ti ti-search text-lg text-gray-400"></i>
                                 </div>
                                 <input type="text" id="productSearch" placeholder="Cari nama atau SKU produk..."
-                                    class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                    class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
                             </div>
                             <div class="relative flex-1">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -72,7 +72,7 @@
                     <div class="p-4 border-b border-gray-200">
                         <div class="flex space-x-2 overflow-x-auto">
                             <button
-                                class="category-filter active px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium whitespace-nowrap transition-colors"
+                                class="category-filter active px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium whitespace-nowrap transition-colors"
                                 data-category="all">
                                 Semua
                             </button>
@@ -96,34 +96,32 @@
                         @foreach ($produk->take(10) as $product)
                             <div class="product-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 cursor-pointer group"
                                 data-id="{{ $product->id }}" data-name="{{ $product->nama_produk }}"
-                                data-code="{{ $product->kode_produk }}" data-price="{{ $product->harga_jual }}"
-                                data-stock="{{ $product->stok }}" data-unit="{{ $product->satuan->nama ?? '' }}"
-                                data-category="{{ $product->kategori->nama ?? '' }}">
+                                data-code="{{ $product->kode_produk }}" data-price="{{ $product->harga_beli }}"
+                                data-unit="{{ $product->satuan->nama ?? '' }}"
+                                data-category="{{ $product->kategori->nama ?? '' }}" data-stock="{{ $product->stok }}">
 
                                 <!-- Product Image Placeholder -->
                                 <div
-                                    class="w-full h-24 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg mb-3 flex items-center justify-center group-hover:from-blue-200 group-hover:to-blue-300 transition-all duration-200">
+                                    class="w-full h-24 bg-gradient-to-br from-orange-100 to-orange-200 rounded-lg mb-3 flex items-center justify-center group-hover:from-orange-200 group-hover:to-orange-300 transition-all duration-200">
                                     @if ($product->foto)
                                         <img src="{{ asset('storage/' . $product->foto) }}"
                                             alt="{{ $product->nama_produk }}"
                                             class="w-full h-full object-cover rounded-lg">
                                     @else
-                                        <i class="ti ti-package text-2xl text-blue-600"></i>
+                                        <i class="ti ti-package text-2xl text-orange-600"></i>
                                     @endif
                                 </div>
 
                                 <!-- Product Info -->
                                 <div class="text-center">
-                                    <h3 class="font-semibold text-sm text-gray-900 mb-1 line-clamp-2">
+                                    <h3 class="font-semibold text-sm text-gray-900 mb-2 line-clamp-2">
                                         {{ $product->nama_produk }}</h3>
                                     <p class="text-xs text-gray-500 mb-2">{{ $product->kode_produk }}</p>
-                                    <p class="text-lg font-bold text-blue-600 mb-2">Rp
-                                        {{ number_format($product->harga_jual, 0, ',', '.') }}</p>
 
                                     <!-- Category Badge -->
                                     <div class="flex items-center justify-center">
                                         <div
-                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border bg-blue-100 text-blue-800 border-blue-200">
+                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border bg-orange-100 text-orange-800 border-orange-200">
                                             <i class="ti ti-tag text-xs mr-1"></i>
                                             <span>{{ $product->kategori->nama ?? 'Uncategorized' }}</span>
                                         </div>
@@ -132,7 +130,7 @@
 
                                 <!-- Add Button -->
                                 <button
-                                    class="add-product-btn w-full mt-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors opacity-0 group-hover:opacity-100">
+                                    class="add-product-btn w-full mt-3 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors opacity-0 group-hover:opacity-100">
                                     <i class="ti ti-plus text-sm mr-1"></i>
                                     Tambah
                                 </button>
@@ -144,17 +142,17 @@
 
             <!-- Right Side - Order Summary -->
             <div class="w-96">
-                <form action="{{ route('penjualan.update', $penjualan->encrypted_id) }}" method="POST" id="salesForm">
+                <form action="{{ route('pembelian.update', $pembelian->encrypted_id) }}" method="POST" id="purchaseForm">
                     @method('PUT')
                     @csrf
 
-                    <!-- Customer & Invoice Info -->
+                    <!-- Supplier & Invoice Info -->
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
                         <h3 class="text-lg font-semibold text-gray-900 mb-4">Informasi Transaksi</h3>
 
                         <!-- Invoice Number -->
                         <div class="mb-2">
-                            <input type="text" name="no_faktur" value="{{ old('no_faktur', $penjualan->no_faktur) }}"
+                            <input type="text" name="no_faktur" value="{{ old('no_faktur', $pembelian->no_faktur) }}"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
                                 placeholder="Nomor Faktur" readonly>
                         </div>
@@ -163,33 +161,33 @@
                         <div class="mb-2">
                             <div class="date-input-wrapper">
                                 <input type="text" id="tanggal"
-                                    value="{{ old('tanggal', $penjualan->tanggal->format('d/m/Y')) }}"
+                                    value="{{ old('tanggal', $pembelian->tanggal->format('d/m/Y')) }}"
                                     class="flatpickr-input w-full" placeholder="Pilih tanggal" required readonly>
                                 <i class="ti ti-calendar"></i>
                             </div>
                             <input type="hidden" name="tanggal"
-                                value="{{ old('tanggal', $penjualan->tanggal->format('Y-m-d')) }}">
+                                value="{{ old('tanggal', $pembelian->tanggal->format('Y-m-d')) }}">
                         </div>
 
-                        <!-- Customer -->
+                        <!-- Supplier -->
                         <div class="mb-2">
                             <div class="flex space-x-2">
                                 <div class="relative flex-1">
-                                    <input type="text" id="customerDisplay"
+                                    <input type="text" id="supplierDisplay"
                                         class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
-                                        placeholder="Pilih Pelanggan" readonly>
-                                    <button type="button" id="clearCustomerBtn"
+                                        placeholder="Pilih Supplier" readonly>
+                                    <button type="button" id="clearSupplierBtn"
                                         class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors hidden">
                                         <i class="ti ti-x text-lg"></i>
                                     </button>
                                 </div>
-                                <button type="button" id="searchCustomerBtn"
-                                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                <button type="button" id="searchSupplierBtn"
+                                    class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
                                     <i class="ti ti-search text-lg"></i>
                                 </button>
                             </div>
-                            <input type="hidden" name="pelanggan_id" id="pelangganId"
-                                value="{{ old('pelanggan_id') }}" required>
+                            <input type="hidden" name="supplier_id" id="supplierId"
+                                value="{{ old('supplier_id', $pembelian->supplier_id) }}" required>
                         </div>
 
                         <!-- Payment Configuration Info -->
@@ -206,21 +204,21 @@
 
                         <!-- Hidden inputs for modal data -->
                         <input type="hidden" name="modal_jenis_transaksi" id="modalJenisTransaksi"
-                            value="{{ old('jenis_transaksi', $penjualan->jenis_transaksi) }}">
+                            value="{{ old('jenis_transaksi', $pembelian->jenis_transaksi) }}">
                         <input type="hidden" name="modal_metode_pembayaran" id="modalMetodePembayaran"
                             value="{{ old('metode_pembayaran') }}">
                         <input type="hidden" name="modal_kas_bank_id" id="modalKasBankId"
                             value="{{ old('kas_bank_id') }}">
                         <input type="hidden" name="modal_dp_amount" id="modalDpAmount"
-                            value="{{ old('dp_amount', $penjualan->dp_amount ?? 0) }}">
+                            value="{{ old('dp_amount', $pembelian->dp_amount ?? 0) }}">
 
                         <!-- Hidden inputs for controller -->
                         <input type="hidden" name="jenis_transaksi" id="jenisTransaksi"
-                            value="{{ old('jenis_transaksi', $penjualan->jenis_transaksi) }}">
+                            value="{{ old('jenis_transaksi', $pembelian->jenis_transaksi) }}">
                         <input type="hidden" name="metode_pembayaran" id="metodePembayaran"
                             value="{{ old('metode_pembayaran') }}">
                         <input type="hidden" name="dp_amount" id="dpAmount"
-                            value="{{ old('dp_amount', $penjualan->dp_amount ?? 0) }}">
+                            value="{{ old('dp_amount', $pembelian->dp_amount ?? 0) }}">
                         <input type="hidden" name="kas_bank_id" id="kasBankId" value="{{ old('kas_bank_id') }}">
 
                         <!-- Hidden inputs for order items -->
@@ -250,11 +248,11 @@
                         <!-- Discount -->
                         <div class="border-t border-gray-200 pt-4">
                             <input type="text" id="diskonDisplay"
-                                value="{{ old('diskon', number_format($penjualan->diskon ?? 0, 0, ',', '.')) }}"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-right"
+                                value="{{ old('diskon', number_format($pembelian->diskon ?? 0, 0, ',', '.')) }}"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-right"
                                 placeholder="Diskon (Rp)">
                             <input type="hidden" name="diskon" id="diskon"
-                                value="{{ old('diskon', $penjualan->diskon ?? 0) }}">
+                                value="{{ old('diskon', $pembelian->diskon ?? 0) }}">
                         </div>
                     </div>
 
@@ -280,12 +278,11 @@
 
                         <!-- Action Buttons -->
                         <div class="space-y-2">
-                            <button type="submit"
-                                class="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
-                                <i class="ti ti-device-floppy text-lg mr-2"></i>
-                                Update Transaksi
+                            <button type="button" id="showOrderPreview"
+                                class="w-full py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors">
+                                <i class="ti ti-eye text-lg mr-2"></i>
+                                Preview Pesanan
                             </button>
-
                         </div>
                     </div>
                 </form>
@@ -309,18 +306,17 @@
                 <div id="modalProductInfo" class="mb-4 p-3 bg-gray-50 rounded-lg">
                     <div class="flex items-center space-x-3">
                         <div
-                            class="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
-                            <i class="ti ti-package text-xl text-blue-600"></i>
+                            class="w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-lg flex items-center justify-center">
+                            <i class="ti ti-package text-xl text-orange-600"></i>
                         </div>
                         <div class="flex-1">
                             <h4 id="modalProductName" class="font-semibold text-gray-900"></h4>
                             <p id="modalProductCode" class="text-sm text-gray-500"></p>
-                            <p id="modalProductPrice" class="text-sm font-medium text-blue-600"></p>
                         </div>
                     </div>
                     <div class="mt-2 text-sm text-gray-600">
                         <span>Satuan: </span>
-                        <span id="modalProductUnit" class="font-medium text-blue-600"></span>
+                        <span id="modalProductUnit" class="font-medium text-orange-600"></span>
                     </div>
                 </div>
 
@@ -344,7 +340,7 @@
                             </div>
                         </div>
                         <button type="button" id="increaseQty"
-                            class="w-12 h-12 bg-blue-600 hover:bg-blue-700 rounded-xl text-white flex items-center justify-center font-bold text-xl transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg">
+                            class="w-12 h-12 bg-orange-600 hover:bg-orange-700 rounded-xl text-white flex items-center justify-center font-bold text-xl transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg">
                             <i class="ti ti-plus"></i>
                         </button>
                     </div>
@@ -354,7 +350,7 @@
                 <!-- Price Input -->
                 <div class="mb-4">
                     <label for="modalPriceInput" class="block text-sm font-medium text-gray-700 mb-2">
-                        Harga Satuan
+                        Harga Beli Satuan
                     </label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -364,8 +360,7 @@
                             class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-right text-lg font-semibold"
                             placeholder="0">
                     </div>
-                    <p class="text-xs text-gray-500 mt-1">Harga default: <span id="modalDefaultPrice"
-                            class="font-medium text-blue-600"></span></p>
+
                 </div>
 
                 <!-- Discount Input -->
@@ -385,7 +380,7 @@
                 </div>
 
                 <!-- Total Price Preview -->
-                <div class="mb-6 p-3 bg-blue-50 rounded-lg">
+                <div class="mb-6 p-3 bg-orange-50 rounded-lg">
                     <div class="space-y-2">
                         <div class="flex justify-between items-center text-sm">
                             <span class="text-gray-600">Subtotal:</span>
@@ -396,9 +391,9 @@
                             <span class="text-orange-600">Potongan:</span>
                             <span id="modalDiscountPrice" class="font-medium text-orange-600">Rp 0</span>
                         </div>
-                        <div class="flex justify-between items-center border-t border-blue-200 pt-2">
+                        <div class="flex justify-between items-center border-t border-orange-200 pt-2">
                             <span class="text-sm font-medium text-gray-700">Total Harga:</span>
-                            <span id="modalTotalPrice" class="text-lg font-bold text-blue-600">Rp 0</span>
+                            <span id="modalTotalPrice" class="text-lg font-bold text-orange-600">Rp 0</span>
                         </div>
                     </div>
                 </div>
@@ -410,7 +405,7 @@
                         Batal
                     </button>
                     <button type="button" id="confirmQuantity"
-                        class="flex-1 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors whitespace-nowrap">
+                        class="flex-1 py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors whitespace-nowrap">
                         <i class="ti ti-plus text-sm mr-1"></i>
                         Tambah ke Keranjang
                     </button>
@@ -419,58 +414,57 @@
         </div>
     </div>
 
-    <!-- Customer Selection Modal -->
-    <div id="customerModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <!-- Supplier Selection Modal -->
+    <div id="supplierModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
         <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-xl bg-white">
             <div class="mt-3">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Pilih Pelanggan</h3>
-                    <button type="button" id="closeCustomerModal" class="text-gray-400 hover:text-gray-600">
+                    <h3 class="text-lg font-semibold text-gray-900">Pilih Supplier</h3>
+                    <button type="button" id="closeSupplierModal" class="text-gray-400 hover:text-gray-600">
                         <i class="ti ti-x text-xl"></i>
                     </button>
                 </div>
 
-                <!-- Search Customer -->
+                <!-- Search Supplier -->
                 <div class="mb-4">
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="ti ti-search text-lg text-gray-400"></i>
                         </div>
-                        <input type="text" id="customerSearch" placeholder="Cari nama atau kode pelanggan..."
-                            class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="supplierSearch" placeholder="Cari nama atau kode supplier..."
+                            class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
                     </div>
                 </div>
 
-                <!-- Customer List -->
-                <div id="customerList" class="max-h-96 overflow-y-auto space-y-2">
-                    @foreach ($pelanggan as $customer)
-                        <div class="customer-item p-4 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-all duration-200"
-                            data-id="{{ $customer->id }}" data-name="{{ $customer->nama }}"
-                            data-code="{{ $customer->kode_pelanggan }}"
-                            data-phone="{{ $customer->nomor_telepon ?? '' }}"
-                            data-address="{{ $customer->alamat ?? '' }}">
+                <!-- Supplier List -->
+                <div id="supplierList" class="max-h-96 overflow-y-auto space-y-2">
+                    @foreach ($suppliers as $supplier)
+                        <div class="supplier-item p-4 border border-gray-200 rounded-lg hover:bg-orange-50 hover:border-orange-300 cursor-pointer transition-all duration-200"
+                            data-id="{{ $supplier->id }}" data-name="{{ $supplier->nama }}"
+                            data-code="{{ $supplier->kode_supplier }}" data-phone="{{ $supplier->nomor_telepon ?? '' }}"
+                            data-address="{{ $supplier->alamat ?? '' }}">
                             <div class="flex items-center justify-between">
                                 <div class="flex-1">
                                     <div class="flex items-center space-x-3">
                                         <div
-                                            class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-                                            <i class="ti ti-user text-white"></i>
+                                            class="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center">
+                                            <i class="ti ti-building text-white"></i>
                                         </div>
                                         <div>
-                                            <h4 class="font-semibold text-gray-900">{{ $customer->nama }}</h4>
-                                            <p class="text-sm text-gray-500">{{ $customer->kode_pelanggan }}</p>
-                                            @if ($customer->nomor_telepon)
-                                                <p class="text-xs text-gray-400">{{ $customer->nomor_telepon }}</p>
+                                            <h4 class="font-semibold text-gray-900">{{ $supplier->nama }}</h4>
+                                            <p class="text-sm text-gray-500">{{ $supplier->kode_supplier }}</p>
+                                            @if ($supplier->nomor_telepon)
+                                                <p class="text-xs text-gray-400">{{ $supplier->nomor_telepon }}</p>
                                             @endif
                                         </div>
                                     </div>
-                                    @if ($customer->alamat)
+                                    @if ($supplier->alamat)
                                         <p class="text-xs text-gray-500 mt-2 ml-13">
-                                            {{ Str::limit($customer->alamat, 50) }}</p>
+                                            {{ Str::limit($supplier->alamat, 50) }}</p>
                                     @endif
                                 </div>
                                 <div class="text-right">
-                                    @if ($customer->status)
+                                    @if ($supplier->status)
                                         <span
                                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                             <i class="ti ti-check-circle text-xs mr-1"></i>
@@ -489,12 +483,12 @@
                     @endforeach
                 </div>
 
-                <!-- Add New Customer Button -->
+                <!-- Add New Supplier Button -->
                 <div class="mt-4 pt-4 border-t border-gray-200">
-                    <a href="{{ route('pelanggan.create') }}" target="_blank"
+                    <a href="{{ route('supplier.create') }}" target="_blank"
                         class="w-full flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                         <i class="ti ti-plus text-lg mr-2"></i>
-                        Tambah Pelanggan Baru
+                        Tambah Supplier Baru
                     </a>
                 </div>
             </div>
@@ -512,15 +506,15 @@
                     </button>
                 </div>
 
-                <!-- Customer Info -->
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <!-- Supplier Info -->
+                <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
                     <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                            <i class="ti ti-user text-white"></i>
+                        <div class="w-10 h-10 bg-orange-600 rounded-full flex items-center justify-center">
+                            <i class="ti ti-building text-white"></i>
                         </div>
                         <div>
-                            <h4 class="font-semibold text-gray-900" id="previewCustomerName">-</h4>
-                            <p class="text-sm text-gray-600" id="previewCustomerCode">-</p>
+                            <h4 class="font-semibold text-gray-900" id="previewSupplierName">-</h4>
+                            <p class="text-sm text-gray-600" id="previewSupplierCode">-</p>
                         </div>
                     </div>
                 </div>
@@ -621,7 +615,7 @@
                                 </p>
                             </div>
 
-                            <div class="grid gap-3" id="previewKasBankContainer">
+                            <div class="grid gap-3" id="previewKasBankContainer" style="display: none;">
                                 @foreach ($kasBank ?? [] as $kas)
                                     <label class="relative cursor-pointer preview-kas-bank-option">
                                         <input type="radio" name="preview_kas_bank" value="{{ $kas->id }}"
@@ -763,14 +757,14 @@
         }
 
         .product-card:hover {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-            border-color: #3b82f6;
+            border-color: #ea580c;
         }
 
         .product-card.selected {
-            border-color: #2563eb;
-            background-color: #eff6ff;
+            border-color: #dc2626;
+            background-color: #fef3c7;
         }
 
         .product-card .add-product-btn {
@@ -1262,7 +1256,7 @@
                 clickOpens: true,
                 todayHighlight: true,
                 maxDate: "today",
-                defaultDate: "{{ old('tanggal', $penjualan->tanggal->format('Y-m-d')) }}",
+                defaultDate: "{{ old('tanggal', $pembelian->tanggal->format('Y-m-d')) }}",
                 animate: "slideDown",
                 disableMobile: false,
                 enableTime: false,
@@ -1277,9 +1271,9 @@
 
                         // Add visual feedback
                         const input = document.getElementById('tanggal');
-                        input.classList.add('ring-2', 'ring-blue-500', 'ring-opacity-50');
+                        input.classList.add('ring-2', 'ring-orange-500', 'ring-opacity-50');
                         setTimeout(() => {
-                            input.classList.remove('ring-2', 'ring-blue-500',
+                            input.classList.remove('ring-2', 'ring-orange-500',
                                 'ring-opacity-50');
                         }, 300);
                     }
@@ -1300,14 +1294,13 @@
         });
 
         // Initialize existing order items from edit data
-        @if ($penjualan->detailPenjualan)
-            @foreach ($penjualan->detailPenjualan as $index => $detail)
+        @if ($pembelian->detailPembelian)
+            @foreach ($pembelian->detailPembelian as $index => $detail)
                 orderItems.push({
                     id: {{ $detail->produk_id }},
                     name: '{{ addslashes($detail->produk->nama_produk) }}',
                     code: '{{ $detail->produk->kode_produk }}',
-                    price: {{ $detail->harga }},
-                    stock: {{ $detail->produk->stok }},
+                    price: {{ $detail->harga_beli }},
                     unit: '{{ $detail->produk->satuan->nama ?? '' }}',
                     qty: {{ $detail->qty }},
                     discount: {{ $detail->discount ?? 0 }},
@@ -1338,7 +1331,7 @@
                         <div class="flex items-start justify-between">
                             <div class="flex-1">
                                 <div class="flex items-center space-x-3 mb-2">
-                                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
                                         <i class="ti ti-package text-white text-lg"></i>
                                     </div>
                                     <div class="flex-1">
@@ -1362,14 +1355,14 @@
                                     </div>
                                     
                                     ${discount > 0 ? `
-                                                                                                                        <div class="flex items-center justify-between text-sm">
-                                                                                                                            <span class="text-orange-600 flex items-center">
-                                                                                                                                <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                Potongan Harga
-                                                                                                                            </span>
-                                                                                                                            <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                        </div>
-                                                                                                                    ` : ''}
+                                                                                                                                                                                            <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                    Potongan Harga
+                                                                                                                                                                                                </span>
+                                                                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                            </div>
+                                                                                                                                                                                        ` : ''}
                                     
                                     <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
                                         <span class="font-semibold text-gray-900">Total</span>
@@ -1402,67 +1395,67 @@
             orderItems.forEach((item, index) => {
                 const discount = item.discount || 0;
                 const hiddenInputs = `
-                    <input type="hidden" name="items[${index}][produk_id]" value="${item.id}">
+                    <input type="hidden" name="items[${index}][id]" value="${item.id}">
                     <input type="hidden" name="items[${index}][qty]" value="${item.qty}">
-                    <input type="hidden" name="items[${index}][harga]" value="${item.price}">
+                    <input type="hidden" name="items[${index}][price]" value="${item.price}">
                     <input type="hidden" name="items[${index}][discount]" value="${discount}">
                 `;
                 container.insertAdjacentHTML('beforeend', hiddenInputs);
             });
         }
 
-        // Customer modal functionality
-        const customerModal = document.getElementById('customerModal');
-        const searchCustomerBtn = document.getElementById('searchCustomerBtn');
-        const closeCustomerModal = document.getElementById('closeCustomerModal');
-        const customerSearch = document.getElementById('customerSearch');
-        const customerDisplay = document.getElementById('customerDisplay');
-        const pelangganId = document.getElementById('pelangganId');
-        const clearCustomerBtn = document.getElementById('clearCustomerBtn');
+        // Supplier modal functionality
+        const supplierModal = document.getElementById('supplierModal');
+        const searchSupplierBtn = document.getElementById('searchSupplierBtn');
+        const closeSupplierModal = document.getElementById('closeSupplierModal');
+        const supplierSearch = document.getElementById('supplierSearch');
+        const supplierDisplay = document.getElementById('supplierDisplay');
+        const supplierId = document.getElementById('supplierId');
+        const clearSupplierBtn = document.getElementById('clearSupplierBtn');
 
-        // Set initial customer display
-        @if ($penjualan->pelanggan)
-            customerDisplay.value =
-                '{{ addslashes($penjualan->pelanggan->nama) }} ({{ $penjualan->pelanggan->kode_pelanggan }})';
-            pelangganId.value = '{{ $penjualan->pelanggan->id }}';
-            clearCustomerBtn.classList.remove('hidden');
+        // Set initial supplier display
+        @if ($pembelian->supplier)
+            supplierDisplay.value =
+                '{{ addslashes($pembelian->supplier->nama) }} ({{ $pembelian->supplier->kode_supplier }})';
+            supplierId.value = '{{ $pembelian->supplier->id }}';
+            clearSupplierBtn.classList.remove('hidden');
         @endif
 
-        // Open customer modal
-        searchCustomerBtn.addEventListener('click', () => {
-            customerModal.classList.remove('hidden');
-            customerSearch.focus();
+        // Open supplier modal
+        searchSupplierBtn.addEventListener('click', () => {
+            supplierModal.classList.remove('hidden');
+            supplierSearch.focus();
         });
 
-        // Close customer modal
-        closeCustomerModal.addEventListener('click', () => {
-            customerModal.classList.add('hidden');
+        // Close supplier modal
+        closeSupplierModal.addEventListener('click', () => {
+            supplierModal.classList.add('hidden');
         });
 
-        // Clear customer selection
-        clearCustomerBtn.addEventListener('click', () => {
-            pelangganId.value = '';
-            customerDisplay.value = '';
-            clearCustomerBtn.classList.add('hidden');
+        // Clear supplier selection
+        clearSupplierBtn.addEventListener('click', () => {
+            supplierId.value = '';
+            supplierDisplay.value = '';
+            clearSupplierBtn.classList.add('hidden');
 
-            // Remove selection styling from all customer items
-            document.querySelectorAll('.customer-item').forEach(item => {
-                item.classList.remove('bg-blue-100', 'border-blue-500');
+            // Remove selection styling from all supplier items
+            document.querySelectorAll('.supplier-item').forEach(item => {
+                item.classList.remove('bg-orange-100', 'border-orange-500');
             });
 
-            showToast('Pilihan pelanggan dibersihkan', 'info');
+            showToast('Pilihan supplier dibersihkan', 'info');
         });
 
 
 
 
 
-        // Customer search functionality
-        customerSearch.addEventListener('input', (e) => {
+        // Supplier search functionality
+        supplierSearch.addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
-            const customerItems = document.querySelectorAll('.customer-item');
+            const supplierItems = document.querySelectorAll('.supplier-item');
 
-            customerItems.forEach(item => {
+            supplierItems.forEach(item => {
                 const name = item.dataset.name.toLowerCase();
                 const code = item.dataset.code.toLowerCase();
                 const phone = item.dataset.phone.toLowerCase();
@@ -1475,39 +1468,39 @@
             });
         });
 
-        // Customer selection
-        document.querySelectorAll('.customer-item').forEach(item => {
+        // Supplier selection
+        document.querySelectorAll('.supplier-item').forEach(item => {
             item.addEventListener('click', () => {
-                const customerId = item.dataset.id;
-                const customerName = item.dataset.name;
-                const customerCode = item.dataset.code;
+                const supplierId = item.dataset.id;
+                const supplierName = item.dataset.name;
+                const supplierCode = item.dataset.code;
 
                 // Update form fields
-                pelangganId.value = customerId;
-                customerDisplay.value = `${customerName} (${customerCode})`;
+                document.getElementById('supplierId').value = supplierId;
+                supplierDisplay.value = `${supplierName} (${supplierCode})`;
 
                 // Show clear button
-                clearCustomerBtn.classList.remove('hidden');
+                clearSupplierBtn.classList.remove('hidden');
 
                 // Close modal
-                customerModal.classList.add('hidden');
+                supplierModal.classList.add('hidden');
 
                 // Show success message
-                showToast(`Pelanggan ${customerName} dipilih`, 'success');
+                showToast(`Supplier ${supplierName} dipilih`, 'success');
 
                 // Remove previous selection styling
-                document.querySelectorAll('.customer-item').forEach(i => {
-                    i.classList.remove('bg-blue-100', 'border-blue-500');
+                document.querySelectorAll('.supplier-item').forEach(i => {
+                    i.classList.remove('bg-orange-100', 'border-orange-500');
                 });
 
                 // Add selection styling
-                item.classList.add('bg-blue-100', 'border-blue-500');
+                item.classList.add('bg-orange-100', 'border-orange-500');
             });
         });
 
-        // Set initial customer if old value exists
-        @if (old('pelanggan_id'))
-            const initialCustomerId = '{{ old('pelanggan_id') }}';
+        // Set initial supplier if old value exists
+        @if (old('supplier_id'))
+            const initialSupplierId = '{{ old('supplier_id') }}';
             const initialCustomerItem = document.querySelector(`[data-id="${initialCustomerId}"]`);
             if (initialCustomerItem) {
                 const customerName = initialCustomerItem.dataset.name;
@@ -1645,82 +1638,7 @@
             }
         }
 
-        // Update form values from preview modal
-        function updateFormFromPreview() {
-            // Update jenis transaksi
-            const selectedJenisTransaksi = document.querySelector('input[name="preview_jenis_transaksi"]:checked')?.value;
-            if (selectedJenisTransaksi) {
-                document.getElementById('jenisTransaksi').value = selectedJenisTransaksi;
-            }
 
-            // Update metode pembayaran
-            const selectedMetodePembayaran = document.querySelector('input[name="preview_metode_pembayaran"]:checked')
-                ?.value;
-            if (selectedMetodePembayaran) {
-                document.getElementById('metodePembayaran').value = selectedMetodePembayaran;
-            }
-
-            // Update kas/bank
-            const selectedKasBank = document.querySelector('input[name="preview_kas_bank"]:checked')?.value;
-            if (selectedKasBank) {
-                document.getElementById('kasBankId').value = selectedKasBank;
-            }
-
-            // Update DP amount
-            const previewDpAmount = document.getElementById('previewDpAmount')?.value;
-            if (previewDpAmount) {
-                const dpAmount = parseFormattedNumber(previewDpAmount);
-                document.getElementById('dpAmount').value = dpAmount;
-            }
-        }
-
-        // Validate preview form
-        function validatePreviewForm() {
-            // Check if jenis transaksi is selected
-            const selectedJenisTransaksi = document.querySelector('input[name="preview_jenis_transaksi"]:checked')?.value;
-            if (!selectedJenisTransaksi) {
-                showToast('Silakan pilih jenis transaksi!', 'error');
-                return false;
-            }
-
-            // Check if metode pembayaran is selected
-            const selectedMetodePembayaran = document.querySelector('input[name="preview_metode_pembayaran"]:checked')
-                ?.value;
-            if (!selectedMetodePembayaran) {
-                showToast('Silakan pilih metode pembayaran!', 'error');
-                return false;
-            }
-
-            // Check if kas/bank is selected for specific payment methods
-            const selectedMethod = selectedMetodePembayaran.toLowerCase();
-            if (selectedMethod.includes('tunai') || selectedMethod.includes('transfer') || selectedMethod.includes(
-                    'qris')) {
-                const selectedKasBank = document.querySelector('input[name="preview_kas_bank"]:checked')?.value;
-                if (!selectedKasBank) {
-                    showToast('Silakan pilih kas/bank untuk metode pembayaran ini!', 'error');
-                    return false;
-                }
-            }
-
-            // Validate DP amount for kredit transactions
-            if (selectedJenisTransaksi === 'kredit') {
-                const dpAmount = parseFormattedNumber(document.getElementById('previewDpAmount')?.value || '0');
-                const total = parseFormattedNumber(document.getElementById('previewTotal').textContent.replace('Rp ', '')
-                    .replace(/\./g, ''));
-
-                if (dpAmount > total) {
-                    showToast('DP tidak boleh melebihi total transaksi!', 'error');
-                    return false;
-                }
-
-                if (dpAmount < 0) {
-                    showToast('DP tidak boleh kurang dari 0!', 'error');
-                    return false;
-                }
-            }
-
-            return true;
-        }
 
         // Category filter functionality
         document.querySelectorAll('.category-filter').forEach(btn => {
@@ -1876,18 +1794,19 @@
             // Update modal content
             document.getElementById('modalProductName').textContent = product.name;
             document.getElementById('modalProductCode').textContent = product.code;
-            document.getElementById('modalProductPrice').textContent = `Rp ${formatNumber(product.price)}`;
 
             document.getElementById('modalProductUnit').textContent = product.unit;
 
             // Update unit in input group
             document.getElementById('modalProductUnitInInput').textContent = product.unit;
 
-            // Set price (use current price if editing, otherwise use default)
+            // Set price (use current price if editing, otherwise leave empty)
             const priceInput = document.getElementById('modalPriceInput');
-            const defaultPrice = currentPrice || product.price;
-            priceInput.value = formatNumberInput(defaultPrice.toString());
-            document.getElementById('modalDefaultPrice').textContent = `Rp ${formatNumber(product.price)}`;
+            if (currentPrice) {
+                priceInput.value = formatNumberInput(currentPrice.toString());
+            } else {
+                priceInput.value = '';
+            }
 
             // Set quantity (for edit mode or new item)
             quantityInput.value = formatDecimalInput(currentQty);
@@ -1907,6 +1826,9 @@
                 document.getElementById('confirmQuantity').innerHTML =
                     '<i class="ti ti-plus text-sm mr-1"></i>Tambah ke Keranjang';
             }
+
+            // Reset validation styles
+            resetValidationStyles();
 
             // Update total price
             updateModalTotalPrice();
@@ -1929,8 +1851,7 @@
             if (currentProduct) {
                 const qty = parseFormattedDecimal(quantityInput.value) || 0;
                 const discount = parseFormattedNumber(document.getElementById('discountInput').value) || 0;
-                const currentPrice = parseFormattedNumber(document.getElementById('modalPriceInput').value) ||
-                    currentProduct.price;
+                const currentPrice = parseFormattedNumber(document.getElementById('modalPriceInput').value) || 0;
                 const subtotal = currentPrice * qty;
                 const total = Math.max(0, subtotal - discount);
 
@@ -1986,6 +1907,7 @@
         // Price input handlers
         priceInput.addEventListener('input', function() {
             updateModalTotalPrice();
+            validatePriceInput();
         });
 
         // Quantity input handlers
@@ -1995,11 +1917,13 @@
             if (numericValue < 0) numericValue = 0;
 
             updateModalTotalPrice();
+            validateQuantityInput();
         });
 
         // Discount input handlers
         discountInput.addEventListener('input', function() {
             updateModalTotalPrice();
+            validateDiscountInput();
         });
 
         // Decrease quantity button
@@ -2042,10 +1966,26 @@
         // Confirm quantity and add to order
         confirmQuantity.addEventListener('click', function() {
             if (currentProduct) {
+                const qtyInput = document.getElementById('quantityInput');
+                const priceInput = document.getElementById('modalPriceInput');
+                const discountInput = document.getElementById('discountInput');
+
+                // Check if inputs are empty first
+                if (!qtyInput.value.trim()) {
+                    showToast('Quantity tidak boleh kosong!', 'error');
+                    qtyInput.focus();
+                    return;
+                }
+
+                if (!priceInput.value.trim()) {
+                    showToast('Harga tidak boleh kosong!', 'error');
+                    priceInput.focus();
+                    return;
+                }
+
                 const qty = parseFormattedDecimal(quantityInput.value) || 1;
                 const discount = parseFormattedNumber(document.getElementById('discountInput').value) || 0;
-                const currentPrice = parseFormattedNumber(document.getElementById('modalPriceInput').value) ||
-                    currentProduct.price;
+                const currentPrice = parseFormattedNumber(document.getElementById('modalPriceInput').value);
 
                 if (qty <= 0) {
                     showToast('Quantity harus lebih dari 0!', 'error');
@@ -2085,6 +2025,21 @@
             }
         });
 
+        // Prevent Enter key from closing modal on other inputs
+        [priceInput, discountInput].forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // Prevent form submission or modal closing
+                    // Optionally, you can move focus to the next input or confirm button
+                    if (this.id === 'modalPriceInput') {
+                        discountInput.focus();
+                    } else if (this.id === 'discountInput') {
+                        confirmQuantity.focus();
+                    }
+                }
+            });
+        });
+
         function addToOrder(product, quantity = 1, discount = 0, customPrice = null) {
             // Check if product already in order
             const existingIndex = orderItems.findIndex(item => item.id === product.id);
@@ -2093,7 +2048,7 @@
                 // For existing items, replace with new values
                 orderItems[existingIndex].qty = quantity;
                 orderItems[existingIndex].discount = discount;
-                orderItems[existingIndex].price = customPrice || product.price;
+                orderItems[existingIndex].price = customPrice;
                 updateOrderItem(existingIndex);
                 showToast(`${product.name} diperbarui dalam pesanan`, 'success');
             } else {
@@ -2102,7 +2057,7 @@
                     ...product,
                     qty: quantity,
                     discount: discount,
-                    price: customPrice || product.price,
+                    price: customPrice,
                     index: productIndex++
                 };
                 orderItems.push(newItem);
@@ -2225,14 +2180,14 @@
                         </div>
                         
                         ${discount > 0 ? `
-                                                                                                                                                                                                    <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                                                        <span class="text-orange-600 flex items-center">
-                                                                                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                                                            Potongan Harga
-                                                                                                                                                                                                        </span>
-                                                                                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                    ` : ''}
+                                                                                                                                                                                                                                                                        <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                                                                            <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                                                                                <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                                                                                Potongan Harga
+                                                                                                                                                                                                                                                                            </span>
+                                                                                                                                                                                                                                                                            <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                        </div>
+                                                                                                                                                                                                                                                                        ` : ''}
                         
                         <!-- Total Line -->
                         <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -2299,14 +2254,14 @@
                 </div>
                 
                 ${discount > 0 ? `
-                                                                                                                                                                                            <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                                                <span class="text-orange-600 flex items-center">
-                                                                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                                                    Potongan Harga
-                                                                                                                                                                                                </span>
-                                                                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                            </div>
-                                                                                                                                                                                            ` : ''}
+                                                                                                                                                                                                                                                                <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                                                                    <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                                                                        <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                                                                        Potongan Harga
+                                                                                                                                                                                                                                                                    </span>
+                                                                                                                                                                                                                                                                    <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                </div>
+                                                                                                                                                                                                                                                                ` : ''}
                 
                 <!-- Total Line -->
                 <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -2678,7 +2633,8 @@
         const orderPreviewModal = document.getElementById('orderPreviewModal');
         const closeOrderPreviewModal = document.getElementById('closeOrderPreviewModal');
         const cancelOrderPreview = document.getElementById('cancelOrderPreview');
-        const confirmOrderSave = document.getElementById('confirmOrderSave');
+        const confirmOrderSaveBtn = document.getElementById('confirmOrderSave');
+        const showOrderPreviewBtn = document.getElementById('showOrderPreview');
 
         // Close preview modal
         function closePreviewModal() {
@@ -2688,19 +2644,42 @@
         closeOrderPreviewModal.addEventListener('click', closePreviewModal);
         cancelOrderPreview.addEventListener('click', closePreviewModal);
 
+        // Show order preview button event listener
+        showOrderPreviewBtn.addEventListener('click', function() {
+            if (orderItems.length === 0) {
+                showToast('Pilih produk terlebih dahulu', 'error');
+                return;
+            }
+
+            const supplierId = document.getElementById('supplierId');
+            const supplierDisplay = document.getElementById('supplierDisplay');
+
+            if (!supplierId || !supplierId.value) {
+                showToast('Pilih supplier terlebih dahulu', 'error');
+                return;
+            }
+
+            if (!supplierDisplay || !supplierDisplay.value) {
+                showToast('Supplier belum dipilih dengan benar', 'error');
+                return;
+            }
+
+            showOrderPreview();
+        });
+
 
 
 
 
         // Show order preview
         function showOrderPreview() {
-            // Get customer info
-            const customerName = document.getElementById('customerDisplay').value || 'Belum dipilih';
-            const selectedCustomer = document.querySelector('.customer-item.bg-blue-100');
+            // Get supplier info
+            const supplierName = document.getElementById('supplierDisplay').value || 'Belum dipilih';
+            const selectedSupplier = document.querySelector('.supplier-item.bg-orange-100');
 
-            document.getElementById('previewCustomerName').textContent = customerName;
-            document.getElementById('previewCustomerCode').textContent = selectedCustomer ?
-                selectedCustomer.dataset.code : '-';
+            document.getElementById('previewSupplierName').textContent = supplierName;
+            document.getElementById('previewSupplierCode').textContent = selectedSupplier ?
+                selectedSupplier.dataset.code : '-';
 
             // Get transaction info
             document.getElementById('previewInvoiceNumber').textContent =
@@ -2745,11 +2724,11 @@
                                 <span>Rp ${formatNumber(subtotal)}</span>
                             </div>
                             ${discount > 0 ? `
-                                                                                                                                                                                                    <div class="flex justify-between text-xs">
-                                                                                                                                                                                                        <span class="text-orange-600">Potongan</span>
-                                                                                                                                                                                                        <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                    ` : ''}
+                                                                                                                                                                                                                                                                        <div class="flex justify-between text-xs">
+                                                                                                                                                                                                                                                                            <span class="text-orange-600">Potongan</span>
+                                                                                                                                                                                                                                                                            <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                        </div>
+                                                                                                                                                                                                                                                                        ` : ''}
                             <div class="flex justify-between text-sm font-medium">
                                 <span>Total</span>
                                 <span class="text-blue-600">Rp ${formatNumber(total)}</span>
@@ -2954,7 +2933,7 @@
         }
 
         // Form validation and preview
-        document.getElementById('salesForm').addEventListener('submit', async function(e) {
+        document.getElementById('purchaseForm').addEventListener('submit', async function(e) {
             e.preventDefault(); // Always prevent default first
 
             if (orderItems.length === 0) {
@@ -2962,13 +2941,10 @@
                 return false;
             }
 
-            if (!pelangganId.value) {
-                showToast('Silakan pilih pelanggan terlebih dahulu!', 'error');
-                searchCustomerBtn.focus();
+            if (!document.getElementById('supplierId').value) {
+                showToast('Silakan pilih supplier terlebih dahulu!', 'error');
                 return false;
             }
-
-
 
             // Update hidden inputs before showing preview
             updateHiddenInputs();
@@ -2978,7 +2954,7 @@
         });
 
         // Confirm order save
-        confirmOrderSave.addEventListener('click', function() {
+        confirmOrderSaveBtn.addEventListener('click', function() {
             // Validate preview form first
             if (!validatePreviewForm()) {
                 return;
@@ -3001,15 +2977,15 @@
                 'absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50 rounded-2xl';
             loadingOverlay.innerHTML = `
                 <div class="text-center">
-                    <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-                        <i class="ti ti-loader animate-spin text-2xl text-blue-600"></i>
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4">
+                        <i class="ti ti-loader animate-spin text-2xl text-orange-600"></i>
                     </div>
                     <p class="text-lg font-semibold text-gray-800" id="loadingText">Memvalidasi data...</p>
                     <p class="text-sm text-gray-500 mt-1">Mohon tunggu sebentar</p>
                     
                     <!-- Progress Bar -->
                     <div class="w-64 bg-gray-200 rounded-full h-2 mt-4 mx-auto">
-                        <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                        <div id="progressBar" class="bg-orange-600 h-2 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
                     </div>
                     <p class="text-xs text-gray-400 mt-2" id="progressText">0%</p>
                 </div>
@@ -3072,7 +3048,7 @@
                         if (icon) {
                             icon.className = 'ti ti-check animate-pulse text-2xl text-green-600';
                         }
-                        const iconBg = loadingOverlay.querySelector('.bg-blue-100');
+                        const iconBg = loadingOverlay.querySelector('.bg-orange-100');
                         if (iconBg) {
                             iconBg.className =
                                 'inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4';
@@ -3089,11 +3065,400 @@
                             // Update form values from preview modal
                             updateFormFromPreview();
 
-                            const form = document.getElementById('salesForm');
+                            // Final validation before submit
+                            const form = document.getElementById('purchaseForm');
+                            const formData = new FormData(form);
+
+                            // Check required fields
+                            const requiredFields = ['no_faktur', 'supplier_id', 'tanggal',
+                                'jenis_transaksi'
+                            ];
+                            let hasError = false;
+
+                            for (const field of requiredFields) {
+                                if (!formData.get(field)) {
+                                    console.error(`Missing required field: ${field}`);
+                                    hasError = true;
+                                }
+                            }
+
+                            // Check if we have items
+                            const hasItems = Array.from(formData.keys()).some(key => key
+                                .startsWith('items['));
+                            if (!hasItems) {
+                                console.error('No items found in form data');
+                                hasError = true;
+                            }
+
+                            if (hasError) {
+                                showToast(
+                                    'Terjadi kesalahan dalam validasi form. Silakan coba lagi.',
+                                    'error');
+                                // Close modal and reset
+                                orderPreviewModal.classList.add('hidden');
+                                return;
+                            }
+
+                            // Submit the form
                             form.submit();
                         }, 800);
                     }
                 }, state.delay);
+            });
+        });
+
+
+
+
+
+        // Update form values from preview modal
+        function updateFormFromPreview() {
+            // Update jenis transaksi
+            const selectedJenisTransaksi = document.querySelector('input[name="preview_jenis_transaksi"]:checked')?.value;
+            if (selectedJenisTransaksi) {
+                document.getElementById('jenisTransaksi').value = selectedJenisTransaksi;
+                console.log('Updated jenis_transaksi:', selectedJenisTransaksi);
+            }
+
+            // Update metode pembayaran
+            const selectedMetodePembayaran = document.querySelector('input[name="preview_metode_pembayaran"]:checked')
+                ?.value;
+            if (selectedMetodePembayaran) {
+                document.getElementById('metodePembayaran').value = selectedMetodePembayaran;
+                console.log('Updated metode_pembayaran:', selectedMetodePembayaran);
+            }
+
+            // Update kas/bank
+            const selectedKasBank = document.querySelector('input[name="preview_kas_bank"]:checked')?.value;
+            if (selectedKasBank) {
+                document.getElementById('kasBankId').value = selectedKasBank;
+                console.log('Updated kas_bank_id:', selectedKasBank);
+            }
+
+            // Update DP amount
+            const previewDpAmount = document.getElementById('previewDpAmount')?.value;
+            if (previewDpAmount) {
+                const dpAmount = parseFormattedNumber(previewDpAmount);
+                document.getElementById('dpAmount').value = dpAmount;
+                console.log('Updated dp_amount:', dpAmount);
+            }
+
+            // Update items (make sure they're still current)
+            updateHiddenInputs();
+            console.log('Updated hidden inputs for items');
+
+            // Log all form data for debugging
+            const form = document.getElementById('purchaseForm');
+            const formData = new FormData(form);
+            console.log('Final form data:');
+            for (let [key, value] of formData.entries()) {
+                console.log(key, value);
+            }
+        }
+
+        // Validate preview form
+        function validatePreviewForm() {
+            // Check if jenis transaksi is selected
+            const selectedJenisTransaksi = document.querySelector('input[name="preview_jenis_transaksi"]:checked')?.value;
+            if (!selectedJenisTransaksi) {
+                showToast('Silakan pilih jenis transaksi!', 'error');
+                return false;
+            }
+
+            // Check if metode pembayaran is selected
+            const selectedMetodePembayaran = document.querySelector('input[name="preview_metode_pembayaran"]:checked')
+                ?.value;
+            if (!selectedMetodePembayaran) {
+                showToast('Silakan pilih metode pembayaran!', 'error');
+                return false;
+            }
+
+            // Check if kas/bank is selected for specific payment methods
+            const selectedMethod = selectedMetodePembayaran.toLowerCase();
+            if (selectedMethod.includes('tunai') || selectedMethod.includes('transfer') || selectedMethod.includes(
+                    'qris')) {
+                const selectedKasBank = document.querySelector('input[name="preview_kas_bank"]:checked')?.value;
+                if (!selectedKasBank) {
+                    showToast('Silakan pilih kas/bank untuk metode pembayaran ini!', 'error');
+                    return false;
+                }
+            }
+
+            // Validate DP amount for kredit transactions
+            if (selectedJenisTransaksi === 'kredit') {
+                const dpAmount = parseFormattedNumber(document.getElementById('previewDpAmount')?.value || '0');
+                const total = parseFormattedNumber(document.getElementById('totalDisplay').textContent.replace('Rp ', '')
+                    .replace(/\./g, ''));
+
+                if (dpAmount > total) {
+                    showToast('DP tidak boleh melebihi total transaksi!', 'error');
+                    return false;
+                }
+
+                if (dpAmount < 0) {
+                    showToast('DP tidak boleh kurang dari 0!', 'error');
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        // Update preview payment breakdown
+        function updatePreviewPaymentBreakdown() {
+            const jenisTransaksi = document.querySelector('input[name="preview_jenis_transaksi"]:checked')?.value;
+            const dpAmount = parseFormattedNumber(document.getElementById('previewDpAmount')?.value || '0');
+
+            if (jenisTransaksi === 'kredit') {
+                const total = parseFormattedNumber(document.getElementById('totalDisplay').textContent.replace('Rp ', '')
+                    .replace(/\./g, ''));
+                const remaining = Math.max(0, total - dpAmount);
+
+                const previewPaymentBreakdown = document.getElementById('previewPaymentBreakdown');
+                if (previewPaymentBreakdown) {
+                    previewPaymentBreakdown.classList.remove('hidden');
+                    document.getElementById('previewDP').textContent = `Rp ${formatNumber(dpAmount)}`;
+                    document.getElementById('previewRemaining').textContent = `Rp ${formatNumber(remaining)}`;
+
+                    // Show warning for DP 0
+                    const dpWarning = document.getElementById('dpWarning');
+                    if (dpWarning) {
+                        if (dpAmount === 0) {
+                            dpWarning.classList.remove('hidden');
+                        } else {
+                            dpWarning.classList.add('hidden');
+                        }
+                    }
+                }
+            } else {
+                // Hide breakdown for tunai
+                const previewPaymentBreakdown = document.getElementById('previewPaymentBreakdown');
+                if (previewPaymentBreakdown) {
+                    previewPaymentBreakdown.classList.add('hidden');
+                }
+            }
+        }
+
+
+
+        // Preview modal event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Preview transaction type change
+            document.querySelectorAll('.preview-transaction-type-radio').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const jenisTransaksi = this.value;
+                    const previewDpContainer = document.getElementById('previewDpContainer');
+                    const paymentAmountLabel = document.getElementById('paymentAmountLabel');
+                    const previewDpAmount = document.getElementById('previewDpAmount');
+
+                    if (jenisTransaksi === 'kredit') {
+                        previewDpContainer.classList.remove('hidden');
+                        paymentAmountLabel.textContent = 'Jumlah Down Payment (DP)';
+                        previewDpAmount.placeholder = 'Jumlah DP (Rp)';
+                        previewDpAmount.value = '0';
+                        previewDpAmount.readOnly = false;
+                        previewDpAmount.classList.remove('bg-gray-100', 'cursor-not-allowed');
+                        previewDpAmount.classList.add('bg-white');
+                    } else {
+                        // Tunai - set payment amount to total and make it readonly
+                        previewDpContainer.classList.remove('hidden');
+                        paymentAmountLabel.textContent = 'Jumlah Pembayaran';
+                        previewDpAmount.placeholder = 'Jumlah (Rp)';
+
+                        // Get total amount
+                        const totalText = document.getElementById('totalDisplay').textContent;
+                        const totalAmount = parseFormattedNumber(totalText.replace('Rp ', '')
+                            .replace(/\./g, ''));
+
+                        // Set payment amount to total and make it readonly
+                        previewDpAmount.value = formatNumberInput(totalAmount);
+                        previewDpAmount.readOnly = true;
+                        previewDpAmount.classList.add('bg-gray-100', 'cursor-not-allowed');
+                        previewDpAmount.classList.remove('bg-white');
+                    }
+
+                    updatePreviewPaymentBreakdown();
+                });
+            });
+
+            // Preview payment method change
+            document.querySelectorAll('.preview-payment-method-radio').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const selectedMethod = this.value.toLowerCase();
+                    const kasBankContainer = document.getElementById('previewKasBankContainer');
+                    const kasBankMessage = document.getElementById('kasBankMessage');
+
+                    if (selectedMethod.includes('tunai') || selectedMethod.includes('transfer') ||
+                        selectedMethod.includes('qris')) {
+                        if (kasBankContainer) kasBankContainer.style.display = 'grid';
+                        if (kasBankMessage) kasBankMessage.style.display = 'none';
+                    } else {
+                        if (kasBankContainer) kasBankContainer.style.display = 'none';
+                        if (kasBankMessage) kasBankMessage.style.display = 'block';
+                    }
+                });
+            });
+
+            // Preview DP amount change
+            const previewDpAmount = document.getElementById('previewDpAmount');
+            if (previewDpAmount) {
+                setupNumberInput(previewDpAmount);
+                previewDpAmount.addEventListener('input', function() {
+                    // Only update breakdown for kredit transactions
+                    const jenisTransaksi = document.querySelector(
+                        'input[name="preview_jenis_transaksi"]:checked')?.value;
+                    if (jenisTransaksi === 'kredit') {
+                        updatePreviewPaymentBreakdown();
+                    }
+                });
+            }
+        });
+
+
+
+        // Real-time validation functions
+        function validateQuantityInput() {
+            const qtyInput = document.getElementById('quantityInput');
+            const value = qtyInput.value.trim();
+
+            if (!value) {
+                qtyInput.style.borderColor = '#ef4444';
+                qtyInput.style.backgroundColor = '#fef2f2';
+                return false;
+            }
+
+            const qty = parseFormattedDecimal(value);
+            if (qty <= 0) {
+                qtyInput.style.borderColor = '#ef4444';
+                qtyInput.style.backgroundColor = '#fef2f2';
+                return false;
+            }
+
+            qtyInput.style.borderColor = '#10b981';
+            qtyInput.style.backgroundColor = '#f0fdf4';
+            return true;
+        }
+
+        function validatePriceInput() {
+            const priceInput = document.getElementById('modalPriceInput');
+            const value = priceInput.value.trim();
+
+            if (!value) {
+                priceInput.style.borderColor = '#ef4444';
+                priceInput.style.backgroundColor = '#fef2f2';
+                return false;
+            }
+
+            const price = parseFormattedNumber(value);
+            if (price <= 0) {
+                priceInput.style.borderColor = '#ef4444';
+                priceInput.style.backgroundColor = '#fef2f2';
+                return false;
+            }
+
+            priceInput.style.borderColor = '#10b981';
+            priceInput.style.backgroundColor = '#f0fdf4';
+            return true;
+        }
+
+        function validateDiscountInput() {
+            const discountInput = document.getElementById('discountInput');
+            const qtyInput = document.getElementById('quantityInput');
+            const priceInput = document.getElementById('modalPriceInput');
+
+            const value = discountInput.value.trim();
+            const qty = parseFormattedDecimal(qtyInput.value) || 0;
+            const price = parseFormattedNumber(priceInput.value) || 0;
+            const discount = parseFormattedNumber(value) || 0;
+
+            if (value && discount > 0) {
+                const subtotal = qty * price;
+                if (discount > subtotal && subtotal > 0) {
+                    discountInput.style.borderColor = '#ef4444';
+                    discountInput.style.backgroundColor = '#fef2f2';
+                    return false;
+                }
+            }
+
+            if (value && discount >= 0) {
+                discountInput.style.borderColor = '#10b981';
+                discountInput.style.backgroundColor = '#f0fdf4';
+            } else {
+                discountInput.style.borderColor = '#d1d5db';
+                discountInput.style.backgroundColor = '#ffffff';
+            }
+
+            return true;
+        }
+
+        // Reset validation styles
+        function resetValidationStyles() {
+            const qtyInput = document.getElementById('quantityInput');
+            const priceInput = document.getElementById('modalPriceInput');
+            const discountInput = document.getElementById('discountInput');
+
+            // Reset to default styles
+            qtyInput.style.borderColor = '#d1d5db';
+            qtyInput.style.backgroundColor = '#ffffff';
+            priceInput.style.borderColor = '#d1d5db';
+            priceInput.style.backgroundColor = '#ffffff';
+            discountInput.style.borderColor = '#d1d5db';
+            discountInput.style.backgroundColor = '#ffffff';
+        }
+        // Filter kas/bank based on payment method
+        function filterKasBankByPaymentMethod(selectedMethod) {
+            const kasBankContainer = document.getElementById('previewKasBankContainer');
+            const kasBankMessage = document.getElementById('kasBankMessage');
+            const kasBankOptions = document.querySelectorAll('.preview-kas-bank-option');
+
+            console.log('Selected payment method:', selectedMethod);
+
+            // Reset all kas/bank options first
+            kasBankOptions.forEach(option => {
+                option.style.display = 'none';
+            });
+
+            if (selectedMethod.includes('tunai') || selectedMethod.includes('cash')) {
+                // Show only KAS type for cash payment
+                kasBankOptions.forEach(option => {
+                    const jenis = option.querySelector('input').dataset.jenis;
+                    if (jenis === 'KAS') {
+                        option.style.display = 'block';
+                    }
+                });
+                if (kasBankContainer) kasBankContainer.style.display = 'grid';
+                if (kasBankMessage) kasBankMessage.style.display = 'none';
+                console.log('Showing KAS options for cash payment');
+            } else if (selectedMethod.includes('transfer') || selectedMethod.includes('bank')) {
+                // Show only BANK type for transfer payment
+                kasBankOptions.forEach(option => {
+                    const jenis = option.querySelector('input').dataset.jenis;
+                    if (jenis === 'BANK') {
+                        option.style.display = 'block';
+                    }
+                });
+                if (kasBankContainer) kasBankContainer.style.display = 'grid';
+                if (kasBankMessage) kasBankMessage.style.display = 'none';
+                console.log('Showing BANK options for transfer payment');
+            } else {
+                // Hide container for other payment methods
+                if (kasBankContainer) kasBankContainer.style.display = 'none';
+                if (kasBankMessage) kasBankMessage.style.display = 'block';
+                console.log('Hiding kas/bank container for other payment methods');
+            }
+        }
+
+        // Update existing payment method change event listeners to use the new filter
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.preview-payment-method-radio').forEach(radio => {
+                // Remove existing event listeners first
+                radio.removeEventListener('change', function() {});
+
+                // Add new event listener with proper filtering
+                radio.addEventListener('change', function() {
+                    const selectedMethod = this.value.toLowerCase();
+                    filterKasBankByPaymentMethod(selectedMethod);
+                });
             });
         });
     </script>

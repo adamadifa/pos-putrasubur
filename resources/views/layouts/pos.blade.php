@@ -392,6 +392,29 @@
             will-change: transform, opacity;
         }
 
+        /* Sidebar toggle button animations */
+        .sidebar-toggle-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-toggle-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .sidebar-toggle-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Sidebar slide animation */
+        .sidebar-slide {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Icon rotation animation */
+        .icon-rotate {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         /* Fix for mobile scrolling */
         @media (max-width: 1024px) {
             .overflow-y-auto {
@@ -428,16 +451,43 @@
     @stack('styles')
 </head>
 
-<body class="bg-gray-50 font-sans antialiased" x-data="{ sidebarOpen: false }">
+<body class="bg-gray-50 font-sans antialiased" x-data="{
+    sidebarOpen: false,
+    init() {
+        // Get saved sidebar state from localStorage
+        const savedState = localStorage.getItem('sidebarOpen');
+
+        // Set initial state based on saved value and screen size
+        if (savedState !== null) {
+            this.sidebarOpen = savedState === 'true';
+        } else {
+            // Default to open on desktop, closed on mobile
+            this.sidebarOpen = window.innerWidth >= 1024;
+        }
+
+        // Save sidebar state to localStorage whenever it changes
+        this.$watch('sidebarOpen', (value) => {
+            localStorage.setItem('sidebarOpen', value.toString());
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            // Auto-close sidebar on mobile if it was open
+            if (window.innerWidth < 1024 && this.sidebarOpen) {
+                this.sidebarOpen = false;
+            }
+        });
+    }
+}">
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
         <aside
-            class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0"
-            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-            x-show="sidebarOpen || window.innerWidth >= 1024" x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0"
-            x-transition:leave="transition ease-in duration-300" x-transition:leave-start="translate-x-0"
-            x-transition:leave-end="-translate-x-full">
+            class="sidebar-slide fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-all duration-300 ease-in-out"
+            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" x-show="sidebarOpen"
+            x-transition:enter="transition ease-out duration-300" x-transition:enter-start="-translate-x-full"
+            x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-300"
+            x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full"
+            style="backdrop-filter: blur(10px);">
             <!-- Logo -->
             <div class="flex items-center justify-center h-16 px-4 border-b border-gray-200">
                 <div class="flex items-center gap-2">
@@ -681,23 +731,26 @@
             </div>
         </aside>
 
-        <!-- Sidebar overlay for mobile -->
-        <div x-show="sidebarOpen" x-transition:enter="transition-opacity ease-linear duration-300"
-            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-            x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0" class="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
-            @click="sidebarOpen = false"></div>
+        <!-- Sidebar overlay (only for mobile) -->
+        <div x-show="sidebarOpen && window.innerWidth < 1024"
+            x-transition:enter="transition-opacity ease-linear duration-300" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-linear duration-300"
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+            class="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden" @click="sidebarOpen = false"></div>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden lg:ml-0">
+        <div class="flex-1 flex flex-col overflow-hidden" :class="sidebarOpen ? 'ml-64' : 'ml-0'"
+            style="transition: margin-left 0.3s ease-in-out;">
             <!-- Top Navigation -->
             <header class="bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
                 <div class="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
                     <div class="flex items-center gap-4">
-                        <!-- Mobile menu button -->
+                        <!-- Sidebar toggle button (mobile & desktop) -->
                         <button @click="sidebarOpen = !sidebarOpen"
-                            class="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500">
-                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            class="sidebar-toggle-btn p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 transition-all duration-200"
+                            :class="sidebarOpen ? 'bg-primary-50 text-primary-600' : ''" title="Toggle Sidebar">
+                            <svg class="h-6 w-6 icon-rotate" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" :class="sidebarOpen ? 'rotate-180' : ''">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M4 6h16M4 12h16M4 18h16" />
                             </svg>

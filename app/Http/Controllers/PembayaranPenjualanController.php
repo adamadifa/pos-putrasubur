@@ -244,14 +244,20 @@ class PembayaranPenjualanController extends Controller
                 'user_id' => Auth::id()
             ]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Pembayaran berhasil dihapus!',
-                'data' => [
-                    'status_pembayaran' => $statusPembayaran,
-                    'sisa_pembayaran' => max(0, $penjualan->total - $totalSudahBayar)
-                ]
-            ]);
+            // Check if request is AJAX
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Pembayaran berhasil dihapus!',
+                    'data' => [
+                        'status_pembayaran' => $statusPembayaran,
+                        'sisa_pembayaran' => max(0, $penjualan->total - $totalSudahBayar)
+                    ]
+                ]);
+            }
+
+            return redirect()->route('penjualan.show', $penjualan->encrypted_id)
+                ->with('success', 'Pembayaran berhasil dihapus!');
         } catch (\Exception $e) {
             DB::rollback();
             Log::error('Payment deletion failed: ' . $e->getMessage(), [

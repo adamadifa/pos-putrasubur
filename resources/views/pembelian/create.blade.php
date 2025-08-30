@@ -205,12 +205,7 @@
                         <input type="hidden" name="kas_bank_id" id="kasBankId" value="{{ old('kas_bank_id') }}">
                         <input type="hidden" name="dp_amount" id="dpAmount" value="{{ old('dp_amount', 0) }}">
 
-                        <!-- Keterangan -->
-                        <div class="mb-2">
-                            <textarea name="keterangan" id="keterangan" rows="2"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                placeholder="Keterangan (opsional)">{{ old('keterangan') }}</textarea>
-                        </div>
+
                     </div>
 
                     <!-- Order Summary -->
@@ -464,7 +459,7 @@
                             </label>
                             <input type="text" id="previewDpAmount"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-right"
-                                placeholder="Jumlah DP (Rp)" value="0">
+                                placeholder="Jumlah DP (Rp)">
                         </div>
                     </div>
                 </div>
@@ -1574,14 +1569,14 @@
                                 </div>
                                 
                                 ${discount > 0 ? `
-                                                                                                            <div class="flex items-center justify-between text-sm">
-                                                                                                                <span class="text-orange-600 flex items-center">
-                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                    Potongan Harga
-                                                                                                                </span>
-                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                            </div>
-                                                                                                        ` : ''}
+                                                                                                                                    <div class="flex items-center justify-between text-sm">
+                                                                                                                                        <span class="text-orange-600 flex items-center">
+                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                            Potongan Harga
+                                                                                                                                        </span>
+                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                    </div>
+                                                                                                                                ` : ''}
                                 
                                 <!-- Total Line -->
                                 <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -1898,6 +1893,14 @@
             return new Intl.NumberFormat('id-ID').format(number);
         }
 
+        // Format number input with thousand separator
+        function formatNumberInput(value) {
+            // Remove all non-digit characters
+            const numericValue = value.toString().replace(/\D/g, '');
+            // Format with thousand separator
+            return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
         function formatCurrency(value) {
             // Remove non-digits
             let cleanValue = value.replace(/[^\d]/g, '');
@@ -1918,14 +1921,19 @@
             input.addEventListener('input', function(e) {
                 const cursorPosition = e.target.selectionStart;
                 const oldValue = e.target.value;
-                const newValue = formatCurrency(oldValue);
+                const newValue = formatNumberInput(e.target.value);
 
                 e.target.value = newValue;
 
-                // Restore cursor position
-                const lengthDiff = newValue.length - oldValue.length;
-                const newCursorPosition = cursorPosition + lengthDiff;
-                e.target.setSelectionRange(newCursorPosition, newCursorPosition);
+                // Adjust cursor position
+                const diff = newValue.length - oldValue.length;
+                e.target.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
+            });
+
+            input.addEventListener('blur', function(e) {
+                if (e.target.value === '' || e.target.value === '0') {
+                    e.target.value = '0';
+                }
             });
         }
 
@@ -2344,8 +2352,14 @@
 
             // Get transaction info
             document.getElementById('previewInvoiceNumber').textContent = document.getElementById('noFaktur').value;
-            document.getElementById('previewDate').textContent = new Date(document.getElementById('tanggal').value)
-                .toLocaleDateString('id-ID');
+            // Get date from hidden input which has Y-m-d format
+            const dateValue = document.querySelector('input[name="tanggal"]').value;
+            if (dateValue) {
+                document.getElementById('previewDate').textContent = new Date(dateValue)
+                    .toLocaleDateString('id-ID');
+            } else {
+                document.getElementById('previewDate').textContent = '-';
+            }
 
             const jenisTransaksi = document.getElementById('jenisTransaksi').value;
             document.getElementById('previewTransactionType').textContent = jenisTransaksi === 'kredit' ? 'Kredit' :
@@ -2356,7 +2370,7 @@
             updatePreviewTransactionTypeCards();
 
             // Set DP amount based on transaction type (will be updated when user selects transaction type)
-            document.getElementById('previewDpAmount').value = '0';
+            document.getElementById('previewDpAmount').value = '';
             document.getElementById('previewDpAmount').readOnly = false;
             document.getElementById('previewDpAmount').placeholder = 'Jumlah DP (Rp)';
 
@@ -2391,11 +2405,11 @@
                                 <span>Rp ${formatNumber(subtotal)}</span>
                             </div>
                             ${discount > 0 ? `
-                                                            <div class="flex justify-between text-xs">
-                                                                <span class="text-orange-600">Potongan</span>
-                                                                <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                            </div>
-                                                        ` : ''}
+                                                                                    <div class="flex justify-between text-xs">
+                                                                                        <span class="text-orange-600">Potongan</span>
+                                                                                        <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                    </div>
+                                                                                ` : ''}
                             <div class="flex justify-between text-sm font-medium">
                                 <span>Total</span>
                                 <span class="text-blue-600">Rp ${formatNumber(total)}</span>
@@ -2491,15 +2505,16 @@
             if (selectedType && selectedType.value === 'tunai') {
                 dpContainer.classList.remove('hidden');
                 dpAmount.required = false;
-                dpAmount.value = formatNumber(total);
+                dpAmount.value = formatNumberInput(total.toString());
                 dpAmount.readOnly = true;
                 dpAmount.placeholder = 'Jumlah (Rp)';
             } else if (selectedType && selectedType.value === 'kredit') {
                 dpContainer.classList.remove('hidden');
                 dpAmount.required = true;
-                dpAmount.value = '0';
+                dpAmount.value = '';
                 dpAmount.readOnly = false;
                 dpAmount.placeholder = 'Jumlah DP (Rp)';
+                dpAmount.focus();
             }
 
             updatePreviewTransactionTypeCards();
@@ -2668,12 +2683,8 @@
 
         // DP amount input handler
         document.getElementById('previewDpAmount').addEventListener('input', function(e) {
-            const value = e.target.value;
-            const formattedValue = formatNumber(value);
-            e.target.value = formattedValue;
-
-            // Update payment breakdown
-            const dpAmount = parseFormattedNumber(formattedValue);
+            // setupNumberInput already handles formatting, so we don't need to format manually
+            const dpAmount = parseFormattedNumber(e.target.value);
             const total = parseFormattedNumber(document.getElementById('previewTotal').textContent.replace('Rp ',
                 '').replace(/\./g, ''));
             const remaining = Math.max(0, total - dpAmount);
@@ -2718,6 +2729,20 @@
                 return;
             }
 
+            // Validate supplier
+            if (!document.getElementById('supplierId').value) {
+                showToast('Pilih supplier terlebih dahulu!', 'error');
+                return;
+            }
+
+            // Validate total amount
+            const total = parseFormattedNumber(document.getElementById('previewTotal').textContent.replace('Rp ',
+                '').replace(/\./g, ''));
+            if (total <= 0) {
+                showToast('Total pembelian harus lebih dari 0!', 'error');
+                return;
+            }
+
             // Update hidden inputs
             document.getElementById('jenisTransaksi').value = selectedTransactionType.value;
             document.getElementById('metodePembayaran').value = selectedPaymentMethod.value;
@@ -2759,8 +2784,127 @@
                 form.appendChild(discountInput);
             });
 
-            // Submit form
-            form.submit();
+            // Log form data for debugging
+            console.log('Submitting form with data:', {
+                no_faktur: document.getElementById('noFaktur').value,
+                supplier_id: document.getElementById('supplierId').value,
+                tanggal: document.querySelector('input[name="tanggal"]').value,
+                jenis_transaksi: document.getElementById('jenisTransaksi').value,
+                metode_pembayaran: document.getElementById('metodePembayaran').value,
+                kas_bank_id: document.getElementById('kasBankId').value,
+                dp_amount: document.getElementById('dpAmount').value,
+                diskon: document.getElementById('diskon').value,
+                cart_items: cart.length
+            });
+
+            // Show loading overlay
+            const button = this;
+            const originalText = button.innerHTML;
+            const cancelButton = document.getElementById('closePreviewModal');
+
+            // Disable both buttons and show loading state
+            button.disabled = true;
+            cancelButton.disabled = true;
+            button.classList.add('opacity-75', 'cursor-not-allowed');
+            cancelButton.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // Add loading overlay to modal content
+            const modalContent = orderPreviewModal.querySelector('.bg-white');
+            const loadingOverlay = document.createElement('div');
+            loadingOverlay.className =
+                'absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50 rounded-2xl';
+            loadingOverlay.innerHTML = `
+                <div class="text-center">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4">
+                        <i class="ti ti-loader animate-spin text-2xl text-orange-600"></i>
+                    </div>
+                    <p class="text-lg font-semibold text-gray-800" id="loadingText">Memvalidasi data...</p>
+                    <p class="text-sm text-gray-500 mt-1">Mohon tunggu sebentar</p>
+                    
+                    <!-- Progress Bar -->
+                    <div class="w-64 bg-gray-200 rounded-full h-2 mt-4 mx-auto">
+                        <div id="progressBar" class="bg-orange-600 h-2 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2" id="progressText">0%</p>
+                </div>
+            `;
+            modalContent.appendChild(loadingOverlay);
+
+            // Animation sequence for better UX
+            const loadingStates = [{
+                    text: 'Memvalidasi data...',
+                    buttonText: '<i class="ti ti-loader animate-spin mr-2"></i>Memvalidasi...',
+                    progress: 25,
+                    delay: 0
+                },
+                {
+                    text: 'Menyimpan ke database...',
+                    buttonText: '<i class="ti ti-loader animate-spin mr-2"></i>Menyimpan...',
+                    progress: 60,
+                    delay: 1000
+                },
+                {
+                    text: 'Berhasil tersimpan!',
+                    buttonText: '<i class="ti ti-check animate-pulse mr-2"></i>Berhasil!',
+                    progress: 90,
+                    delay: 2000
+                },
+                {
+                    text: 'Mengalihkan halaman...',
+                    buttonText: '<i class="ti ti-check animate-pulse mr-2"></i>Mengalihkan...',
+                    progress: 100,
+                    delay: 2500
+                }
+            ];
+
+            // Execute loading animation sequence
+            loadingStates.forEach((state, index) => {
+                setTimeout(() => {
+                    // Update overlay text
+                    const loadingText = document.getElementById('loadingText');
+                    const progressBar = document.getElementById('progressBar');
+                    const progressText = document.getElementById('progressText');
+
+                    if (loadingText) {
+                        loadingText.textContent = state.text;
+                    }
+
+                    // Update progress bar
+                    if (progressBar) {
+                        progressBar.style.width = state.progress + '%';
+                    }
+                    if (progressText) {
+                        progressText.textContent = state.progress + '%';
+                    }
+
+                    // Update button text
+                    button.innerHTML = state.buttonText;
+
+                    // Change icon color for success states
+                    if (state.progress >= 90) {
+                        const icon = loadingOverlay.querySelector('.ti-loader');
+                        if (icon) {
+                            icon.className = 'ti ti-check animate-pulse text-2xl text-green-600';
+                        }
+                        const iconBg = loadingOverlay.querySelector('.bg-orange-100');
+                        if (iconBg) {
+                            iconBg.className =
+                                'inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4';
+                        }
+                        if (progressBar) {
+                            progressBar.className =
+                                'bg-green-600 h-2 rounded-full transition-all duration-1000 ease-out';
+                        }
+                    }
+
+                    // If this is the last state, submit the form
+                    if (index === loadingStates.length - 1) {
+                        setTimeout(() => {
+                            form.submit();
+                        }, 800);
+                    }
+                }, state.delay);
+            });
         });
 
         function highlightCard(className) {

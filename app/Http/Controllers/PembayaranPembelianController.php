@@ -87,7 +87,10 @@ class PembayaranPembelianController extends Controller
             ->orderBy('nama')
             ->get();
 
-        return view('pembayaran-pembelian.create', compact('pembelian', 'metodePembayaran'));
+        // Get kas/bank data
+        $kasBank = \App\Models\KasBank::orderBy('nama')->get();
+
+        return view('pembayaran-pembelian.create', compact('pembelian', 'metodePembayaran', 'kasBank'));
     }
 
     /**
@@ -110,6 +113,7 @@ class PembayaranPembelianController extends Controller
             'pembelian_id' => 'required|exists:pembelian,id',
             'jumlah' => 'required|string',
             'metode_pembayaran' => 'required|string|max:50',
+            'kas_bank_id' => 'nullable|exists:kas_bank,id',
             'tanggal' => 'required|date',
             'keterangan' => 'nullable|string|max:255',
         ], [
@@ -117,6 +121,7 @@ class PembayaranPembelianController extends Controller
             'pembelian_id.exists' => 'Transaksi tidak valid.',
             'jumlah.required' => 'Jumlah bayar wajib diisi.',
             'metode_pembayaran.required' => 'Metode pembayaran wajib dipilih.',
+            'kas_bank_id.exists' => 'Kas/Bank yang dipilih tidak valid.',
             'tanggal.required' => 'Tanggal pembayaran wajib diisi.',
             'tanggal.date' => 'Format tanggal tidak valid.',
             'keterangan.max' => 'Keterangan maksimal 255 karakter.',
@@ -158,7 +163,8 @@ class PembayaranPembelianController extends Controller
                 'request_data' => $request->all(),
                 'validated_data' => $validated,
                 'jumlah_numeric' => $jumlahNumeric,
-                'metode_pembayaran' => $validated['metode_pembayaran']
+                'metode_pembayaran' => $validated['metode_pembayaran'],
+                'kas_bank_id' => $validated['kas_bank_id'] ?? null
             ]);
 
             // Get the pembelian
@@ -220,6 +226,7 @@ class PembayaranPembelianController extends Controller
                 'tanggal' => $validated['tanggal'],
                 'jumlah_bayar' => $validated['jumlah_raw'],
                 'metode_pembayaran' => $validated['metode_pembayaran'],
+                'kas_bank_id' => $validated['kas_bank_id'],
                 'status_bayar' => $statusBayar,
                 'keterangan' => $validated['keterangan'],
                 'user_id' => Auth::id(),
@@ -243,6 +250,7 @@ class PembayaranPembelianController extends Controller
                 'pembelian_id' => $pembelian->id,
                 'amount' => $validated['jumlah_raw'],
                 'method' => $validated['metode_pembayaran'],
+                'kas_bank_id' => $validated['kas_bank_id'] ?? null,
                 'status_bayar' => $statusBayar,
                 'payment_logic' => [
                     'sudah_dibayar' => $sudahDibayar,
@@ -261,7 +269,8 @@ class PembayaranPembelianController extends Controller
                     'data' => [
                         'pembayaran_id' => $pembayaran->id,
                         'no_bukti' => $pembayaran->no_bukti,
-                        'jumlah' => $pembayaran->jumlah_bayar
+                        'jumlah' => $pembayaran->jumlah_bayar,
+                        'kas_bank_id' => $pembayaran->kas_bank_id
                     ]
                 ]);
             }
@@ -352,6 +361,7 @@ class PembayaranPembelianController extends Controller
                 'pembelian_id' => 'required|exists:pembelian,id',
                 'jumlah_raw' => 'required|string',
                 'metode_pembayaran' => 'required|string|max:50',
+                'kas_bank_id' => 'nullable|exists:kas_bank,id',
                 'tanggal' => 'required|date',
                 'status_bayar' => 'required|in:P,D,A,B',
                 'keterangan' => 'nullable|string',
@@ -387,6 +397,7 @@ class PembayaranPembelianController extends Controller
                 'tanggal' => $validated['tanggal'],
                 'jumlah_bayar' => $jumlahBayar,
                 'metode_pembayaran' => $validated['metode_pembayaran'],
+                'kas_bank_id' => $validated['kas_bank_id'],
                 'status_bayar' => $validated['status_bayar'],
                 'keterangan' => $validated['keterangan'],
             ]);
@@ -474,7 +485,7 @@ class PembayaranPembelianController extends Controller
             $pembayaranPembelian->delete();
 
             // Recalculate pembelian payment status
-            $totalDibayar = $pembelian->pembayaranPembelian->sum('jumlah_bayar');
+            $totalDibayar = PembayaranPembelian::where('pembelian_id', $pembelian->id)->sum('jumlah_bayar');
 
             if ($totalDibayar >= $pembelian->total) {
                 $pembelian->update(['status_pembayaran' => 'lunas']);
@@ -499,7 +510,7 @@ class PembayaranPembelianController extends Controller
                 ]);
             }
 
-            return redirect()->route('pembayaran-pembelian.index')
+            return redirect()->route('pembelian.show', $pembelian->encrypted_id)
                 ->with('success', 'Pembayaran berhasil dihapus.');
         } catch (\Exception $e) {
             DB::rollback();
@@ -543,6 +554,12 @@ class PembayaranPembelianController extends Controller
                     'jumlah_bayar' => $pembayaranPembelian->jumlah_bayar,
                     'metode_pembayaran' => $pembayaranPembelian->metode_pembayaran,
                     'metode_pembayaran_display' => $pembayaranPembelian->metode_pembayaran_display,
+                    'kas_bank_id' => $pembayaranPembelian->kas_bank_id,
+                    'kas_bank' => $pembayaranPembelian->kasBank ? [
+                        'id' => $pembayaranPembelian->kasBank->id,
+                        'nama' => $pembayaranPembelian->kasBank->nama,
+                        'jenis' => $pembayaranPembelian->kasBank->jenis,
+                    ] : null,
                     'status_bayar' => $pembayaranPembelian->status_bayar,
                     'status_bayar_display' => $pembayaranPembelian->status_bayar_display,
                     'keterangan' => $pembayaranPembelian->keterangan,
@@ -601,6 +618,7 @@ class PembayaranPembelianController extends Controller
                     'tanggal' => $pembayaranPembelian->tanggal->format('d/m/Y H:i'),
                     'jumlah_bayar' => number_format($pembayaranPembelian->jumlah_bayar, 0, ',', '.'),
                     'metode_pembayaran' => $pembayaranPembelian->metode_pembayaran_display,
+                    'kas_bank' => $pembayaranPembelian->kasBank ? $pembayaranPembelian->kasBank->nama : '-',
                     'status_bayar' => $pembayaranPembelian->status_bayar_display,
                     'keterangan' => $pembayaranPembelian->keterangan,
                     'user_name' => $pembayaranPembelian->user->name,
@@ -621,6 +639,108 @@ class PembayaranPembelianController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Pembayaran pembelian tidak ditemukan.'
+            ]);
+        }
+    }
+
+    /**
+     * Get transactions for AJAX request (for search modal)
+     */
+    public function getTransactions(Request $request)
+    {
+        try {
+            // Untuk testing yang sangat sederhana
+            $testData = [
+                [
+                    'id' => 'TEST001',
+                    'encrypted_id' => encrypt(1),
+                    'no_faktur' => 'TEST001',
+                    'tanggal' => '01/01/2024',
+                    'total' => 1000000,
+                    'sisa_pembayaran' => 500000,
+                    'status_pembayaran' => 'belum_bayar',
+                    'supplier' => [
+                        'nama' => 'Supplier Test'
+                    ]
+                ]
+            ];
+
+            return response()->json([
+                'success' => true,
+                'transactions' => $testData
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Get transaction details for AJAX request
+     */
+    public function getTransactionDetails(Request $request)
+    {
+        try {
+            $encryptedId = $request->get('id');
+            
+            Log::info('getTransactionDetails called', [
+                'encrypted_id' => $encryptedId,
+                'request_data' => $request->all()
+            ]);
+
+            $pembelian = Pembelian::findByEncryptedId($encryptedId);
+
+            if (!$pembelian) {
+                Log::warning('Pembelian not found', [
+                    'encrypted_id' => $encryptedId
+                ]);
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Transaksi tidak ditemukan.'
+                ]);
+            }
+
+            $pembelian->load(['supplier', 'pembayaranPembelian']);
+            
+            $totalDibayar = $pembelian->pembayaranPembelian->sum('jumlah_bayar');
+            $sisaPembayaran = $pembelian->total - $totalDibayar;
+
+            $transaction = [
+                'id' => $pembelian->id,
+                'no_faktur' => $pembelian->no_faktur,
+                'tanggal' => $pembelian->tanggal->format('d/m/Y'),
+                'total' => $pembelian->total,
+                'total_dibayar' => $totalDibayar,
+                'sisa_pembayaran' => $sisaPembayaran,
+                'status_pembayaran' => $pembelian->status_pembayaran,
+                'supplier' => [
+                    'id' => $pembelian->supplier->id,
+                    'nama' => $pembelian->supplier->nama
+                ]
+            ];
+
+            Log::info('Transaction details loaded', [
+                'pembelian_id' => $pembelian->id,
+                'transaction_data' => $transaction
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'transaction' => $transaction
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error in getTransactionDetails', [
+                'encrypted_id' => $request->get('id'),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memuat detail transaksi: ' . $e->getMessage()
             ]);
         }
     }

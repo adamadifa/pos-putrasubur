@@ -439,7 +439,7 @@
                                             <div class="flex items-center space-x-4 text-sm text-gray-600">
                                                 <div class="flex items-center">
                                                     <i class="ti ti-calendar text-blue-500 mr-1"></i>
-                                                    <span>{{ $pembayaran->tanggal->format('d M Y, H:i') }}</span>
+                                                    <span>{{ $pembayaran->tanggal->format('d M Y') }}</span>
                                                 </div>
                                                 <div class="flex items-center">
                                                     <i class="ti ti-credit-card text-purple-500 mr-1"></i>
@@ -474,9 +474,6 @@
                                         <div class="text-right">
                                             <div class="text-lg font-bold text-gray-900">
                                                 Rp {{ number_format($pembayaran->jumlah_bayar, 0, ',', '.') }}
-                                            </div>
-                                            <div class="text-xs text-gray-500">
-                                                {{ $pembayaran->tanggal->format('H:i') }}
                                             </div>
                                         </div>
 
@@ -1992,9 +1989,16 @@
                     },
                     credentials: 'same-origin'
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (response.redirected) {
+                        // If redirected, follow the redirect
+                        window.location.href = response.url;
+                    } else {
+                        return response.json();
+                    }
+                })
                 .then(data => {
-                    if (data.success) {
+                    if (data && data.success) {
                         Swal.fire({
                             title: 'Berhasil!',
                             text: 'Pembayaran berhasil dihapus',
@@ -2005,7 +2009,7 @@
                             // Reload page to show updated data
                             window.location.reload();
                         });
-                    } else {
+                    } else if (data) {
                         throw new Error(data.message || 'Terjadi kesalahan saat menghapus pembayaran');
                     }
                 })

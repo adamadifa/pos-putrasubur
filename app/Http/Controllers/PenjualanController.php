@@ -407,7 +407,16 @@ class PenjualanController extends Controller
         // Get available products
         $produk = Produk::with(['kategori', 'satuan'])->orderBy('nama_produk')->get();
 
-        return view('penjualan.edit', compact('penjualan', 'pelanggan', 'produk'));
+        // Get active payment methods
+        $metodePembayaran = \App\Models\MetodePembayaran::where('status', true)
+            ->orderBy('urutan')
+            ->orderBy('nama')
+            ->get();
+
+        // Get kas/bank data
+        $kasBank = \App\Models\KasBank::orderBy('nama')->get();
+
+        return view('penjualan.edit', compact('penjualan', 'pelanggan', 'produk', 'metodePembayaran', 'kasBank'));
     }
 
     /**
@@ -437,6 +446,8 @@ class PenjualanController extends Controller
             'jenis_transaksi' => 'required|in:tunai,kredit',
             'dp_amount' => 'nullable|numeric|min:0',
             'diskon' => 'nullable|numeric|min:0',
+            'metode_pembayaran' => 'nullable|string|max:50',
+            'kas_bank_id' => 'nullable|exists:kas_bank,id',
             'items' => 'required|array|min:1',
             'items.*.produk_id' => 'required|exists:produk,id',
             'items.*.qty' => 'required|numeric|min:0.1',
@@ -444,7 +455,17 @@ class PenjualanController extends Controller
             'items.*.discount' => 'nullable|numeric|min:0',
         ]);
 
+        // Additional validation for metode_pembayaran to ensure it's active
+        if ($validated['metode_pembayaran']) {
+            $metodeExists = \App\Models\MetodePembayaran::where('kode', $validated['metode_pembayaran'])
+                ->where('status', true)
+                ->exists();
 
+            if (!$metodeExists) {
+                return back()->withInput()
+                    ->withErrors(['metode_pembayaran' => 'Metode pembayaran yang dipilih tidak aktif.']);
+            }
+        }
 
         DB::beginTransaction();
 
@@ -518,84 +539,84 @@ class PenjualanController extends Controller
                 $produk->decrement('stok', $item['qty']);
             }
 
-            // Create new pembayaran records
-            if ($validated['jenis_transaksi'] === 'kredit') {
+            // Create payment record if there's payment amount
+            $paymentAmount = 0;
+            if ($validated['jenis_transaksi'] === 'tunai') {
+                // For cash transactions, payment amount equals total after discount
+                $paymentAmount = $totalSetelahDiskon;
+            } elseif ($validated['jenis_transaksi'] === 'kredit') {
                 $dpAmount = $validated['dp_amount'] ?? 0;
-
-                // Log the transaction details for debugging
-                Log::info('Processing kredit transaction', [
-                    'penjualan_id' => $penjualan->id,
-                    'dp_amount' => $dpAmount,
-                    'total' => $totalSetelahDiskon,
-                    'status_pembayaran' => $statusPembayaran
-                ]);
-
                 if ($dpAmount > 0) {
-                    // Generate payment reference number
-                    $noBukti = 'PAY-' . date('Ymd') . '-' . str_pad($penjualan->id, 4, '0', STR_PAD_LEFT);
-
-                    // Create DP payment record
-                    $pembayaranPenjualan = PembayaranPenjualan::create([
-                        'penjualan_id' => $penjualan->id,
-                        'no_bukti' => $noBukti,
-                        'tanggal' => $validated['tanggal'],
-                        'jumlah_bayar' => $dpAmount,
-                        'metode_pembayaran' => 'dp',
-                        'status_bayar' => 'D', // D = DP
-                        'keterangan' => 'Pembayaran DP',
-                        'user_id' => Auth::id(),
-                        'kas_bank_id' => $validated['kas_bank_id'],
-                    ]);
-
-                    // Note: Saldo kas/bank akan otomatis terupdate melalui database trigger
-
-                    Log::info('Created DP payment record', ['no_bukti' => $noBukti, 'amount' => $dpAmount]);
+                    $paymentAmount = $dpAmount;
                 }
+            }
 
-                // Only create credit record if there's remaining amount AND DP > 0
-                // If DP = 0, no payment records should be created (pure credit transaction)
-                if ($dpAmount > 0) {
-                    $remainingAmount = $totalSetelahDiskon - $dpAmount;
-                    if ($remainingAmount > 0) {
-                        $noBuktiKredit = 'PAY-' . date('Ymd') . '-' . str_pad($penjualan->id, 4, '0', STR_PAD_LEFT) . '-CR';
-
-                        PembayaranPenjualan::create([
-                            'penjualan_id' => $penjualan->id,
-                            'no_bukti' => $noBuktiKredit,
-                            'tanggal' => $validated['tanggal'],
-                            'jumlah_bayar' => $remainingAmount,
-                            'metode_pembayaran' => 'kredit',
-                            'status_bayar' => 'A', // A = Angsuran
-                            'keterangan' => 'Sisa pembayaran kredit',
-                            'user_id' => Auth::id(),
-                        ]);
-
-                        Log::info('Created credit payment record', ['no_bukti' => $noBuktiKredit, 'amount' => $remainingAmount]);
-                    }
-                } else {
-                    // DP = 0, no payment records are created - this is a pure credit transaction
-                    Log::info('No payment records created for kredit transaction with DP 0', [
-                        'penjualan_id' => $penjualan->id,
-                        'total' => $totalSetelahDiskon
-                    ]);
-                }
-            } else {
-                // For cash transactions, create full payment record
+            if ($paymentAmount > 0) {
+                // Generate payment reference number
                 $noBukti = 'PAY-' . date('Ymd') . '-' . str_pad($penjualan->id, 4, '0', STR_PAD_LEFT);
+
+                // Get metode_pembayaran from form, with proper validation
+                $metodePembayaran = $validated['metode_pembayaran'] ?? null;
+
+                // If no metode_pembayaran selected, get default based on transaction type
+                if (!$metodePembayaran) {
+                    if ($validated['jenis_transaksi'] === 'tunai') {
+                        // For cash transactions, get the first active 'tunai' method
+                        $defaultMetode = \App\Models\MetodePembayaran::where('status', true)
+                            ->where('kode', 'like', '%tunai%')
+                            ->first();
+                        $metodePembayaran = $defaultMetode ? $defaultMetode->kode : null;
+                    } else {
+                        // For credit transactions, get the first active method
+                        $defaultMetode = \App\Models\MetodePembayaran::where('status', true)
+                            ->orderBy('urutan')
+                            ->first();
+                        $metodePembayaran = $defaultMetode ? $defaultMetode->kode : null;
+                    }
+                }
+
+                // Validate that metode_pembayaran exists in database
+                if ($metodePembayaran) {
+                    $metodeExists = \App\Models\MetodePembayaran::where('kode', $metodePembayaran)
+                        ->where('status', true)
+                        ->exists();
+
+                    if (!$metodeExists) {
+                        throw new \Exception('Metode pembayaran yang dipilih tidak valid atau tidak aktif.');
+                    }
+                }
 
                 $pembayaranPenjualan = PembayaranPenjualan::create([
                     'penjualan_id' => $penjualan->id,
                     'no_bukti' => $noBukti,
                     'tanggal' => $validated['tanggal'],
-                    'jumlah_bayar' => $totalSetelahDiskon,
-                    'metode_pembayaran' => 'tunai',
-                    'status_bayar' => 'P', // P = Pelunasan
-                    'keterangan' => 'Pembayaran tunai',
+                    'jumlah_bayar' => $paymentAmount,
+                    'metode_pembayaran' => $metodePembayaran,
+                    'status_bayar' => $validated['jenis_transaksi'] === 'tunai' ? 'P' : 'D', // P = Pelunasan, D = DP
+                    'keterangan' => $validated['jenis_transaksi'] === 'tunai'
+                        ? 'Pembayaran tunai penuh'
+                        : 'Pembayaran DP awal',
                     'user_id' => Auth::id(),
                     'kas_bank_id' => $validated['kas_bank_id'],
                 ]);
 
                 // Note: Saldo kas/bank akan otomatis terupdate melalui database trigger
+
+                Log::info('Created payment record', [
+                    'penjualan_id' => $penjualan->id,
+                    'no_bukti' => $noBukti,
+                    'amount' => $paymentAmount,
+                    'jenis_transaksi' => $validated['jenis_transaksi'],
+                    'metode_pembayaran' => $metodePembayaran
+                ]);
+            } else {
+                // No payment amount - this could be a pure credit transaction
+                Log::info('No payment record created', [
+                    'penjualan_id' => $penjualan->id,
+                    'jenis_transaksi' => $validated['jenis_transaksi'],
+                    'dp_amount' => $validated['dp_amount'] ?? 0,
+                    'status_pembayaran' => $statusPembayaran
+                ]);
             }
 
             DB::commit();
