@@ -17,12 +17,9 @@ class TransaksiKasBank extends Model
         'no_bukti',
         'jenis_transaksi',
         'kategori_transaksi',
-        'kategori_transaksi_id',
         'referensi_id',
         'referensi_tipe',
         'jumlah',
-        'saldo_sebelum',
-        'saldo_sesudah',
         'keterangan',
         'user_id'
     ];
@@ -30,8 +27,6 @@ class TransaksiKasBank extends Model
     protected $casts = [
         'tanggal' => 'date',
         'jumlah' => 'decimal:2',
-        'saldo_sebelum' => 'decimal:2',
-        'saldo_sesudah' => 'decimal:2',
     ];
 
     // Relationships
@@ -45,10 +40,7 @@ class TransaksiKasBank extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function kategoriTransaksi()
-    {
-        return $this->belongsTo(KategoriTransaksi::class, 'kategori_transaksi_id');
-    }
+
 
     public function pembayaranPenjualan()
     {
@@ -110,4 +102,3 @@ class TransaksiKasBank extends Model
         return $query->where('kategori_transaksi', $kategori);
     }
 }
-

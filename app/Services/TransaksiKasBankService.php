@@ -33,12 +33,9 @@ class TransaksiKasBankService
                 'no_bukti' => $this->generateNoBukti('PJ'),
                 'jenis_transaksi' => 'D', // Debet = pemasukan
                 'kategori_transaksi' => 'PJ', // Penjualan
-                'kategori_transaksi_id' => null,
                 'referensi_id' => $pembayaranPenjualan->id,
                 'referensi_tipe' => 'PPJ', // Pembayaran Penjualan
                 'jumlah' => $pembayaranPenjualan->jumlah_bayar,
-                'saldo_sebelum' => $saldoInfo['saldo_sebelum'],
-                'saldo_sesudah' => $saldoInfo['saldo_sesudah'],
                 'keterangan' => "Pembayaran penjualan {$pembayaranPenjualan->no_bukti} - {$pembayaranPenjualan->penjualan->no_faktur}",
                 'user_id' => $pembayaranPenjualan->user_id
             ]);
@@ -69,12 +66,9 @@ class TransaksiKasBankService
                 'no_bukti' => $this->generateNoBukti('PB'),
                 'jenis_transaksi' => 'K', // Kredit = pengeluaran
                 'kategori_transaksi' => 'PB', // Pembelian
-                'kategori_transaksi_id' => null,
                 'referensi_id' => $pembayaranPembelian->id,
                 'referensi_tipe' => 'PPB', // Pembayaran Pembelian
                 'jumlah' => $pembayaranPembelian->jumlah_bayar,
-                'saldo_sebelum' => $saldoInfo['saldo_sebelum'],
-                'saldo_sesudah' => $saldoInfo['saldo_sesudah'],
                 'keterangan' => "Pembayaran pembelian {$pembayaranPembelian->no_bukti} - {$pembayaranPembelian->pembelian->no_faktur}",
                 'user_id' => $pembayaranPembelian->user_id
             ]);
@@ -149,4 +143,3 @@ class TransaksiKasBankService
         return $prefix . $date . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
     }
 }
-

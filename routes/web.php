@@ -12,6 +12,11 @@ use App\Http\Controllers\PembayaranPembelianController;
 use App\Http\Controllers\MetodePembayaranController;
 use App\Http\Controllers\PrinterSettingController;
 use App\Http\Controllers\KasBankController;
+use App\Http\Controllers\TransaksiKasBankController;
+use App\Http\Controllers\SaldoAwalBulananController;
+use App\Http\Controllers\SaldoAwalProdukController;
+use App\Http\Controllers\LaporanKasBankController;
+use App\Http\Controllers\LaporanStokController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -114,6 +119,18 @@ Route::middleware('auth')->group(function () {
     // Kas & Bank Routes
     Route::resource('kas-bank', KasBankController::class);
 
+    // Transaksi Kas & Bank Routes
+    Route::resource('transaksi-kas-bank', TransaksiKasBankController::class);
+    Route::resource('saldo-awal-bulanan', SaldoAwalBulananController::class)->except(['show', 'edit', 'update']);
+    Route::resource('saldo-awal-produk', SaldoAwalProdukController::class)->except(['show', 'edit', 'update']);
+
+    // Saldo Awal Bulanan API Routes
+    Route::post('saldo-awal-bulanan/get-saldo-akhir', [SaldoAwalBulananController::class, 'getSaldoAkhirBulanSebelumnya'])->name('saldo-awal-bulanan.get-saldo-akhir');
+
+    // Saldo Awal Produk API Routes
+    Route::post('saldo-awal-produk/get-all-produk', [SaldoAwalProdukController::class, 'getAllProduk'])->name('saldo-awal-produk.get-all-produk');
+    Route::get('saldo-awal-produk/{saldoAwalProduk}/detail', [SaldoAwalProdukController::class, 'showDetail'])->name('saldo-awal-produk.detail');
+
     // Transaksi Pembelian Routes
     Route::prefix('pembelian')->name('pembelian.')->group(function () {
         Route::get('/', [PembelianController::class, 'index'])->name('index');
@@ -137,8 +154,6 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}', [PembayaranPembelianController::class, 'destroy'])->name('destroy');
         Route::get('/{id}/detail', [PembayaranPembelianController::class, 'detail'])->name('detail');
         Route::get('/{id}/print', [PembayaranPembelianController::class, 'print'])->name('print');
-        
-
     });
 
     // Laporan Routes
@@ -170,6 +185,20 @@ Route::middleware('auth')->group(function () {
             Route::put('/{printerSetting}', [PrinterSettingController::class, 'update'])->name('update');
             Route::delete('/{printerSetting}', [PrinterSettingController::class, 'destroy'])->name('destroy');
             Route::post('/{printerSetting}/set-default', [PrinterSettingController::class, 'setDefault'])->name('set-default');
+        });
+    });
+
+    // Laporan Routes
+    Route::prefix('laporan')->name('laporan.')->group(function () {
+        Route::prefix('kas-bank')->name('kas-bank.')->group(function () {
+            Route::get('/', [LaporanKasBankController::class, 'index'])->name('index');
+            Route::post('/export-pdf', [LaporanKasBankController::class, 'exportPdf'])->name('export-pdf');
+        });
+
+        Route::prefix('stok')->name('stok.')->group(function () {
+            Route::get('/', [LaporanStokController::class, 'index'])->name('index');
+            Route::post('/generate', [LaporanStokController::class, 'generateLaporan'])->name('generate');
+            Route::post('/export-pdf', [LaporanStokController::class, 'exportPdf'])->name('export-pdf');
         });
     });
 });

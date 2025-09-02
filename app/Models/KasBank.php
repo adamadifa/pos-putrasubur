@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class KasBank extends Model
 {
@@ -98,11 +99,14 @@ class KasBank extends Model
         return $this->hasMany(PembayaranPembelian::class, 'kas_bank_id');
     }
 
+    public function saldoAwalBulanan()
+    {
+        return $this->hasMany(SaldoAwalBulanan::class, 'kas_bank_id');
+    }
+
     // Methods untuk update saldo
     public function updateSaldo($jumlah, $jenisTransaksi = 'D')
     {
-        $saldoSebelum = $this->saldo_terkini;
-
         if ($jenisTransaksi === 'D') {
             // Debet = menambah saldo
             $this->saldo_terkini += $jumlah;
@@ -114,8 +118,53 @@ class KasBank extends Model
         $this->save();
 
         return [
-            'saldo_sebelum' => $saldoSebelum,
-            'saldo_sesudah' => $this->saldo_terkini
+            'saldo_terkini' => $this->saldo_terkini
         ];
+    }
+
+    // Method untuk menghitung saldo terkini berdasarkan saldo awal bulanan
+    public function getSaldoTerkiniAttribute()
+    {
+        $today = now();
+        $bulan = $today->month;
+        $tahun = $today->year;
+
+        // Ambil saldo awal bulan ini
+        $saldoAwal = SaldoAwalBulanan::getSaldoAwal($this->id, $bulan, $tahun);
+
+        // Hitung total transaksi bulan ini sampai hari ini
+        $totalTransaksi = $this->transaksiKasBank()
+            ->whereYear('tanggal', $tahun)
+            ->whereMonth('tanggal', $bulan)
+            ->whereDate('tanggal', '<=', $today)
+            ->get()
+            ->sum(function ($transaksi) {
+                return $transaksi->jenis_transaksi == 'D' ? $transaksi->jumlah : -$transaksi->jumlah;
+            });
+
+        return $saldoAwal + $totalTransaksi;
+    }
+
+    // Method untuk mendapatkan saldo pada tanggal tertentu
+    public function getSaldoPadaTanggal($tanggal)
+    {
+        $date = Carbon::parse($tanggal);
+        $bulan = $date->month;
+        $tahun = $date->year;
+
+        // Ambil saldo awal bulan tersebut
+        $saldoAwal = SaldoAwalBulanan::getSaldoAwal($this->id, $bulan, $tahun);
+
+        // Hitung total transaksi bulan tersebut sampai tanggal yang diminta
+        $totalTransaksi = $this->transaksiKasBank()
+            ->whereYear('tanggal', $tahun)
+            ->whereMonth('tanggal', $bulan)
+            ->whereDate('tanggal', '<=', $date)
+            ->get()
+            ->sum(function ($transaksi) {
+                return $transaksi->jenis_transaksi == 'D' ? $transaksi->jumlah : -$transaksi->jumlah;
+            });
+
+        return $saldoAwal + $totalTransaksi;
     }
 }
