@@ -383,6 +383,53 @@ class PenjualanController extends Controller
     }
 
     /**
+     * Get penjualan detail for API (JSON response)
+     */
+    public function getDetail($id): JsonResponse
+    {
+        try {
+            $penjualan = Penjualan::with(['pelanggan', 'detailPenjualan.produk'])
+                ->findOrFail($id);
+
+            // Format the data for JSON response
+            $penjualanData = [
+                'id' => $penjualan->id,
+                'no_faktur' => $penjualan->no_faktur,
+                'tanggal' => \Carbon\Carbon::parse($penjualan->tanggal)->format('d/m/Y'),
+                'jam' => \Carbon\Carbon::parse($penjualan->created_at)->format('H:i'),
+                'pelanggan' => $penjualan->pelanggan,
+                'status_pembayaran' => $penjualan->status_pembayaran,
+                'jenis_transaksi' => $penjualan->jenis_transaksi,
+                'total' => $penjualan->total,
+                'diskon' => $penjualan->diskon,
+                'total_setelah_diskon' => $penjualan->total_setelah_diskon,
+                'detail_penjualan' => $penjualan->detailPenjualan->map(function ($detail) {
+                    return [
+                        'id' => $detail->id,
+                        'qty' => $detail->qty,
+                        'harga' => $detail->harga,
+                        'diskon' => $detail->discount ?? 0,
+                        'subtotal' => $detail->subtotal,
+                        'produk' => $detail->produk
+                    ];
+                })
+            ];
+
+            return response()->json([
+                'success' => true,
+                'penjualan' => $penjualanData
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error getting penjualan detail: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Penjualan tidak ditemukan'
+            ], 404);
+        }
+    }
+
+    /**
      * Show the form for editing the specified resource.
      */
     public function edit($encryptedId)

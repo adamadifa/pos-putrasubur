@@ -3,392 +3,367 @@
 namespace App\Http\Controllers;
 
 use App\Models\Produk;
-use App\Models\SaldoAwalProduk;
-use App\Models\DetailSaldoAwalProduk;
-use App\Models\DetailPembelian;
-use App\Models\DetailPenjualan;
-use App\Models\Pembelian;
-use App\Models\Penjualan;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class LaporanStokController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $produkList = \App\Models\Produk::with(['kategori', 'satuan'])
+        // Get filter values from request
+        $jenisPeriode = $request->get('jenis_periode', 'bulan');
+        $selectedProduk = $request->get('produk_id', '');
+        $selectedBulan = $request->get('bulan', date('n'));
+        $selectedTahun = $request->get('tahun', date('Y'));
+        $tanggalDari = $request->get('tanggal_dari', '');
+        $tanggalSampai = $request->get('tanggal_sampai', '');
+
+        // Get produk list
+        $produkList = Produk::with(['kategori', 'satuan'])
             ->orderBy('kategori_id')
             ->orderBy('nama_produk')
             ->get();
 
-        return view('laporan.stok.index', compact('produkList'));
-    }
+        // Generate bulan list
+        $bulanList = [
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
+        ];
 
-    /**
-     * Generate laporan stok berdasarkan periode
-     */
-    public function generateLaporan(Request $request): JsonResponse
-    {
-        $request->validate([
-            'periode_type' => 'required|in:bulan,tanggal',
-            'periode_bulan' => 'required_if:periode_type,bulan|integer|between:1,12',
-            'periode_tahun' => 'required_if:periode_type,bulan|integer|min:2020',
-            'tanggal_dari' => 'required_if:periode_type,tanggal|date',
-            'tanggal_sampai' => 'required_if:periode_type,tanggal|date|after_or_equal:tanggal_dari',
-            'produk_id' => 'nullable|exists:produk,id'
-        ]);
+        // Generate tahun list
+        $tahunList = [];
+        for ($i = 2020; $i <= date('Y') + 1; $i++) {
+            $tahunList[] = $i;
+        }
 
-        try {
-            if ($request->periode_type === 'bulan') {
-                return $this->generateLaporanByMonth($request->periode_bulan, $request->periode_tahun, $request->produk_id);
-            } else {
-                return $this->generateLaporanByDateRange($request->tanggal_dari, $request->tanggal_sampai, $request->produk_id);
+        $laporanData = null;
+
+        // Generate laporan if produk is selected
+        if ($selectedProduk) {
+            if ($jenisPeriode === 'tanggal' && $tanggalDari && $tanggalSampai) {
+                $laporanData = $this->generateLaporanByDateRange($selectedProduk, $tanggalDari, $tanggalSampai);
+            } elseif ($jenisPeriode === 'bulan' && $selectedBulan && $selectedTahun) {
+                $laporanData = $this->generateLaporan($selectedProduk, $selectedBulan, $selectedTahun);
             }
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ], 500);
         }
+
+        return view('laporan.stok.index', compact(
+            'jenisPeriode',
+            'selectedProduk',
+            'selectedBulan',
+            'selectedTahun',
+            'tanggalDari',
+            'tanggalSampai',
+            'produkList',
+            'bulanList',
+            'tahunList',
+            'laporanData'
+        ));
     }
 
     /**
-     * Generate laporan stok berdasarkan bulan
+     * Generate laporan stok per bulan
      */
-    private function generateLaporanByMonth($bulan, $tahun, $produkId = null): JsonResponse
+    private function generateLaporan($produkId, $bulan, $tahun)
     {
-        $query = Produk::with(['kategori', 'satuan'])
-            ->orderBy('kategori_id')
-            ->orderBy('nama_produk');
+        $produk = Produk::with(['kategori', 'satuan'])->findOrFail($produkId);
 
-        if ($produkId) {
-            $query->where('id', $produkId);
+        // Get saldo awal bulan dari saldo awal produk
+        $saldoAwalBulan = $this->getSaldoAwalProduk($produkId, $bulan, $tahun);
+
+        // Jika saldo awal bulan tidak ada, cari saldo awal terakhir terdekat
+        $saldoAwalTerakhir = null;
+        $periodeSaldoAwalTerakhir = null;
+        $tanggalMulaiHitung = null;
+
+        if ($saldoAwalBulan === 0) {
+            // Cari saldo awal terakhir terdekat (mundur dari bulan yang difilter)
+            $currentDate = \Carbon\Carbon::create($tahun, $bulan, 1);
+
+            for ($i = 0; $i < 12; $i++) { // Maksimal cari 12 bulan ke belakang
+                $currentDate->subMonth();
+                $bulanCari = $currentDate->month;
+                $tahunCari = $currentDate->year;
+
+                $saldoAwalCari = $this->getSaldoAwalProduk($produkId, $bulanCari, $tahunCari);
+
+                if ($saldoAwalCari > 0) {
+                    $saldoAwalTerakhir = $saldoAwalCari;
+                    $periodeSaldoAwalTerakhir = $this->getBulanNama($bulanCari) . ' ' . $tahunCari;
+                    $tanggalMulaiHitung = \Carbon\Carbon::create($tahunCari, $bulanCari, 1);
+                    break;
+                }
+            }
         }
 
-        $produkList = $query->get();
+        // Get transaksi dari awal bulan saldo awal terakhir sampai sebelum bulan yang difilter
+        $tanggalAwalBulanFilter = \Carbon\Carbon::create($tahun, $bulan, 1);
+        $transaksiSebelumPeriode = collect();
 
-        $laporanData = [];
-        $totalProduk = 0;
-        $totalNilaiStok = 0;
+        if ($saldoAwalTerakhir && $tanggalMulaiHitung) {
+            $transaksiSebelumPeriode = $this->getTransaksiProduk(
+                $produkId,
+                $tanggalMulaiHitung,
+                $tanggalAwalBulanFilter->copy()->subDay()
+            );
+        }
 
-        foreach ($produkList as $produk) {
-            // Hitung saldo awal bulan
-            $saldoAwal = $this->calculateSaldoAwalBulan($produk->id, $bulan, $tahun);
+        // Calculate saldo awal periode
+        $saldoAwal = $saldoAwalTerakhir ?: $saldoAwalBulan;
+        foreach ($transaksiSebelumPeriode as $transaksi) {
+            if ($transaksi['jenis'] == 'pembelian') {
+                $saldoAwal += $transaksi['jumlah'];
+            } else {
+                $saldoAwal -= $transaksi['jumlah'];
+            }
+        }
 
-            // Hitung pembelian bulan ini
-            $pembelianBulan = $this->calculatePembelianBulan($produk->id, $bulan, $tahun);
+        // Get transaksi bulan ini
+        $tanggalAkhirBulan = \Carbon\Carbon::create($tahun, $bulan, 1)->endOfMonth();
+        $transaksiBulanIni = $this->getTransaksiProduk($produkId, $tanggalAwalBulanFilter, $tanggalAkhirBulan);
 
-            // Hitung penjualan bulan ini
-            $penjualanBulan = $this->calculatePenjualanBulan($produk->id, $bulan, $tahun);
+        // Calculate summary
+        $totalPembelian = $transaksiBulanIni->where('jenis', 'pembelian')->sum('jumlah');
+        $totalPenjualan = $transaksiBulanIni->where('jenis', 'penjualan')->sum('jumlah');
+        $saldoAkhir = $saldoAwal + $totalPembelian - $totalPenjualan;
 
-            // Hitung saldo akhir (mutasi stok: saldo awal - penjualan + pembelian)
-            $saldoAkhir = $saldoAwal - $penjualanBulan + $pembelianBulan;
-
-            // Hitung nilai stok (menggunakan harga jual)
-            $nilaiStok = $saldoAkhir * ($produk->harga_jual ?? 0);
-
-            $laporanData[] = [
-                'produk_id' => $produk->id,
+        return [
+            'produk' => [
+                'id' => $produk->id,
                 'nama_produk' => $produk->nama_produk,
                 'kategori' => $produk->kategori->nama ?? '-',
                 'satuan' => $produk->satuan->nama ?? '-',
-                'foto' => $produk->foto ? asset('storage/' . $produk->foto) : null,
-                'saldo_awal' => $saldoAwal,
-                'pembelian' => $pembelianBulan,
-                'penjualan' => $penjualanBulan,
+                'foto' => $produk->foto,
+                'harga_beli' => $produk->harga_beli,
+                'harga_jual' => $produk->harga_jual,
+            ],
+            'periode' => [
+                'jenis' => 'bulan',
+                'bulan' => $bulan,
+                'tahun' => $tahun,
+                'bulan_nama' => $this->getBulanNama($bulan),
+                'tanggal_awal' => $tanggalAwalBulanFilter->format('d/m/Y'),
+                'tanggal_akhir' => $tanggalAkhirBulan->format('d/m/Y'),
+            ],
+            'saldo_awal' => $saldoAwal,
+            'saldo_awal_bulan' => $saldoAwalBulan,
+            'saldo_awal_terakhir' => $saldoAwalTerakhir ? [
+                'saldo' => $saldoAwalTerakhir,
+                'periode_saldo_awal' => $periodeSaldoAwalTerakhir,
+                'tanggal_mulai_hitung' => $tanggalMulaiHitung->format('d/m/Y'),
+            ] : null,
+            'transaksi_sebelum_periode' => $transaksiSebelumPeriode,
+            'transaksi' => $transaksiBulanIni,
+            'summary' => [
+                'total_pembelian' => $totalPembelian,
+                'total_penjualan' => $totalPenjualan,
                 'saldo_akhir' => $saldoAkhir,
-                'nilai_stok' => $nilaiStok,
-                'harga_jual' => $produk->harga_jual ?? 0
-            ];
-
-            $totalProduk++;
-            $totalNilaiStok += $nilaiStok;
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'periode' => $this->getBulanNama($bulan) . ' ' . $tahun,
-                'periode_type' => 'bulan',
-                'periode_bulan' => $bulan,
-                'periode_tahun' => $tahun,
-                'produk' => $laporanData,
-                'summary' => [
-                    'total_produk' => $totalProduk,
-                    'total_nilai_stok' => $totalNilaiStok
-                ]
+                'nilai_stok' => $saldoAkhir * $produk->harga_beli,
+            ],
+            'statistics' => [
+                'jumlah_transaksi' => $transaksiBulanIni->count(),
+                'transaksi_pembelian' => $transaksiBulanIni->where('jenis', 'pembelian')->count(),
+                'transaksi_penjualan' => $transaksiBulanIni->where('jenis', 'penjualan')->count(),
             ]
-        ]);
+        ];
     }
 
     /**
-     * Generate laporan stok berdasarkan range tanggal
+     * Generate laporan stok by date range
      */
-    private function generateLaporanByDateRange($tanggalDari, $tanggalSampai, $produkId = null): JsonResponse
+    private function generateLaporanByDateRange($produkId, $tanggalDari, $tanggalSampai)
     {
-        $query = Produk::with(['kategori', 'satuan'])
-            ->orderBy('kategori_id')
-            ->orderBy('nama_produk');
+        $produk = Produk::with(['kategori', 'satuan'])->findOrFail($produkId);
 
-        if ($produkId) {
-            $query->where('id', $produkId);
+        // Parse dates
+        $tanggalDari = \Carbon\Carbon::parse($tanggalDari);
+        $tanggalSampai = \Carbon\Carbon::parse($tanggalSampai);
+
+        // Get saldo awal bulan dari tanggal "dari"
+        $bulanDari = $tanggalDari->month;
+        $tahunDari = $tanggalDari->year;
+        $saldoAwalBulan = $this->getSaldoAwalProduk($produkId, $bulanDari, $tahunDari);
+
+        // Jika saldo awal bulan tidak ada, cari saldo awal terakhir terdekat
+        $saldoAwalTerakhir = null;
+        $periodeSaldoAwalTerakhir = null;
+        $tanggalMulaiHitung = null;
+
+        if ($saldoAwalBulan === 0) {
+            // Cari saldo awal terakhir terdekat (mundur dari bulan yang difilter)
+            $currentDate = \Carbon\Carbon::create($tahunDari, $bulanDari, 1);
+
+            for ($i = 0; $i < 12; $i++) { // Maksimal cari 12 bulan ke belakang
+                $currentDate->subMonth();
+                $bulanCari = $currentDate->month;
+                $tahunCari = $currentDate->year;
+
+                $saldoAwalCari = $this->getSaldoAwalProduk($produkId, $bulanCari, $tahunCari);
+
+                if ($saldoAwalCari > 0) {
+                    $saldoAwalTerakhir = $saldoAwalCari;
+                    $periodeSaldoAwalTerakhir = $this->getBulanNama($bulanCari) . ' ' . $tahunCari;
+                    $tanggalMulaiHitung = \Carbon\Carbon::create($tahunCari, $bulanCari, 1);
+                    break;
+                }
+            }
         }
 
-        $produkList = $query->get();
+        // Get transaksi dari awal bulan saldo awal terakhir sampai sebelum tanggal "dari"
+        $transaksiSebelumPeriode = collect();
 
-        $laporanData = [];
-        $totalProduk = 0;
-        $totalNilaiStok = 0;
+        if ($saldoAwalTerakhir && $tanggalMulaiHitung) {
+            $transaksiSebelumPeriode = $this->getTransaksiProduk(
+                $produkId,
+                $tanggalMulaiHitung,
+                $tanggalDari->copy()->subDay()
+            );
+        } elseif ($saldoAwalBulan > 0) {
+            // Jika ada saldo awal bulan, hitung dari awal bulan sampai sebelum tanggal "dari"
+            $tanggalAwalBulan = \Carbon\Carbon::create($tahunDari, $bulanDari, 1);
+            $transaksiSebelumPeriode = $this->getTransaksiProduk(
+                $produkId,
+                $tanggalAwalBulan,
+                $tanggalDari->copy()->subDay()
+            );
+        }
 
-        foreach ($produkList as $produk) {
-            // Hitung saldo awal periode (sampai tanggal dari)
-            $saldoAwalPeriode = $this->calculateSaldoAwalPeriode($produk->id, $tanggalDari);
+        // Calculate saldo awal periode
+        $saldoAwalPeriode = $saldoAwalTerakhir ?: $saldoAwalBulan;
+        foreach ($transaksiSebelumPeriode as $transaksi) {
+            if ($transaksi->jenis == 'pembelian') {
+                $saldoAwalPeriode += $transaksi->jumlah;
+            } else {
+                $saldoAwalPeriode -= $transaksi->jumlah;
+            }
+        }
 
-            // Hitung pembelian dalam periode
-            $pembelianPeriode = $this->calculatePembelianPeriode($produk->id, $tanggalDari, $tanggalSampai);
+        // Get transaksi dalam periode yang dipilih
+        $transaksi = $this->getTransaksiProduk($produkId, $tanggalDari, $tanggalSampai);
 
-            // Hitung penjualan dalam periode
-            $penjualanPeriode = $this->calculatePenjualanPeriode($produk->id, $tanggalDari, $tanggalSampai);
+        // Calculate summary
+        $totalPembelian = $transaksi->where('jenis', 'pembelian')->sum('jumlah');
+        $totalPenjualan = $transaksi->where('jenis', 'penjualan')->sum('jumlah');
+        $saldoAkhir = $saldoAwalPeriode + $totalPembelian - $totalPenjualan;
 
-            // Hitung saldo akhir (mutasi stok: saldo awal - penjualan + pembelian)
-            $saldoAkhir = $saldoAwalPeriode - $penjualanPeriode + $pembelianPeriode;
-
-            // Hitung nilai stok
-            $nilaiStok = $saldoAkhir * ($produk->harga_jual ?? 0);
-
-            $laporanData[] = [
-                'produk_id' => $produk->id,
+        return [
+            'produk' => [
+                'id' => $produk->id,
                 'nama_produk' => $produk->nama_produk,
                 'kategori' => $produk->kategori->nama ?? '-',
                 'satuan' => $produk->satuan->nama ?? '-',
-                'foto' => $produk->foto ? asset('storage/' . $produk->foto) : null,
-                'saldo_awal' => $saldoAwalPeriode,
-                'pembelian' => $pembelianPeriode,
-                'penjualan' => $penjualanPeriode,
+                'foto' => $produk->foto,
+                'harga_beli' => $produk->harga_beli,
+                'harga_jual' => $produk->harga_jual,
+            ],
+            'periode' => [
+                'jenis' => 'tanggal',
+                'tanggal_dari' => $tanggalDari->format('d/m/Y'),
+                'tanggal_sampai' => $tanggalSampai->format('d/m/Y'),
+                'bulan_nama' => $this->getBulanNama($bulanDari),
+                'tahun' => $tahunDari,
+            ],
+            'saldo_awal' => $saldoAwalPeriode,
+            'saldo_awal_bulan' => $saldoAwalBulan,
+            'saldo_awal_terakhir' => $saldoAwalTerakhir ? [
+                'saldo' => $saldoAwalTerakhir,
+                'periode_saldo_awal' => $periodeSaldoAwalTerakhir,
+                'tanggal_mulai_hitung' => $tanggalMulaiHitung->format('d/m/Y'),
+            ] : null,
+            'transaksi_sebelum_periode' => $transaksiSebelumPeriode,
+            'transaksi' => $transaksi,
+            'summary' => [
+                'total_pembelian' => $totalPembelian,
+                'total_penjualan' => $totalPenjualan,
                 'saldo_akhir' => $saldoAkhir,
-                'nilai_stok' => $nilaiStok,
-                'harga_jual' => $produk->harga_jual ?? 0
-            ];
-
-            $totalProduk++;
-            $totalNilaiStok += $nilaiStok;
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'periode' => Carbon::parse($tanggalDari)->format('d M Y') . ' - ' . Carbon::parse($tanggalSampai)->format('d M Y'),
-                'periode_type' => 'tanggal',
-                'tanggal_dari' => $tanggalDari,
-                'tanggal_sampai' => $tanggalSampai,
-                'produk' => $laporanData,
-                'summary' => [
-                    'total_produk' => $totalProduk,
-                    'total_nilai_stok' => $totalNilaiStok
-                ]
+                'nilai_stok' => $saldoAkhir * $produk->harga_beli,
+            ],
+            'statistics' => [
+                'jumlah_transaksi' => $transaksi->count(),
+                'transaksi_pembelian' => $transaksi->where('jenis', 'pembelian')->count(),
+                'transaksi_penjualan' => $transaksi->where('jenis', 'penjualan')->count(),
+                'jumlah_hari' => $tanggalDari->diffInDays($tanggalSampai) + 1,
             ]
-        ]);
+        ];
     }
 
     /**
-     * Hitung mutasi stok menggunakan UNION ALL query untuk performa yang lebih baik
+     * Get saldo awal produk untuk bulan dan tahun tertentu
      */
-    private function getMutasiStokUnionAll($produkId, $bulan, $tahun): array
+    private function getSaldoAwalProduk($produkId, $bulan, $tahun)
     {
-        $saldoAwal = $this->calculateSaldoAwalBulan($produkId, $bulan, $tahun);
+        // Cari saldo awal produk dari tabel detail_saldo_awal_produk
+        $saldoAwal = DB::table('detail_saldo_awal_produks as dsap')
+            ->join('saldo_awal_produk as sap', 'dsap.saldo_awal_produk_id', '=', 'sap.id')
+            ->where('dsap.produk_id', $produkId)
+            ->where('sap.periode_bulan', $bulan)
+            ->where('sap.periode_tahun', $tahun)
+            ->value('dsap.saldo_awal');
 
-        // Query UNION ALL untuk mendapatkan semua transaksi dalam satu query
-        $mutasiQuery = "
+        return $saldoAwal ?? 0;
+    }
+
+    /**
+     * Get transaksi produk dalam periode tertentu
+     */
+    private function getTransaksiProduk($produkId, $tanggalDari, $tanggalSampai)
+    {
+        // Format tanggal untuk query
+        $tanggalDariStr = $tanggalDari->format('Y-m-d');
+        $tanggalSampaiStr = $tanggalSampai->format('Y-m-d');
+
+        // Query UNION untuk menggabungkan transaksi pembelian dan penjualan
+        $transaksi = DB::select("
             SELECT 
                 'pembelian' as jenis,
-                SUM(d.qty) as qty,
-                p.tanggal
-            FROM detail_pembelians d
-            INNER JOIN pembelians p ON d.pembelian_id = p.id
-            WHERE d.produk_id = ? 
-            AND MONTH(p.tanggal) = ? 
-            AND YEAR(p.tanggal) = ?
+                pb.tanggal,
+                dpb.qty as jumlah,
+                CONCAT('Pembelian dari ', COALESCE(s.nama, 'Supplier')) as keterangan,
+                pb.no_faktur as no_transaksi
+            FROM detail_pembelian dpb
+            LEFT JOIN pembelian pb ON dpb.pembelian_id = pb.id
+            LEFT JOIN supplier s ON pb.supplier_id = s.id
+            WHERE dpb.produk_id = ? 
+            AND pb.tanggal BETWEEN ? AND ?
             
             UNION ALL
             
             SELECT 
                 'penjualan' as jenis,
-                SUM(d.qty) as qty,
-                p.tanggal
-            FROM detail_penjualans d
-            INNER JOIN penjualans p ON d.penjualan_id = p.id
-            WHERE d.produk_id = ? 
-            AND MONTH(p.tanggal) = ? 
-            AND YEAR(p.tanggal) = ?
-        ";
+                pj.tanggal,
+                dpj.qty as jumlah,
+                CONCAT('Penjualan ke ', COALESCE(p.nama, 'Pelanggan')) as keterangan,
+                pj.no_faktur as no_transaksi
+            FROM detail_penjualan dpj
+            LEFT JOIN penjualan pj ON dpj.penjualan_id = pj.id
+            LEFT JOIN pelanggan p ON pj.pelanggan_id = p.id
+            WHERE dpj.produk_id = ? 
+            AND pj.tanggal BETWEEN ? AND ?
+            
+            ORDER BY tanggal ASC, jenis ASC
+        ", [$produkId, $tanggalDariStr, $tanggalSampaiStr, $produkId, $tanggalDariStr, $tanggalSampaiStr]);
 
-        $results = \DB::select($mutasiQuery, [$produkId, $bulan, $tahun, $produkId, $bulan, $tahun]);
-
-        $pembelian = 0;
-        $penjualan = 0;
-
-        foreach ($results as $result) {
-            if ($result->jenis === 'pembelian') {
-                $pembelian += $result->qty ?? 0;
-            } else {
-                $penjualan += $result->qty ?? 0;
-            }
-        }
-
-        return [
-            'saldo_awal' => $saldoAwal,
-            'pembelian' => $pembelian,
-            'penjualan' => $penjualan,
-            'saldo_akhir' => $saldoAwal - $penjualan + $pembelian
-        ];
+        return collect($transaksi);
     }
 
     /**
-     * Hitung saldo awal bulan
+     * Get bulan name
      */
-    private function calculateSaldoAwalBulan($produkId, $bulan, $tahun): float
-    {
-        // Cari saldo awal untuk bulan dan tahun yang diminta
-        $saldoAwal = SaldoAwalProduk::whereHas('details', function ($query) use ($produkId) {
-            $query->where('produk_id', $produkId);
-        })
-            ->where('periode_bulan', $bulan)
-            ->where('periode_tahun', $tahun)
-            ->first();
-
-        if ($saldoAwal) {
-            $detail = $saldoAwal->details()->where('produk_id', $produkId)->first();
-            return $detail ? $detail->saldo_awal : 0;
-        }
-
-        return 0;
-    }
-
-    /**
-     * Hitung saldo awal periode (untuk range tanggal)
-     */
-    private function calculateSaldoAwalPeriode($produkId, $tanggalDari): float
-    {
-        $tanggalDariCarbon = Carbon::parse($tanggalDari);
-        $bulanDari = $tanggalDariCarbon->month;
-        $tahunDari = $tanggalDariCarbon->year;
-
-        // Cari saldo awal terakhir yang tersedia
-        $saldoAwalTerakhir = SaldoAwalProduk::whereHas('details', function ($query) use ($produkId) {
-            $query->where('produk_id', $produkId);
-        })
-            ->where(function ($query) use ($bulanDari, $tahunDari) {
-                $query->where('periode_tahun', '<', $tahunDari)
-                    ->orWhere(function ($q) use ($bulanDari, $tahunDari) {
-                        $q->where('periode_tahun', $tahunDari)
-                            ->where('periode_bulan', '<=', $bulanDari);
-                    });
-            })
-            ->orderBy('periode_tahun', 'desc')
-            ->orderBy('periode_bulan', 'desc')
-            ->first();
-
-        if (!$saldoAwalTerakhir) {
-            return 0;
-        }
-
-        $detail = $saldoAwalTerakhir->details()->where('produk_id', $produkId)->first();
-        $saldoAwal = $detail ? $detail->saldo_awal : 0;
-
-        // Hitung transaksi dari saldo awal terakhir sampai tanggal dari
-        $tanggalSaldoAwal = Carbon::create($saldoAwalTerakhir->periode_tahun, $saldoAwalTerakhir->periode_bulan, 1);
-
-        if ($tanggalSaldoAwal->lt($tanggalDariCarbon)) {
-            // Hitung pembelian dari saldo awal sampai tanggal dari
-            $pembelian = DetailPembelian::whereHas('pembelian', function ($query) use ($tanggalSaldoAwal, $tanggalDariCarbon) {
-                $query->whereBetween('tanggal', [$tanggalSaldoAwal->format('Y-m-d'), $tanggalDariCarbon->format('Y-m-d')]);
-            })
-                ->where('produk_id', $produkId)
-                ->sum('qty');
-
-            // Hitung penjualan dari saldo awal sampai tanggal dari
-            $penjualan = DetailPenjualan::whereHas('penjualan', function ($query) use ($tanggalSaldoAwal, $tanggalDariCarbon) {
-                $query->whereBetween('tanggal', [$tanggalSaldoAwal->format('Y-m-d'), $tanggalDariCarbon->format('Y-m-d')]);
-            })
-                ->where('produk_id', $produkId)
-                ->sum('qty');
-
-            $saldoAwal = $saldoAwal + $pembelian - $penjualan;
-        }
-
-        return $saldoAwal;
-    }
-
-    /**
-     * Hitung pembelian bulan
-     */
-    private function calculatePembelianBulan($produkId, $bulan, $tahun): float
-    {
-        return DetailPembelian::whereHas('pembelian', function ($query) use ($bulan, $tahun) {
-            $query->whereMonth('tanggal', $bulan)
-                ->whereYear('tanggal', $tahun);
-        })
-            ->where('produk_id', $produkId)
-            ->sum('qty');
-    }
-
-    /**
-     * Hitung penjualan bulan
-     */
-    private function calculatePenjualanBulan($produkId, $bulan, $tahun): float
-    {
-        return DetailPenjualan::whereHas('penjualan', function ($query) use ($bulan, $tahun) {
-            $query->whereMonth('tanggal', $bulan)
-                ->whereYear('tanggal', $tahun);
-        })
-            ->where('produk_id', $produkId)
-            ->sum('qty');
-    }
-
-    /**
-     * Hitung pembelian periode
-     */
-    private function calculatePembelianPeriode($produkId, $tanggalDari, $tanggalSampai): float
-    {
-        return DetailPembelian::whereHas('pembelian', function ($query) use ($tanggalDari, $tanggalSampai) {
-            $query->whereBetween('tanggal', [$tanggalDari, $tanggalSampai]);
-        })
-            ->where('produk_id', $produkId)
-            ->sum('qty');
-    }
-
-    /**
-     * Hitung penjualan periode
-     */
-    private function calculatePenjualanPeriode($produkId, $tanggalDari, $tanggalSampai): float
-    {
-        return DetailPenjualan::whereHas('penjualan', function ($query) use ($tanggalDari, $tanggalSampai) {
-            $query->whereBetween('tanggal', [$tanggalDari, $tanggalSampai]);
-        })
-            ->where('produk_id', $produkId)
-            ->sum('qty');
-    }
-
-    /**
-     * Export laporan stok ke PDF
-     */
-    public function exportPdf(Request $request)
-    {
-        // TODO: Implement PDF export
-        return response()->json([
-            'success' => false,
-            'message' => 'Fitur export PDF belum tersedia'
-        ]);
-    }
-
-    /**
-     * Get nama bulan
-     */
-    private function getBulanNama($bulan): string
+    private function getBulanNama($bulan)
     {
         $bulanList = [
             1 => 'Januari',
@@ -404,6 +379,79 @@ class LaporanStokController extends Controller
             11 => 'November',
             12 => 'Desember'
         ];
-        return $bulanList[$bulan] ?? '';
+
+        return $bulanList[$bulan] ?? 'Bulan Tidak Valid';
+    }
+
+    /**
+     * Export laporan stok to PDF
+     */
+    public function exportPdf(Request $request)
+    {
+        try {
+            $request->validate([
+                'produk_id' => 'required|exists:produk,id',
+                'jenis_periode' => 'required|in:bulan,tanggal',
+            ]);
+
+            $laporanData = null;
+
+            if ($request->jenis_periode === 'tanggal') {
+                $request->validate([
+                    'tanggal_dari' => 'required|date',
+                    'tanggal_sampai' => 'required|date|after_or_equal:tanggal_dari',
+                ]);
+
+                $laporanData = $this->generateLaporanByDateRange(
+                    $request->produk_id,
+                    $request->tanggal_dari,
+                    $request->tanggal_sampai
+                );
+            } else {
+                $request->validate([
+                    'bulan' => 'required|integer|between:1,12',
+                    'tahun' => 'required|integer|min:2020',
+                ]);
+
+                $laporanData = $this->generateLaporan(
+                    $request->produk_id,
+                    $request->bulan,
+                    $request->tahun
+                );
+            }
+
+            // Generate PDF using DomPDF
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan.stok.pdf', compact('laporanData'));
+
+            // Set paper size and orientation
+            $pdf->setPaper('A4', 'landscape');
+
+            // Generate filename
+            $produkName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $laporanData['produk']['nama_produk']);
+
+            if ($laporanData['periode']['jenis'] == 'tanggal') {
+                $tanggalDari = str_replace('/', '-', $laporanData['periode']['tanggal_dari']);
+                $tanggalSampai = str_replace('/', '-', $laporanData['periode']['tanggal_sampai']);
+                $filename = 'Laporan_Stok_' . $produkName . '_' . $tanggalDari . '_sampai_' . $tanggalSampai . '.pdf';
+            } else {
+                $filename = 'Laporan_Stok_' . $produkName . '_' . $laporanData['periode']['bulan_nama'] . '_' . $laporanData['periode']['tahun'] . '.pdf';
+            }
+
+            // Return PDF as stream (preview in browser)
+            return $pdf->stream($filename);
+        } catch (\Exception $e) {
+            Log::error('PDF Export Error: ' . $e->getMessage());
+
+            // Return JSON error response for AJAX requests
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan saat mengekspor PDF: ' . $e->getMessage()
+                ], 500);
+            }
+
+            // For non-AJAX requests, redirect back with error
+            return back()->with('error', 'Terjadi kesalahan saat mengekspor PDF: ' . $e->getMessage());
+        }
     }
 }

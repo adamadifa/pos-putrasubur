@@ -17,6 +17,10 @@ use App\Http\Controllers\SaldoAwalBulananController;
 use App\Http\Controllers\SaldoAwalProdukController;
 use App\Http\Controllers\LaporanKasBankController;
 use App\Http\Controllers\LaporanStokController;
+use App\Http\Controllers\LaporanPenjualanController;
+use App\Http\Controllers\LaporanPembelianController;
+use App\Http\Controllers\LaporanPembayaranController;
+
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -51,6 +55,10 @@ Route::middleware('auth')->group(function () {
         Route::put('/{encryptedId}', [PenjualanController::class, 'update'])->name('update');
         Route::delete('/{encryptedId}', [PenjualanController::class, 'destroy'])->name('destroy');
     });
+
+    // API Routes for Penjualan
+    Route::get('/penjualan/{id}/detail', [PenjualanController::class, 'getDetail'])->name('penjualan.detail');
+    Route::get('/pembelian/{id}/detail', [PembelianController::class, 'getDetail'])->name('pembelian.detail');
 
     // Penjualan API Routes (inside auth middleware but outside group to avoid parameter conflicts)
     Route::get('penjualan/search-products', [PenjualanController::class, 'searchProducts'])->name('penjualan.search-products');
@@ -197,8 +205,23 @@ Route::middleware('auth')->group(function () {
 
         Route::prefix('stok')->name('stok.')->group(function () {
             Route::get('/', [LaporanStokController::class, 'index'])->name('index');
-            Route::post('/generate', [LaporanStokController::class, 'generateLaporan'])->name('generate');
             Route::post('/export-pdf', [LaporanStokController::class, 'exportPdf'])->name('export-pdf');
+        });
+
+        Route::prefix('penjualan')->name('penjualan.')->group(function () {
+            Route::get('/', [LaporanPenjualanController::class, 'index'])->name('index');
+            Route::post('/export-pdf', [LaporanPenjualanController::class, 'exportPdf'])->name('export-pdf');
+        });
+
+        Route::prefix('pembelian')->name('pembelian.')->group(function () {
+            Route::get('/', [LaporanPembelianController::class, 'index'])->name('index');
+            Route::post('/export-pdf', [LaporanPembelianController::class, 'exportPdf'])->name('export-pdf');
+        });
+
+        Route::prefix('pembayaran')->name('pembayaran.')->group(function () {
+            Route::get('/', [LaporanPembayaranController::class, 'index'])->name('index');
+            Route::post('/generate', [LaporanPembayaranController::class, 'index'])->name('generate');
+            Route::post('/export-pdf', [LaporanPembayaranController::class, 'exportPdf'])->name('export-pdf');
         });
     });
 });

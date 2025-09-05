@@ -394,8 +394,8 @@
                                       ${produk.foto ? 
                                           `<img class="max-h-full max-w-full object-contain" src="${produk.foto}" alt="${produk.nama}">` :
                                           `<div class="h-10 w-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
-                                                                  <span class="text-white font-medium text-lg">${produk.nama.charAt(0).toUpperCase()}</span>
-                                                              </div>`
+                                                                          <span class="text-white font-medium text-lg">${produk.nama.charAt(0).toUpperCase()}</span>
+                                                                      </div>`
                                       }
                                   </div>
                               </td>
@@ -411,19 +411,23 @@
                               </td>
                               <td class="px-4 py-4 whitespace-nowrap">
                                   <div class="flex items-center justify-end">
-                                      <input type="number" 
+                                      <input type="text" 
                                              name="saldo_awal[${produk.id}]" 
-                                             value="${defaultSaldo}"
-                                             min="0" 
-                                             step="0.01"
-                                             class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-right"
-                                             placeholder="0">
+                                             value="${formatDecimalInput(defaultSaldo)}"
+                                             class="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-right saldo-input"
+                                             placeholder="0"
+                                             data-produk-id="${produk.id}">
                                   </div>
                               </td>
                           </tr>
                       `;
                 });
                 produkListBody.html(html);
+
+                // Setup decimal input formatting for all saldo inputs
+                $('.saldo-input').each(function() {
+                    setupDecimalInput(this);
+                });
 
                 // Enable submit button jika tidak ada masalah
                 submitBtn.prop('disabled', false);
@@ -435,6 +439,181 @@
             // Helper function untuk format number
             function formatNumber(number) {
                 return new Intl.NumberFormat('id-ID').format(number);
+            }
+
+            // Format decimal input with thousand separator
+            function formatDecimalInput(value) {
+                if (!value || value === '0' || value === 0) return '';
+
+                // Convert to string and handle decimal
+                let strValue = value.toString();
+
+                // Handle decimal separator (comma)
+                let hasDecimal = strValue.includes(',') || strValue.includes('.');
+                let integerPart = '';
+                let decimalPart = '';
+
+                if (hasDecimal) {
+                    let parts = strValue.replace(',', '.').split('.');
+                    integerPart = parts[0] || '';
+                    decimalPart = parts[1] || '';
+                } else {
+                    integerPart = strValue;
+                }
+
+                // Format integer part with thousand separators
+                if (integerPart && integerPart.length >= 4) {
+                    integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                }
+
+                // Combine parts
+                let result = integerPart;
+                if (hasDecimal && decimalPart) {
+                    result += ',' + decimalPart;
+                }
+
+                return result;
+            }
+
+            // Parse formatted decimal back to numeric value
+            function parseFormattedDecimal(value) {
+                if (!value) return 0;
+
+                // Remove thousand separators and convert comma to dot
+                let cleanValue = value.toString()
+                    .replace(/\./g, '') // Remove thousand separators
+                    .replace(',', '.'); // Convert comma to dot for decimal
+
+                let numValue = parseFloat(cleanValue);
+                return isNaN(numValue) ? 0 : numValue;
+            }
+
+            // Setup decimal input with formatting
+            function setupDecimalInput(input) {
+                let isFormatting = false;
+                let lastValidValue = '';
+
+                input.addEventListener('input', function(e) {
+                    if (isFormatting) return;
+
+                    const cursorPosition = e.target.selectionStart;
+                    const oldValue = e.target.value;
+
+                    // Get the raw numeric value by removing all formatting
+                    let rawValue = e.target.value.replace(/[^\d,]/g, ''); // Keep digits and comma only
+
+                    // If input is empty, don't format yet
+                    if (!rawValue) {
+                        return;
+                    }
+
+                    // Handle decimal separator (comma)
+                    let hasDecimal = rawValue.includes(',');
+                    let integerPart = '';
+                    let decimalPart = '';
+
+                    if (hasDecimal) {
+                        let parts = rawValue.split(',');
+                        integerPart = parts[0] || '';
+                        decimalPart = parts[1] || '';
+
+                        // If multiple commas, keep only the first one
+                        if (parts.length > 2) {
+                            decimalPart = parts.slice(1).join('');
+                        }
+                    } else {
+                        integerPart = rawValue;
+                    }
+
+                    // Format the value
+                    let newValue = '';
+                    if (integerPart) {
+                        // Add thousand separators to integer part
+                        if (integerPart.length >= 4) {
+                            integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                        }
+                        newValue = integerPart;
+                    }
+
+                    // Add decimal part if exists
+                    if (hasDecimal) {
+                        newValue += ',' + decimalPart;
+                    }
+
+                    // Store last valid value
+                    let numericValue = parseFormattedDecimal(newValue);
+                    if (numericValue > 0) {
+                        lastValidValue = newValue;
+                    }
+
+                    if (newValue !== oldValue) {
+                        isFormatting = true;
+                        e.target.value = newValue;
+
+                        // Calculate new cursor position
+                        let newCursorPos = cursorPosition;
+
+                        // Count dots before cursor in old and new values
+                        let oldDots = (oldValue.substring(0, cursorPosition).match(/\./g) || []).length;
+                        let newDots = (newValue.substring(0, cursorPosition).match(/\./g) || []).length;
+
+                        // Adjust cursor position based on dot difference
+                        if (newValue.length > oldValue.length) {
+                            // Text was added (likely a dot for thousand separator)
+                            let addedDots = (newValue.match(/\./g) || []).length - (oldValue.match(/\./g) ||
+                                []).length;
+                            if (addedDots > 0) {
+                                // Find where the dot was added relative to cursor
+                                let textBeforeCursor = oldValue.substring(0, cursorPosition);
+                                let digitsBeforeCursor = textBeforeCursor.replace(/[^\d]/g, '').length;
+
+                                // Count how many dots should be before this many digits in the new value
+                                let newTextUpToDigits = newValue.replace(/[^\d.]/g, '');
+                                let dotsBeforeDigits = 0;
+                                let digitCount = 0;
+                                for (let i = 0; i < newTextUpToDigits.length; i++) {
+                                    if (newTextUpToDigits[i] === '.') {
+                                        dotsBeforeDigits++;
+                                    } else {
+                                        digitCount++;
+                                        if (digitCount === digitsBeforeCursor) {
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                newCursorPos = cursorPosition + (dotsBeforeDigits - oldDots);
+                            }
+                        }
+
+                        // Ensure cursor position is within bounds
+                        newCursorPos = Math.min(newCursorPos, newValue.length);
+                        newCursorPos = Math.max(0, newCursorPos);
+
+                        e.target.setSelectionRange(newCursorPos, newCursorPos);
+                        isFormatting = false;
+                    }
+                });
+
+                input.addEventListener('blur', function(e) {
+                    if (e.target.value === '' || e.target.value === '0') {
+                        e.target.value = '';
+                        return;
+                    }
+
+                    // Ensure we have a valid decimal format
+                    let numericValue = parseFormattedDecimal(e.target.value);
+                    if (numericValue > 0) {
+                        e.target.value = formatDecimalInput(numericValue.toString());
+                    } else {
+                        e.target.value = '';
+                    }
+                });
+
+                input.addEventListener('focus', function(e) {
+                    // Select all text when focused for easy editing
+                    e.target.select();
+                });
             }
 
             // Form submission validation
@@ -460,7 +639,8 @@
                 // Check if at least one saldo awal is filled
                 let hasSaldoAwal = false;
                 $('input[name^="saldo_awal["]').each(function() {
-                    if ($(this).val() && parseFloat($(this).val()) > 0) {
+                    const value = parseFormattedDecimal($(this).val());
+                    if (value > 0) {
                         hasSaldoAwal = true;
                         return false; // break loop
                     }
@@ -471,6 +651,13 @@
                     showNotification('Minimal satu produk harus memiliki saldo awal > 0', 'error');
                     return false;
                 }
+
+                // Convert formatted values to numeric values before submission
+                $('input[name^="saldo_awal["]').each(function() {
+                    const formattedValue = $(this).val();
+                    const numericValue = parseFormattedDecimal(formattedValue);
+                    $(this).val(numericValue);
+                });
 
                 // Disable submit button to prevent double submission
                 submitBtn.prop('disabled', true).html(

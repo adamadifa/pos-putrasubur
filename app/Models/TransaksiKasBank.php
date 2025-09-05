@@ -44,14 +44,18 @@ class TransaksiKasBank extends Model
 
     public function pembayaranPenjualan()
     {
-        return $this->belongsTo(PembayaranPenjualan::class, 'referensi_id')
-            ->where('referensi_tipe', 'PPJ');
+        if ($this->referensi_tipe === 'PPJ') {
+            return $this->belongsTo(PembayaranPenjualan::class, 'referensi_id');
+        }
+        return null;
     }
 
     public function pembayaranPembelian()
     {
-        return $this->belongsTo(PembayaranPembelian::class, 'referensi_id')
-            ->where('referensi_tipe', 'PPB');
+        if ($this->referensi_tipe === 'PPB') {
+            return $this->belongsTo(PembayaranPembelian::class, 'referensi_id');
+        }
+        return null;
     }
 
     // Accessors

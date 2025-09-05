@@ -255,6 +255,26 @@
                                     {{ number_format($laporanData['saldo_awal_bulan'], 0, ',', '.') }}
                                 </p>
                             @endif
+                        @else
+                            @if (isset($laporanData['saldo_awal_terakhir']) && $laporanData['saldo_awal_terakhir'])
+                                <p class="text-xs text-blue-600 mt-1">
+                                    <i class="ti ti-info-circle mr-1"></i>
+                                    Saldo awal terakhir ({{ $laporanData['saldo_awal_terakhir']['periode_saldo_awal'] }}):
+                                    Rp
+                                    {{ number_format($laporanData['saldo_awal_terakhir']['saldo'], 0, ',', '.') }}
+                                </p>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    <i class="ti ti-calendar mr-1"></i>
+                                    Dihitung dari {{ $laporanData['saldo_awal_terakhir']['tanggal_mulai_hitung'] }} s/d
+                                    {{ $laporanData['periode']['tanggal_awal'] }}
+                                </p>
+                            @elseif (isset($laporanData['saldo_awal_bulan']) && $laporanData['saldo_awal_bulan'] > 0)
+                                <p class="text-xs text-blue-600 mt-1">
+                                    <i class="ti ti-info-circle mr-1"></i>
+                                    Saldo awal bulan {{ $laporanData['periode']['bulan_nama'] }}: Rp
+                                    {{ number_format($laporanData['saldo_awal_bulan'], 0, ',', '.') }}
+                                </p>
+                            @endif
                         @endif
                     </div>
                     <div class="text-right">
@@ -351,7 +371,7 @@
                                         {{ $transaksi->tanggal->format('d/m/Y') }}
                                     </td>
                                     <td class="px-4 py-4 text-sm text-gray-900">
-                                        {{ $transaksi->keterangan ?: '-' }}
+                                        {{ $transaksi->keterangan_detail ?? $transaksi->keterangan ?: '-' }}
                                     </td>
                                     <td class="px-4 py-4 whitespace-nowrap text-center">
                                         @if ($transaksi->jenis_transaksi == 'D')
@@ -548,15 +568,34 @@
                     method: 'POST',
                     body: formData
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showNotification('PDF berhasil diekspor!', 'success');
+                .then(response => {
+                    if (response.ok) {
+                        // Check if response is PDF
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && contentType.includes('application/pdf')) {
+                            // Handle PDF response
+                            return response.blob().then(blob => {
+                                // Create object URL and open in new tab
+                                const url = window.URL.createObjectURL(blob);
+                                window.open(url, '_blank');
+                                showNotification('PDF berhasil dibuka di tab baru!', 'success');
+                            });
+                        } else {
+                            // Handle JSON response (error case)
+                            return response.json().then(data => {
+                                if (data.success) {
+                                    showNotification('PDF berhasil diekspor!', 'success');
+                                } else {
+                                    showNotification('Gagal mengekspor PDF: ' + data.message, 'error');
+                                }
+                            });
+                        }
                     } else {
-                        showNotification('Gagal mengekspor PDF: ' + data.message, 'error');
+                        throw new Error('Network response was not ok');
                     }
                 })
                 .catch(error => {
+                    console.error('Export PDF error:', error);
                     showNotification('Terjadi kesalahan saat mengekspor PDF', 'error');
                 })
                 .finally(() => {

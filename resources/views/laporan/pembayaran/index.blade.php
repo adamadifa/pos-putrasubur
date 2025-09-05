@@ -1,21 +1,22 @@
 @extends('layouts.pos')
 
-@section('title', 'Laporan Stok')
-@section('page-title', 'Laporan Stok')
+@section('title', 'Laporan Pembayaran')
+@section('page-title', 'Laporan Pembayaran')
 
 @section('content')
     <div class="space-y-6">
         <!-- Header Actions -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h2 class="text-xl font-semibold text-gray-900">Laporan Stok</h2>
-                <p class="text-sm text-gray-600">Laporan saldo awal dan pergerakan stok produk per periode</p>
+                <h2 class="text-xl font-semibold text-gray-900">Laporan Pembayaran</h2>
+                <p class="text-sm text-gray-600">Laporan pembayaran penjualan dan pembelian per periode</p>
             </div>
         </div>
 
         <!-- Filter Form -->
         <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-            <form method="GET" action="{{ route('laporan.stok.index') }}" id="laporanForm">
+            <form method="POST" action="{{ route('laporan.pembayaran.generate') }}" id="laporanForm">
+                @csrf
                 <!-- Periode Type Selection -->
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-3">Jenis Periode</label>
@@ -38,24 +39,56 @@
                 </div>
 
                 <div class="space-y-4 lg:space-y-0 lg:flex lg:items-end lg:space-x-4">
-                    <!-- Produk Filter -->
+                    <!-- Jenis Transaksi Filter -->
                     <div class="flex-1">
-                        <label for="produk_id" class="block text-sm font-medium text-gray-700 mb-2">Produk <span
-                                class="text-red-500">*</span></label>
-                        <select name="produk_id" id="produk_id"
+                        <label for="jenis_transaksi" class="block text-sm font-medium text-gray-700 mb-2">Jenis Transaksi
+                            <span class="text-red-500">*</span></label>
+                        <select name="jenis_transaksi" id="jenis_transaksi"
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                             required>
-                            <option value="">Pilih Produk</option>
-                            @foreach ($produkList as $produk)
-                                <option value="{{ $produk->id }}" {{ $selectedProduk == $produk->id ? 'selected' : '' }}>
-                                    {{ $produk->nama_produk }} ({{ $produk->kategori->nama ?? '-' }})
+                            <option value="">Pilih Jenis Transaksi</option>
+                            <option value="penjualan" {{ $selectedJenisTransaksi == 'penjualan' ? 'selected' : '' }}>
+                                Penjualan</option>
+                            <option value="pembelian" {{ $selectedJenisTransaksi == 'pembelian' ? 'selected' : '' }}>
+                                Pembelian</option>
+                            <option value="semua" {{ $selectedJenisTransaksi == 'semua' ? 'selected' : '' }}>Semua</option>
+                        </select>
+                    </div>
+
+                    <!-- Kas/Bank Filter -->
+                    <div class="flex-1">
+                        <label for="kas_bank_id" class="block text-sm font-medium text-gray-700 mb-2">Kas/Bank</label>
+                        <select name="kas_bank_id" id="kas_bank_id"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
+                            <option value="">Semua Kas/Bank</option>
+                            @foreach ($kasBankList as $kasBank)
+                                <option value="{{ $kasBank->id }}"
+                                    {{ $selectedKasBank == $kasBank->id ? 'selected' : '' }}>
+                                    {{ $kasBank->nama }} ({{ $kasBank->jenis }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Metode Pembayaran Filter -->
+                    <div class="flex-1">
+                        <label for="metode_pembayaran_id" class="block text-sm font-medium text-gray-700 mb-2">Metode
+                            Pembayaran</label>
+                        <select name="metode_pembayaran_id" id="metode_pembayaran_id"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
+                            <option value="">Semua Metode Pembayaran</option>
+                            @foreach ($metodePembayaranList as $metode)
+                                <option value="{{ $metode->id }}"
+                                    {{ $selectedMetodePembayaran == $metode->id ? 'selected' : '' }}>
+                                    {{ $metode->nama }}
                                 </option>
                             @endforeach
                         </select>
                     </div>
 
                     <!-- Bulan/Tahun Filter (for bulan type) -->
-                    <div id="bulanTahunFilter" class="lg:flex lg:space-x-4 {{ $jenisPeriode == 'tanggal' ? 'hidden' : '' }}"
+                    <div id="bulanTahunFilter"
+                        class="lg:flex lg:space-x-4 {{ $jenisPeriode == 'tanggal' ? 'hidden' : '' }}"
                         style="display: {{ $jenisPeriode == 'tanggal' ? 'none' : 'flex' }};">
                         <!-- Bulan Filter -->
                         <div class="lg:w-48">
@@ -124,8 +157,8 @@
                             <i class="ti ti-search text-lg mr-2"></i>
                             Tampilkan Laporan
                         </button>
-                        @if (isset($laporanData) && $laporanData)
-                            <button type="button" onclick="exportToPdf()"
+                        @if ($laporanData)
+                            <button type="button" id="exportPdfBtn"
                                 class="inline-flex items-center px-6 py-3 bg-red-600 border border-transparent rounded-lg font-medium text-sm text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
                                 <i class="ti ti-file-download text-lg mr-2"></i>
                                 Export PDF
@@ -137,61 +170,27 @@
         </div>
 
         <!-- Laporan Data -->
-        @if (isset($laporanData) && $laporanData)
+        @if ($laporanData)
             <!-- Summary Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- Saldo Awal -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Total Pembayaran -->
                 <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
                             <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <i class="ti ti-package text-blue-600 text-xl"></i>
+                                <i class="ti ti-credit-card text-blue-600 text-xl"></i>
                             </div>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-500">Saldo Awal</p>
+                            <p class="text-sm font-medium text-gray-500">Total Pembayaran</p>
                             <p class="text-2xl font-bold text-gray-900">
-                                {{ number_format($laporanData['saldo_awal'], 2, ',', '.') }}
+                                {{ number_format($laporanData['summary']['total_pembayaran'], 0, ',', '.') }}
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Total Pembelian -->
-                <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                                <i class="ti ti-trending-up text-green-600 text-xl"></i>
-                            </div>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-500">Total Pembelian</p>
-                            <p class="text-2xl font-bold text-gray-900">
-                                {{ number_format($laporanData['summary']['total_pembelian'], 2, ',', '.') }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Total Penjualan -->
-                <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                                <i class="ti ti-trending-down text-red-600 text-xl"></i>
-                            </div>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-500">Total Penjualan</p>
-                            <p class="text-2xl font-bold text-gray-900">
-                                {{ number_format($laporanData['summary']['total_penjualan'], 2, ',', '.') }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Saldo Akhir -->
+                <!-- Total Nilai -->
                 <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
@@ -200,9 +199,9 @@
                             </div>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-500">Saldo Akhir</p>
+                            <p class="text-sm font-medium text-gray-500">Total Nilai</p>
                             <p class="text-2xl font-bold text-gray-900">
-                                {{ number_format($laporanData['summary']['saldo_akhir'], 2, ',', '.') }}
+                                Rp {{ number_format($laporanData['summary']['total_nilai'], 0, ',', '.') }}
                             </p>
                         </div>
                     </div>
@@ -213,64 +212,27 @@
             <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
                 <div class="flex items-center justify-between mb-6">
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900">Laporan Stok</h3>
+                        <h3 class="text-lg font-semibold text-gray-900">Laporan Pembayaran</h3>
                         <p class="text-sm text-gray-600">
-                            {{ $laporanData['produk']['nama_produk'] }}
                             @if ($laporanData['periode']['jenis'] == 'tanggal')
-                                - {{ $laporanData['periode']['tanggal_dari'] }} s/d
+                                {{ $laporanData['periode']['tanggal_dari'] }} s/d
                                 {{ $laporanData['periode']['tanggal_sampai'] }}
                             @else
-                                - {{ $laporanData['periode']['bulan_nama'] }} {{ $laporanData['periode']['tahun'] }}
+                                {{ $laporanData['periode']['bulan_nama'] }} {{ $laporanData['periode']['tahun'] }}
                             @endif
                         </p>
                         <p class="text-xs text-gray-500">
                             @if ($laporanData['periode']['jenis'] == 'tanggal')
                                 Periode Tanggal: {{ $laporanData['periode']['tanggal_dari'] }} s/d
                                 {{ $laporanData['periode']['tanggal_sampai'] }}
+                                @if (isset($laporanData['statistics']['jumlah_hari']))
+                                    ({{ $laporanData['statistics']['jumlah_hari'] }} hari)
+                                @endif
                             @else
                                 Periode: {{ $laporanData['periode']['tanggal_awal'] }} s/d
                                 {{ $laporanData['periode']['tanggal_akhir'] }}
                             @endif
                         </p>
-                        @if ($laporanData['periode']['jenis'] == 'tanggal')
-                            @if (isset($laporanData['saldo_awal_terakhir']) && $laporanData['saldo_awal_terakhir'])
-                                <p class="text-xs text-blue-600 mt-1">
-                                    <i class="ti ti-info-circle mr-1"></i>
-                                    Saldo awal terakhir ({{ $laporanData['saldo_awal_terakhir']['periode_saldo_awal'] }}):
-                                    {{ number_format($laporanData['saldo_awal_terakhir']['saldo'], 2, ',', '.') }}
-                                </p>
-                                <p class="text-xs text-gray-500 mt-1">
-                                    <i class="ti ti-calendar mr-1"></i>
-                                    Dihitung dari {{ $laporanData['saldo_awal_terakhir']['tanggal_mulai_hitung'] }} s/d
-                                    {{ $laporanData['periode']['tanggal_dari'] }}
-                                </p>
-                            @elseif (isset($laporanData['saldo_awal_bulan']) && $laporanData['saldo_awal_bulan'] > 0)
-                                <p class="text-xs text-blue-600 mt-1">
-                                    <i class="ti ti-info-circle mr-1"></i>
-                                    Saldo awal bulan {{ $laporanData['periode']['bulan_nama'] }}:
-                                    {{ number_format($laporanData['saldo_awal_bulan'], 2, ',', '.') }}
-                                </p>
-                            @endif
-                        @else
-                            @if (isset($laporanData['saldo_awal_terakhir']) && $laporanData['saldo_awal_terakhir'])
-                                <p class="text-xs text-blue-600 mt-1">
-                                    <i class="ti ti-info-circle mr-1"></i>
-                                    Saldo awal terakhir ({{ $laporanData['saldo_awal_terakhir']['periode_saldo_awal'] }}):
-                                    {{ number_format($laporanData['saldo_awal_terakhir']['saldo'], 2, ',', '.') }}
-                                </p>
-                                <p class="text-xs text-gray-500 mt-1">
-                                    <i class="ti ti-calendar mr-1"></i>
-                                    Dihitung dari {{ $laporanData['saldo_awal_terakhir']['tanggal_mulai_hitung'] }} s/d
-                                    {{ $laporanData['periode']['tanggal_awal'] }}
-                                </p>
-                            @elseif (isset($laporanData['saldo_awal_bulan']) && $laporanData['saldo_awal_bulan'] > 0)
-                                <p class="text-xs text-blue-600 mt-1">
-                                    <i class="ti ti-info-circle mr-1"></i>
-                                    Saldo awal bulan {{ $laporanData['periode']['bulan_nama'] }}:
-                                    {{ number_format($laporanData['saldo_awal_bulan'], 2, ',', '.') }}
-                                </p>
-                            @endif
-                        @endif
                     </div>
                     <div class="text-right">
                         <p class="text-sm text-gray-500">Dicetak pada:</p>
@@ -278,212 +240,151 @@
                     </div>
                 </div>
 
-                <!-- Product Info -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <p class="text-sm text-gray-500">Kategori</p>
-                        <p class="text-lg font-bold text-gray-900">{{ $laporanData['produk']['kategori'] }}</p>
-                    </div>
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <p class="text-sm text-gray-500">Satuan</p>
-                        <p class="text-lg font-bold text-gray-900">{{ $laporanData['produk']['satuan'] }}</p>
-                    </div>
 
-                </div>
-
-                <!-- Product Photo -->
-                <div class="flex justify-center mb-6">
-                    @if ($laporanData['produk']['foto'])
-                        <img src="{{ asset('storage/' . $laporanData['produk']['foto']) }}"
-                            alt="{{ $laporanData['produk']['nama_produk'] }}"
-                            class="w-32 h-32 rounded-lg object-cover border-4 border-gray-200">
-                    @else
-                        <div
-                            class="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center border-4 border-gray-200">
-                            <i class="ti ti-photo text-gray-400 text-4xl"></i>
-                        </div>
-                    @endif
-                </div>
-
-                <!-- Summary Table -->
+                <!-- Transaksi Table -->
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Keterangan
+                                    Tanggal
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Jenis
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    No. Faktur
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Pelanggan/Supplier
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Metode Pembayaran
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Kas Bank
                                 </th>
                                 <th
                                     class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Jumlah
                                 </th>
-
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <tr class="bg-blue-50">
-                                <td class="px-4 py-4 text-sm font-medium text-gray-900">
-                                    Saldo Awal
-                                </td>
-                                <td class="px-4 py-4 text-right text-sm font-bold text-gray-900">
-                                    {{ number_format($laporanData['saldo_awal'], 2, ',', '.') }}
-                                </td>
 
-                            </tr>
-                            <tr>
-                                <td class="px-4 py-4 text-sm text-gray-900">
-                                    Total Pembelian
-                                </td>
-                                <td class="px-4 py-4 text-right text-sm font-medium text-gray-900">
-                                    {{ number_format($laporanData['summary']['total_pembelian'], 2, ',', '.') }}
-                                </td>
+                            <!-- Pembayaran Rows -->
+                            @forelse($laporanData['pembayaran'] as $pembayaran)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ $pembayaran->tanggal->format('d/m/Y') }}
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-center">
+                                        @if ($pembayaran->jenis == 'Penjualan')
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                Penjualan
+                                            </span>
+                                        @else
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                                Pembelian
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ $pembayaran->no_faktur }}
+                                    </td>
+                                    <td class="px-4 py-4 text-sm text-gray-900">
+                                        {{ $pembayaran->nama_pelanggan_supplier }}
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ $pembayaran->metode_pembayaran }}
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ $pembayaran->kas_bank }}
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                                        Rp {{ number_format($pembayaran->jumlah, 0, ',', '.') }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-500">
+                                        Tidak ada data pembayaran untuk periode yang dipilih.
+                                    </td>
+                                </tr>
+                            @endforelse
 
-                            </tr>
-                            <tr>
-                                <td class="px-4 py-4 text-sm text-gray-900">
-                                    Total Penjualan
-                                </td>
-                                <td class="px-4 py-4 text-right text-sm font-medium text-gray-900">
-                                    {{ number_format($laporanData['summary']['total_penjualan'], 2, ',', '.') }}
-                                </td>
-
-                            </tr>
-                            <tr class="bg-purple-50 border-t-2 border-purple-200">
-                                <td class="px-4 py-4 text-sm font-bold text-gray-900">
-                                    Saldo Akhir
-                                </td>
-                                <td class="px-4 py-4 text-right text-sm font-bold text-gray-900">
-                                    {{ number_format($laporanData['summary']['saldo_akhir'], 2, ',', '.') }}
-                                </td>
-
-                            </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <!-- Detail Transaksi -->
-                @if ($laporanData['transaksi']->count() > 0)
+                <!-- Summary by Metode Pembayaran -->
+                @if (isset($laporanData['metode_pembayaran_counts']) && count($laporanData['metode_pembayaran_counts']) > 0)
                     <div class="mt-8">
-                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Detail Transaksi</h4>
-                        <div class="overflow-x-auto">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Rekap Metode Pembayaran</h4>
+                        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
                                         <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Tanggal
-                                        </th>
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Metode Pembayaran</th>
                                         <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Keterangan
-                                        </th>
+                                            class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Jumlah Transaksi</th>
                                         <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Kategori
-                                        </th>
-                                        <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            No. Transaksi
-                                        </th>
-                                        <th
-                                            class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            In
-                                        </th>
-                                        <th
-                                            class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Out
-                                        </th>
-                                        <th
-                                            class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Saldo
-                                        </th>
+                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Total Nilai</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
-                                    @php
-                                        $runningSaldo = $laporanData['saldo_awal'];
-                                    @endphp
+                                    @foreach ($laporanData['metode_pembayaran_counts'] as $metode)
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                {{ $metode['nama'] }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                                                {{ number_format($metode['count'], 0, ',', '.') }}</td>
+                                            <td
+                                                class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                                                Rp {{ number_format($metode['nilai'], 0, ',', '.') }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                @endif
 
-                                    <!-- Baris Saldo Awal -->
-                                    <tr class="bg-blue-50 font-medium">
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            @if ($laporanData['periode']['jenis'] == 'tanggal')
-                                                {{ $laporanData['periode']['tanggal_dari'] }}
-                                            @else
-                                                {{ $laporanData['periode']['tanggal_awal'] }}
-                                            @endif
-                                        </td>
-                                        <td class="px-4 py-4 text-sm text-gray-900">
-                                            Saldo Awal
-                                        </td>
-                                        <td class="px-4 py-4 text-center">
-                                            <span
-                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                Saldo Awal
-                                            </span>
-                                        </td>
-                                        <td class="px-4 py-4 text-sm text-gray-900">
-                                            -
-                                        </td>
-                                        <td class="px-4 py-4 text-right text-sm font-medium text-gray-900">
-                                            -
-                                        </td>
-                                        <td class="px-4 py-4 text-right text-sm font-medium text-gray-900">
-                                            -
-                                        </td>
-                                        <td class="px-4 py-4 text-right text-sm font-bold text-blue-600">
-                                            {{ number_format($runningSaldo, 0, ',', '.') }}
-                                        </td>
+                <!-- Summary by Kas Bank -->
+                @if (isset($laporanData['kas_bank_counts']) && count($laporanData['kas_bank_counts']) > 0)
+                    <div class="mt-8">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Rekap Kas Bank</h4>
+                        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Kas Bank</th>
+                                        <th
+                                            class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Jumlah Transaksi</th>
+                                        <th
+                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Total Nilai</th>
                                     </tr>
-
-                                    @foreach ($laporanData['transaksi'] as $transaksi)
-                                        @php
-                                            if ($transaksi->jenis == 'pembelian') {
-                                                $runningSaldo += $transaksi->jumlah;
-                                            } else {
-                                                $runningSaldo -= $transaksi->jumlah;
-                                            }
-                                        @endphp
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {{ \Carbon\Carbon::parse($transaksi->tanggal)->format('d/m/Y') }}
-                                            </td>
-                                            <td class="px-4 py-4 text-sm text-gray-900">
-                                                {{ $transaksi->keterangan }}
-                                            </td>
-                                            <td class="px-4 py-4 text-center">
-                                                @if ($transaksi->jenis == 'pembelian')
-                                                    <span
-                                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                        Pembelian
-                                                    </span>
-                                                @else
-                                                    <span
-                                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                        Penjualan
-                                                    </span>
-                                                @endif
-                                            </td>
-                                            <td class="px-4 py-4 text-sm text-gray-900">
-                                                {{ $transaksi->no_transaksi }}
-                                            </td>
-                                            <td class="px-4 py-4 text-right text-sm font-medium text-gray-900">
-                                                @if ($transaksi->jenis == 'pembelian')
-                                                    {{ number_format($transaksi->jumlah, 2, ',', '.') }}
-                                                @else
-                                                    -
-                                                @endif
-                                            </td>
-                                            <td class="px-4 py-4 text-right text-sm font-medium text-gray-900">
-                                                @if ($transaksi->jenis == 'penjualan')
-                                                    {{ number_format($transaksi->jumlah, 2, ',', '.') }}
-                                                @else
-                                                    -
-                                                @endif
-                                            </td>
-                                            <td class="px-4 py-4 text-right text-sm font-bold text-gray-900">
-                                                {{ number_format($runningSaldo, 2, ',', '.') }}
-                                            </td>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach ($laporanData['kas_bank_counts'] as $kasBank)
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                {{ $kasBank['nama'] }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                                                {{ number_format($kasBank['count'], 0, ',', '.') }}</td>
+                                            <td
+                                                class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                                                Rp {{ number_format($kasBank['nilai'], 0, ',', '.') }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -497,16 +398,18 @@
             <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-12 text-center">
                 <div class="flex flex-col items-center">
                     <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                        <i class="ti ti-package text-2xl text-gray-400"></i>
+                        <i class="ti ti-file-report text-2xl text-gray-400"></i>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">Pilih Produk untuk Melihat Laporan Stok</h3>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">Pilih Parameter Laporan</h3>
                     <p class="text-gray-500 text-sm mb-6">
-                        Pilih produk terlebih dahulu, kemudian pilih periode untuk menampilkan laporan stok
+                        Pilih kas/bank, bulan, dan tahun untuk menampilkan laporan
                     </p>
                 </div>
             </div>
         @endif
     </div>
+
+
 
     <script>
         // Initialize form on page load
@@ -591,7 +494,9 @@
 
             // Get form data
             const formData = new FormData();
-            formData.append('produk_id', document.getElementById('produk_id').value);
+            formData.append('jenis_transaksi', document.getElementById('jenis_transaksi').value);
+            formData.append('kas_bank_id', document.getElementById('kas_bank_id').value);
+            formData.append('metode_pembayaran_id', document.getElementById('metode_pembayaran_id').value);
             formData.append('jenis_periode', document.querySelector('input[name="jenis_periode"]:checked').value);
             formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
 
@@ -606,7 +511,7 @@
             }
 
             // Make request
-            fetch('{{ route('laporan.stok.export-pdf') }}', {
+            fetch('{{ route('laporan.pembayaran.export-pdf') }}', {
                     method: 'POST',
                     body: formData
                 })
@@ -693,5 +598,13 @@
                 }, 300);
             }, 4000);
         }
+
+        // Add event listener for export PDF button
+        document.addEventListener('DOMContentLoaded', function() {
+            const exportPdfBtn = document.getElementById('exportPdfBtn');
+            if (exportPdfBtn) {
+                exportPdfBtn.addEventListener('click', exportToPdf);
+            }
+        });
     </script>
 @endsection

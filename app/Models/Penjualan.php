@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class Penjualan extends Model
 {
@@ -86,6 +87,25 @@ class Penjualan extends Model
     public function getTotalSetelahDiskonAttribute()
     {
         return $this->total - $this->diskon;
+    }
+
+    /**
+     * Get laba dari penjualan
+     */
+    public function getLabaAttribute()
+    {
+        $laba = 0;
+        foreach ($this->detailPenjualan as $detail) {
+            // Get latest harga_beli from detail_pembelian
+            $hargaBeli = DB::table('detail_pembelian as dp')
+                ->join('pembelian as p', 'dp.pembelian_id', '=', 'p.id')
+                ->where('dp.produk_id', $detail->produk_id)
+                ->orderBy('p.tanggal', 'desc')
+                ->value('dp.harga_beli') ?? 0;
+
+            $laba += ($detail->harga - $hargaBeli) * $detail->qty;
+        }
+        return $laba;
     }
 
     /**

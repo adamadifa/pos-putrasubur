@@ -664,4 +664,45 @@ class PembelianController extends Controller
 
         return response()->json($pembelian);
     }
+
+    /**
+     * Get detail pembelian for modal
+     */
+    public function getDetail($id)
+    {
+        try {
+            $pembelian = Pembelian::with(['supplier', 'detailPembelian.produk'])
+                ->findOrFail($id);
+
+            return response()->json([
+                'success' => true,
+                'pembelian' => [
+                    'id' => $pembelian->id,
+                    'no_faktur' => $pembelian->no_faktur,
+                    'tanggal' => \Carbon\Carbon::parse($pembelian->tanggal)->format('d/m/Y'),
+                    'jam' => \Carbon\Carbon::parse($pembelian->created_at)->format('H:i'),
+                    'supplier' => $pembelian->supplier,
+                    'subtotal' => $pembelian->subtotal,
+                    'diskon' => $pembelian->diskon,
+                    'total' => $pembelian->total,
+                    'status_pembayaran' => $pembelian->status_pembayaran,
+                    'keterangan' => $pembelian->keterangan,
+                    'detail_pembelian' => $pembelian->detailPembelian->map(function ($detail) {
+                        return [
+                            'produk' => $detail->produk,
+                            'qty' => $detail->qty,
+                            'harga_beli' => $detail->harga_beli,
+                            'diskon' => $detail->discount ?? 0,
+                            'subtotal' => $detail->subtotal
+                        ];
+                    })
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memuat detail pembelian'
+            ], 500);
+        }
+    }
 }

@@ -8,6 +8,7 @@ use App\Models\SaldoAwalBulanan;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class LaporanKasBankController extends Controller
 {
@@ -76,7 +77,55 @@ class LaporanKasBankController extends Controller
         $kasBank = KasBank::findOrFail($kasBankId);
 
         // Get saldo awal bulan
-        $saldoAwal = SaldoAwalBulanan::getSaldoAwal($kasBankId, $bulan, $tahun);
+        $saldoAwalBulan = SaldoAwalBulanan::getSaldoAwal($kasBankId, $bulan, $tahun);
+
+        // Jika saldo awal bulan tidak ada, cari saldo awal terakhir terdekat
+        $saldoAwalTerakhir = null;
+        $periodeSaldoAwalTerakhir = null;
+        $tanggalMulaiHitung = null;
+
+        if ($saldoAwalBulan === 0) {
+            // Cari saldo awal terakhir terdekat (mundur dari bulan yang difilter)
+            $currentDate = Carbon::create($tahun, $bulan, 1);
+
+            for ($i = 0; $i < 12; $i++) { // Maksimal cari 12 bulan ke belakang
+                $currentDate->subMonth();
+                $bulanCari = $currentDate->month;
+                $tahunCari = $currentDate->year;
+
+                $saldoAwalCari = SaldoAwalBulanan::getSaldoAwal($kasBankId, $bulanCari, $tahunCari);
+
+                if ($saldoAwalCari > 0) {
+                    $saldoAwalTerakhir = $saldoAwalCari;
+                    $periodeSaldoAwalTerakhir = $this->getBulanNama($bulanCari) . ' ' . $tahunCari;
+                    $tanggalMulaiHitung = Carbon::create($tahunCari, $bulanCari, 1);
+                    break;
+                }
+            }
+        }
+
+        // Get transaksi dari awal bulan saldo awal terakhir sampai sebelum bulan yang difilter
+        $tanggalAwalBulanFilter = Carbon::create($tahun, $bulan, 1);
+        $transaksiSebelumPeriode = collect();
+
+        if ($saldoAwalTerakhir && $tanggalMulaiHitung) {
+            $transaksiSebelumPeriode = TransaksiKasBank::where('kas_bank_id', $kasBankId)
+                ->whereDate('tanggal', '>=', $tanggalMulaiHitung)
+                ->whereDate('tanggal', '<', $tanggalAwalBulanFilter)
+                ->orderBy('tanggal', 'asc')
+                ->orderBy('created_at', 'asc')
+                ->get();
+        }
+
+        // Calculate saldo awal periode
+        $saldoAwal = $saldoAwalTerakhir ?: $saldoAwalBulan;
+        foreach ($transaksiSebelumPeriode as $transaksi) {
+            if ($transaksi->jenis_transaksi == 'D') {
+                $saldoAwal += $transaksi->jumlah;
+            } else {
+                $saldoAwal -= $transaksi->jumlah;
+            }
+        }
 
         // Get transaksi bulan ini
         $transaksi = TransaksiKasBank::where('kas_bank_id', $kasBankId)
@@ -96,6 +145,31 @@ class LaporanKasBankController extends Controller
             }
 
             $item->saldo_akhir = $runningBalance;
+
+            // Tambahkan keterangan detail untuk transaksi dari penjualan/pembelian
+            $keteranganDetail = $item->keterangan;
+
+            if ($item->referensi_tipe == 'PPJ' && $item->referensi_id) {
+                $pembayaranPenjualan = \App\Models\PembayaranPenjualan::with(['penjualan.pelanggan'])->find($item->referensi_id);
+                if ($pembayaranPenjualan && $pembayaranPenjualan->penjualan) {
+                    $penjualan = $pembayaranPenjualan->penjualan;
+                    $keteranganDetail = "Pembayaran Penjualan No. Faktur: " . $penjualan->no_faktur;
+                    if ($penjualan->pelanggan) {
+                        $keteranganDetail .= " - Atas Nama: " . $penjualan->pelanggan->nama;
+                    }
+                }
+            } elseif ($item->referensi_tipe == 'PPB' && $item->referensi_id) {
+                $pembayaranPembelian = \App\Models\PembayaranPembelian::with(['pembelian.supplier'])->find($item->referensi_id);
+                if ($pembayaranPembelian && $pembayaranPembelian->pembelian) {
+                    $pembelian = $pembayaranPembelian->pembelian;
+                    $keteranganDetail = "Pembayaran Pembelian No. Faktur: " . $pembelian->no_faktur;
+                    if ($pembelian->supplier) {
+                        $keteranganDetail .= " - Atas Nama: " . $pembelian->supplier->nama;
+                    }
+                }
+            }
+
+            $item->keterangan_detail = $keteranganDetail;
             return $item;
         });
 
@@ -115,6 +189,7 @@ class LaporanKasBankController extends Controller
         return [
             'kas_bank' => $kasBank,
             'periode' => [
+                'jenis' => 'bulan',
                 'bulan' => $bulan,
                 'tahun' => $tahun,
                 'bulan_nama' => $this->getBulanNama($bulan),
@@ -122,6 +197,13 @@ class LaporanKasBankController extends Controller
                 'tanggal_akhir' => Carbon::create($tahun, $bulan, 1)->endOfMonth()->format('d/m/Y'),
             ],
             'saldo_awal' => $saldoAwal,
+            'saldo_awal_bulan' => $saldoAwalBulan,
+            'saldo_awal_terakhir' => $saldoAwalTerakhir ? [
+                'saldo' => $saldoAwalTerakhir,
+                'periode_saldo_awal' => $periodeSaldoAwalTerakhir,
+                'tanggal_mulai_hitung' => $tanggalMulaiHitung->format('d/m/Y'),
+            ] : null,
+            'transaksi_sebelum_periode' => $transaksiSebelumPeriode,
             'transaksi' => $transaksiWithBalance,
             'summary' => [
                 'total_debet' => $totalDebet,
@@ -216,6 +298,31 @@ class LaporanKasBankController extends Controller
             }
 
             $item->saldo_akhir = $runningBalance;
+
+            // Tambahkan keterangan detail untuk transaksi dari penjualan/pembelian
+            $keteranganDetail = $item->keterangan;
+
+            if ($item->referensi_tipe == 'PPJ' && $item->referensi_id) {
+                $pembayaranPenjualan = \App\Models\PembayaranPenjualan::with(['penjualan.pelanggan'])->find($item->referensi_id);
+                if ($pembayaranPenjualan && $pembayaranPenjualan->penjualan) {
+                    $penjualan = $pembayaranPenjualan->penjualan;
+                    $keteranganDetail = "Pembayaran Penjualan No. Faktur: " . $penjualan->no_faktur;
+                    if ($penjualan->pelanggan) {
+                        $keteranganDetail .= " - Atas Nama: " . $penjualan->pelanggan->nama;
+                    }
+                }
+            } elseif ($item->referensi_tipe == 'PPB' && $item->referensi_id) {
+                $pembayaranPembelian = \App\Models\PembayaranPembelian::with(['pembelian.supplier'])->find($item->referensi_id);
+                if ($pembayaranPembelian && $pembayaranPembelian->pembelian) {
+                    $pembelian = $pembayaranPembelian->pembelian;
+                    $keteranganDetail = "Pembayaran Pembelian No. Faktur: " . $pembelian->no_faktur;
+                    if ($pembelian->supplier) {
+                        $keteranganDetail .= " - Atas Nama: " . $pembelian->supplier->nama;
+                    }
+                }
+            }
+
+            $item->keterangan_detail = $keteranganDetail;
             return $item;
         });
 
@@ -262,44 +369,71 @@ class LaporanKasBankController extends Controller
      */
     public function exportPdf(Request $request)
     {
-        $request->validate([
-            'kas_bank_id' => 'required|exists:kas_bank,id',
-            'jenis_periode' => 'required|in:bulan,tanggal',
-        ]);
-
-        $laporanData = null;
-
-        if ($request->jenis_periode === 'tanggal') {
+        try {
             $request->validate([
-                'tanggal_dari' => 'required|date',
-                'tanggal_sampai' => 'required|date|after_or_equal:tanggal_dari',
+                'kas_bank_id' => 'required|exists:kas_bank,id',
+                'jenis_periode' => 'required|in:bulan,tanggal',
             ]);
 
-            $laporanData = $this->generateLaporanByDateRange(
-                $request->kas_bank_id,
-                $request->tanggal_dari,
-                $request->tanggal_sampai
-            );
-        } else {
-            $request->validate([
-                'bulan' => 'required|integer|between:1,12',
-                'tahun' => 'required|integer|min:2020',
-            ]);
+            $laporanData = null;
 
-            $laporanData = $this->generateLaporan(
-                $request->kas_bank_id,
-                $request->bulan,
-                $request->tahun
-            );
+            if ($request->jenis_periode === 'tanggal') {
+                $request->validate([
+                    'tanggal_dari' => 'required|date',
+                    'tanggal_sampai' => 'required|date|after_or_equal:tanggal_dari',
+                ]);
+
+                $laporanData = $this->generateLaporanByDateRange(
+                    $request->kas_bank_id,
+                    $request->tanggal_dari,
+                    $request->tanggal_sampai
+                );
+            } else {
+                $request->validate([
+                    'bulan' => 'required|integer|between:1,12',
+                    'tahun' => 'required|integer|min:2020',
+                ]);
+
+                $laporanData = $this->generateLaporan(
+                    $request->kas_bank_id,
+                    $request->bulan,
+                    $request->tahun
+                );
+            }
+
+            // Generate PDF using DomPDF
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan.kas-bank.pdf', compact('laporanData'));
+
+            // Set paper size and orientation
+            $pdf->setPaper('A4', 'landscape');
+
+            // Generate filename
+            $kasBankName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $laporanData['kas_bank']['nama']);
+
+            if ($laporanData['periode']['jenis'] == 'tanggal') {
+                $tanggalDari = str_replace('/', '-', $laporanData['periode']['tanggal_dari']);
+                $tanggalSampai = str_replace('/', '-', $laporanData['periode']['tanggal_sampai']);
+                $filename = 'Laporan_Kas_Bank_' . $kasBankName . '_' . $tanggalDari . '_sampai_' . $tanggalSampai . '.pdf';
+            } else {
+                $filename = 'Laporan_Kas_Bank_' . $kasBankName . '_' . $laporanData['periode']['bulan_nama'] . '_' . $laporanData['periode']['tahun'] . '.pdf';
+            }
+
+            // Return PDF as stream (preview in browser)
+            return $pdf->stream($filename);
+        } catch (\Exception $e) {
+            Log::error('PDF Export Error: ' . $e->getMessage());
+
+            // Return JSON error response for AJAX requests
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan saat mengekspor PDF: ' . $e->getMessage()
+                ], 500);
+            }
+
+            // For non-AJAX requests, redirect back with error
+            return back()->with('error', 'Terjadi kesalahan saat mengekspor PDF: ' . $e->getMessage());
         }
-
-        // TODO: Implement PDF export using DomPDF or similar
-        // For now, return JSON response
-        return response()->json([
-            'success' => true,
-            'message' => 'PDF export akan segera diimplementasikan',
-            'data' => $laporanData
-        ]);
     }
 
     /**
