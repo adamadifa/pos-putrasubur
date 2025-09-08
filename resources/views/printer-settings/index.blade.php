@@ -469,7 +469,7 @@ Terima kasih atas kunjungan Anda!
             connectBtn.disabled = true;
             connectBtn.textContent = 'Connecting...';
 
-            // Setup QZ security dengan method yang lebih sederhana
+            // Setup QZ security (unsigned mode)
             try {
                 addLog('Setting up QZ security...', 'info');
 

@@ -1024,16 +1024,7 @@
                 return;
             }
 
-            // Setup QZ security (unsigned mode)
-            qz.security.setCertificatePromise(function(resolve, reject) {
-                resolve(); // Allow unsigned requests
-            });
-
-            qz.security.setSignaturePromise(function(toSign) {
-                return function(resolve, reject) {
-                    resolve(toSign); // Allow unsigned requests
-                };
-            });
+            // QZ security sudah dikonfigurasi di qz-config.js
 
             // Connect and print
             qz.websocket.connect({
@@ -1042,21 +1033,37 @@
             }).then(function() {
                 console.log('QZ Tray connected for auto-print');
 
-                // Get default printer from settings or find any printer
-                const defaultPrinter = @json(session('printer_settings.default_printer', ''));
-
-                if (defaultPrinter) {
-                    printReceipt(defaultPrinter, receiptData);
-                } else {
-                    // Find any available printer
-                    qz.printers.find().then(function(printers) {
-                        if (printers.length > 0) {
-                            printReceipt(printers[0], receiptData);
+                // Get default printer from database
+                fetch('{{ route('printer.get-settings') }}')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.settings.default_printer) {
+                            console.log('Using printer from database:', data.settings.default_printer);
+                            printReceipt(data.settings.default_printer, receiptData);
                         } else {
-                            console.log('No printers found for auto-print');
+                            // Find any available printer
+                            qz.printers.find().then(function(printers) {
+                                if (printers.length > 0) {
+                                    console.log('Using first available printer:', printers[0]);
+                                    printReceipt(printers[0], receiptData);
+                                } else {
+                                    console.log('No printers found for auto-print');
+                                }
+                            });
                         }
+                    })
+                    .catch(error => {
+                        console.error('Error getting printer settings:', error);
+                        // Fallback to first available printer
+                        qz.printers.find().then(function(printers) {
+                            if (printers.length > 0) {
+                                console.log('Using first available printer (fallback):', printers[0]);
+                                printReceipt(printers[0], receiptData);
+                            } else {
+                                console.log('No printers found for auto-print');
+                            }
+                        });
                     });
-                }
             }).catch(function(err) {
                 console.log('QZ Tray connection failed for auto-print:', err);
             });
@@ -1080,7 +1087,13 @@
             const script = document.createElement('script');
             script.src = '{{ asset('js/qz/qz-tray.js') }}';
             script.onload = function() {
-                setTimeout(() => autoPrintReceipt(receiptData), 1000);
+                // Load QZ config after QZ Tray is loaded
+                const configScript = document.createElement('script');
+                configScript.src = '{{ asset('js/qz/qz-config.js') }}';
+                configScript.onload = function() {
+                    setTimeout(() => autoPrintReceipt(receiptData), 1000);
+                };
+                document.head.appendChild(configScript);
             };
             document.head.appendChild(script);
         }
@@ -1138,16 +1151,7 @@
                 return;
             }
 
-            // Setup QZ security (unsigned mode)
-            qz.security.setCertificatePromise(function(resolve, reject) {
-                resolve(); // Allow unsigned requests
-            });
-
-            qz.security.setSignaturePromise(function(toSign) {
-                return function(resolve, reject) {
-                    resolve(toSign); // Allow unsigned requests
-                };
-            });
+            // QZ security sudah dikonfigurasi di qz-config.js
 
             // Connect and print
             qz.websocket.connect({
@@ -1156,22 +1160,39 @@
             }).then(function() {
                 console.log('QZ Tray connected for invoice printing');
 
-                // Get default printer from settings or find any printer
-                const defaultPrinter = @json(session('printer_settings.default_printer', ''));
-
-                if (defaultPrinter) {
-                    printInvoice(defaultPrinter);
-                } else {
-                    // Find any available printer
-                    qz.printers.find().then(function(printers) {
-                        if (printers.length > 0) {
-                            printInvoice(printers[0]);
+                // Get default printer from database
+                fetch('{{ route('printer.get-settings') }}')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.settings.default_printer) {
+                            console.log('Using printer from database:', data.settings.default_printer);
+                            printInvoice(data.settings.default_printer);
                         } else {
-                            console.log('No printers found for invoice printing');
-                            showPrintError('Tidak ada printer yang tersedia');
+                            // Find any available printer
+                            qz.printers.find().then(function(printers) {
+                                if (printers.length > 0) {
+                                    console.log('Using first available printer:', printers[0]);
+                                    printInvoice(printers[0]);
+                                } else {
+                                    console.log('No printers found for invoice printing');
+                                    showPrintError('Tidak ada printer yang tersedia');
+                                }
+                            });
                         }
+                    })
+                    .catch(error => {
+                        console.error('Error getting printer settings:', error);
+                        // Fallback to first available printer
+                        qz.printers.find().then(function(printers) {
+                            if (printers.length > 0) {
+                                console.log('Using first available printer (fallback):', printers[0]);
+                                printInvoice(printers[0]);
+                            } else {
+                                console.log('No printers found for invoice printing');
+                                showPrintError('Tidak ada printer yang tersedia');
+                            }
+                        });
                     });
-                }
             }).catch(function(err) {
                 console.log('QZ Tray connection failed for invoice printing:', err);
                 showPrintError('Koneksi QZ Tray gagal: ' + err.message);
@@ -1282,11 +1303,17 @@
             const script = document.createElement('script');
             script.src = '{{ asset('js/qz/qz-tray.js') }}';
             script.onload = function() {
-                // Create a dummy event object for the delayed call
-                const dummyEvent = {
-                    target: document.querySelector('button[onclick="printInvoiceWithQZTray(event)"]')
+                // Load QZ config after QZ Tray is loaded
+                const configScript = document.createElement('script');
+                configScript.src = '{{ asset('js/qz/qz-config.js') }}';
+                configScript.onload = function() {
+                    // Create a dummy event object for the delayed call
+                    const dummyEvent = {
+                        target: document.querySelector('button[onclick="printInvoiceWithQZTray(event)"]')
+                    };
+                    setTimeout(() => printInvoiceWithQZTray(dummyEvent), 1000);
                 };
-                setTimeout(() => printInvoiceWithQZTray(dummyEvent), 1000);
+                document.head.appendChild(configScript);
             };
             script.onerror = function() {
                 showPrintError('Gagal memuat QZ Tray library');

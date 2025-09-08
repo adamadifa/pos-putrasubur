@@ -20,6 +20,7 @@ use App\Http\Controllers\LaporanStokController;
 use App\Http\Controllers\LaporanPenjualanController;
 use App\Http\Controllers\LaporanPembelianController;
 use App\Http\Controllers\LaporanPembayaranController;
+use App\Http\Controllers\LaporanPiutangController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -184,7 +185,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('printer')->name('printer.')->group(function () {
         Route::get('/settings', [PrinterSettingController::class, 'index'])->name('settings');
         Route::post('/test-print', [PrinterSettingController::class, 'testPrint'])->name('test-print');
-        Route::get('/get-settings', [PrinterSettingController::class, 'getPrinterSettings'])->name('get-settings');
+        Route::get('/get-settings', [PrinterSettingController::class, 'getSettings'])->name('get-settings');
 
         // CRUD Routes for Printer Settings
         Route::prefix('settings')->name('settings.')->group(function () {
@@ -222,6 +223,18 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [LaporanPembayaranController::class, 'index'])->name('index');
             Route::post('/generate', [LaporanPembayaranController::class, 'index'])->name('generate');
             Route::post('/export-pdf', [LaporanPembayaranController::class, 'exportPdf'])->name('export-pdf');
+        });
+
+        Route::prefix('hutang')->name('hutang.')->group(function () {
+            Route::get('/', function () {
+                return view('laporan.hutang.index');
+            })->name('index');
+        });
+
+        Route::prefix('piutang')->name('piutang.')->group(function () {
+            Route::get('/', [LaporanPiutangController::class, 'index'])->name('index');
+            Route::post('/generate', [LaporanPiutangController::class, 'index'])->name('generate');
+            Route::post('/export-pdf', [LaporanPiutangController::class, 'exportPdf'])->name('export-pdf');
         });
     });
 });
