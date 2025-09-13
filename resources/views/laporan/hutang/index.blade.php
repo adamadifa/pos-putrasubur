@@ -4,13 +4,13 @@
     <div class="container mx-auto px-4 py-6">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">Laporan Piutang</h1>
-            <p class="text-gray-600">Laporan detail piutang pelanggan berdasarkan periode</p>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Laporan Hutang</h1>
+            <p class="text-gray-600">Laporan detail hutang supplier berdasarkan periode</p>
         </div>
 
         <!-- Filter Form -->
         <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-            <form action="{{ route('laporan.piutang.index') }}" method="GET" id="filterForm">
+            <form action="{{ route('laporan.hutang.index') }}" method="GET" id="filterForm">
 
                 <!-- Periode Type Selection -->
                 <div class="mb-6">
@@ -42,15 +42,15 @@
 
                 <!-- Filter Controls -->
                 <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
-                    <!-- Pelanggan Filter -->
+                    <!-- Supplier Filter -->
                     <div class="space-y-2">
-                        <label for="pelanggan_id" class="block text-sm font-medium text-gray-700">Pelanggan</label>
-                        <select name="pelanggan_id" id="pelanggan_id"
+                        <label for="supplier_id" class="block text-sm font-medium text-gray-700">Supplier</label>
+                        <select name="supplier_id" id="supplier_id"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                            <option value="">Semua Pelanggan</option>
-                            @foreach ($pelangganList ?? [] as $pelanggan)
-                                <option value="{{ $pelanggan->id }}"
-                                    {{ request('pelanggan_id') == $pelanggan->id ? 'selected' : '' }}>{{ $pelanggan->nama }}
+                            <option value="">Semua Supplier</option>
+                            @foreach ($suppliers ?? [] as $supplier)
+                                <option value="{{ $supplier->id }}"
+                                    {{ request('supplier_id') == $supplier->id ? 'selected' : '' }}>{{ $supplier->nama }}
                                 </option>
                             @endforeach
                         </select>
@@ -118,8 +118,8 @@
                         style="display: {{ request('jenis_periode') == 'tanggal' ? 'block' : 'none' }};">
                         <label for="tanggal_sampai" class="block text-sm font-medium text-gray-700">Tanggal Sampai</label>
                         <div class="relative">
-                        <input type="text" id="tanggal_sampai" name="tanggal_sampai"
-                            value="{{ request('tanggal_sampai') }}"
+                            <input type="text" id="tanggal_sampai" name="tanggal_sampai"
+                                value="{{ request('tanggal_sampai') }}"
                                 class="w-full px-3 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                 placeholder="Pilih tanggal sampai" readonly>
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -171,9 +171,9 @@
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Total Piutang</p>
+                            <p class="text-sm font-medium text-gray-600">Total Hutang</p>
                             <p class="text-2xl font-semibold text-gray-900">
-                                {{ number_format($laporanData['summary']['total_piutang'], 0, ',', '.') }}</p>
+                                {{ number_format($laporanData['summary']['total_hutang'], 0, ',', '.') }}</p>
                         </div>
                     </div>
                 </div>
@@ -187,9 +187,9 @@
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Total Transaksi</p>
+                            <p class="text-sm font-medium text-gray-600">Total Terbayar</p>
                             <p class="text-2xl font-semibold text-gray-900">
-                                {{ number_format($laporanData['summary']['total_transaksi'], 0, ',', '.') }}</p>
+                                {{ number_format($laporanData['summary']['total_terbayar'], 0, ',', '.') }}</p>
                         </div>
                     </div>
                 </div>
@@ -204,9 +204,9 @@
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Belum Bayar</p>
+                            <p class="text-sm font-medium text-gray-600">Sisa Hutang</p>
                             <p class="text-2xl font-semibold text-gray-900">
-                                {{ number_format($laporanData['summary']['belum_bayar'], 0, ',', '.') }}</p>
+                                {{ number_format($laporanData['summary']['total_sisa'], 0, ',', '.') }}</p>
                         </div>
                     </div>
                 </div>
@@ -221,9 +221,9 @@
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Down Payment</p>
+                            <p class="text-sm font-medium text-gray-600">Belum Bayar</p>
                             <p class="text-2xl font-semibold text-gray-900">
-                                {{ number_format($laporanData['summary']['dp'], 0, ',', '.') }}</p>
+                                {{ number_format($laporanData['summary']['belum_bayar'], 0, ',', '.') }}</p>
                         </div>
                     </div>
                 </div>
@@ -242,9 +242,9 @@
                                         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
                                     </path>
                                 </svg>
-                                Detail Piutang
+                                Detail Hutang
                             </h3>
-                    @if (isset($laporanData['periode']))
+                            @if (isset($laporanData['periode']))
                                 <p class="text-sm text-gray-600 mt-2 flex items-center">
                                     <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
@@ -252,18 +252,18 @@
                                             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
                                         </path>
                                     </svg>
-                            Periode:
-                            @if ($laporanData['periode']['jenis'] == 'semua')
-                                {{ $laporanData['periode']['deskripsi'] }}
-                            @elseif ($laporanData['periode']['jenis'] == 'bulan')
-                                {{ $laporanData['periode']['bulan_nama'] }} {{ $laporanData['periode']['tahun'] }}
-                            @else
+                                    Periode:
+                                    @if ($laporanData['periode']['jenis'] == 'semua')
+                                        {{ $laporanData['periode']['deskripsi'] }}
+                                    @elseif ($laporanData['periode']['jenis'] == 'bulan')
+                                        {{ $laporanData['periode']['bulan_nama'] }} {{ $laporanData['periode']['tahun'] }}
+                                    @else
                                         {{ \Carbon\Carbon::parse($laporanData['periode']['tanggal_dari'])->format('d M Y') }}
                                         -
-                                {{ \Carbon\Carbon::parse($laporanData['periode']['tanggal_sampai'])->format('d M Y') }}
+                                        {{ \Carbon\Carbon::parse($laporanData['periode']['tanggal_sampai'])->format('d M Y') }}
+                                    @endif
+                                </p>
                             @endif
-                        </p>
-                    @endif
                         </div>
                         <div class="flex items-center space-x-2">
                             <span
@@ -273,7 +273,7 @@
                                         d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
                                         clip-rule="evenodd"></path>
                                 </svg>
-                                {{ isset($laporanData['piutangs']) ? $laporanData['piutangs']->count() : 0 }} Transaksi
+                                {{ isset($laporanData['hutangs']) ? $laporanData['hutangs']->count() : 0 }} Transaksi
                             </span>
                         </div>
                     </div>
@@ -317,7 +317,7 @@
                                                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
                                             </path>
                                         </svg>
-                                        Pelanggan
+                                        Supplier
                                     </div>
                                 </th>
                                 <th
@@ -369,7 +369,7 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-100">
-                            @forelse($laporanData['piutangs'] ?? [] as $piutang)
+                            @forelse($laporanData['hutangs'] ?? [] as $hutang)
                                 <tr class="hover:bg-blue-50 transition-colors duration-200 group">
                                     <td class="px-4 py-3 whitespace-nowrap">
                                         <div class="flex items-center">
@@ -387,35 +387,35 @@
                                             </div>
                                             <div class="ml-4">
                                                 <div class="text-sm font-semibold text-gray-900">
-                                                    {{ $piutang['no_faktur'] }}</div>
+                                                    {{ $hutang['no_faktur'] }}</div>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap">
                                         <div class="text-sm text-gray-900 font-medium">
-                                            {{ \Carbon\Carbon::parse($piutang['tanggal'])->format('d M Y') }}
+                                            {{ \Carbon\Carbon::parse($hutang['tanggal'])->format('d M Y') }}
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">{{ $piutang['pelanggan'] }}</div>
+                                        <div class="text-sm font-medium text-gray-900">{{ $hutang['supplier'] }}</div>
                                     </td>
                                     <td class="px-6 py-5 whitespace-nowrap text-right">
                                         <div class="text-sm font-semibold text-gray-900">
-                                            Rp {{ number_format($piutang['total'], 0, ',', '.') }}
+                                            Rp {{ number_format($hutang['total'], 0, ',', '.') }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-5 whitespace-nowrap text-right">
                                         <div class="text-sm font-medium text-green-600">
-                                            Rp {{ number_format($piutang['terbayar'], 0, ',', '.') }}
+                                            Rp {{ number_format($hutang['terbayar'], 0, ',', '.') }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-5 whitespace-nowrap text-right">
                                         <div class="text-sm font-bold text-red-600">
-                                            Rp {{ number_format($piutang['sisa'], 0, ',', '.') }}
+                                            Rp {{ number_format($hutang['sisa'], 0, ',', '.') }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-5 whitespace-nowrap text-center">
-                                        @if ($piutang['status'] == 'lunas')
+                                        @if ($hutang['status'] == 'lunas')
                                             <span
                                                 class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
                                                 <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -425,7 +425,7 @@
                                                 </svg>
                                                 Lunas
                                             </span>
-                                        @elseif($piutang['status'] == 'dp')
+                                        @elseif($hutang['status'] == 'dp')
                                             <span
                                                 class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
                                                 <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -435,7 +435,7 @@
                                                 </svg>
                                                 DP
                                             </span>
-                                        @elseif($piutang['status'] == 'angsuran')
+                                        @elseif($hutang['status'] == 'angsuran')
                                             <span
                                                 class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
                                                 <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -468,15 +468,15 @@
                                                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
                                                 </path>
                                             </svg>
-                                            <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada data piutang</h3>
-                                            <p class="text-sm text-gray-500">Tidak ada data piutang untuk periode yang
+                                            <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada data hutang</h3>
+                                            <p class="text-sm text-gray-500">Tidak ada data hutang untuk periode yang
                                                 dipilih</p>
                                         </div>
                                     </td>
                                 </tr>
                             @endforelse
                         </tbody>
-                        @if (isset($laporanData['piutangs']) && $laporanData['piutangs']->count() > 0)
+                        @if (isset($laporanData['hutangs']) && $laporanData['hutangs']->count() > 0)
                             <tfoot class="bg-gradient-to-r from-gray-50 to-blue-50 border-t-2 border-gray-200">
                                 <tr>
                                     <td colspan="3" class="px-4 py-3 text-right font-bold text-gray-900">
@@ -492,28 +492,28 @@
                                     </td>
                                     <td class="px-4 py-3 text-right">
                                         <div class="text-lg font-bold text-gray-900">
-                                            Rp {{ number_format($laporanData['piutangs']->sum('total'), 0, ',', '.') }}
+                                            Rp {{ number_format($laporanData['hutangs']->sum('total'), 0, ',', '.') }}
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-right">
                                         <div class="text-lg font-bold text-green-600">
-                                            Rp {{ number_format($laporanData['piutangs']->sum('terbayar'), 0, ',', '.') }}
+                                            Rp {{ number_format($laporanData['hutangs']->sum('terbayar'), 0, ',', '.') }}
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-right">
                                         <div class="text-lg font-bold text-red-600">
-                                            Rp {{ number_format($laporanData['piutangs']->sum('sisa'), 0, ',', '.') }}
+                                            Rp {{ number_format($laporanData['hutangs']->sum('sisa'), 0, ',', '.') }}
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         <span
-                                            class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-bold bg-blue-100 text-blue-800">
+                                            class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-bold bg-red-100 text-red-800">
                                             <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd"
                                                     d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
                                                     clip-rule="evenodd"></path>
                                             </svg>
-                                            {{ $laporanData['piutangs']->count() }} Transaksi
+                                            {{ $laporanData['hutangs']->count() }} Transaksi
                                         </span>
                                     </td>
                                 </tr>
@@ -526,23 +526,23 @@
             <!-- Spacing between tables -->
             <div class="mt-8"></div>
 
-            <!-- Tabel Rekap Pelanggan -->
-            @if (isset($laporanData['rekap_pelanggan']) && $laporanData['rekap_pelanggan']->count() > 0)
+            <!-- Tabel Rekap Supplier -->
+            @if (isset($laporanData['rekap_supplier']) && $laporanData['rekap_supplier']->count() > 0)
                 <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-                    <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+                    <div class="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4">
                         <div class="flex items-center">
                             <svg class="w-6 h-6 text-white mr-3" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
                                 </path>
                             </svg>
-                            <h3 class="text-lg font-semibold text-white">Rekap Berdasarkan Pelanggan</h3>
+                            <h3 class="text-lg font-semibold text-white">Rekap Berdasarkan Supplier</h3>
                         </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gradient-to-r from-gray-50 to-blue-50">
+                            <thead class="bg-gradient-to-r from-gray-50 to-red-50">
                                 <tr>
                                     <th
                                         class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -550,10 +550,10 @@
                                             <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
+                                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
                                                 </path>
                                             </svg>
-                                            Pelanggan
+                                            Supplier
                                         </div>
                                     </th>
                                     <th
@@ -577,7 +577,7 @@
                                                     d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1">
                                                 </path>
                                             </svg>
-                                            Total Piutang
+                                            Total Hutang
                                         </div>
                                     </th>
                                     <th
@@ -619,34 +619,34 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                @foreach ($laporanData['rekap_pelanggan'] as $rekap)
+                                @foreach ($laporanData['rekap_supplier'] as $rekap)
                                     <tr class="hover:bg-gray-50 transition-colors duration-200">
                                         <td class="px-4 py-3 whitespace-nowrap">
                                             <div class="flex items-center">
                                                 <div class="flex-shrink-0 h-10 w-10">
                                                     <div
-                                                        class="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
+                                                        class="h-10 w-10 rounded-full bg-gradient-to-r from-red-500 to-red-600 flex items-center justify-center">
                                                         <span class="text-white font-semibold text-sm">
-                                                            {{ substr($rekap['pelanggan'], 0, 2) }}
+                                                            {{ substr($rekap['supplier'], 0, 2) }}
                                                         </span>
                                                     </div>
                                                 </div>
                                                 <div class="ml-4">
                                                     <div class="text-sm font-medium text-gray-900">
-                                                        {{ $rekap['pelanggan'] }}
+                                                        {{ $rekap['supplier'] }}
                                                     </div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td class="px-4 py-3 text-center">
                                             <span
-                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                                 {{ $rekap['total_transaksi'] }} Transaksi
                                             </span>
                                         </td>
                                         <td class="px-4 py-3 text-right">
                                             <div class="text-sm font-medium text-gray-900">
-                                                Rp {{ number_format($rekap['total_piutang'], 0, ',', '.') }}
+                                                Rp {{ number_format($rekap['total_hutang'], 0, ',', '.') }}
                                             </div>
                                         </td>
                                         <td class="px-4 py-3 text-right">
@@ -656,11 +656,11 @@
                                         </td>
                                         <td class="px-4 py-3 text-right">
                                             <div class="text-sm font-bold text-red-600">
-                                                Rp {{ number_format($rekap['sisa_piutang'], 0, ',', '.') }}
+                                                Rp {{ number_format($rekap['sisa_hutang'], 0, ',', '.') }}
                                             </div>
                                         </td>
                                         <td class="px-4 py-3 text-center">
-                                            @if ($rekap['sisa_piutang'] <= 0)
+                                            @if ($rekap['sisa_hutang'] <= 0)
                                                 <span
                                                     class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                     <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -695,7 +695,7 @@
                                     </tr>
                                 @endforeach
                             </tbody>
-                            <tfoot class="bg-gradient-to-r from-gray-50 to-blue-50 border-t-2 border-gray-200">
+                            <tfoot class="bg-gradient-to-r from-gray-50 to-red-50 border-t-2 border-gray-200">
                                 <tr>
                                     <td colspan="2" class="px-4 py-3 text-right font-bold text-gray-900">
                                         <div class="flex items-center justify-end">
@@ -711,30 +711,30 @@
                                     <td class="px-4 py-3 text-right">
                                         <div class="text-lg font-bold text-gray-900">
                                             Rp
-                                            {{ number_format($laporanData['rekap_pelanggan']->sum('total_piutang'), 0, ',', '.') }}
+                                            {{ number_format($laporanData['rekap_supplier']->sum('total_hutang'), 0, ',', '.') }}
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-right">
                                         <div class="text-lg font-bold text-green-600">
                                             Rp
-                                            {{ number_format($laporanData['rekap_pelanggan']->sum('total_terbayar'), 0, ',', '.') }}
+                                            {{ number_format($laporanData['rekap_supplier']->sum('total_terbayar'), 0, ',', '.') }}
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-right">
                                         <div class="text-lg font-bold text-red-600">
                                             Rp
-                                            {{ number_format($laporanData['rekap_pelanggan']->sum('sisa_piutang'), 0, ',', '.') }}
+                                            {{ number_format($laporanData['rekap_supplier']->sum('sisa_hutang'), 0, ',', '.') }}
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         <span
-                                            class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-bold bg-blue-100 text-blue-800">
+                                            class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-bold bg-red-100 text-red-800">
                                             <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd"
                                                     d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
                                                     clip-rule="evenodd"></path>
                                             </svg>
-                                            {{ $laporanData['rekap_pelanggan']->count() }} Pelanggan
+                                            {{ $laporanData['rekap_supplier']->count() }} Supplier
                                         </span>
                                     </td>
                                 </tr>
@@ -795,18 +795,18 @@
                 tanggalFilter.style.display = 'none';
                 tanggalSampaiFilter.style.display = 'none';
 
-                // Re-initialize Select2 for pelanggan
+                // Re-initialize Select2 for supplier
                 setTimeout(() => {
-                    $('#pelanggan_id').select2({
+                    $('#supplier_id').select2({
                         placeholder: 'Semua Pelanggan',
                         allowClear: true,
                         width: '100%',
                         language: {
                             noResults: function() {
-                                return "Tidak ada pelanggan ditemukan";
+                                return "Tidak ada supplier ditemukan";
                             },
                             searching: function() {
-                                return "Mencari pelanggan...";
+                                return "Mencari supplier...";
                             }
                         }
                     });
@@ -822,18 +822,18 @@
                     initializeFlatpickr();
                 }, 100);
 
-                // Re-initialize Select2 for pelanggan
+                // Re-initialize Select2 for supplier
                 setTimeout(() => {
-                    $('#pelanggan_id').select2({
+                    $('#supplier_id').select2({
                         placeholder: 'Semua Pelanggan',
                         allowClear: true,
                         width: '100%',
                         language: {
                             noResults: function() {
-                                return "Tidak ada pelanggan ditemukan";
+                                return "Tidak ada supplier ditemukan";
                             },
                             searching: function() {
-                                return "Mencari pelanggan...";
+                                return "Mencari supplier...";
                             }
                         }
                     });
@@ -844,18 +844,18 @@
                 tanggalFilter.style.display = 'none';
                 tanggalSampaiFilter.style.display = 'none';
 
-                // Re-initialize Select2 for pelanggan
+                // Re-initialize Select2 for supplier
                 setTimeout(() => {
-                    $('#pelanggan_id').select2({
+                    $('#supplier_id').select2({
                         placeholder: 'Semua Pelanggan',
                         allowClear: true,
                         width: '100%',
                         language: {
                             noResults: function() {
-                                return "Tidak ada pelanggan ditemukan";
+                                return "Tidak ada supplier ditemukan";
                             },
                             searching: function() {
-                                return "Mencari pelanggan...";
+                                return "Mencari supplier...";
                             }
                         }
                     });
@@ -899,7 +899,7 @@
                 '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Exporting...';
             btn.disabled = true;
 
-            fetch('{{ route('laporan.piutang.export-pdf') }}', {
+            fetch('{{ route('laporan.hutang.export-pdf') }}', {
                     method: 'POST',
                     body: formData,
                     headers: {
@@ -917,7 +917,7 @@
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = 'laporan_piutang.pdf';
+                    a.download = 'laporan_hutang.pdf';
                     document.body.appendChild(a);
                     a.click();
                     window.URL.revokeObjectURL(url);
@@ -940,17 +940,17 @@
 
         // Initialize Flatpickr for date inputs
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Select2 for pelanggan select
-            $('#pelanggan_id').select2({
+            // Initialize Select2 for supplier select
+            $('#supplier_id').select2({
                 placeholder: 'Semua Pelanggan',
                 allowClear: true,
                 width: '100%',
                 language: {
                     noResults: function() {
-                        return "Tidak ada pelanggan ditemukan";
+                        return "Tidak ada supplier ditemukan";
                     },
                     searching: function() {
-                        return "Mencari pelanggan...";
+                        return "Mencari supplier...";
                     }
                 }
             });

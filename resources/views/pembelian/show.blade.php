@@ -806,7 +806,6 @@
                                         @foreach ($kasBank as $kas)
                                             <label class="relative cursor-pointer kas-bank-option">
                                                 <input type="radio" name="kas_bank_id" value="{{ $kas->id }}"
-                                                    data-saldo="{{ $kas->saldo_terkini }}"
                                                     data-jenis="{{ $kas->jenis }}"
                                                     data-image="{{ $kas->image_url ?? '' }}"
                                                     class="sr-only kas-bank-radio">
@@ -847,10 +846,6 @@
                                                     </div>
                                                     <div
                                                         class="text-right ml-4 flex flex-col justify-center flex-shrink-0">
-                                                        <div class="text-sm text-gray-500 font-medium">Saldo</div>
-                                                        <div class="text-base font-bold text-green-600">
-                                                            Rp {{ number_format($kas->saldo_terkini, 0, ',', '.') }}
-                                                        </div>
                                                     </div>
                                                 </div>
                                             </label>
@@ -909,6 +904,104 @@
         </div>
     </div>
 
+    <!-- Print Section (Hidden) -->
+    <div class="print-section" style="display: none;">
+        <div
+            style="font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.4; max-width: 300px; margin: 0 auto;">
+            <!-- Header -->
+            <div style="text-align: center; margin-bottom: 20px;">
+                @if ($pengaturanUmum->logo_url)
+                    <div style="margin-bottom: 10px;">
+                        <img src="{{ $pengaturanUmum->logo_url }}" alt="{{ $pengaturanUmum->nama_toko }}"
+                            style="max-width: 150px; max-height: 60px; object-fit: contain;">
+                    </div>
+                @endif
+                <h1 style="font-size: 18px; font-weight: bold; margin: 0;">{{ $pengaturanUmum->nama_toko }}</h1>
+                @if ($pengaturanUmum->deskripsi)
+                    <p style="margin: 5px 0; font-size: 12px;">{{ $pengaturanUmum->deskripsi }}</p>
+                @endif
+                @if ($pengaturanUmum->alamat)
+                    <p style="margin: 5px 0; font-size: 11px;">{{ $pengaturanUmum->alamat }}</p>
+                @endif
+                @if ($pengaturanUmum->no_telepon)
+                    <p style="margin: 5px 0; font-size: 11px;">Telp: {{ $pengaturanUmum->no_telepon }}</p>
+                @endif
+                @if ($pengaturanUmum->email)
+                    <p style="margin: 5px 0; font-size: 11px;">Email: {{ $pengaturanUmum->email }}</p>
+                @endif
+                <hr style="border: none; border-top: 1px solid #000; margin: 10px 0;">
+            </div>
+
+            <!-- Invoice Info -->
+            <div style="margin-bottom: 15px;">
+                <h2 style="font-size: 14px; font-weight: bold; margin: 0 0 10px 0;">PEMBELIAN</h2>
+                <p style="margin: 2px 0;"><strong>No. Faktur:</strong> {{ $pembelian->no_faktur }}</p>
+                <p style="margin: 2px 0;"><strong>Tanggal:</strong> {{ $pembelian->tanggal->format('d/m/Y H:i') }}</p>
+                <p style="margin: 2px 0;"><strong>Supplier:</strong> {{ $pembelian->supplier->nama ?? 'N/A' }}</p>
+                <p style="margin: 2px 0;"><strong>Kasir:</strong> {{ $pembelian->kasir->name ?? 'N/A' }}</p>
+                <hr style="border: none; border-top: 1px solid #000; margin: 10px 0;">
+            </div>
+
+            <!-- Items -->
+            <div style="margin-bottom: 15px;">
+                @foreach ($pembelian->detailPembelian as $detail)
+                    <div style="margin-bottom: 8px;">
+                        <p style="margin: 2px 0; font-weight: bold;">{{ $detail->produk->nama_produk }}</p>
+                        <p style="margin: 2px 0; font-size: 11px;">
+                            {{ number_format($detail->qty, 0) }} {{ $detail->produk->satuan->nama ?? 'pcs' }} x
+                            {{ number_format($detail->harga, 0) }} = {{ number_format($detail->subtotal, 0) }}
+                        </p>
+                    </div>
+                @endforeach
+                <hr style="border: none; border-top: 1px solid #000; margin: 10px 0;">
+            </div>
+
+            <!-- Totals -->
+            <div style="text-align: right; margin-bottom: 15px;">
+                <p style="margin: 2px 0; font-size: 11px;">Subtotal: {{ number_format($pembelian->total, 0) }}</p>
+                @if ($pembelian->diskon > 0)
+                    <p style="margin: 2px 0; font-size: 11px;">Diskon: -{{ number_format($pembelian->diskon, 0) }}</p>
+                @endif
+                @if ($pembelian->ppn > 0)
+                    <p style="margin: 2px 0; font-size: 11px;">PPN: {{ number_format($pembelian->ppn, 0) }}</p>
+                @endif
+                <p style="margin: 5px 0; font-weight: bold; font-size: 13px;">TOTAL:
+                    {{ number_format($pembelian->grand_total, 0) }}</p>
+            </div>
+
+            <!-- Payment Info -->
+            @if ($pembelian->pembayaranPembelian->count() > 0)
+                <div style="margin-bottom: 15px;">
+                    <h3 style="font-size: 12px; font-weight: bold; margin: 0 0 8px 0;">PEMBAYARAN:</h3>
+                    @foreach ($pembelian->pembayaranPembelian as $pembayaran)
+                        <p style="margin: 2px 0; font-size: 11px;">{{ $pembayaran->metode_pembayaran }}:
+                            {{ number_format($pembayaran->jumlah_bayar, 0) }}</p>
+                    @endforeach
+                    <hr style="border: none; border-top: 1px solid #000; margin: 8px 0;">
+                    <div style="text-align: right;">
+                        <p style="margin: 2px 0; font-size: 11px; font-weight: bold;">Total Bayar:
+                            {{ number_format($pembelian->pembayaranPembelian->sum('jumlah_bayar'), 0) }}</p>
+                        @if ($pembelian->pembayaranPembelian->sum('jumlah_bayar') < $pembelian->grand_total)
+                            <p style="margin: 2px 0; font-size: 11px; font-weight: bold;">Sisa:
+                                {{ number_format($pembelian->grand_total - $pembelian->pembayaranPembelian->sum('jumlah_bayar'), 0) }}
+                            </p>
+                        @endif
+                    </div>
+                </div>
+            @else
+                <div style="margin-bottom: 15px; text-align: center;">
+                    <p style="margin: 2px 0; font-size: 11px; font-weight: bold;">BELUM ADA PEMBAYARAN</p>
+                </div>
+            @endif
+
+            <!-- Footer -->
+            <div style="text-align: center; margin-top: 20px;">
+                <hr style="border: none; border-top: 1px solid #000; margin: 10px 0;">
+                <p style="margin: 5px 0; font-size: 11px;">Terima kasih atas pembelian Anda!</p>
+                <p style="margin: 5px 0; font-size: 10px;">{{ date('d/m/Y H:i:s') }}</p>
+            </div>
+        </div>
+    </div>
 
 @endsection
 
@@ -1171,9 +1264,15 @@
                         'Accept': 'application/json'
                     }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
-                    if (data.success) {
+                    console.log('Print response:', data);
+                    if (data && data.success) {
                         showToast(data.message, 'success');
                         setTimeout(() => {
                             window.location.reload();
@@ -1237,10 +1336,14 @@
                         // If redirected, follow the redirect
                         window.location.href = response.url;
                     } else {
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
                         return response.json();
                     }
                 })
                 .then(data => {
+                    console.log('Print response (fallback):', data);
                     if (data && data.success) {
                         Swal.fire({
                             title: 'Berhasil!',
@@ -1305,12 +1408,306 @@
         // Print functions
         function printInvoiceWithQZTray(event) {
             event.preventDefault();
-            // Implementation for QZ Tray printing
-            console.log('QZ Tray printing not implemented yet');
+            const button = event.target.closest('button');
+            const buttonText = document.getElementById('printButtonText');
+
+            // Disable button and show loading
+            button.disabled = true;
+            button.classList.add('opacity-50', 'cursor-not-allowed');
+            buttonText.innerHTML = '<i class="ti ti-loader animate-spin mr-2"></i>Mencetak...';
+
+            // Check if QZ Tray is available
+            if (typeof qz === 'undefined') {
+                console.log('QZ Tray not loaded, loading script...');
+                loadQZTrayScript().then(() => {
+                    printWithQZTray();
+                }).catch(error => {
+                    console.error('Failed to load QZ Tray:', error);
+                    showPrintError('Gagal memuat QZ Tray');
+                    resetPrintButton(button, buttonText);
+                });
+            } else {
+                printWithQZTray();
+            }
+        }
+
+        function printWithQZTray() {
+            try {
+                // Check if QZ Tray is available
+                if (typeof qz === 'undefined') {
+                    console.log('QZ Tray not loaded, loading script...');
+                    loadQZTrayScript();
+                    return;
+                }
+
+                // Connect and get printer from database
+                qz.websocket.connect({
+                    retries: 2,
+                    delay: 1
+                }).then(function() {
+                    console.log('QZ Tray connected for invoice printing');
+
+                    // Get default printer from database
+                    fetch('{{ route('printer.get-settings') }}')
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log('Printer settings response (invoice):', data);
+                            if (data && data.success && data.settings && data.settings.default_printer) {
+                                console.log('Using printer from database:', data.settings.default_printer);
+                                printInvoice(data.settings.default_printer);
+                            } else {
+                                // Find any available printer
+                                qz.printers.find().then(function(printers) {
+                                    if (printers && printers.length > 0) {
+                                        console.log('Using first available printer:', printers[0]);
+                                        printInvoice(printers[0]);
+                                    } else {
+                                        console.log('No printers found for invoice printing');
+                                        showPrintError('Tidak ada printer yang tersedia');
+                                        resetPrintButton();
+                                    }
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error getting printer settings:', error);
+                            // Fallback to first available printer
+                            qz.printers.find().then(function(printers) {
+                                if (printers && printers.length > 0) {
+                                    console.log('Using first available printer (fallback):', printers[
+                                        0]);
+                                    printInvoice(printers[0]);
+                                } else {
+                                    showPrintError('Tidak ada printer yang tersedia');
+                                    resetPrintButton();
+                                }
+                            });
+                        });
+                }).catch(error => {
+                    console.error('QZ Tray connection failed:', error);
+                    showPrintError('Gagal terhubung ke QZ Tray: ' + error.message);
+                    resetPrintButton();
+                });
+            } catch (error) {
+                console.error('Print error:', error);
+                showPrintError('Terjadi kesalahan saat mencetak');
+                resetPrintButton(document.querySelector('button[onclick*="printInvoiceWithQZTray"]'), document
+                    .getElementById('printButtonText'));
+            }
         }
 
         function printInvoiceRaw() {
             window.print();
+        }
+
+        function generateInvoiceData() {
+            const invoiceLines = [];
+
+            // Header
+            invoiceLines.push("\x1B\x40"); // Initialize printer
+            @if ($pengaturanUmum->logo_url)
+                // Logo (if available) - QZ Tray will handle image from URL
+                invoiceLines.push("\x1B\x61\x01"); // Center align
+                invoiceLines.push("{{ $pengaturanUmum->logo_url }}"); // Logo URL for QZ Tray
+                invoiceLines.push("\n");
+            @endif
+            invoiceLines.push("\x1B\x61\x01"); // Center align
+            invoiceLines.push("{{ $pengaturanUmum->nama_toko }}\n");
+            @if ($pengaturanUmum->deskripsi)
+                invoiceLines.push("{{ $pengaturanUmum->deskripsi }}\n");
+            @endif
+            @if ($pengaturanUmum->alamat)
+                invoiceLines.push("{{ $pengaturanUmum->alamat }}\n");
+            @endif
+            @if ($pengaturanUmum->no_telepon)
+                invoiceLines.push("Telp: {{ $pengaturanUmum->no_telepon }}\n");
+            @endif
+            @if ($pengaturanUmum->email)
+                invoiceLines.push("Email: {{ $pengaturanUmum->email }}\n");
+            @endif
+            invoiceLines.push("================================\n");
+
+            // Invoice info
+            invoiceLines.push("\x1B\x61\x00"); // Left align
+            invoiceLines.push("PEMBELIAN\n");
+            invoiceLines.push("No. Faktur: {{ $pembelian->no_faktur }}\n");
+            invoiceLines.push("Tanggal: {{ $pembelian->tanggal->format('d/m/Y H:i') }}\n");
+            invoiceLines.push("Supplier: {{ $pembelian->supplier->nama ?? 'N/A' }}\n");
+            invoiceLines.push("Kasir: {{ $pembelian->kasir->name ?? 'N/A' }}\n");
+            invoiceLines.push("================================\n");
+
+            // Items
+            @foreach ($pembelian->detailPembelian as $detail)
+                invoiceLines.push("{{ substr($detail->produk->nama_produk, 0, 20) }}\n");
+                invoiceLines.push(
+                    "  {{ number_format($detail->qty, 0) }} {{ $detail->produk->satuan->nama ?? 'pcs' }} x {{ number_format($detail->harga, 0) }} = {{ number_format($detail->subtotal, 0) }}\n"
+                );
+            @endforeach
+
+            // Totals
+            invoiceLines.push("================================\n");
+            invoiceLines.push("\x1B\x61\x02"); // Right align
+            invoiceLines.push("Subtotal: {{ number_format($pembelian->total, 0) }}\n");
+            @if ($pembelian->diskon > 0)
+                invoiceLines.push("Diskon: -{{ number_format($pembelian->diskon, 0) }}\n");
+            @endif
+            @if ($pembelian->ppn > 0)
+                invoiceLines.push("PPN: {{ number_format($pembelian->ppn, 0) }}\n");
+            @endif
+            invoiceLines.push("TOTAL: {{ number_format($pembelian->grand_total, 0) }}\n");
+
+            // Payment info
+            invoiceLines.push("================================\n");
+            invoiceLines.push("\x1B\x61\x00"); // Left align
+            @if ($pembelian->pembayaranPembelian->count() > 0)
+                invoiceLines.push("PEMBAYARAN:\n");
+                @foreach ($pembelian->pembayaranPembelian as $pembayaran)
+                    invoiceLines.push(
+                        "{{ $pembayaran->metode_pembayaran }}: {{ number_format($pembayaran->jumlah_bayar, 0) }}\n");
+                @endforeach
+                invoiceLines.push("--------------------------------\n");
+                invoiceLines.push("\x1B\x61\x02"); // Right align
+                invoiceLines.push(
+                    "Total Bayar: {{ number_format($pembelian->pembayaranPembelian->sum('jumlah_bayar'), 0) }}\n");
+                @if ($pembelian->pembayaranPembelian->sum('jumlah_bayar') < $pembelian->grand_total)
+                    invoiceLines.push(
+                        "Sisa: {{ number_format($pembelian->grand_total - $pembelian->pembayaranPembelian->sum('jumlah_bayar'), 0) }}\n"
+                    );
+                @endif
+            @else
+                invoiceLines.push("BELUM ADA PEMBAYARAN\n");
+            @endif
+
+            // Footer
+            invoiceLines.push("================================\n");
+            invoiceLines.push("\x1B\x61\x01"); // Center align
+            invoiceLines.push("Terima kasih atas pembelian Anda!\n");
+            invoiceLines.push("{{ date('d/m/Y H:i:s') }}\n");
+            invoiceLines.push("\n\n\n");
+            invoiceLines.push("\x1D\x56\x42\x00"); // Cut paper
+
+            return invoiceLines;
+        }
+
+        function printInvoice(printerName) {
+            // Generate invoice content for thermal printer
+            const invoiceData = generateInvoiceData();
+
+            const config = qz.configs.create(printerName);
+
+            qz.print(config, invoiceData).then(function() {
+                console.log(`Invoice printed to ${printerName}`);
+
+                // Update printer info
+                updatePrinterInfo(printerName);
+
+                // Show success notification
+                showPrintSuccess('✅ Invoice berhasil dicetak ke ' + printerName);
+
+                // Reset button
+                resetPrintButton();
+            }).catch(function(err) {
+                console.log('Invoice printing failed:', err);
+                showPrintError('⚠️ Cetak invoice gagal: ' + err.message);
+                resetPrintButton();
+            });
+        }
+
+        // Update printer info when QZ Tray connects
+        function updatePrinterInfo(printerName) {
+            const printerInfo = document.getElementById('printerInfo');
+            if (printerInfo) {
+                printerInfo.textContent = `Printer: ${printerName}`;
+            }
+        }
+
+        function loadQZTrayScript() {
+            return new Promise((resolve, reject) => {
+                if (typeof qz !== 'undefined') {
+                    resolve();
+                    return;
+                }
+
+                const script = document.createElement('script');
+                script.src = '/js/qz/qz-tray.js';
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        function showPrintSuccess(message) {
+            showToast(message, 'success');
+        }
+
+        function showPrintError(message) {
+            showToast(message, 'error');
+        }
+
+        function showToast(message, type = 'info') {
+            // Remove existing toast
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className =
+                `toast fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white transform transition-all duration-300 translate-x-full`;
+
+            // Set color based on type
+            if (type === 'success') {
+                toast.classList.add('bg-green-500');
+            } else if (type === 'error') {
+                toast.classList.add('bg-red-500');
+            } else if (type === 'warning') {
+                toast.classList.add('bg-yellow-500');
+            } else {
+                toast.classList.add('bg-blue-500');
+            }
+
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <span class="mr-2">
+                        ${type === 'success' ? '<i class="ti ti-check-circle"></i>' : 
+                          type === 'error' ? '<i class="ti ti-x-circle"></i>' : 
+                          type === 'warning' ? '<i class="ti ti-alert-circle"></i>' : 
+                          '<i class="ti ti-info-circle"></i>'}
+                    </span>
+                    <span>${message}</span>
+                </div>
+            `;
+
+            document.body.appendChild(toast);
+
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 100);
+
+            // Animate out and remove
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        function resetPrintButton(button, buttonText) {
+            if (button && buttonText) {
+                button.disabled = false;
+                button.classList.remove('opacity-50', 'cursor-not-allowed');
+                buttonText.innerHTML = '<i class="ti ti-printer text-sm mr-2"></i>Cetak Struk';
+            }
         }
 
         // Payment Method Option Buttons Styling

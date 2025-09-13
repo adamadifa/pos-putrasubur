@@ -7,6 +7,7 @@ use App\Models\DetailSaldoAwalProduk;
 use App\Models\Produk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 
@@ -105,7 +106,7 @@ class SaldoAwalProdukController extends Controller
                     ->with('error', 'Saldo awal untuk periode ' . $this->getBulanNama($request->periode_bulan) . ' ' . $request->periode_tahun . ' sudah ada.');
             }
 
-            // Cek apakah saldo awal bulan sebelumnya sudah di-set
+            // Cek apakah saldo awal bulan sebelumnya sudah di-set (hanya jika sudah ada data sebelumnya)
             $bulanSebelumnya = $request->periode_bulan - 1;
             $tahunSebelumnya = $request->periode_tahun;
 
@@ -114,15 +115,25 @@ class SaldoAwalProdukController extends Controller
                 $tahunSebelumnya = $request->periode_tahun - 1;
             }
 
-            // Cek apakah ada saldo awal bulan sebelumnya
-            $saldoAwalSebelumnya = SaldoAwalProduk::where('periode_bulan', $bulanSebelumnya)
-                ->where('periode_tahun', $tahunSebelumnya)
-                ->first();
+            // Cek apakah sudah ada data saldo awal sebelumnya
+            $adaDataSebelumnya = SaldoAwalProduk::where('periode_tahun', '<', $request->periode_tahun)
+                ->orWhere(function ($query) use ($request) {
+                    $query->where('periode_tahun', $request->periode_tahun)
+                        ->where('periode_bulan', '<', $request->periode_bulan);
+                })
+                ->exists();
 
-            if (!$saldoAwalSebelumnya) {
-                return redirect()->back()
-                    ->with('error', 'Tidak dapat menyimpan saldo awal ' . $this->getBulanNama($request->periode_bulan) . ' ' . $request->periode_tahun . ' karena saldo awal ' . $this->getBulanNama($bulanSebelumnya) . ' ' . $tahunSebelumnya . ' belum di-set. Silakan set saldo awal bulan sebelumnya terlebih dahulu.')
-                    ->withInput();
+            // Jika sudah ada data sebelumnya, cek apakah saldo awal bulan sebelumnya sudah di-set
+            if ($adaDataSebelumnya) {
+                $saldoAwalSebelumnya = SaldoAwalProduk::where('periode_bulan', $bulanSebelumnya)
+                    ->where('periode_tahun', $tahunSebelumnya)
+                    ->first();
+
+                if (!$saldoAwalSebelumnya) {
+                    return redirect()->back()
+                        ->with('error', 'Tidak dapat menyimpan saldo awal ' . $this->getBulanNama($request->periode_bulan) . ' ' . $request->periode_tahun . ' karena saldo awal ' . $this->getBulanNama($bulanSebelumnya) . ' ' . $tahunSebelumnya . ' belum di-set. Silakan set saldo awal bulan sebelumnya terlebih dahulu.')
+                        ->withInput();
+                }
             }
 
             // Buat header saldo awal
@@ -152,6 +163,10 @@ class SaldoAwalProdukController extends Controller
                     'produk_id' => $produkId,
                     'saldo_awal' => $saldoAwalValue
                 ]);
+
+                // Update stok produk langsung
+                $produk->update(['stok' => $saldoAwalValue]);
+
                 $createdCount++;
             }
 
@@ -250,6 +265,34 @@ class SaldoAwalProdukController extends Controller
         ]);
 
         try {
+            // Cek apakah sudah ada data saldo awal sebelumnya
+            $adaDataSebelumnya = SaldoAwalProduk::where('periode_tahun', '<', $request->periode_tahun)
+                ->orWhere(function ($query) use ($request) {
+                    $query->where('periode_tahun', $request->periode_tahun)
+                        ->where('periode_bulan', '<', $request->periode_bulan);
+                })
+                ->exists();
+
+            // Jika ada data sebelumnya, cek apakah saldo awal bulan sebelumnya sudah di-set
+            $saldoAwalBulanSebelumnyaBelumDiSet = false;
+            if ($adaDataSebelumnya) {
+                $bulanSebelumnya = $request->periode_bulan - 1;
+                $tahunSebelumnya = $request->periode_tahun;
+
+                if ($bulanSebelumnya <= 0) {
+                    $bulanSebelumnya = 12;
+                    $tahunSebelumnya = $request->periode_tahun - 1;
+                }
+
+                $saldoAwalBulanSebelumnya = SaldoAwalProduk::where('periode_bulan', $bulanSebelumnya)
+                    ->where('periode_tahun', $tahunSebelumnya)
+                    ->first();
+
+                if (!$saldoAwalBulanSebelumnya) {
+                    $saldoAwalBulanSebelumnyaBelumDiSet = true;
+                }
+            }
+
             $produkList = Produk::with(['kategori', 'satuan'])
                 ->orderBy('kategori_id')
                 ->orderBy('nama_produk')
@@ -271,17 +314,18 @@ class SaldoAwalProdukController extends Controller
                     $existingSaldoValue = $detail ? $detail->saldo_awal : 0;
                 }
 
-                // Hitung saldo awal otomatis jika belum ada
+                // Hitung saldo awal otomatis jika belum ada dan saldo bulan sebelumnya sudah di-set
                 $calculatedSaldo = 0;
-                $saldoSebelumnyaBelumDiSet = false;
-
-                if (!$existingSaldo) {
-                    $calculatedSaldo = $this->calculateSaldoAwal($produk->id, $request->periode_bulan, $request->periode_tahun);
-
-                    // Jika hasil null, berarti saldo sebelumnya belum di-set
-                    if ($calculatedSaldo === null) {
-                        $saldoSebelumnyaBelumDiSet = true;
-                        $calculatedSaldo = 0; // Set ke 0 untuk display
+                if (!$existingSaldo && !$saldoAwalBulanSebelumnyaBelumDiSet) {
+                    if ($adaDataSebelumnya) {
+                        $calculatedSaldo = $this->calculateSaldoAwal($produk->id, $request->periode_bulan, $request->periode_tahun);
+                        // Jika hasil null, set ke 0
+                        if ($calculatedSaldo === null) {
+                            $calculatedSaldo = 0;
+                        }
+                    } else {
+                        // Jika belum ada data sebelumnya, set calculated saldo ke 0
+                        $calculatedSaldo = 0;
                     }
                 }
 
@@ -294,7 +338,7 @@ class SaldoAwalProdukController extends Controller
                     'existing_saldo' => $existingSaldoValue,
                     'has_existing' => $existingSaldo ? true : false,
                     'calculated_saldo' => $calculatedSaldo,
-                    'saldo_sebelumnya_belum_diset' => $saldoSebelumnyaBelumDiSet
+                    'saldo_sebelumnya_belum_diset' => $saldoAwalBulanSebelumnyaBelumDiSet // Set sama untuk semua produk
                 ];
             }
 
@@ -312,7 +356,7 @@ class SaldoAwalProdukController extends Controller
 
     /**
      * Hitung saldo awal otomatis berdasarkan saldo awal bulan sebelumnya
-     * ditambah pembelian dan dikurangi penjualan bulan sebelumnya
+     * ditambah pembelian, ditambah penyesuaian stok, dan dikurangi penjualan bulan sebelumnya
      */
     private function calculateSaldoAwal($produkId, $periodeBulan, $periodeTahun)
     {
@@ -358,14 +402,21 @@ class SaldoAwalProdukController extends Controller
                 ->where('produk_id', $produkId)
                 ->sum('qty');
 
+            // Hitung total penyesuaian stok bulan sebelumnya (positif untuk penambahan, negatif untuk pengurangan)
+            $totalPenyesuaianStok = \App\Models\PenyesuaianStok::whereMonth('tanggal_penyesuaian', $bulanSebelumnya)
+                ->whereYear('tanggal_penyesuaian', $tahunSebelumnya)
+                ->where('produk_id', $produkId)
+                ->sum('jumlah_penyesuaian');
+
             // Hitung saldo akhir bulan sebelumnya
-            $saldoAkhir = $saldoAwal + $totalPembelian - $totalPenjualan;
+            // Formula: Saldo Awal + Pembelian + Penyesuaian Stok - Penjualan
+            $saldoAkhir = $saldoAwal + $totalPembelian + $totalPenyesuaianStok - $totalPenjualan;
 
             return max(0, $saldoAkhir); // Pastikan tidak negatif
 
         } catch (\Exception $e) {
             // Jika terjadi error, return 0
-            \Log::error('Error in calculateSaldoAwal: ' . $e->getMessage());
+            Log::error('Error in calculateSaldoAwal: ' . $e->getMessage());
             return 0;
         }
     }

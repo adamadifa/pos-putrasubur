@@ -825,7 +825,6 @@
                                         @foreach ($kasBank as $kas)
                                             <label class="relative cursor-pointer kas-bank-option">
                                                 <input type="radio" name="kas_bank_id" value="{{ $kas->id }}"
-                                                    data-saldo="{{ $kas->saldo_terkini }}"
                                                     data-jenis="{{ $kas->jenis }}"
                                                     data-image="{{ $kas->image_url ?? '' }}"
                                                     class="sr-only kas-bank-radio">
@@ -866,10 +865,6 @@
                                                     </div>
                                                     <div
                                                         class="text-right ml-4 flex flex-col justify-center flex-shrink-0">
-                                                        <div class="text-sm text-gray-500 font-medium">Saldo</div>
-                                                        <div class="text-base font-bold text-green-600">
-                                                            Rp {{ number_format($kas->saldo_terkini, 0, ',', '.') }}
-                                                        </div>
                                                     </div>
                                                 </div>
                                             </label>
@@ -937,6 +932,143 @@
             </div>
         </div>
     </div>
+
+    <!-- Print Section (Hidden) -->
+    <div class="print-section" style="display: none;">
+        <div
+            style="font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.4; max-width: 300px; margin: 0 auto;">
+            <!-- Header -->
+            <div style="text-align: center; margin-bottom: 20px;">
+                @if ($pengaturanUmum->logo_url)
+                    <div style="margin-bottom: 10px;">
+                        <img src="{{ $pengaturanUmum->logo_url }}" alt="{{ $pengaturanUmum->nama_toko }}"
+                            style="max-width: 150px; max-height: 60px; object-fit: contain;">
+                    </div>
+                @endif
+                <h1 style="font-size: 18px; font-weight: bold; margin: 0;">{{ $pengaturanUmum->nama_toko }}</h1>
+                @if ($pengaturanUmum->deskripsi)
+                    <p style="margin: 5px 0; font-size: 12px;">{{ $pengaturanUmum->deskripsi }}</p>
+                @endif
+                @if ($pengaturanUmum->alamat)
+                    <p style="margin: 5px 0; font-size: 11px;">{{ $pengaturanUmum->alamat }}</p>
+                @endif
+                @if ($pengaturanUmum->no_telepon)
+                    <p style="margin: 5px 0; font-size: 11px;">Telp: {{ $pengaturanUmum->no_telepon }}</p>
+                @endif
+                @if ($pengaturanUmum->email)
+                    <p style="margin: 5px 0; font-size: 11px;">Email: {{ $pengaturanUmum->email }}</p>
+                @endif
+                <hr style="border: none; border-top: 1px solid #000; margin: 10px 0;">
+            </div>
+
+            <!-- Invoice Info -->
+            <div style="margin-bottom: 15px;">
+                <h2 style="font-size: 14px; font-weight: bold; margin: 0 0 10px 0;">FAKTUR PENJUALAN</h2>
+                <p style="margin: 2px 0;"><strong>No. Faktur:</strong> {{ $penjualan->no_faktur }}</p>
+                <p style="margin: 2px 0;"><strong>Tanggal:</strong> {{ $penjualan->tanggal->format('d/m/Y H:i') }}</p>
+                <p style="margin: 2px 0;"><strong>Pelanggan:</strong> {{ $penjualan->pelanggan->nama ?? 'N/A' }}</p>
+                <p style="margin: 2px 0;"><strong>Kasir:</strong> {{ $penjualan->kasir->name ?? 'N/A' }}</p>
+                <hr style="border: none; border-top: 1px solid #000; margin: 10px 0;">
+            </div>
+
+            <!-- Items -->
+            <div style="margin-bottom: 15px;">
+                @foreach ($penjualan->detailPenjualan as $detail)
+                    <div style="margin-bottom: 8px;">
+                        <p style="margin: 2px 0; font-weight: bold;">{{ $detail->produk->nama_produk }}</p>
+                        <p style="margin: 2px 0; font-size: 11px;">
+                            {{ number_format($detail->qty, 0) }} {{ $detail->produk->satuan->nama ?? 'pcs' }} x
+                            {{ number_format($detail->harga, 0) }} = {{ number_format($detail->subtotal, 0) }}
+                        </p>
+                    </div>
+                @endforeach
+                <hr style="border: none; border-top: 1px solid #000; margin: 10px 0;">
+            </div>
+
+            <!-- Totals -->
+            <div style="text-align: right; margin-bottom: 15px;">
+                <p style="margin: 2px 0; font-size: 11px;">Subtotal: {{ number_format($penjualan->total, 0) }}</p>
+                @if ($penjualan->diskon > 0)
+                    <p style="margin: 2px 0; font-size: 11px;">Diskon: -{{ number_format($penjualan->diskon, 0) }}</p>
+                @endif
+                @if ($penjualan->ppn > 0)
+                    <p style="margin: 2px 0; font-size: 11px;">PPN: {{ number_format($penjualan->ppn, 0) }}</p>
+                @endif
+                <p style="margin: 5px 0; font-weight: bold; font-size: 13px;">TOTAL:
+                    {{ number_format($penjualan->grand_total, 0) }}</p>
+            </div>
+
+            <!-- Payment Info -->
+            @if ($penjualan->pembayaranPenjualan->count() > 0)
+                <div style="margin-bottom: 15px;">
+                    <h3 style="font-size: 12px; font-weight: bold; margin: 0 0 8px 0;">PEMBAYARAN:</h3>
+                    @foreach ($penjualan->pembayaranPenjualan as $pembayaran)
+                        <p style="margin: 2px 0; font-size: 11px;">{{ $pembayaran->metode_pembayaran }}:
+                            {{ number_format($pembayaran->jumlah_bayar, 0) }}</p>
+                    @endforeach
+                    <hr style="border: none; border-top: 1px solid #000; margin: 8px 0;">
+                    <div style="text-align: right;">
+                        <p style="margin: 2px 0; font-size: 11px; font-weight: bold;">Total Bayar:
+                            {{ number_format($penjualan->pembayaranPenjualan->sum('jumlah_bayar'), 0) }}</p>
+                        @if ($penjualan->pembayaranPenjualan->sum('jumlah_bayar') < $penjualan->grand_total)
+                            <p style="margin: 2px 0; font-size: 11px; font-weight: bold;">Sisa:
+                                {{ number_format($penjualan->grand_total - $penjualan->pembayaranPenjualan->sum('jumlah_bayar'), 0) }}
+                            </p>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Payment History Detail -->
+                <div style="margin-bottom: 15px;">
+                    <h3 style="font-size: 12px; font-weight: bold; margin: 0 0 8px 0;">RIWAYAT PEMBAYARAN:</h3>
+                    <hr style="border: none; border-top: 1px solid #000; margin: 4px 0;">
+                    <div style="font-size: 9px; color: #666; margin-bottom: 4px;">
+                        <strong>Faktur:</strong> {{ $penjualan->no_faktur }} -
+                        {{ $penjualan->tanggal->format('d/m/Y H:i') }}
+                    </div>
+                    @foreach ($penjualan->pembayaranPenjualan->sortBy('created_at') as $pembayaran)
+                        <div style="margin-bottom: 6px; font-size: 10px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                                <span style="font-weight: bold;">{{ $pembayaran->no_bukti }}</span>
+                                <span style="font-weight: bold;">Rp
+                                    {{ number_format($pembayaran->jumlah_bayar, 0) }}</span>
+                            </div>
+                            <div style="font-size: 9px; color: #666;">
+                                <span>{{ $pembayaran->created_at->format('d/m/Y H:i') }} -
+                                    {{ $pembayaran->metode_pembayaran }}</span>
+                                @php
+                                    $statusConfig = [
+                                        'D' => 'DP',
+                                        'A' => 'Angsuran',
+                                        'P' => 'Pelunasan',
+                                    ];
+                                    $status = $statusConfig[$pembayaran->status_bayar] ?? 'DP';
+                                @endphp
+                                <span style="margin-left: 8px;">({{ $status }})</span>
+                            </div>
+                            @if ($pembayaran->keterangan)
+                                <div style="font-size: 9px; color: #666; margin-top: 1px;">
+                                    {{ $pembayaran->keterangan }}
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div style="margin-bottom: 15px; text-align: center;">
+                    <p style="margin: 2px 0; font-size: 11px; font-weight: bold;">BELUM ADA PEMBAYARAN</p>
+                </div>
+            @endif
+
+            <!-- Footer -->
+            <div style="text-align: center; margin-top: 20px;">
+                <hr style="border: none; border-top: 1px solid #000; margin: 10px 0;">
+                <p style="margin: 5px 0; font-size: 11px;">Terima kasih atas pembelian Anda!</p>
+                <p style="margin: 5px 0; font-size: 10px;">{{ date('d/m/Y H:i:s') }}</p>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @push('styles')
@@ -963,6 +1095,9 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        // Global flag to prevent multiple connection attempts
+        let qzConnecting = false;
+
         function confirmDelete(salesId, invoiceNumber) {
             if (confirm(`Apakah Anda yakin ingin menghapus transaksi "${invoiceNumber}"?`)) {
                 const form = document.createElement('form');
@@ -1004,7 +1139,8 @@
                     return response.json();
                 })
                 .then(data => {
-                    if (data.success && data.receipt) {
+                    console.log('Pending receipt response:', data);
+                    if (data && data.success && data.receipt) {
                         console.log('Pending receipt found:', data.receipt);
                         autoPrintReceipt(data.receipt);
                     } else {
@@ -1012,7 +1148,8 @@
                     }
                 })
                 .catch(error => {
-                    console.log('Error checking pending receipt:', error.message);
+                    console.error('Error checking pending receipt:', error);
+                    showToast('Error checking pending receipt: ' + error.message, 'error');
                 });
         }
 
@@ -1026,24 +1163,27 @@
 
             // QZ security sudah dikonfigurasi di qz-config.js
 
-            // Connect and print
-            qz.websocket.connect({
-                retries: 2,
-                delay: 1
-            }).then(function() {
+            // Check if already connected, if not connect
+            const connectAndAutoPrint = function() {
                 console.log('QZ Tray connected for auto-print');
 
                 // Get default printer from database
                 fetch('{{ route('printer.get-settings') }}')
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
-                        if (data.success && data.settings.default_printer) {
+                        console.log('Printer settings response:', data);
+                        if (data && data.success && data.settings && data.settings.default_printer) {
                             console.log('Using printer from database:', data.settings.default_printer);
                             printReceipt(data.settings.default_printer, receiptData);
                         } else {
                             // Find any available printer
                             qz.printers.find().then(function(printers) {
-                                if (printers.length > 0) {
+                                if (printers && printers.length > 0) {
                                     console.log('Using first available printer:', printers[0]);
                                     printReceipt(printers[0], receiptData);
                                 } else {
@@ -1056,7 +1196,7 @@
                         console.error('Error getting printer settings:', error);
                         // Fallback to first available printer
                         qz.printers.find().then(function(printers) {
-                            if (printers.length > 0) {
+                            if (printers && printers.length > 0) {
                                 console.log('Using first available printer (fallback):', printers[0]);
                                 printReceipt(printers[0], receiptData);
                             } else {
@@ -1064,9 +1204,32 @@
                             }
                         });
                     });
-            }).catch(function(err) {
-                console.log('QZ Tray connection failed for auto-print:', err);
-            });
+            };
+
+            // Check if already connecting to prevent multiple attempts
+            if (qzConnecting) {
+                console.log('QZ Tray connection already in progress, skipping auto-print...');
+                return;
+            }
+
+            // Check connection status first
+            if (qz.websocket && qz.websocket.connect) {
+                console.log('QZ Tray available, attempting connection...');
+                qzConnecting = true;
+
+                qz.websocket.connect({
+                    retries: 2,
+                    delay: 1
+                }).then(function() {
+                    qzConnecting = false;
+                    connectAndAutoPrint();
+                }).catch(function(err) {
+                    qzConnecting = false;
+                    console.log('QZ Tray connection failed for auto-print:', err);
+                });
+            } else {
+                console.log('QZ Tray not available for auto-print');
+            }
         }
 
         function printReceipt(printerName, receiptData) {
@@ -1077,9 +1240,25 @@
 
                 // Show notification
                 showNotification('✅ Struk berhasil dicetak otomatis!', 'success');
+
+                // Close connection after successful auto-print
+                setTimeout(function() {
+                    if (qz.websocket && qz.websocket.disconnect) {
+                        console.log('Closing QZ Tray connection after auto-print');
+                        qz.websocket.disconnect();
+                    }
+                }, 1000); // Wait 1 second before closing
             }).catch(function(err) {
                 console.log('Auto-print failed:', err);
                 showNotification('⚠️ Auto-print gagal: ' + err.message, 'warning');
+
+                // Close connection on error too
+                setTimeout(function() {
+                    if (qz.websocket && qz.websocket.disconnect) {
+                        console.log('Closing QZ Tray connection after auto-print error');
+                        qz.websocket.disconnect();
+                    }
+                }, 1000);
             });
         }
 
@@ -1153,29 +1332,33 @@
 
             // QZ security sudah dikonfigurasi di qz-config.js
 
-            // Connect and print
-            qz.websocket.connect({
-                retries: 2,
-                delay: 1
-            }).then(function() {
+            // Check if already connected, if not connect
+            const connectAndPrint = function() {
                 console.log('QZ Tray connected for invoice printing');
 
                 // Get default printer from database
                 fetch('{{ route('printer.get-settings') }}')
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
-                        if (data.success && data.settings.default_printer) {
+                        console.log('Printer settings response (invoice):', data);
+                        if (data && data.success && data.settings && data.settings.default_printer) {
                             console.log('Using printer from database:', data.settings.default_printer);
                             printInvoice(data.settings.default_printer);
                         } else {
                             // Find any available printer
                             qz.printers.find().then(function(printers) {
-                                if (printers.length > 0) {
+                                if (printers && printers.length > 0) {
                                     console.log('Using first available printer:', printers[0]);
                                     printInvoice(printers[0]);
                                 } else {
                                     console.log('No printers found for invoice printing');
                                     showPrintError('Tidak ada printer yang tersedia');
+                                    resetPrintButton();
                                 }
                             });
                         }
@@ -1184,19 +1367,46 @@
                         console.error('Error getting printer settings:', error);
                         // Fallback to first available printer
                         qz.printers.find().then(function(printers) {
-                            if (printers.length > 0) {
+                            if (printers && printers.length > 0) {
                                 console.log('Using first available printer (fallback):', printers[0]);
                                 printInvoice(printers[0]);
                             } else {
                                 console.log('No printers found for invoice printing');
                                 showPrintError('Tidak ada printer yang tersedia');
+                                resetPrintButton();
                             }
                         });
                     });
-            }).catch(function(err) {
-                console.log('QZ Tray connection failed for invoice printing:', err);
-                showPrintError('Koneksi QZ Tray gagal: ' + err.message);
-            });
+            };
+
+            // Check if already connecting to prevent multiple attempts
+            if (qzConnecting) {
+                console.log('QZ Tray connection already in progress, skipping...');
+                return;
+            }
+
+            // Check connection status first
+            if (qz.websocket && qz.websocket.connect) {
+                console.log('QZ Tray available, attempting connection...');
+                qzConnecting = true;
+
+                qz.websocket.connect({
+                    retries: 2,
+                    delay: 1
+                }).then(function() {
+                    qzConnecting = false;
+                    connectAndPrint();
+                }).catch(function(err) {
+                    qzConnecting = false;
+                    console.log('QZ Tray connection failed for invoice printing:', err);
+                    showPrintError('Koneksi QZ Tray gagal: ' + err.message);
+                    resetPrintButton();
+                });
+            } else {
+                console.log('QZ Tray not available');
+                showPrintError('QZ Tray tidak tersedia');
+                resetPrintButton();
+            }
         }
 
         function printInvoice(printerName) {
@@ -1216,12 +1426,28 @@
 
                 // Reset button
                 resetPrintButton();
+
+                // Close connection after successful print
+                setTimeout(function() {
+                    if (qz.websocket && qz.websocket.disconnect) {
+                        console.log('Closing QZ Tray connection after print');
+                        qz.websocket.disconnect();
+                    }
+                }, 1000); // Wait 1 second before closing
             }).catch(function(err) {
                 console.log('Invoice printing failed:', err);
                 showNotification('⚠️ Cetak invoice gagal: ' + err.message, 'warning');
 
                 // Reset button
                 resetPrintButton();
+
+                // Close connection on error too
+                setTimeout(function() {
+                    if (qz.websocket && qz.websocket.disconnect) {
+                        console.log('Closing QZ Tray connection after error');
+                        qz.websocket.disconnect();
+                    }
+                }, 1000);
             });
         }
 
@@ -1230,20 +1456,35 @@
 
             // Header
             invoiceLines.push("\x1B\x40"); // Initialize printer
+            @if ($pengaturanUmum->logo_url)
+                // Logo (if available) - QZ Tray will handle image from URL
+                invoiceLines.push("\x1B\x61\x01"); // Center align
+                invoiceLines.push("{{ $pengaturanUmum->logo_url }}"); // Logo URL for QZ Tray
+                invoiceLines.push("\n");
+            @endif
             invoiceLines.push("\x1B\x61\x01"); // Center align
-            invoiceLines.push("PUTRA SUBUR\n");
-            invoiceLines.push("Toko Kelontong\n");
-            invoiceLines.push("Jl. Raya No. 123\n");
-            invoiceLines.push("Telp: 021-1234567\n");
+            invoiceLines.push("{{ $pengaturanUmum->nama_toko }}\n");
+            @if ($pengaturanUmum->deskripsi)
+                invoiceLines.push("{{ $pengaturanUmum->deskripsi }}\n");
+            @endif
+            @if ($pengaturanUmum->alamat)
+                invoiceLines.push("{{ $pengaturanUmum->alamat }}\n");
+            @endif
+            @if ($pengaturanUmum->no_telepon)
+                invoiceLines.push("Telp: {{ $pengaturanUmum->no_telepon }}\n");
+            @endif
+            @if ($pengaturanUmum->email)
+                invoiceLines.push("Email: {{ $pengaturanUmum->email }}\n");
+            @endif
             invoiceLines.push("================================\n");
 
             // Invoice info
             invoiceLines.push("\x1B\x61\x00"); // Left align
-            invoiceLines.push("INVOICE\n");
+            invoiceLines.push("FAKTUR PENJUALAN\n");
             invoiceLines.push("No. Faktur: {{ $penjualan->no_faktur }}\n");
-            invoiceLines.push("Tanggal: {{ $penjualan->tanggal->format('d/m/Y H:i') }}\n");
-            invoiceLines.push("Pelanggan: {{ $penjualan->pelanggan->nama }}\n");
-            invoiceLines.push("Kasir: {{ $penjualan->kasir->name }}\n");
+            invoiceLines.push("Tanggal: {{ $penjualan->created_at->format('d/m/Y H:i') }}\n");
+            invoiceLines.push("Pelanggan: {{ $penjualan->pelanggan->nama ?? 'N/A' }}\n");
+            invoiceLines.push("Kasir: {{ $penjualan->kasir->name ?? 'N/A' }}\n");
             invoiceLines.push("================================\n");
 
             // Items
@@ -1288,11 +1529,38 @@
                 @endif
             @endif
 
+            // Payment history detail
+            @if ($penjualan->pembayaranPenjualan->count() > 0)
+                invoiceLines.push("================================\n");
+                invoiceLines.push("RIWAYAT PEMBAYARAN:\n");
+                invoiceLines.push("--------------------------------\n");
+                invoiceLines.push(
+                    "Faktur: {{ $penjualan->no_faktur }} - {{ $penjualan->tanggal->format('d/m/Y H:i') }}\n");
+                invoiceLines.push("--------------------------------\n");
+                @foreach ($penjualan->pembayaranPenjualan->sortBy('created_at') as $pembayaran)
+                    invoiceLines.push("{{ $pembayaran->no_bukti }}\n");
+                    @php
+                        $statusConfig = [
+                            'D' => 'DP',
+                            'A' => 'Angsuran',
+                            'P' => 'Pelunasan',
+                        ];
+                        $status = $statusConfig[$pembayaran->status_bayar] ?? 'DP';
+                    @endphp
+                    invoiceLines.push(
+                        "{{ $pembayaran->created_at->format('d/m/Y H:i') }} - {{ $pembayaran->metode_pembayaran }} ({{ $status }})\n"
+                    );
+                    invoiceLines.push("Rp {{ number_format($pembayaran->jumlah_bayar, 0) }}\n");
+                    @if ($pembayaran->keterangan)
+                        invoiceLines.push("{{ $pembayaran->keterangan }}\n");
+                    @endif
+                    invoiceLines.push("--------------------------------\n");
+                @endforeach
+            @endif
+
             invoiceLines.push("================================\n");
             invoiceLines.push("\x1B\x61\x01"); // Center align
             invoiceLines.push("Terima kasih atas kunjungan Anda\n");
-            invoiceLines.push("Barang yang sudah dibeli\n");
-            invoiceLines.push("tidak dapat dikembalikan\n");
             invoiceLines.push("\n\n\n");
             invoiceLines.push("\x1D\x56\x42\x00"); // Cut paper
 
@@ -2049,6 +2317,59 @@
                         confirmButtonText: 'OK'
                     });
                 });
+        }
+
+        function showToast(message, type = 'info') {
+            // Remove existing toast
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className =
+                `toast fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white transform transition-all duration-300 translate-x-full`;
+
+            // Set color based on type
+            if (type === 'success') {
+                toast.classList.add('bg-green-500');
+            } else if (type === 'error') {
+                toast.classList.add('bg-red-500');
+            } else if (type === 'warning') {
+                toast.classList.add('bg-yellow-500');
+            } else {
+                toast.classList.add('bg-blue-500');
+            }
+
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <span class="mr-2">
+                        ${type === 'success' ? '<i class="ti ti-check-circle"></i>' : 
+                          type === 'error' ? '<i class="ti ti-x-circle"></i>' : 
+                          type === 'warning' ? '<i class="ti ti-alert-circle"></i>' : 
+                          '<i class="ti ti-info-circle"></i>'}
+                    </span>
+                    <span>${message}</span>
+                </div>
+            `;
+
+            document.body.appendChild(toast);
+
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 100);
+
+            // Animate out and remove
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
         }
     </script>
 @endpush

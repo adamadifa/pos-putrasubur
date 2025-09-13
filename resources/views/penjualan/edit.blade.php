@@ -625,8 +625,7 @@
                                 @foreach ($kasBank ?? [] as $kas)
                                     <label class="relative cursor-pointer preview-kas-bank-option">
                                         <input type="radio" name="preview_kas_bank" value="{{ $kas->id }}"
-                                            data-saldo="{{ $kas->saldo_terkini }}" data-jenis="{{ $kas->jenis }}"
-                                            data-image="{{ $kas->image_url ?? '' }}"
+                                            data-jenis="{{ $kas->jenis }}" data-image="{{ $kas->image_url ?? '' }}"
                                             class="sr-only preview-kas-bank-radio">
                                         <div
                                             class="p-4 border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 transition-all duration-300 preview-kas-bank-card flex items-center justify-between shadow-sm hover:shadow-md">
@@ -660,12 +659,6 @@
                                                             {{ $kas->no_rekening }}
                                                         </div>
                                                     @endif
-                                                </div>
-                                            </div>
-                                            <div class="text-right ml-4 flex flex-col justify-center flex-shrink-0">
-                                                <div class="text-sm text-gray-500 font-medium">Saldo</div>
-                                                <div class="text-base font-bold text-green-600">
-                                                    Rp {{ number_format($kas->saldo_terkini, 0, ',', '.') }}
                                                 </div>
                                             </div>
                                         </div>
@@ -1362,14 +1355,14 @@
                                     </div>
                                     
                                     ${discount > 0 ? `
-                                                                                                                        <div class="flex items-center justify-between text-sm">
-                                                                                                                            <span class="text-orange-600 flex items-center">
-                                                                                                                                <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                Potongan Harga
-                                                                                                                            </span>
-                                                                                                                            <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                        </div>
-                                                                                                                    ` : ''}
+                                                                                                                                        <div class="flex items-center justify-between text-sm">
+                                                                                                                                            <span class="text-orange-600 flex items-center">
+                                                                                                                                                <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                Potongan Harga
+                                                                                                                                            </span>
+                                                                                                                                            <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                        </div>
+                                                                                                                                    ` : ''}
                                     
                                     <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
                                         <span class="font-semibold text-gray-900">Total</span>
@@ -1576,22 +1569,28 @@
             });
 
             // Preview payment method change
-            document.querySelectorAll('.preview-payment-method-radio').forEach(radio => {
-                radio.addEventListener('change', function() {
-                    const selectedMethod = this.value.toLowerCase();
-                    const kasBankContainer = document.getElementById('previewKasBankContainer');
-                    const kasBankMessage = document.getElementById('kasBankMessage');
+            const previewPaymentRadios = document.querySelectorAll('.preview-payment-method-radio');
+            const previewPaymentCards = document.querySelectorAll('.preview-payment-method-card');
 
-                    if (selectedMethod.includes('tunai') || selectedMethod.includes('transfer') ||
-                        selectedMethod.includes('qris')) {
-                        if (kasBankContainer) kasBankContainer.style.display = 'grid';
-                        if (kasBankMessage) kasBankMessage.style.display = 'none';
-                    } else {
-                        if (kasBankContainer) kasBankContainer.style.display = 'none';
-                        if (kasBankMessage) kasBankMessage.style.display = 'block';
-                    }
+            previewPaymentRadios.forEach((radio, index) => {
+                radio.addEventListener('change', function() {
+                    updatePreviewPaymentMethodCards();
+                    filterKasBankByPaymentMethod();
                 });
+
+                // Add click event to card for better UX
+                const card = previewPaymentCards[index];
+                if (card) {
+                    card.addEventListener('click', function() {
+                        radio.checked = true;
+                        updatePreviewPaymentMethodCards();
+                        filterKasBankByPaymentMethod();
+                    });
+                }
             });
+
+            // Initialize preview payment method cards
+            updatePreviewPaymentMethodCards();
 
             // Preview DP amount change
             const previewDpAmount = document.getElementById('previewDpAmount');
@@ -2225,14 +2224,14 @@
                         </div>
                         
                         ${discount > 0 ? `
-                                                                                                                                                                                                    <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                                                        <span class="text-orange-600 flex items-center">
-                                                                                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                                                            Potongan Harga
-                                                                                                                                                                                                        </span>
-                                                                                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                    ` : ''}
+                                                                                                                                                                                                                    <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                        <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                            Potongan Harga
+                                                                                                                                                                                                                        </span>
+                                                                                                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                    ` : ''}
                         
                         <!-- Total Line -->
                         <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -2299,14 +2298,14 @@
                 </div>
                 
                 ${discount > 0 ? `
-                                                                                                                                                                                            <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                                                <span class="text-orange-600 flex items-center">
-                                                                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                                                    Potongan Harga
-                                                                                                                                                                                                </span>
-                                                                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                            </div>
-                                                                                                                                                                                            ` : ''}
+                                                                                                                                                                                                            <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                    Potongan Harga
+                                                                                                                                                                                                                </span>
+                                                                                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                            ` : ''}
                 
                 <!-- Total Line -->
                 <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -2745,11 +2744,11 @@
                                 <span>Rp ${formatNumber(subtotal)}</span>
                             </div>
                             ${discount > 0 ? `
-                                                                                                                                                                                                    <div class="flex justify-between text-xs">
-                                                                                                                                                                                                        <span class="text-orange-600">Potongan</span>
-                                                                                                                                                                                                        <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                    ` : ''}
+                                                                                                                                                                                                                    <div class="flex justify-between text-xs">
+                                                                                                                                                                                                                        <span class="text-orange-600">Potongan</span>
+                                                                                                                                                                                                                        <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                    ` : ''}
                             <div class="flex justify-between text-sm font-medium">
                                 <span>Total</span>
                                 <span class="text-blue-600">Rp ${formatNumber(total)}</span>
@@ -2863,19 +2862,8 @@
             // Update kas/bank selection
             updatePreviewKasBankCards(kasBankId);
 
-            // Show/hide kas/bank container based on payment method
-            const selectedMethod = metodePembayaran.toLowerCase();
-            const kasBankContainer = document.getElementById('previewKasBankContainer');
-            const kasBankMessage = document.getElementById('kasBankMessage');
-
-            if (selectedMethod.includes('tunai') || selectedMethod.includes('transfer') || selectedMethod.includes(
-                    'qris')) {
-                if (kasBankContainer) kasBankContainer.style.display = 'grid';
-                if (kasBankMessage) kasBankMessage.style.display = 'none';
-            } else {
-                if (kasBankContainer) kasBankContainer.style.display = 'none';
-                if (kasBankMessage) kasBankMessage.style.display = 'block';
-            }
+            // Filter kas/bank based on payment method
+            filterKasBankByPaymentMethod();
 
             // Initialize payment amount based on transaction type
             const previewDpContainer = document.getElementById('previewDpContainer');
@@ -2912,19 +2900,33 @@
             const previewRadios = document.querySelectorAll('.preview-payment-method-radio');
 
             previewCards.forEach((card, index) => {
-                card.classList.remove('border-blue-500', 'bg-blue-50');
-                card.classList.add('border-gray-200');
+                card.classList.remove('border-blue-500', 'bg-blue-50', 'border-red-500', 'bg-red-50',
+                    'animate-pulse');
+                card.classList.add('border-gray-200', 'bg-white');
             });
 
-            previewRadios.forEach((radio, index) => {
-                if (radio.value === selectedMethod) {
-                    radio.checked = true;
-                    previewCards[index].classList.remove('border-gray-200');
-                    previewCards[index].classList.add('border-blue-500', 'bg-blue-50');
-                } else {
-                    radio.checked = false;
-                }
-            });
+            if (selectedMethod) {
+                // If selectedMethod is provided, set that specific method
+                previewRadios.forEach((radio, index) => {
+                    if (radio.value === selectedMethod) {
+                        radio.checked = true;
+                        previewCards[index].classList.remove('border-gray-200', 'bg-white');
+                        previewCards[index].classList.add('border-blue-500', 'bg-blue-50');
+                    } else {
+                        radio.checked = false;
+                    }
+                });
+            } else {
+                // If no selectedMethod, update based on currently checked radio
+                previewRadios.forEach((radio, index) => {
+                    if (radio.checked) {
+                        previewCards[index].classList.remove('border-gray-200', 'bg-white');
+                        previewCards[index].classList.add('border-blue-500', 'bg-blue-50');
+                    } else {
+                        radio.checked = false;
+                    }
+                });
+            }
         }
 
         // Update preview kas/bank cards
@@ -2951,6 +2953,93 @@
                     radio.checked = false;
                 }
             });
+        }
+
+        // Function to filter kas/bank based on payment method
+        function filterKasBankByPaymentMethod() {
+            const selectedPaymentMethod = document.querySelector('.preview-payment-method-radio:checked');
+            const kasBankMessage = document.getElementById('kasBankMessage');
+            const kasBankContainer = document.getElementById('previewKasBankContainer');
+            const previewKasBankCards = document.querySelectorAll('.preview-kas-bank-card');
+            const previewKasBankRadios = document.querySelectorAll('.preview-kas-bank-radio');
+
+            console.log('filterKasBankByPaymentMethod called');
+            console.log('selectedPaymentMethod:', selectedPaymentMethod);
+            console.log('previewKasBankCards.length:', previewKasBankCards.length);
+            console.log('previewKasBankRadios.length:', previewKasBankRadios.length);
+
+            if (!selectedPaymentMethod) {
+                // If no payment method selected, hide all kas/bank and show message
+                previewKasBankCards.forEach((card, index) => {
+                    card.style.display = 'none';
+                });
+                if (kasBankMessage) kasBankMessage.style.display = 'block';
+                if (kasBankContainer) kasBankContainer.style.display = 'none';
+                return;
+            }
+
+            // Show container and hide message when payment method is selected
+            if (kasBankMessage) kasBankMessage.style.display = 'none';
+            if (kasBankContainer) kasBankContainer.style.display = 'grid';
+
+            const paymentMethodCode = selectedPaymentMethod.value;
+            const isTransfer = paymentMethodCode.toLowerCase().includes('transfer') ||
+                paymentMethodCode.toLowerCase().includes('bank') ||
+                paymentMethodCode.toLowerCase().includes('bca') ||
+                paymentMethodCode.toLowerCase().includes('mandiri') ||
+                paymentMethodCode.toLowerCase().includes('bni') ||
+                paymentMethodCode.toLowerCase().includes('bri');
+            const isCash = paymentMethodCode.toLowerCase().includes('cash') ||
+                paymentMethodCode.toLowerCase().includes('tunai') ||
+                paymentMethodCode.toLowerCase().includes('kas');
+
+            console.log('paymentMethodCode:', paymentMethodCode);
+            console.log('isTransfer:', isTransfer);
+            console.log('isCash:', isCash);
+
+            let visibleCount = 0;
+
+            previewKasBankCards.forEach((card, index) => {
+                const radio = previewKasBankRadios[index];
+                const kasBankJenis = radio.getAttribute('data-jenis');
+
+                console.log(`Card ${index}: kasBankJenis = ${kasBankJenis}`);
+
+                if (isTransfer && kasBankJenis === 'BANK') {
+                    // Show only BANK for transfer methods
+                    card.style.display = 'block';
+                    visibleCount++;
+                    console.log(`Showing BANK card ${index}`);
+                } else if (isCash && kasBankJenis === 'KAS') {
+                    // Show only KAS for cash methods
+                    card.style.display = 'block';
+                    visibleCount++;
+                    console.log(`Showing KAS card ${index}`);
+                } else if (!isTransfer && !isCash) {
+                    // If payment method is not clearly transfer or cash, show all
+                    card.style.display = 'block';
+                    visibleCount++;
+                    console.log(`Showing all card ${index}`);
+                } else {
+                    // Hide the card
+                    card.style.display = 'none';
+                    console.log(`Hiding card ${index}`);
+                }
+            });
+
+            console.log('visibleCount:', visibleCount);
+
+            // If no kas/bank visible, show message
+            if (visibleCount === 0) {
+                if (kasBankMessage) {
+                    kasBankMessage.style.display = 'block';
+                    kasBankMessage.innerHTML = `
+                        <i class="ti ti-info-circle text-2xl mb-2"></i>
+                        <p class="text-sm">Tidak ada kas/bank yang sesuai dengan metode pembayaran ini</p>
+                    `;
+                }
+                if (kasBankContainer) kasBankContainer.style.display = 'none';
+            }
         }
 
         // Form validation and preview

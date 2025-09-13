@@ -78,31 +78,7 @@
         @endif
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Total Saldo Card -->
-            <div
-                class="relative bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
-                <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-                <div class="relative p-6">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div
-                                class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                <i class="ti ti-wallet text-2xl text-white"></i>
-                            </div>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-sm font-medium text-blue-100">Total Saldo</h3>
-                            <p class="text-2xl font-bold text-white">Rp {{ number_format($totalSaldo, 0, ',', '.') }}</p>
-                            <p class="text-sm text-blue-200 flex items-center mt-1">
-                                <i class="ti ti-trending-up text-lg mr-1"></i>
-                                Saldo terkini
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Total IN Card -->
             <div
                 class="relative bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">

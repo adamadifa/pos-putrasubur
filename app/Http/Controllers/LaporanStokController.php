@@ -139,7 +139,8 @@ class LaporanStokController extends Controller
         // Calculate summary
         $totalPembelian = $transaksiBulanIni->where('jenis', 'pembelian')->sum('jumlah');
         $totalPenjualan = $transaksiBulanIni->where('jenis', 'penjualan')->sum('jumlah');
-        $saldoAkhir = $saldoAwal + $totalPembelian - $totalPenjualan;
+        $totalPenyesuaian = $transaksiBulanIni->where('jenis', 'penyesuaian')->sum('jumlah');
+        $saldoAkhir = $saldoAwal + $totalPembelian - $totalPenjualan + $totalPenyesuaian;
 
         return [
             'produk' => [
@@ -171,6 +172,7 @@ class LaporanStokController extends Controller
             'summary' => [
                 'total_pembelian' => $totalPembelian,
                 'total_penjualan' => $totalPenjualan,
+                'total_penyesuaian' => $totalPenyesuaian,
                 'saldo_akhir' => $saldoAkhir,
                 'nilai_stok' => $saldoAkhir * $produk->harga_beli,
             ],
@@ -178,6 +180,7 @@ class LaporanStokController extends Controller
                 'jumlah_transaksi' => $transaksiBulanIni->count(),
                 'transaksi_pembelian' => $transaksiBulanIni->where('jenis', 'pembelian')->count(),
                 'transaksi_penjualan' => $transaksiBulanIni->where('jenis', 'penjualan')->count(),
+                'transaksi_penyesuaian' => $transaksiBulanIni->where('jenis', 'penyesuaian')->count(),
             ]
         ];
     }
@@ -258,7 +261,8 @@ class LaporanStokController extends Controller
         // Calculate summary
         $totalPembelian = $transaksi->where('jenis', 'pembelian')->sum('jumlah');
         $totalPenjualan = $transaksi->where('jenis', 'penjualan')->sum('jumlah');
-        $saldoAkhir = $saldoAwalPeriode + $totalPembelian - $totalPenjualan;
+        $totalPenyesuaian = $transaksi->where('jenis', 'penyesuaian')->sum('jumlah');
+        $saldoAkhir = $saldoAwalPeriode + $totalPembelian - $totalPenjualan + $totalPenyesuaian;
 
         return [
             'produk' => [
@@ -289,6 +293,7 @@ class LaporanStokController extends Controller
             'summary' => [
                 'total_pembelian' => $totalPembelian,
                 'total_penjualan' => $totalPenjualan,
+                'total_penyesuaian' => $totalPenyesuaian,
                 'saldo_akhir' => $saldoAkhir,
                 'nilai_stok' => $saldoAkhir * $produk->harga_beli,
             ],
@@ -296,6 +301,7 @@ class LaporanStokController extends Controller
                 'jumlah_transaksi' => $transaksi->count(),
                 'transaksi_pembelian' => $transaksi->where('jenis', 'pembelian')->count(),
                 'transaksi_penjualan' => $transaksi->where('jenis', 'penjualan')->count(),
+                'transaksi_penyesuaian' => $transaksi->where('jenis', 'penyesuaian')->count(),
                 'jumlah_hari' => $tanggalDari->diffInDays($tanggalSampai) + 1,
             ]
         ];
@@ -326,14 +332,14 @@ class LaporanStokController extends Controller
         $tanggalDariStr = $tanggalDari->format('Y-m-d');
         $tanggalSampaiStr = $tanggalSampai->format('Y-m-d');
 
-        // Query UNION untuk menggabungkan transaksi pembelian dan penjualan
+        // Query UNION untuk menggabungkan transaksi pembelian, penjualan, dan penyesuaian stok
         $transaksi = DB::select("
             SELECT 
                 'pembelian' as jenis,
                 pb.tanggal,
                 dpb.qty as jumlah,
-                CONCAT('Pembelian dari ', COALESCE(s.nama, 'Supplier')) as keterangan,
-                pb.no_faktur as no_transaksi
+                CONCAT('Pembelian dari ', COALESCE(s.nama, 'Supplier')) COLLATE utf8mb4_unicode_ci as keterangan,
+                pb.no_faktur COLLATE utf8mb4_unicode_ci as no_transaksi
             FROM detail_pembelian dpb
             LEFT JOIN pembelian pb ON dpb.pembelian_id = pb.id
             LEFT JOIN supplier s ON pb.supplier_id = s.id
@@ -346,16 +352,28 @@ class LaporanStokController extends Controller
                 'penjualan' as jenis,
                 pj.tanggal,
                 dpj.qty as jumlah,
-                CONCAT('Penjualan ke ', COALESCE(p.nama, 'Pelanggan')) as keterangan,
-                pj.no_faktur as no_transaksi
+                CONCAT('Penjualan ke ', COALESCE(p.nama, 'Pelanggan')) COLLATE utf8mb4_unicode_ci as keterangan,
+                pj.no_faktur COLLATE utf8mb4_unicode_ci as no_transaksi
             FROM detail_penjualan dpj
             LEFT JOIN penjualan pj ON dpj.penjualan_id = pj.id
             LEFT JOIN pelanggan p ON pj.pelanggan_id = p.id
             WHERE dpj.produk_id = ? 
             AND pj.tanggal BETWEEN ? AND ?
             
+            UNION ALL
+            
+            SELECT 
+                'penyesuaian' as jenis,
+                ps.tanggal_penyesuaian as tanggal,
+                ps.jumlah_penyesuaian as jumlah,
+                COALESCE(ps.keterangan, 'Penyesuaian Stok') COLLATE utf8mb4_unicode_ci as keterangan,
+                ps.kode_penyesuaian COLLATE utf8mb4_unicode_ci as no_transaksi
+            FROM penyesuaian_stok ps
+            WHERE ps.produk_id = ? 
+            AND ps.tanggal_penyesuaian BETWEEN ? AND ?
+            
             ORDER BY tanggal ASC, jenis ASC
-        ", [$produkId, $tanggalDariStr, $tanggalSampaiStr, $produkId, $tanggalDariStr, $tanggalSampaiStr]);
+        ", [$produkId, $tanggalDariStr, $tanggalSampaiStr, $produkId, $tanggalDariStr, $tanggalSampaiStr, $produkId, $tanggalDariStr, $tanggalSampaiStr]);
 
         return collect($transaksi);
     }

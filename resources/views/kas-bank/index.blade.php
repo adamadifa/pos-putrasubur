@@ -236,12 +236,12 @@
                                     class="w-2/12 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Jenis
                                 </th>
-                                <th scope="col"
+                                {{-- <th scope="col"
                                     class="w-2/12 px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Saldo Terkini
-                                </th>
+                                </th> --}}
                                 <th scope="col"
-                                    class="w-1/12 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    class="w-3/12 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Logo
                                 </th>
                                 <th scope="col"
@@ -294,18 +294,21 @@
                                             </span>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right">
+                                    {{-- <td class="px-6 py-4 whitespace-nowrap text-right">
                                         <div class="text-sm font-semibold text-gray-900">
                                             Rp {{ number_format($item->saldo_terkini, 0, ',', '.') }}
                                         </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    </td> --}}
+                                    <td class="px-6 py-4">
                                         @if ($item->image)
-                                            <img src="{{ $item->image_url }}" alt="Logo {{ $item->nama }}"
-                                                class="h-8 w-8 object-cover rounded-lg border">
+                                            <div class="w-full h-12 flex items-center justify-center">
+                                                <img src="{{ $item->image_url }}" alt="Logo {{ $item->nama }}"
+                                                    class="max-w-full max-h-full object-contain rounded-lg border shadow-sm">
+                                            </div>
                                         @else
-                                            <div class="h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                                                <i class="ti ti-image text-gray-400 text-xs"></i>
+                                            <div
+                                                class="w-full h-12 rounded-lg bg-gray-100 flex items-center justify-center border">
+                                                <i class="ti ti-image text-gray-400 text-lg"></i>
                                             </div>
                                         @endif
                                     </td>

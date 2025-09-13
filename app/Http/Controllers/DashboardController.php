@@ -30,25 +30,40 @@ class DashboardController extends Controller
         $yesterdaySales = Penjualan::whereDate('tanggal', $yesterday)->sum('total');
         $salesGrowth = $yesterdaySales > 0 ? (($todaySales - $yesterdaySales) / $yesterdaySales) * 100 : 0;
 
-        // Today's Transactions
-        $todayTransactions = Penjualan::whereDate('tanggal', $today)->count();
-        $yesterdayTransactions = Penjualan::whereDate('tanggal', $yesterday)->count();
-        $transactionGrowth = $yesterdayTransactions > 0 ? (($todayTransactions - $yesterdayTransactions) / $yesterdayTransactions) * 100 : 0;
+        // Today's Purchases
+        $todayPurchases = Pembelian::whereDate('tanggal', $today)->sum('total');
+        $yesterdayPurchases = Pembelian::whereDate('tanggal', $yesterday)->sum('total');
+        $purchaseGrowth = $yesterdayPurchases > 0 ? (($todayPurchases - $yesterdayPurchases) / $yesterdayPurchases) * 100 : 0;
 
-        // New Customers (this month)
-        $newCustomers = Pelanggan::whereMonth('created_at', $today->month)
-            ->whereYear('created_at', $today->year)
-            ->count();
-        $lastMonthCustomers = Pelanggan::whereMonth('created_at', $lastMonth->month)
-            ->whereYear('created_at', $lastMonth->year)
-            ->count();
-        $customerGrowth = $lastMonthCustomers > 0 ? (($newCustomers - $lastMonthCustomers) / $lastMonthCustomers) * 100 : 0;
+        // Total Piutang (Accounts Receivable)
+        $totalPiutang = Penjualan::where('status_pembayaran', '!=', 'Lunas')
+            ->where('jenis_transaksi', 'kredit')
+            ->sum('total');
+        $totalPiutangTerbayar = PembayaranPenjualan::whereHas('penjualan', function ($query) {
+            $query->where('jenis_transaksi', 'kredit');
+        })->sum('jumlah_bayar');
+        $sisaPiutang = $totalPiutang - $totalPiutangTerbayar;
+
+        // Total Hutang (Accounts Payable)
+        $totalHutang = Pembelian::where('status_pembayaran', '!=', 'Lunas')
+            ->where('jenis_transaksi', 'kredit')
+            ->sum('total');
+        $totalHutangTerbayar = PembayaranPembelian::whereHas('pembelian', function ($query) {
+            $query->where('jenis_transaksi', 'kredit');
+        })->sum('jumlah_bayar');
+        $sisaHutang = $totalHutang - $totalHutangTerbayar;
 
         // Low Stock Products
         $lowStockProducts = Produk::where('stok', '<=', 10)->count();
 
-        // Recent Transactions
-        $recentTransactions = Penjualan::with(['pelanggan', 'kasir'])
+        // Recent Sales Transactions
+        $recentSales = Penjualan::with(['pelanggan', 'kasir'])
+            ->orderBy('tanggal', 'desc')
+            ->limit(5)
+            ->get();
+
+        // Recent Purchase Transactions
+        $recentPurchases = Pembelian::with(['supplier', 'user'])
             ->orderBy('tanggal', 'desc')
             ->limit(5)
             ->get();
@@ -80,15 +95,29 @@ class DashboardController extends Controller
         $outstandingPayments = Penjualan::where('status_pembayaran', '!=', 'Lunas')->count();
         $outstandingPurchases = Pembelian::where('status_pembayaran', '!=', 'Lunas')->count();
 
+        // Top Selling Products This Month
+        $topSellingProducts = DB::table('detail_penjualan')
+            ->join('penjualan', 'detail_penjualan.penjualan_id', '=', 'penjualan.id')
+            ->join('produk', 'detail_penjualan.produk_id', '=', 'produk.id')
+            ->join('satuan', 'produk.satuan_id', '=', 'satuan.id')
+            ->whereMonth('penjualan.tanggal', $today->month)
+            ->whereYear('penjualan.tanggal', $today->year)
+            ->select('produk.nama_produk', 'satuan.nama as satuan', DB::raw('SUM(detail_penjualan.qty) as total_terjual'), DB::raw('SUM(detail_penjualan.subtotal) as total_penjualan'))
+            ->groupBy('produk.id', 'produk.nama_produk', 'satuan.nama')
+            ->orderBy('total_terjual', 'desc')
+            ->limit(5)
+            ->get();
+
         return view('dashboard', compact(
             'todaySales',
             'salesGrowth',
-            'todayTransactions',
-            'transactionGrowth',
-            'newCustomers',
-            'customerGrowth',
+            'todayPurchases',
+            'purchaseGrowth',
+            'sisaPiutang',
+            'sisaHutang',
             'lowStockProducts',
-            'recentTransactions',
+            'recentSales',
+            'recentPurchases',
             'recentPayments',
             'monthlySales',
             'paymentMethods',
@@ -96,6 +125,7 @@ class DashboardController extends Controller
             'monthlySalesTotal',
             'outstandingPayments',
             'outstandingPurchases',
+            'topSellingProducts',
             'chartPeriod'
         ));
     }

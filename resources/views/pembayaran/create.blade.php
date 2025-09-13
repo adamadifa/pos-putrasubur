@@ -320,9 +320,10 @@
                                                         <div class="flex-1 min-w-0">
                                                             <p class="text-sm font-medium text-gray-900 truncate">
                                                                 {{ $kasBank->nama }}</p>
-                                                            <p class="text-xs text-gray-500">Saldo: Rp
-                                                                {{ number_format($kasBank->saldo_terkini, 0, ',', '.') }}
-                                                            </p>
+                                                            @if ($kasBank->no_rekening)
+                                                                <p class="text-xs text-gray-500">No. Rek:
+                                                                    {{ $kasBank->no_rekening }}</p>
+                                                            @endif
                                                         </div>
                                                     </div>
                                                 </div>

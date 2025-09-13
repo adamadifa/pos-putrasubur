@@ -191,6 +191,23 @@
                     </div>
                 </div>
 
+                <!-- Total Penyesuaian -->
+                <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                <i class="ti ti-adjustments text-yellow-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">Total Penyesuaian</p>
+                            <p class="text-2xl font-bold text-gray-900">
+                                {{ number_format($laporanData['summary']['total_penyesuaian'], 2, ',', '.') }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Saldo Akhir -->
                 <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
                     <div class="flex items-center">
@@ -348,6 +365,15 @@
                                 </td>
 
                             </tr>
+                            <tr>
+                                <td class="px-4 py-4 text-sm text-gray-900">
+                                    Total Penyesuaian
+                                </td>
+                                <td class="px-4 py-4 text-right text-sm font-medium text-gray-900">
+                                    {{ number_format($laporanData['summary']['total_penyesuaian'], 2, ',', '.') }}
+                                </td>
+
+                            </tr>
                             <tr class="bg-purple-50 border-t-2 border-purple-200">
                                 <td class="px-4 py-4 text-sm font-bold text-gray-900">
                                     Saldo Akhir
@@ -440,8 +466,10 @@
                                         @php
                                             if ($transaksi->jenis == 'pembelian') {
                                                 $runningSaldo += $transaksi->jumlah;
-                                            } else {
+                                            } elseif ($transaksi->jenis == 'penjualan') {
                                                 $runningSaldo -= $transaksi->jumlah;
+                                            } elseif ($transaksi->jenis == 'penyesuaian') {
+                                                $runningSaldo += $transaksi->jumlah;
                                             }
                                         @endphp
                                         <tr class="hover:bg-gray-50">
@@ -457,10 +485,15 @@
                                                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                         Pembelian
                                                     </span>
-                                                @else
+                                                @elseif ($transaksi->jenis == 'penjualan')
                                                     <span
                                                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                                         Penjualan
+                                                    </span>
+                                                @elseif ($transaksi->jenis == 'penyesuaian')
+                                                    <span
+                                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                        Penyesuaian
                                                     </span>
                                                 @endif
                                             </td>
@@ -470,6 +503,8 @@
                                             <td class="px-4 py-4 text-right text-sm font-medium text-gray-900">
                                                 @if ($transaksi->jenis == 'pembelian')
                                                     {{ number_format($transaksi->jumlah, 2, ',', '.') }}
+                                                @elseif ($transaksi->jenis == 'penyesuaian' && $transaksi->jumlah > 0)
+                                                    {{ number_format($transaksi->jumlah, 2, ',', '.') }}
                                                 @else
                                                     -
                                                 @endif
@@ -477,6 +512,8 @@
                                             <td class="px-4 py-4 text-right text-sm font-medium text-gray-900">
                                                 @if ($transaksi->jenis == 'penjualan')
                                                     {{ number_format($transaksi->jumlah, 2, ',', '.') }}
+                                                @elseif ($transaksi->jenis == 'penyesuaian' && $transaksi->jumlah < 0)
+                                                    {{ number_format(abs($transaksi->jumlah), 2, ',', '.') }}
                                                 @else
                                                     -
                                                 @endif

@@ -44,9 +44,6 @@ class TransaksiKasBankController extends Controller
         // Data untuk filter
         $kasBankList = KasBank::orderBy('nama')->get();
 
-        // Hitung total saldo dari kas/bank
-        $totalSaldo = KasBank::sum('saldo_terkini');
-
         // Hitung total debet dan kredit untuk hari ini saja
         $today = now()->format('Y-m-d');
         $totalDebet = TransaksiKasBank::where('jenis_transaksi', 'D')
@@ -66,7 +63,6 @@ class TransaksiKasBankController extends Controller
         return view('transaksi-kas-bank.index', compact(
             'transaksi',
             'kasBankList',
-            'totalSaldo',
             'totalDebet',
             'totalKredit'
         ));
@@ -82,13 +78,16 @@ class TransaksiKasBankController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'tanggal' => 'required|date',
+            'tanggal_hidden' => 'required|date',
             'kas_bank_id' => 'required|exists:kas_bank,id',
             'kategori_transaksi' => 'required|in:PJ,PB,MN,TF',
             'jenis_transaksi' => 'required|in:D,K',
-            'jumlah' => 'required|numeric|min:0',
+            'jumlah_raw' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string|max:255',
         ]);
+
+        // Use jumlah_raw instead of jumlah
+        $jumlah = $request->jumlah_raw;
 
         DB::beginTransaction();
         try {
@@ -114,11 +113,11 @@ class TransaksiKasBankController extends Controller
             // Buat transaksi
             $transaksi = TransaksiKasBank::create([
                 'no_bukti' => $noBukti,
-                'tanggal' => $request->tanggal,
+                'tanggal' => $request->tanggal_hidden,
                 'kas_bank_id' => $request->kas_bank_id,
                 'jenis_transaksi' => $request->jenis_transaksi,
                 'kategori_transaksi' => $request->kategori_transaksi,
-                'jumlah' => $request->jumlah,
+                'jumlah' => $jumlah,
                 'keterangan' => $request->keterangan,
                 'referensi_tipe' => 'MN',
                 'referensi_id' => null,
@@ -127,9 +126,9 @@ class TransaksiKasBankController extends Controller
 
             // Update saldo kas/bank
             if ($request->jenis_transaksi == 'D') {
-                $kasBank->saldo_terkini += $request->jumlah;
+                $kasBank->saldo_terkini += $jumlah;
             } else {
-                $kasBank->saldo_terkini -= $request->jumlah;
+                $kasBank->saldo_terkini -= $jumlah;
             }
             $kasBank->save();
 
@@ -164,13 +163,16 @@ class TransaksiKasBankController extends Controller
         $transaksi = TransaksiKasBank::findOrFail($id);
 
         $request->validate([
-            'tanggal' => 'required|date',
+            'tanggal_hidden' => 'required|date',
             'kas_bank_id' => 'required|exists:kas_bank,id',
             'kategori_transaksi' => 'required|in:PJ,PB,MN,TF',
             'jenis_transaksi' => 'required|in:D,K',
-            'jumlah' => 'required|numeric|min:0',
+            'jumlah_raw' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string|max:255',
         ]);
+
+        // Use jumlah_raw instead of jumlah
+        $jumlah = $request->jumlah_raw;
 
         DB::beginTransaction();
         try {
@@ -189,18 +191,18 @@ class TransaksiKasBankController extends Controller
 
             // Hitung saldo sesudah
             if ($request->jenis_transaksi == 'D') {
-                $saldoSesudah = $saldoSebelum + $request->jumlah;
+                $saldoSesudah = $saldoSebelum + $jumlah;
             } else {
-                $saldoSesudah = $saldoSebelum - $request->jumlah;
+                $saldoSesudah = $saldoSebelum - $jumlah;
             }
 
             // Update transaksi
             $transaksi->update([
-                'tanggal' => $request->tanggal,
+                'tanggal' => $request->tanggal_hidden,
                 'kas_bank_id' => $request->kas_bank_id,
                 'kategori_transaksi' => $request->kategori_transaksi,
                 'jenis_transaksi' => $request->jenis_transaksi,
-                'jumlah' => $request->jumlah,
+                'jumlah' => $jumlah,
                 'keterangan' => $request->keterangan,
             ]);
 

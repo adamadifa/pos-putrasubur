@@ -49,13 +49,16 @@ class TransactionService
                 'total_payment' => $validationResult['total_payment'] ?? 0
             ]);
 
-            // 4. Hapus pembayaran terlebih dahulu untuk memastikan trigger berjalan
+            // 4. Kembalikan stok produk sebelum menghapus penjualan
+            $this->restoreStockFromPenjualan($penjualan);
+
+            // 5. Hapus pembayaran terlebih dahulu untuk memastikan trigger berjalan
             $pembayaranList = $penjualan->pembayaranPenjualan;
             foreach ($pembayaranList as $pembayaran) {
                 $pembayaran->delete(); // Ini akan memicu trigger after_pembayaran_penjualan_delete
             }
 
-            // 5. Hapus penjualan (trigger akan otomatis menghapus detail)
+            // 6. Hapus penjualan (trigger akan otomatis menghapus detail)
             $deleted = $penjualan->delete();
 
             // Debug: Log hasil delete
@@ -120,13 +123,16 @@ class TransactionService
                 'total_payment' => $validationResult['total_payment'] ?? 0
             ]);
 
-            // 4. Hapus pembayaran terlebih dahulu untuk memastikan trigger berjalan
+            // 4. Kurangi stok produk sebelum menghapus pembelian
+            $this->reduceStockFromPembelian($pembelian);
+
+            // 5. Hapus pembayaran terlebih dahulu untuk memastikan trigger berjalan
             $pembayaranList = $pembelian->pembayaranPembelian;
             foreach ($pembayaranList as $pembayaran) {
                 $pembayaran->delete(); // Ini akan memicu trigger after_pembayaran_pembelian_delete
             }
 
-            // 5. Hapus pembelian (trigger akan otomatis menghapus detail)
+            // 6. Hapus pembelian (trigger akan otomatis menghapus detail)
             $deleted = $pembelian->delete();
 
             // Debug: Log hasil delete
@@ -333,6 +339,76 @@ class TransactionService
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat menghitung ulang saldo: ' . $e->getMessage()
             ];
+        }
+    }
+
+    /**
+     * Kembalikan stok produk dari penjualan yang akan dihapus
+     */
+    private function restoreStockFromPenjualan(Penjualan $penjualan): void
+    {
+        try {
+            // Ambil detail penjualan
+            $detailPenjualan = $penjualan->detailPenjualan;
+
+            foreach ($detailPenjualan as $detail) {
+                // Kembalikan stok produk
+                $produk = \App\Models\Produk::find($detail->produk_id);
+                if ($produk) {
+                    $produk->increment('stok', $detail->qty);
+
+                    Log::info('Stock restored for product', [
+                        'produk_id' => $produk->id,
+                        'nama_produk' => $produk->nama_produk,
+                        'qty_restored' => $detail->qty,
+                        'stok_sebelum' => $produk->stok - $detail->qty,
+                        'stok_sesudah' => $produk->stok,
+                        'penjualan_id' => $penjualan->id
+                    ]);
+                }
+            }
+        } catch (Exception $e) {
+            Log::error('Error restoring stock from penjualan', [
+                'penjualan_id' => $penjualan->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e; // Re-throw untuk ditangani oleh caller
+        }
+    }
+
+    /**
+     * Kurangi stok produk dari pembelian yang akan dihapus
+     */
+    private function reduceStockFromPembelian(Pembelian $pembelian): void
+    {
+        try {
+            // Ambil detail pembelian
+            $detailPembelian = $pembelian->detailPembelian;
+
+            foreach ($detailPembelian as $detail) {
+                // Kurangi stok produk
+                $produk = \App\Models\Produk::find($detail->produk_id);
+                if ($produk) {
+                    $produk->decrement('stok', $detail->qty);
+
+                    Log::info('Stock reduced for product from pembelian deletion', [
+                        'produk_id' => $produk->id,
+                        'nama_produk' => $produk->nama_produk,
+                        'qty_reduced' => $detail->qty,
+                        'stok_sebelum' => $produk->stok + $detail->qty,
+                        'stok_sesudah' => $produk->stok,
+                        'pembelian_id' => $pembelian->id
+                    ]);
+                }
+            }
+        } catch (Exception $e) {
+            Log::error('Error reducing stock from pembelian', [
+                'pembelian_id' => $pembelian->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e; // Re-throw untuk ditangani oleh caller
         }
     }
 }

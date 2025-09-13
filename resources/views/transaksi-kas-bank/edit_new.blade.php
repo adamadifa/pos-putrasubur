@@ -5,7 +5,7 @@
 @section('content')
     <div class="min-h-screen py-8">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Header -->
+            <!-- Header -->
             <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-8">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-4">
@@ -23,7 +23,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                                 </svg>
                             </div>
-            <div>
+                            <div>
                                 <h1
                                     class="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
                                     Edit Transaksi Kas & Bank
@@ -88,15 +88,15 @@
                 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
                     <div class="flex items-center space-x-3">
                         <div class="p-2 bg-blue-100 rounded-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                 stroke="currentColor" class="w-5 h-5 text-blue-600">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-                </svg>
+                            </svg>
                         </div>
                         <h2 class="text-lg font-semibold text-gray-800">Form Edit Transaksi Kas & Bank</h2>
                     </div>
-        </div>
+                </div>
 
                 <form action="{{ route('transaksi-kas-bank.update', $transaksi->id) }}" method="POST" class="p-8"
                     id="editTransaksiForm">
@@ -114,7 +114,7 @@
                                     <i
                                         class="ti ti-receipt text-gray-400 group-hover:text-blue-500 transition-colors text-lg"></i>
                                 </div>
-                            <input type="text" value="{{ $transaksi->no_bukti }}" readonly
+                                <input type="text" value="{{ $transaksi->no_bukti }}" readonly
                                     class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed">
                             </div>
                             <p class="text-xs text-gray-500 flex items-center">
@@ -125,11 +125,11 @@
 
                         <!-- Tanggal dan Kas/Bank -->
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <!-- Tanggal -->
+                            <!-- Tanggal -->
                             <div class="space-y-2">
                                 <label for="tanggal" class="block text-sm font-semibold text-gray-700">
-                                Tanggal <span class="text-red-500">*</span>
-                            </label>
+                                    Tanggal <span class="text-red-500">*</span>
+                                </label>
                                 <div class="relative group">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -139,24 +139,21 @@
                                                 d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
                                         </svg>
                                     </div>
-                                    <input type="text" name="tanggal" id="tanggal" readonly
-                                        value="{{ old('tanggal', \Carbon\Carbon::parse($transaksi->tanggal)->format('d/m/Y')) }}"
-                                        placeholder="Pilih tanggal"
-                                        class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white cursor-pointer hover:bg-gray-50 @error('tanggal') border-red-500 @enderror"
-                                required>
-                                    <input type="hidden" name="tanggal_hidden" id="tanggal_hidden"
-                                        value="{{ old('tanggal', \Carbon\Carbon::parse($transaksi->tanggal)->format('Y-m-d')) }}">
+                                    <input type="date" name="tanggal" id="tanggal"
+                                        value="{{ old('tanggal', $transaksi->tanggal) }}"
+                                        class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('tanggal') border-red-500 @enderror"
+                                        required>
                                 </div>
-                            @error('tanggal')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
+                                @error('tanggal')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
 
-                        <!-- Kas/Bank -->
+                            <!-- Kas/Bank -->
                             <div class="space-y-2">
                                 <label for="kas_bank_id" class="block text-sm font-semibold text-gray-700">
-                                Kas/Bank <span class="text-red-500">*</span>
-                            </label>
+                                    Kas/Bank <span class="text-red-500">*</span>
+                                </label>
                                 <div class="relative group">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -166,22 +163,22 @@
                                                 d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
                                         </svg>
                                     </div>
-                            <select name="kas_bank_id" id="kas_bank_id"
+                                    <select name="kas_bank_id" id="kas_bank_id"
                                         class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('kas_bank_id') border-red-500 @enderror"
-                                required>
-                                <option value="">Pilih Kas/Bank</option>
-                                @foreach ($kasBankList as $kasBank)
-                                    <option value="{{ $kasBank->id }}"
-                                        {{ old('kas_bank_id', $transaksi->kas_bank_id) == $kasBank->id ? 'selected' : '' }}>
+                                        required>
+                                        <option value="">Pilih Kas/Bank</option>
+                                        @foreach ($kasBankList as $kasBank)
+                                            <option value="{{ $kasBank->id }}"
+                                                {{ old('kas_bank_id', $transaksi->kas_bank_id) == $kasBank->id ? 'selected' : '' }}>
                                                 {{ $kasBank->nama }} - No. Rek: {{ $kasBank->no_rekening ?? '-' }}
-                                    </option>
-                                @endforeach
-                            </select>
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
-                            @error('kas_bank_id')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
+                                @error('kas_bank_id')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
 
                         <!-- Jenis Transaksi -->
@@ -279,7 +276,7 @@
                                 </div>
                                 <textarea id="keterangan" name="keterangan" rows="3"
                                     class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('keterangan') border-red-500 @enderror"
-                                placeholder="Masukkan keterangan transaksi (opsional)">{{ old('keterangan', $transaksi->keterangan) }}</textarea>
+                                    placeholder="Masukkan keterangan transaksi (opsional)">{{ old('keterangan', $transaksi->keterangan) }}</textarea>
                             </div>
                             <p class="text-xs text-gray-500 flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -292,7 +289,7 @@
                             @error('keterangan')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
-                    </div>
+                        </div>
 
                         <!-- Hidden input for kategori_transaksi -->
                         <input type="hidden" name="kategori_transaksi" value="MN">
@@ -328,7 +325,7 @@
                                         d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
                                 </svg>
                                 <span id="submitBtnText">Update Transaksi</span>
-                        </button>
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -361,7 +358,6 @@
         $(document).ready(function() {
             console.log('Document ready, initializing transaction form...');
 
-
             const jumlahInput = document.getElementById('jumlah');
 
             // Number formatting for amount
@@ -392,7 +388,7 @@
                     integerPart = parts[0] || '';
                     decimalPart = parts[1] || '';
 
-                if (parts.length > 2) {
+                    if (parts.length > 2) {
                         decimalPart = parts.slice(1).join('');
                     }
                 } else {
@@ -513,7 +509,7 @@
 
             // Frontend Validation Rules and Messages
             const validationRules = {
-                tanggal_hidden: {
+                tanggal: {
                     required: true
                 },
                 kas_bank_id: {
@@ -525,7 +521,7 @@
             };
 
             const validationMessages = {
-                tanggal_hidden: {
+                tanggal: {
                     required: 'Tanggal wajib diisi.'
                 },
                 kas_bank_id: {
@@ -537,16 +533,11 @@
             };
 
             // Real-time validation for form fields
-            const fieldsToValidate = ['tanggal_hidden', 'kas_bank_id', 'jumlah'];
+            const fieldsToValidate = ['tanggal', 'kas_bank_id', 'jumlah'];
 
             fieldsToValidate.forEach(function(fieldName) {
                 const field = $(`#${fieldName}`);
                 let validationTimeout;
-
-                // Skip validation for tanggal field to avoid interference
-                if (fieldName === 'tanggal') {
-                    return;
-                }
 
                 field.on('input change blur', function() {
                     const value = $(this).val();
@@ -978,156 +969,4 @@
             background-color: rgba(0, 0, 0, 0.1);
         }
     </style>
-
-    <!-- Flatpickr CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 @endsection
-
-@push('styles')
-    <style>
-        /* Custom Flatpickr Styling - Sesuai Tema Aplikasi */
-        .flatpickr-calendar {
-            background: #ffffff !important;
-            border: 1px solid #e5e7eb !important;
-            border-radius: 16px !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-            font-family: 'Inter', sans-serif !important;
-            font-size: 14px !important;
-        }
-
-        .flatpickr-months {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
-            border-radius: 16px 16px 0 0 !important;
-            padding: 16px 0 !important;
-        }
-
-        .flatpickr-month {
-            color: #ffffff !important;
-            font-weight: 600 !important;
-        }
-
-        .flatpickr-current-month {
-            color: #ffffff !important;
-        }
-
-        .flatpickr-monthDropdown-months {
-            color: #ffffff !important;
-            font-weight: 600 !important;
-        }
-
-        .flatpickr-current-month .numInputWrapper {
-            color: #ffffff !important;
-            font-weight: 600 !important;
-        }
-
-        .flatpickr-weekdays {
-            background: #f8fafc !important;
-            border-bottom: 1px solid #e5e7eb !important;
-        }
-
-        .flatpickr-weekday {
-            color: #64748b !important;
-            font-weight: 600 !important;
-            font-size: 12px !important;
-            text-transform: uppercase !important;
-            letter-spacing: 0.05em !important;
-        }
-
-        .flatpickr-day {
-            color: #374151 !important;
-            border-radius: 8px !important;
-            margin: 2px !important;
-            font-weight: 500 !important;
-            transition: all 0.2s ease !important;
-        }
-
-        .flatpickr-day:hover {
-            background: #dbeafe !important;
-            color: #1e40af !important;
-            transform: scale(1.05) !important;
-        }
-
-        .flatpickr-day.selected {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
-            color: #ffffff !important;
-            border: none !important;
-            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3) !important;
-        }
-
-        .flatpickr-day.selected:hover {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
-            transform: scale(1.05) !important;
-        }
-
-        .flatpickr-day.today {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-            color: #ffffff !important;
-            border: none !important;
-            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3) !important;
-        }
-
-        .flatpickr-day.today:hover {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
-            transform: scale(1.05) !important;
-        }
-
-        .flatpickr-day.prevMonthDay,
-        .flatpickr-day.nextMonthDay {
-            color: #9ca3af !important;
-            opacity: 0.6 !important;
-        }
-
-        .flatpickr-day.prevMonthDay:hover,
-        .flatpickr-day.nextMonthDay:hover {
-            background: #f3f4f6 !important;
-            color: #6b7280 !important;
-        }
-
-        .flatpickr-months .flatpickr-prev-month,
-        .flatpickr-months .flatpickr-next-month {
-            color: #ffffff !important;
-            fill: #ffffff !important;
-            padding: 8px !important;
-            border-radius: 8px !important;
-            transition: all 0.2s ease !important;
-        }
-
-        .flatpickr-months .flatpickr-prev-month:hover,
-        .flatpickr-months .flatpickr-next-month:hover {
-            background: rgba(255, 255, 255, 0.1) !important;
-            transform: scale(1.1) !important;
-        }
-
-        .flatpickr-months .flatpickr-prev-month svg,
-        .flatpickr-months .flatpickr-next-month svg {
-            width: 16px !important;
-            height: 16px !important;
-        }
-    </style>
-@endpush
-
-@push('scripts')
-    <!-- Flatpickr JS -->
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
-
-    <script>
-        // Initialize Flatpickr Date Picker
-        document.addEventListener('DOMContentLoaded', function() {
-            const datePicker = flatpickr("#tanggal", {
-                locale: "id",
-                dateFormat: "d/m/Y",
-                allowInput: false,
-                clickOpens: true,
-                onChange: function(selectedDates, dateStr, instance) {
-                    // Update hidden input with ISO date format
-                    document.getElementById('tanggal_hidden').value = selectedDates[0]
-                        .toISOString().split('T')[0];
-
-                    // Update visible input with formatted date
-                    instance.input.value = dateStr;
-                }
-            });
-        });
-    </script>
-@endpush

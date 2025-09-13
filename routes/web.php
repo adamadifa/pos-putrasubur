@@ -21,6 +21,9 @@ use App\Http\Controllers\LaporanPenjualanController;
 use App\Http\Controllers\LaporanPembelianController;
 use App\Http\Controllers\LaporanPembayaranController;
 use App\Http\Controllers\LaporanPiutangController;
+use App\Http\Controllers\LaporanHutangController;
+use App\Http\Controllers\PenyesuaianStokController;
+use App\Http\Controllers\PengaturanUmumController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -132,6 +135,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('transaksi-kas-bank', TransaksiKasBankController::class);
     Route::resource('saldo-awal-bulanan', SaldoAwalBulananController::class)->except(['show', 'edit', 'update']);
     Route::resource('saldo-awal-produk', SaldoAwalProdukController::class)->except(['show', 'edit', 'update']);
+    Route::resource('penyesuaian-stok', PenyesuaianStokController::class);
 
     // Saldo Awal Bulanan API Routes
     Route::post('saldo-awal-bulanan/get-saldo-akhir', [SaldoAwalBulananController::class, 'getSaldoAkhirBulanSebelumnya'])->name('saldo-awal-bulanan.get-saldo-akhir');
@@ -199,6 +203,10 @@ Route::middleware('auth')->group(function () {
 
     // Laporan Routes
     Route::prefix('laporan')->name('laporan.')->group(function () {
+        Route::get('/', function () {
+            return view('laporan.index');
+        })->name('index');
+
         Route::prefix('kas-bank')->name('kas-bank.')->group(function () {
             Route::get('/', [LaporanKasBankController::class, 'index'])->name('index');
             Route::post('/export-pdf', [LaporanKasBankController::class, 'exportPdf'])->name('export-pdf');
@@ -226,16 +234,26 @@ Route::middleware('auth')->group(function () {
         });
 
         Route::prefix('hutang')->name('hutang.')->group(function () {
-            Route::get('/', function () {
-                return view('laporan.hutang.index');
-            })->name('index');
+            Route::get('/', [LaporanHutangController::class, 'index'])->name('index');
+            Route::post('/export-pdf', [LaporanHutangController::class, 'exportPdf'])->name('export-pdf');
         });
 
         Route::prefix('piutang')->name('piutang.')->group(function () {
             Route::get('/', [LaporanPiutangController::class, 'index'])->name('index');
-            Route::post('/generate', [LaporanPiutangController::class, 'index'])->name('generate');
             Route::post('/export-pdf', [LaporanPiutangController::class, 'exportPdf'])->name('export-pdf');
         });
+    });
+
+    // Pengaturan Umum
+    Route::prefix('pengaturan-umum')->name('pengaturan-umum.')->group(function () {
+        Route::get('/', [PengaturanUmumController::class, 'index'])->name('index');
+        Route::get('/create', [PengaturanUmumController::class, 'create'])->name('create');
+        Route::post('/', [PengaturanUmumController::class, 'store'])->name('store');
+        Route::get('/{pengaturanUmum}', [PengaturanUmumController::class, 'show'])->name('show');
+        Route::get('/{pengaturanUmum}/edit', [PengaturanUmumController::class, 'edit'])->name('edit');
+        Route::put('/{pengaturanUmum}', [PengaturanUmumController::class, 'update'])->name('update');
+        Route::delete('/{pengaturanUmum}', [PengaturanUmumController::class, 'destroy'])->name('destroy');
+        Route::post('/{pengaturanUmum}/set-active', [PengaturanUmumController::class, 'setActive'])->name('set-active');
     });
 });
 
