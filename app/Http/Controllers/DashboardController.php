@@ -35,26 +35,35 @@ class DashboardController extends Controller
         $yesterdayPurchases = Pembelian::whereDate('tanggal', $yesterday)->sum('total');
         $purchaseGrowth = $yesterdayPurchases > 0 ? (($todayPurchases - $yesterdayPurchases) / $yesterdayPurchases) * 100 : 0;
 
-        // Total Piutang (Accounts Receivable)
-        $totalPiutang = Penjualan::where('status_pembayaran', '!=', 'Lunas')
+        // Total Piutang (Accounts Receivable) - Perhitungan yang benar
+        $penjualanKredit = Penjualan::with('pembayaranPenjualan')
             ->where('jenis_transaksi', 'kredit')
-            ->sum('total');
-        $totalPiutangTerbayar = PembayaranPenjualan::whereHas('penjualan', function ($query) {
-            $query->where('jenis_transaksi', 'kredit');
-        })->sum('jumlah_bayar');
-        $sisaPiutang = $totalPiutang - $totalPiutangTerbayar;
+            ->get();
 
-        // Total Hutang (Accounts Payable)
-        $totalHutang = Pembelian::where('status_pembayaran', '!=', 'Lunas')
+        $sisaPiutang = $penjualanKredit->sum(function ($penjualan) {
+            $totalBayar = $penjualan->pembayaranPenjualan->sum('jumlah_bayar');
+            $totalSetelahDiskon = $penjualan->total - $penjualan->diskon; // Gunakan total setelah diskon
+            $sisa = $totalSetelahDiskon - $totalBayar;
+            return $sisa > 0 ? $sisa : 0; // Hanya hitung yang masih ada sisa
+        });
+
+        // Total Hutang (Accounts Payable) - Perhitungan yang benar
+        $pembelianKredit = Pembelian::with('pembayaranPembelian')
             ->where('jenis_transaksi', 'kredit')
-            ->sum('total');
-        $totalHutangTerbayar = PembayaranPembelian::whereHas('pembelian', function ($query) {
-            $query->where('jenis_transaksi', 'kredit');
-        })->sum('jumlah_bayar');
-        $sisaHutang = $totalHutang - $totalHutangTerbayar;
+            ->get();
 
-        // Low Stock Products
-        $lowStockProducts = Produk::where('stok', '<=', 10)->count();
+        $sisaHutang = $pembelianKredit->sum(function ($pembelian) {
+            $totalBayar = $pembelian->pembayaranPembelian->sum('jumlah_bayar');
+            $sisa = $pembelian->total - $totalBayar; // Gunakan total tanpa diskon
+            return $sisa > 0 ? $sisa : 0; // Hanya hitung yang masih ada sisa
+        });
+
+        // Low Stock Products - menggunakan stok_minimal dari setiap produk
+        $lowStockProducts = Produk::whereColumn('stok', '<=', 'stok_minimal')->count();
+        $lowStockProductsList = Produk::with('satuan')
+            ->whereColumn('stok', '<=', 'stok_minimal')
+            ->orderBy('stok', 'asc')
+            ->get();
 
         // Recent Sales Transactions
         $recentSales = Penjualan::with(['pelanggan', 'kasir'])
@@ -116,6 +125,7 @@ class DashboardController extends Controller
             'sisaPiutang',
             'sisaHutang',
             'lowStockProducts',
+            'lowStockProductsList',
             'recentSales',
             'recentPurchases',
             'recentPayments',

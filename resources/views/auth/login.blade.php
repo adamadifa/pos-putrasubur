@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'Laravel') }} - Login</title>
+    <title>{{ $pengaturanUmum->nama_toko ?? 'POS System' }} - Login</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -35,11 +35,18 @@
         <div class="flex items-center justify-center p-6 lg:p-12 bg-white">
             <div class="w-full max-w-sm">
                 <!-- Logo -->
-                <div class="flex items-center gap-2 mb-12">
-                    <div class="h-8 w-8 rounded-full bg-black text-white grid place-items-center text-sm font-bold">
-                        C
-                    </div>
-                    <span class="text-lg font-semibold">Cointo</span>
+                <div class="flex items-center gap-3 mb-12">
+                    @if ($pengaturanUmum && $pengaturanUmum->logo)
+                        <div class="h-16 w-16 rounded-xl overflow-hidden shadow-lg">
+                            <img src="{{ $pengaturanUmum->logo_url }}" alt="Logo"
+                                class="w-full h-full object-cover">
+                        </div>
+                    @else
+                        <div class="h-16 w-16 rounded-xl bg-blue-600 text-white grid place-items-center shadow-lg">
+                            <i class="ti ti-building-store text-2xl"></i>
+                        </div>
+                    @endif
+                    <span class="text-xl font-bold">{{ $pengaturanUmum->nama_toko ?? 'POS System' }}</span>
                 </div>
 
                 <!-- Title -->
@@ -109,7 +116,8 @@
                     <!-- Forgot Password -->
                     <div class="text-right">
                         @if (Route::has('password.request'))
-                            <a href="{{ route('password.request') }}" class="text-sm text-blue-600 hover:text-blue-500">
+                            <a href="{{ route('password.request') }}"
+                                class="text-sm text-blue-600 hover:text-blue-500">
                                 Forgot password?
                             </a>
                         @endif
@@ -169,68 +177,37 @@
             </div>
         </div>
 
-        <!-- Right panel - Blue Background with Dashboard Preview -->
-        <div class="hidden lg:flex items-center justify-center p-12 bg-gradient-to-br from-blue-600 to-blue-700">
-            <div class="text-center text-white max-w-lg">
-                <!-- Dashboard mockup -->
-                <div class="relative mb-12">
-                    <!-- Main dashboard card -->
-                    <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-left">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center gap-2">
-                                <div class="h-8 w-8 rounded-full bg-white/20 grid place-items-center">
-                                    <span class="text-sm font-bold">C</span>
-                                </div>
-                                <span class="font-medium">Andrew Fox</span>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-xs opacity-80">Net Worth</div>
-                                <div class="text-xl font-bold">$123,783.00</div>
-                            </div>
-                        </div>
+        <!-- Right panel - Background Image with Overlay -->
+        <div class="hidden lg:flex items-center justify-center p-12 relative overflow-hidden">
+            <!-- Background Image -->
+            <div class="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                @if ($pengaturanUmum && $pengaturanUmum->foto_toko) style="background-image: url('{{ $pengaturanUmum->foto_toko_url }}');"
+                @else
+                    style="background-image: url('https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');" @endif>
+            </div>
 
-                        <!-- Chart area -->
-                        <div class="h-24 bg-white/5 rounded-lg mb-4 flex items-end justify-center">
-                            <svg viewBox="0 0 200 60" class="w-full h-full">
-                                <path d="M10,50 Q50,20 100,30 T190,25" stroke="rgba(255,255,255,0.6)" stroke-width="2"
-                                    fill="none" />
-                                <circle cx="190" cy="25" r="3" fill="white" />
-                            </svg>
-                        </div>
+            <!-- Blue Overlay -->
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-600/75 to-blue-800/75"></div>
 
-                        <!-- Stats -->
-                        <div class="grid grid-cols-3 gap-4 text-xs">
-                            <div>
-                                <div class="text-green-300">▲ Income</div>
-                                <div class="font-semibold">$2,451.00</div>
-                            </div>
-                            <div>
-                                <div class="text-red-300">▼ Expense</div>
-                                <div class="font-semibold">$1,245.00</div>
-                            </div>
-                            <div>
-                                <div class="text-blue-300">● Balance</div>
-                                <div class="font-semibold">$3,451.00</div>
-                            </div>
+            <!-- Content -->
+            <div class="relative z-10 text-center text-white max-w-lg">
+                <!-- Logo and Company Name -->
+                <div class="flex flex-col items-center justify-center mb-8">
+                    @if ($pengaturanUmum && $pengaturanUmum->logo)
+                        <div class="h-32 w-32 rounded-3xl overflow-hidden shadow-2xl mb-6">
+                            <img src="{{ $pengaturanUmum->logo_url }}" alt="Logo"
+                                class="w-full h-full object-cover">
                         </div>
-                    </div>
-
-                    <!-- Floating elements -->
-                    <div class="absolute -top-4 -left-4 bg-white/10 backdrop-blur-sm rounded-xl p-3 text-xs">
-                        <div class="flex items-center gap-2 mb-1">
-                            <div
-                                class="h-6 w-6 rounded-full bg-blue-500 grid place-items-center text-white text-xs font-bold">
-                                T</div>
-                            <span>TRU</span>
+                    @else
+                        <div
+                            class="h-32 w-32 rounded-3xl bg-white/20 backdrop-blur-sm grid place-items-center shadow-2xl mb-6">
+                            <i class="ti ti-building-store text-5xl"></i>
                         </div>
-                        <div class="text-lg font-bold">+0.134900</div>
-                        <div class="text-green-300 text-xs">+0.45%</div>
-                    </div>
+                    @endif
+                    <span
+                        class="text-4xl font-bold text-center">{{ $pengaturanUmum->nama_toko ?? 'POS System' }}</span>
                 </div>
 
-                <!-- Text content -->
-                <h2 class="text-3xl font-bold mb-4">The easiest way to manage your portfolio.</h2>
-                <p class="text-blue-100 text-lg">Join the Cointo community now!</p>
             </div>
         </div>
     </div>

@@ -16,6 +16,7 @@ class PengaturanUmum extends Model
         'alamat',
         'no_telepon',
         'logo',
+        'foto_toko',
         'email',
         'deskripsi',
         'is_active'
@@ -40,7 +41,7 @@ class PengaturanUmum extends Model
     {
         // Deactivate all other settings
         self::where('id', '!=', $this->id)->update(['is_active' => false]);
-        
+
         // Activate this one
         $this->update(['is_active' => true]);
     }
@@ -52,6 +53,17 @@ class PengaturanUmum extends Model
     {
         if ($this->logo) {
             return asset('storage/' . $this->logo);
+        }
+        return null;
+    }
+
+    /**
+     * Get foto toko URL
+     */
+    public function getFotoTokoUrlAttribute()
+    {
+        if ($this->foto_toko) {
+            return asset('storage/' . $this->foto_toko);
         }
         return null;
     }

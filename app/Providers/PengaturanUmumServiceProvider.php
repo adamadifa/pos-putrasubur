@@ -37,6 +37,8 @@ class PengaturanUmumServiceProvider extends ServiceProvider
                 'deskripsi' => null,
                 'logo' => null,
                 'logo_url' => null,
+                'foto_toko' => null,
+                'foto_toko_url' => null,
             ];
 
             // Merge dengan data fallback
@@ -45,6 +47,11 @@ class PengaturanUmumServiceProvider extends ServiceProvider
             // Tambahkan logo_url jika ada logo
             if ($pengaturan && $pengaturan->logo) {
                 $pengaturanData['logo_url'] = $pengaturan->logo_url;
+            }
+
+            // Tambahkan foto_toko_url jika ada foto_toko
+            if ($pengaturan && $pengaturan->foto_toko) {
+                $pengaturanData['foto_toko_url'] = $pengaturan->foto_toko_url;
             }
 
             $view->with('pengaturanUmum', (object) $pengaturanData);

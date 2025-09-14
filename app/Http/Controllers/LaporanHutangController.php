@@ -56,7 +56,7 @@ class LaporanHutangController extends Controller
             // Process data to calculate hutang
             $hutangs = $pembelianList->map(function ($pembelian) {
                 $totalBayar = $pembelian->pembayaranPembelian->sum('jumlah_bayar');
-                $sisaHutang = $pembelian->total - $totalBayar;
+                $sisaHutang = $pembelian->total - $totalBayar; // Gunakan total tanpa diskon
                 $status = 'belum_bayar';
                 if ($sisaHutang <= 0) {
                     $status = 'lunas';
@@ -67,7 +67,7 @@ class LaporanHutangController extends Controller
                     'no_faktur' => $pembelian->no_faktur,
                     'tanggal' => $pembelian->tanggal,
                     'supplier' => $pembelian->supplier->nama ?? 'Tidak ada',
-                    'total' => $pembelian->total,
+                    'total' => $pembelian->total, // Gunakan total tanpa diskon
                     'terbayar' => $totalBayar,
                     'sisa' => $sisaHutang,
                     'status' => $status
@@ -199,7 +199,7 @@ class LaporanHutangController extends Controller
         // Process data to calculate hutang
         $hutangs = $pembelianList->map(function ($pembelian) {
             $totalBayar = $pembelian->pembayaranPembelian->sum('jumlah_bayar');
-            $sisaHutang = $pembelian->total - $totalBayar;
+            $sisaHutang = $pembelian->total - $totalBayar; // Gunakan total tanpa diskon
             $status = 'belum_bayar';
             if ($sisaHutang <= 0) {
                 $status = 'lunas';
@@ -210,7 +210,7 @@ class LaporanHutangController extends Controller
                 'no_faktur' => $pembelian->no_faktur,
                 'tanggal' => $pembelian->tanggal,
                 'supplier' => $pembelian->supplier->nama ?? 'Tidak ada',
-                'total' => $pembelian->total,
+                'total' => $pembelian->total, // Gunakan total tanpa diskon
                 'terbayar' => $totalBayar,
                 'sisa' => $sisaHutang,
                 'status' => $status

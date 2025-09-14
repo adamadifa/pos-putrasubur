@@ -572,17 +572,20 @@
         // Get saved sidebar state from localStorage
         const savedState = localStorage.getItem('sidebarOpen');
 
-        // Set initial state based on saved value and screen size
-        if (savedState !== null) {
+        // Set initial state based on screen size
+        // Always default to closed on mobile, open on desktop
+        this.sidebarOpen = window.innerWidth >= 1024;
+
+        // Only use saved state if it's desktop and we have a saved state
+        if (savedState !== null && window.innerWidth >= 1024) {
             this.sidebarOpen = savedState === 'true';
-        } else {
-            // Default to open on desktop, closed on mobile
-            this.sidebarOpen = window.innerWidth >= 1024;
         }
 
-        // Save sidebar state to localStorage whenever it changes
+        // Save sidebar state to localStorage whenever it changes (only on desktop)
         this.$watch('sidebarOpen', (value) => {
-            localStorage.setItem('sidebarOpen', value.toString());
+            if (window.innerWidth >= 1024) {
+                localStorage.setItem('sidebarOpen', value.toString());
+            }
         });
 
         // Handle window resize with debounce

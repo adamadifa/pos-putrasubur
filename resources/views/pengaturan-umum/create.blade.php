@@ -241,6 +241,73 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Foto Toko -->
+                        <div class="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-8 border border-orange-100">
+                            <div class="flex items-center space-x-3 mb-6">
+                                <div class="p-3 bg-orange-100 rounded-xl">
+                                    <i class="ti ti-camera text-orange-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-bold text-gray-900">Foto Toko</h2>
+                                    <p class="text-sm text-gray-600">Upload foto toko untuk tampilan yang lebih menarik</p>
+                                </div>
+                            </div>
+
+                            <div class="space-y-4">
+                                <!-- Upload Area -->
+                                <div
+                                    class="relative border-2 border-dashed border-orange-300 rounded-xl p-8 text-center hover:border-orange-400 hover:bg-orange-50 transition-all duration-300 group">
+                                    <div
+                                        class="mx-auto w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-orange-200 transition-colors duration-300">
+                                        <i class="ti ti-camera text-orange-600 text-2xl group-hover:text-orange-700"></i>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <p class="text-lg font-semibold text-gray-900">Upload Foto Toko</p>
+                                        <p class="text-sm text-gray-600">Drag & drop atau klik untuk memilih file</p>
+                                        <div class="text-xs text-gray-500 space-y-1">
+                                            <p><i class="ti ti-check text-green-500 mr-1"></i>Format: JPEG, PNG, JPG, GIF
+                                            </p>
+                                            <p><i class="ti ti-check text-green-500 mr-1"></i>Maksimal ukuran: 5MB</p>
+                                            <p><i class="ti ti-check text-green-500 mr-1"></i>Rekomendasi: 1200x800px</p>
+                                        </div>
+                                    </div>
+                                    <input type="file" name="foto_toko" id="foto_toko" accept="image/*"
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                        onchange="previewFotoToko(this)">
+                                </div>
+
+                                @error('foto_toko')
+                                    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                                        <p class="text-sm text-red-600 flex items-center">
+                                            <i class="ti ti-alert-circle text-red-500 mr-2"></i>
+                                            {{ $message }}
+                                        </p>
+                                    </div>
+                                @enderror
+
+                                <!-- Foto Preview -->
+                                <div id="fotoTokoPreview" class="hidden">
+                                    <div class="bg-white rounded-xl border border-gray-200 p-6">
+                                        <div class="flex items-center space-x-4">
+                                            <div class="relative group">
+                                                <img id="previewFotoToko" src="" alt="Foto Toko Preview"
+                                                    class="w-32 h-24 object-cover rounded-xl border-2 border-gray-100 shadow-sm group-hover:shadow-md transition-all duration-300">
+                                                <button type="button" onclick="removeFotoToko()"
+                                                    class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg">
+                                                    <i class="ti ti-x text-xs"></i>
+                                                </button>
+                                            </div>
+                                            <div class="flex-1">
+                                                <h4 class="font-semibold text-gray-900">Preview Foto Toko</h4>
+                                                <p class="text-sm text-gray-600">Foto akan ditampilkan di halaman login dan
+                                                    dashboard</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Form Actions -->
@@ -338,12 +405,36 @@
                 preview.classList.add('hidden');
             };
 
+            // Foto toko preview function
+            window.previewFotoToko = function(input) {
+                const preview = document.getElementById('fotoTokoPreview');
+                const previewImage = document.getElementById('previewFotoToko');
+
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImage.src = e.target.result;
+                        preview.classList.remove('hidden');
+                    }
+                    reader.readAsDataURL(input.files[0]);
+                }
+            };
+
+            // Remove foto toko function
+            window.removeFotoToko = function() {
+                const fotoTokoInput = document.getElementById('foto_toko');
+                const preview = document.getElementById('fotoTokoPreview');
+
+                fotoTokoInput.value = '';
+                preview.classList.add('hidden');
+            };
+
             // Form submission with loading state
             document.getElementById('pengaturanForm').addEventListener('submit', function() {
                 const submitBtn = document.getElementById('submitBtn');
                 submitBtn.disabled = true;
                 submitBtn.innerHTML =
-                '<i class="ti ti-loader-2 animate-spin text-lg mr-2"></i>Menyimpan...';
+                    '<i class="ti ti-loader-2 animate-spin text-lg mr-2"></i>Menyimpan...';
             });
 
             // Show flash messages as toast

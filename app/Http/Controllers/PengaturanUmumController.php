@@ -38,7 +38,8 @@ class PengaturanUmumController extends Controller
             'no_telepon' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
             'deskripsi' => 'nullable|string',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'foto_toko' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120'
         ], [
             'nama_toko.required' => 'Nama toko harus diisi',
             'nama_toko.max' => 'Nama toko maksimal 255 karakter',
@@ -49,15 +50,24 @@ class PengaturanUmumController extends Controller
             'deskripsi.string' => 'Deskripsi harus berupa teks',
             'logo.image' => 'File harus berupa gambar',
             'logo.mimes' => 'Format gambar harus jpeg, png, jpg, atau gif',
-            'logo.max' => 'Ukuran gambar maksimal 2MB'
+            'logo.max' => 'Ukuran gambar maksimal 2MB',
+            'foto_toko.image' => 'File foto toko harus berupa gambar',
+            'foto_toko.mimes' => 'Format foto toko harus jpeg, png, jpg, atau gif',
+            'foto_toko.max' => 'Ukuran foto toko maksimal 5MB'
         ]);
 
-        $data = $request->except('logo');
+        $data = $request->except(['logo', 'foto_toko']);
 
         // Handle logo upload
         if ($request->hasFile('logo')) {
             $logoPath = $request->file('logo')->store('pengaturan', 'public');
             $data['logo'] = $logoPath;
+        }
+
+        // Handle foto toko upload
+        if ($request->hasFile('foto_toko')) {
+            $fotoTokoPath = $request->file('foto_toko')->store('pengaturan', 'public');
+            $data['foto_toko'] = $fotoTokoPath;
         }
 
         $pengaturan = PengaturanUmum::create($data);
@@ -97,7 +107,8 @@ class PengaturanUmumController extends Controller
             'no_telepon' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
             'deskripsi' => 'nullable|string',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'foto_toko' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120'
         ], [
             'nama_toko.required' => 'Nama toko harus diisi',
             'nama_toko.max' => 'Nama toko maksimal 255 karakter',
@@ -108,10 +119,13 @@ class PengaturanUmumController extends Controller
             'deskripsi.string' => 'Deskripsi harus berupa teks',
             'logo.image' => 'File harus berupa gambar',
             'logo.mimes' => 'Format gambar harus jpeg, png, jpg, atau gif',
-            'logo.max' => 'Ukuran gambar maksimal 2MB'
+            'logo.max' => 'Ukuran gambar maksimal 2MB',
+            'foto_toko.image' => 'File foto toko harus berupa gambar',
+            'foto_toko.mimes' => 'Format foto toko harus jpeg, png, jpg, atau gif',
+            'foto_toko.max' => 'Ukuran foto toko maksimal 5MB'
         ]);
 
-        $data = $request->except('logo');
+        $data = $request->except(['logo', 'foto_toko']);
 
         // Handle logo upload
         if ($request->hasFile('logo')) {
@@ -122,6 +136,17 @@ class PengaturanUmumController extends Controller
 
             $logoPath = $request->file('logo')->store('pengaturan', 'public');
             $data['logo'] = $logoPath;
+        }
+
+        // Handle foto toko upload
+        if ($request->hasFile('foto_toko')) {
+            // Delete old foto toko if exists
+            if ($pengaturanUmum->foto_toko && Storage::disk('public')->exists($pengaturanUmum->foto_toko)) {
+                Storage::disk('public')->delete($pengaturanUmum->foto_toko);
+            }
+
+            $fotoTokoPath = $request->file('foto_toko')->store('pengaturan', 'public');
+            $data['foto_toko'] = $fotoTokoPath;
         }
 
         $pengaturanUmum->update($data);

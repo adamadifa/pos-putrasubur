@@ -87,7 +87,8 @@ class LaporanPiutangController extends Controller
                 // Calculate piutang for each penjualan
                 $piutangs = $penjualanList->map(function ($penjualan) {
                     $totalBayar = $penjualan->pembayaranPenjualan->sum('jumlah_bayar');
-                    $sisaPiutang = $penjualan->total - $totalBayar;
+                    $totalSetelahDiskon = $penjualan->total - $penjualan->diskon; // Gunakan total setelah diskon
+                    $sisaPiutang = $totalSetelahDiskon - $totalBayar;
 
                     // Determine status
                     $status = 'belum_bayar';
@@ -101,7 +102,7 @@ class LaporanPiutangController extends Controller
                         'no_faktur' => $penjualan->no_faktur,
                         'tanggal' => $penjualan->tanggal,
                         'pelanggan' => $penjualan->pelanggan->nama ?? 'Tidak ada',
-                        'total' => $penjualan->total,
+                        'total' => $totalSetelahDiskon, // Gunakan total setelah diskon
                         'terbayar' => $totalBayar,
                         'sisa' => $sisaPiutang,
                         'status' => $status
@@ -230,7 +231,8 @@ class LaporanPiutangController extends Controller
             // Calculate piutang for each penjualan
             $piutangs = $penjualanList->map(function ($penjualan) {
                 $totalBayar = $penjualan->pembayaranPenjualan->sum('jumlah_bayar');
-                $sisaPiutang = $penjualan->total - $totalBayar;
+                $totalSetelahDiskon = $penjualan->total - $penjualan->diskon; // Gunakan total setelah diskon
+                $sisaPiutang = $totalSetelahDiskon - $totalBayar;
 
                 // Determine status
                 $status = 'belum_bayar';
@@ -244,7 +246,7 @@ class LaporanPiutangController extends Controller
                     'no_faktur' => $penjualan->no_faktur,
                     'tanggal' => $penjualan->tanggal,
                     'pelanggan' => $penjualan->pelanggan->nama ?? 'Tidak ada',
-                    'total' => $penjualan->total,
+                    'total' => $totalSetelahDiskon, // Gunakan total setelah diskon
                     'terbayar' => $totalBayar,
                     'sisa' => $sisaPiutang,
                     'status' => $status

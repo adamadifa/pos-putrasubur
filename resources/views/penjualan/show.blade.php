@@ -1451,17 +1451,21 @@
             });
         }
 
+
+
         function generateInvoiceData() {
             const invoiceLines = [];
 
             // Header
             invoiceLines.push("\x1B\x40"); // Initialize printer
-            @if ($pengaturanUmum->logo_url)
-                // Logo (if available) - QZ Tray will handle image from URL
-                invoiceLines.push("\x1B\x61\x01"); // Center align
-                invoiceLines.push("{{ $pengaturanUmum->logo_url }}"); // Logo URL for QZ Tray
-                invoiceLines.push("\n");
-            @endif
+            // @if ($pengaturanUmum->logo_url)
+            //     invoiceLines.push({
+            //         type: 'pixel',
+            //         format: 'image',
+            //         flavor: 'base64',
+            //         data: getBase64FromUrl('{{ $pengaturanUmum->logo_url }}')
+            //     });
+            // @endif
             invoiceLines.push("\x1B\x61\x01"); // Center align
             invoiceLines.push("{{ $pengaturanUmum->nama_toko }}\n");
             @if ($pengaturanUmum->deskripsi)
