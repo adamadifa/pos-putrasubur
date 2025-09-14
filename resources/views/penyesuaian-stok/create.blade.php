@@ -71,7 +71,7 @@
             <!-- Form Card -->
             <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-8">
                 <form action="{{ route('penyesuaian-stok.store') }}" method="POST" id="penyesuaianForm">
-                    @csrf
+                    @csrfn
 
                     <div class="space-y-8">
                         <!-- Informasi Dasar -->
