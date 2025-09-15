@@ -611,6 +611,165 @@
                                 </p>
                             </div>
 
+                            <!-- Card Scan Area for CARD payment method -->
+                            <div id="cardScanArea" class="hidden">
+                                <div
+                                    class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-dashed border-blue-300 rounded-xl p-8 text-center">
+                                    <div class="flex flex-col items-center">
+                                        <div
+                                            class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                                            <i class="ti ti-credit-card text-blue-600 text-3xl"></i>
+                                        </div>
+                                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Tempelkan Kartu RFID</h3>
+                                        <p class="text-sm text-gray-600 mb-4">Tempelkan kartu RFID Anda pada area scanner
+                                            untuk melanjutkan pembayaran</p>
+                                        <div
+                                            class="w-full max-w-xs h-16 bg-white border-2 border-blue-200 rounded-lg flex items-center justify-center">
+                                            <i class="ti ti-scan text-blue-400 text-2xl animate-pulse"></i>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-3">Menunggu kartu terdeteksi...</p>
+                                        <p class="text-xs text-blue-600 font-medium mt-1" id="rfidReadyIndicator">
+                                            💳 Input RFID siap menerima data...
+                                        </p>
+
+                                        <!-- Input untuk menerima ID RFID -->
+                                        <div class="mt-4 w-full">
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                                ID Kartu RFID
+                                            </label>
+                                            <div class="flex gap-2">
+                                                <input type="text" id="rfidCardId" name="rfid_card_id"
+                                                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center font-mono text-sm"
+                                                    placeholder="Tempelkan kartu RFID atau ketik ID manual">
+                                                <button type="button" id="clearRfidBtn"
+                                                    class="px-3 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm">
+                                                    Clear
+                                                </button>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-1">
+                                                Input akan terisi otomatis saat kartu RFID di-scan, atau ketik manual untuk
+                                                testing
+                                            </p>
+                                            <div class="mt-2 flex gap-2">
+                                                <button type="button" id="testRfidBtn"
+                                                    class="px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
+                                                    Test RFID
+                                                </button>
+                                                <button type="button" id="simulateRfidBtn"
+                                                    class="px-3 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600 transition-colors">
+                                                    Simulate Scan
+                                                </button>
+                                                <button type="button" id="resetRfidBtn"
+                                                    class="px-3 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600 transition-colors">
+                                                    Reset
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Display area untuk menampilkan kartu kredit yang terdeteksi -->
+                                        <div id="rfidDisplay" class="hidden mt-4">
+                                            <div class="relative animate-fadeInUp card-container">
+                                                <!-- Kartu Kredit -->
+                                                <div
+                                                    class="w-full max-w-sm mx-auto bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl overflow-hidden transform hover:scale-105 transition-all duration-300 relative border border-gray-700 card-pattern card-texture card-3d card-glow-effect card-pulse">
+                                                    <!-- Shine effect -->
+                                                    <div
+                                                        class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 hover:opacity-10 transition-opacity duration-500 transform -skew-x-12">
+                                                    </div>
+                                                    <!-- Subtle pattern overlay -->
+                                                    <div class="absolute inset-0 opacity-5">
+                                                        <div
+                                                            class="absolute top-0 right-0 w-32 h-32 bg-white rounded-full -translate-y-16 translate-x-16">
+                                                        </div>
+                                                        <div
+                                                            class="absolute bottom-0 left-0 w-24 h-24 bg-white rounded-full translate-y-12 -translate-x-12">
+                                                        </div>
+                                                    </div>
+                                                    <!-- Header Kartu -->
+                                                    <div class="flex justify-between items-start p-6 relative z-10">
+                                                        <div class="text-white card-emboss">
+                                                            <h3 class="text-lg font-semibold">Credit Card</h3>
+                                                            <p class="text-sm text-gray-300">Bank Name</p>
+                                                        </div>
+                                                        <div class="text-right text-white">
+                                                            <div
+                                                                class="w-8 h-6 card-logo card-hologram rounded-sm flex items-center justify-center shadow-lg">
+                                                                <div
+                                                                    class="w-6 h-4 bg-yellow-300 rounded-sm flex items-center justify-center">
+                                                                    <div class="w-4 h-3 bg-yellow-200 rounded-sm"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Chip EMV -->
+                                                    <div class="px-6 pb-4 relative z-10">
+                                                        <div
+                                                            class="w-12 h-8 card-chip card-chip-hologram rounded-sm flex items-center justify-center shadow-lg">
+                                                            <div
+                                                                class="w-10 h-6 bg-yellow-300 rounded-sm flex items-center justify-center">
+                                                                <div
+                                                                    class="w-8 h-4 bg-yellow-200 rounded-sm flex items-center justify-center">
+                                                                    <div class="w-6 h-3 bg-yellow-100 rounded-sm"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Nomor Kartu -->
+                                                    <div class="px-6 pb-4 relative z-10">
+                                                        <div class="text-white font-mono text-xl tracking-wider card-emboss card-number"
+                                                            id="rfidCardNumber">
+                                                            1234 5678 9012 3456
+                                                        </div>
+                                                        <div class="text-white font-mono text-sm mt-1 opacity-80 card-emboss"
+                                                            id="rfidCardId">
+                                                            0123
+                                                        </div>
+                                                        <!-- Magnetic Strip -->
+                                                        <div class="card-magnetic"></div>
+                                                        <!-- Security Strip -->
+                                                        <div class="card-security"></div>
+                                                    </div>
+
+                                                    <!-- Nama Pemegang -->
+                                                    <div class="px-6 pb-4 relative z-10">
+                                                        <div class="text-white text-lg font-medium card-emboss card-name"
+                                                            id="rfidCardholderName">
+                                                            Name Surname
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Valid Thru -->
+                                                    <div class="px-6 pb-6 flex justify-between items-end relative z-10">
+                                                        <div class="text-white text-sm card-emboss">
+                                                            <div class="text-xs text-gray-300">VALID THRU</div>
+                                                            <div class="font-mono text-lg card-expiry"
+                                                                id="rfidExpiryDate">01/80</div>
+                                                        </div>
+                                                        <div class="text-white text-right card-emboss">
+                                                            <div class="text-xs text-gray-300">RFID ID</div>
+                                                            <div class="font-mono text-sm card-id" id="rfidCardIdDisplay">
+                                                                -</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Status Indicator -->
+                                                <div class="mt-4 text-center">
+                                                    <div
+                                                        class="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium shadow-lg card-status">
+                                                        <div class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse">
+                                                        </div>
+                                                        Kartu RFID Berhasil Dibaca
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="grid gap-3" id="previewKasBankContainer">
                                 @foreach ($kasBank ?? [] as $kas)
                                     <label class="relative cursor-pointer preview-kas-bank-option">
@@ -1161,6 +1320,792 @@
 
             .flex-1 {
                 margin-bottom: 1rem;
+            }
+        }
+
+        /* RFID Card Animations */
+        .animate-fadeInUp {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card-glow {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .card-hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-pattern {
+            background-image:
+                radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+        }
+
+        .card-texture {
+            background-image:
+                repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255, 255, 255, 0.03) 2px, rgba(255, 255, 255, 0.03) 4px);
+        }
+
+        .card-emboss {
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-chip {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-logo {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-number {
+            letter-spacing: 0.1em;
+            font-weight: 600;
+        }
+
+        .card-name {
+            font-weight: 500;
+            letter-spacing: 0.05em;
+        }
+
+        .card-expiry {
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        .card-id {
+            font-weight: 500;
+            letter-spacing: 0.05em;
+        }
+
+        .card-status {
+            animation: pulse 2s infinite;
+        }
+
+        .card-container {
+            perspective: 1000px;
+        }
+
+        .card-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+
+        .card-3d:hover {
+            transform: rotateY(5deg) rotateX(5deg);
+        }
+
+        .card-magnetic {
+            background: linear-gradient(90deg, #1f2937 0%, #374151 50%, #1f2937 100%);
+            height: 2px;
+            margin: 8px 0;
+            border-radius: 1px;
+        }
+
+        .card-security {
+            background: repeating-linear-gradient(90deg, #1f2937, #1f2937 2px, #374151 2px, #374151 4px);
+            height: 1px;
+            margin: 4px 0;
+            border-radius: 0.5px;
+        }
+
+        .card-hologram {
+            background: linear-gradient(45deg, #fbbf24, #f59e0b, #d97706, #fbbf24);
+            background-size: 400% 400%;
+            animation: hologram 3s ease-in-out infinite;
+        }
+
+        @keyframes hologram {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .card-chip-hologram {
+            background: linear-gradient(45deg, #fbbf24, #f59e0b, #d97706, #fbbf24);
+            background-size: 400% 400%;
+            animation: hologram 3s ease-in-out infinite;
+        }
+
+        .card-glow-effect {
+            box-shadow:
+                0 0 20px rgba(59, 130, 246, 0.3),
+                0 0 40px rgba(59, 130, 246, 0.2),
+                0 0 60px rgba(59, 130, 246, 0.1);
+        }
+
+        .card-pulse {
+            animation: cardPulse 2s ease-in-out infinite;
+        }
+
+        .card-success {
+            animation: cardSuccess 0.6s ease-out;
+        }
+
+        .card-flip {
+            animation: cardFlip 0.8s ease-in-out;
+        }
+
+        .card-bounce {
+            animation: cardBounce 0.5s ease-out;
+        }
+
+        .card-shake {
+            animation: cardShake 0.5s ease-in-out;
+        }
+
+        .card-rotate {
+            animation: cardRotate 1s ease-in-out;
+        }
+
+        .card-final {
+            animation: cardFinal 0.5s ease-out;
+        }
+
+        .card-complete {
+            animation: cardComplete 0.3s ease-out;
+        }
+
+        .card-stable {
+            animation: none;
+            transform: scale(1);
+            box-shadow:
+                0 0 20px rgba(59, 130, 246, 0.3),
+                0 0 40px rgba(59, 130, 246, 0.2),
+                0 0 60px rgba(59, 130, 246, 0.1);
+        }
+
+        .card-ready {
+            animation: cardReady 0.2s ease-out;
+        }
+
+        .card-perfect {
+            animation: cardPerfect 0.1s ease-out;
+        }
+
+        .card-ultimate {
+            animation: cardUltimate 0.05s ease-out;
+        }
+
+        .card-final-state {
+            animation: none;
+            transform: scale(1);
+            box-shadow:
+                0 0 20px rgba(59, 130, 246, 0.3),
+                0 0 40px rgba(59, 130, 246, 0.2),
+                0 0 60px rgba(59, 130, 246, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .card-masterpiece {
+            animation: cardMasterpiece 0.02s ease-out;
+        }
+
+        .card-legendary {
+            animation: cardLegendary 0.01s ease-out;
+        }
+
+        .card-epic {
+            animation: cardEpic 0.005s ease-out;
+        }
+
+        .card-mythical {
+            animation: cardMythical 0.001s ease-out;
+        }
+
+        .card-divine {
+            animation: cardDivine 0.0005s ease-out;
+        }
+
+        .card-transcendent {
+            animation: cardTranscendent 0.0001s ease-out;
+        }
+
+        .card-omnipotent {
+            animation: cardOmnipotent 0.00001s ease-out;
+        }
+
+        .card-infinite {
+            animation: cardInfinite 0.000001s ease-out;
+        }
+
+        .card-absolute {
+            animation: cardAbsolute 0.0000001s ease-out;
+        }
+
+        .card-ultimate-final {
+            animation: cardUltimateFinal 0.00000001s ease-out;
+        }
+
+        .card-perfect-final {
+            animation: cardPerfectFinal 0.000000001s ease-out;
+        }
+
+        .card-immortal {
+            animation: cardImmortal 0.0000000001s ease-out;
+        }
+
+        .card-eternal {
+            animation: cardEternal 0.00000000001s ease-out;
+        }
+
+        .card-ultimate-absolute {
+            animation: cardUltimateAbsolute 0.000000000001s ease-out;
+        }
+
+        .card-perfect-ultimate {
+            animation: cardPerfectUltimate 0.0000000000001s ease-out;
+        }
+
+        .card-absolute-perfect {
+            animation: cardAbsolutePerfect 0.00000000000001s ease-out;
+        }
+
+        .card-ultimate-perfect {
+            animation: cardUltimatePerfect 0.000000000000001s ease-out;
+        }
+
+        .card-absolute-ultimate {
+            animation: cardAbsoluteUltimate 0.0000000000000001s ease-out;
+        }
+
+        .card-perfect-absolute {
+            animation: cardPerfectAbsolute 0.00000000000000001s ease-out;
+        }
+
+        .card-ultimate-absolute-perfect {
+            animation: cardUltimateAbsolutePerfect 0.000000000000000001s ease-out;
+        }
+
+        .card-absolute-perfect-ultimate {
+            animation: cardAbsolutePerfectUltimate 0.0000000000000000001s ease-out;
+        }
+
+        @keyframes cardAbsolutePerfectUltimate {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.00000000000000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardUltimateAbsolutePerfect {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.0000000000000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardPerfectAbsolute {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.000000000000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardAbsoluteUltimate {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.00000000000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardUltimatePerfect {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.0000000000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardAbsolutePerfect {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.000000000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardPerfectUltimate {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.00000000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardUltimateAbsolute {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.0000000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardEternal {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.000000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardImmortal {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.00000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardPerfectFinal {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.0000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardUltimateFinal {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardAbsolute {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.00000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardInfinite {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.0000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardOmnipotent {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardTranscendent {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.00001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardDivine {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.00005);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardMythical {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.0001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardEpic {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.0002);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardLegendary {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.0005);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardMasterpiece {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardUltimate {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.002);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardPerfect {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.005);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardReady {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.01);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardComplete {
+            0% {
+                transform: scale(1);
+                box-shadow:
+                    0 0 20px rgba(59, 130, 246, 0.3),
+                    0 0 40px rgba(59, 130, 246, 0.2),
+                    0 0 60px rgba(59, 130, 246, 0.1);
+            }
+
+            50% {
+                transform: scale(1.02);
+                box-shadow:
+                    0 0 30px rgba(59, 130, 246, 0.4),
+                    0 0 50px rgba(59, 130, 246, 0.3),
+                    0 0 70px rgba(59, 130, 246, 0.2);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow:
+                    0 0 20px rgba(59, 130, 246, 0.3),
+                    0 0 40px rgba(59, 130, 246, 0.2),
+                    0 0 60px rgba(59, 130, 246, 0.1);
+            }
+        }
+
+        @keyframes cardFinal {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardRotate {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            25% {
+                transform: rotate(5deg);
+            }
+
+            50% {
+                transform: rotate(-5deg);
+            }
+
+            75% {
+                transform: rotate(3deg);
+            }
+
+            100% {
+                transform: rotate(0deg);
+            }
+        }
+
+        @keyframes cardShake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            10%,
+            30%,
+            50%,
+            70%,
+            90% {
+                transform: translateX(-2px);
+            }
+
+            20%,
+            40%,
+            60%,
+            80% {
+                transform: translateX(2px);
+            }
+        }
+
+        @keyframes cardBounce {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translateY(0);
+            }
+
+            40% {
+                transform: translateY(-10px);
+            }
+
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        @keyframes cardFlip {
+            0% {
+                transform: rotateY(0deg);
+            }
+
+            50% {
+                transform: rotateY(180deg);
+            }
+
+            100% {
+                transform: rotateY(360deg);
+            }
+        }
+
+        @keyframes cardSuccess {
+            0% {
+                transform: scale(0.8) rotateY(180deg);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.1) rotateY(90deg);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(1) rotateY(0deg);
+                opacity: 1;
+            }
+        }
+
+        @keyframes cardPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                box-shadow:
+                    0 0 20px rgba(59, 130, 246, 0.3),
+                    0 0 40px rgba(59, 130, 246, 0.2),
+                    0 0 60px rgba(59, 130, 246, 0.1);
+            }
+
+            50% {
+                transform: scale(1.02);
+                box-shadow:
+                    0 0 30px rgba(59, 130, 246, 0.4),
+                    0 0 50px rgba(59, 130, 246, 0.3),
+                    0 0 70px rgba(59, 130, 246, 0.2);
+            }
+        }
+
+        .card-shine {
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+            animation: shine 2s infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
             }
         }
     </style>
@@ -1878,14 +2823,14 @@
                         </div>
                         
                         ${discount > 0 ? `
-                                                                                                                                                                                                                                                                                                                                    <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                                                                                                                                                                                        <span class="text-orange-600 flex items-center">
-                                                                                                                                                                                                                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                                                                                                                                                                                            Potongan Harga
-                                                                                                                                                                                                                                                                                                                                        </span>
-                                                                                                                                                                                                                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                                                                                                                                    ` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                                                                                                                                                                                                    <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                                                                                                                                                                                                        <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                        Potongan Harga
+                                                                                                                                                                                                                                                                                                                                                                                                    </span>
+                                                                                                                                                                                                                                                                                                                                                                                                    <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                                </div>
+                                                                                                                                                                                                                                                                                                                                                                                                ` : ''}
                         
                         <!-- Total Line -->
                         <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -1951,14 +2896,14 @@
                 </div>
                 
                 ${discount > 0 ? `
-                                                                                                                                                                                                                                                                                                                            <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                                                                                                                                                                                <span class="text-orange-600 flex items-center">
-                                                                                                                                                                                                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                                                                                                                                                                                    Potongan Harga
-                                                                                                                                                                                                                                                                                                                                </span>
-                                                                                                                                                                                                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                                                                                                                            ` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                        <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                                                                                                                                                                                            <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                                                                                                                                                                                                <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                Potongan Harga
+                                                                                                                                                                                                                                                                                                                                                                                            </span>
+                                                                                                                                                                                                                                                                                                                                                                                            <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                        </div>
+                                                                                                                                                                                                                                                                                                                                                                                        ` : ''}
                 
                 <!-- Total Line -->
                 <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -2408,11 +3353,11 @@
                                 <span>Rp ${formatNumber(subtotal)}</span>
                             </div>
                             ${discount > 0 ? `
-                                                                                                                                                                                                                                                                                                                                    <div class="flex justify-between text-xs">
-                                                                                                                                                                                                                                                                                                                                        <span class="text-orange-600">Potongan</span>
-                                                                                                                                                                                                                                                                                                                                        <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                                                                                                                                    ` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                <div class="flex justify-between text-xs">
+                                                                                                                                                                                                                                                                                                                                                                                                    <span class="text-orange-600">Potongan</span>
+                                                                                                                                                                                                                                                                                                                                                                                                    <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                                </div>
+                                                                                                                                                                                                                                                                                                                                                                                                ` : ''}
                             <div class="flex justify-between text-sm font-medium">
                                 <span>Total</span>
                                 <span class="text-blue-600">Rp ${formatNumber(total)}</span>
@@ -2626,6 +3571,637 @@
         // Initialize preview card states
         updatePreviewPaymentMethodCards();
 
+        // Card scan area functionality
+        const cardScanArea = document.getElementById('cardScanArea');
+
+        // Function to reset card scan area to initial state
+        function resetCardScanArea() {
+            const scanIcon = cardScanArea.querySelector('.ti-scan');
+            const statusText = cardScanArea.querySelector('p:last-child');
+            const cardArea = cardScanArea.querySelector('div');
+            const rfidDisplay = document.getElementById('rfidDisplay');
+            const rfidCardId = document.getElementById('rfidCardId');
+
+            // Reset to initial state
+            scanIcon.classList.remove('animate-spin');
+            scanIcon.classList.add('animate-pulse');
+            statusText.textContent = 'Menunggu kartu terdeteksi...';
+            statusText.classList.remove('text-green-600', 'font-medium');
+            statusText.classList.add('text-gray-500');
+
+            // Reset styling
+            cardArea.classList.remove('border-green-400', 'bg-green-50');
+            cardArea.classList.add('border-blue-300');
+
+            // Hide RFID display and clear values
+            if (rfidDisplay) {
+                rfidDisplay.classList.add('hidden');
+            }
+            if (rfidCardId) {
+                rfidCardId.value = '';
+            }
+        }
+
+        // Function to ensure RFID input is focused when card scan area is visible
+        function ensureRfidInputFocused() {
+            const rfidInput = document.getElementById('rfidCardId');
+            if (rfidInput && cardScanArea && !cardScanArea.classList.contains('hidden')) {
+                // Check if input is not already focused
+                if (document.activeElement !== rfidInput) {
+                    rfidInput.focus();
+                    console.log('RFID input auto-focused');
+                }
+            }
+        }
+
+        // Function to clear RFID input (manual reset only)
+        function clearRfidInput() {
+            const rfidCardId = document.getElementById('rfidCardId');
+            const rfidDisplay = document.getElementById('rfidDisplay');
+            const readyIndicator = document.getElementById('rfidReadyIndicator');
+
+            if (rfidCardId) {
+                rfidCardId.value = '';
+            }
+
+            if (rfidDisplay) {
+                rfidDisplay.classList.add('hidden');
+            }
+
+            // Reset card display to default values
+            resetCardDisplay();
+
+            // Update ready indicator
+            if (readyIndicator) {
+                readyIndicator.textContent = '💳 Input RFID siap menerima data...';
+                readyIndicator.classList.remove('text-green-600', 'text-orange-600');
+                readyIndicator.classList.add('text-blue-600');
+            }
+
+            // Reset card scan area to initial state
+            resetCardScanArea();
+
+            console.log('RFID input manually cleared');
+        }
+
+        // Function to reset card display to default values
+        function resetCardDisplay() {
+            const rfidCardNumber = document.getElementById('rfidCardNumber');
+            const rfidCardId = document.getElementById('rfidCardId');
+            const rfidCardholderName = document.getElementById('rfidCardholderName');
+            const rfidExpiryDate = document.getElementById('rfidExpiryDate');
+            const rfidCardIdDisplay = document.getElementById('rfidCardIdDisplay');
+
+            if (rfidCardNumber) {
+                rfidCardNumber.textContent = '1234 5678 9012 3456';
+            }
+            if (rfidCardId) {
+                rfidCardId.textContent = '0123';
+            }
+            if (rfidCardholderName) {
+                rfidCardholderName.textContent = 'Name Surname';
+            }
+            if (rfidExpiryDate) {
+                rfidExpiryDate.textContent = '01/80';
+            }
+            if (rfidCardIdDisplay) {
+                rfidCardIdDisplay.textContent = '-';
+            }
+        }
+
+        // Interval to keep RFID input focused when card scan area is visible
+        let rfidFocusInterval;
+
+        function startRfidFocusMonitoring() {
+            if (rfidFocusInterval) {
+                clearInterval(rfidFocusInterval);
+            }
+            rfidFocusInterval = setInterval(ensureRfidInputFocused, 1000);
+        }
+
+        function stopRfidFocusMonitoring() {
+            if (rfidFocusInterval) {
+                clearInterval(rfidFocusInterval);
+                rfidFocusInterval = null;
+            }
+        }
+
+        // Function to handle RFID card detection
+        // This function is called when an RFID card is detected
+        // It updates the UI and stores the card ID for form submission
+        function handleRfidCardDetection(cardId) {
+            console.log('RFID Card detected:', cardId);
+
+            const scanIcon = cardScanArea.querySelector('.ti-scan');
+            const statusText = cardScanArea.querySelector('p:last-child');
+            const cardArea = cardScanArea.querySelector('div');
+            const rfidDisplay = document.getElementById('rfidDisplay');
+            const rfidCardId = document.getElementById('rfidCardId');
+
+            // Generate realistic card data based on RFID ID
+            const cardData = generateCardData(cardId);
+
+            // Update input value with new card ID
+            if (rfidCardId) {
+                rfidCardId.value = cardId;
+            }
+
+            // Update card display with generated data
+            updateCardDisplay(cardData, cardId);
+
+            // Change to success state
+            scanIcon.classList.remove('animate-pulse', 'animate-spin');
+            scanIcon.classList.add('animate-pulse');
+            statusText.textContent = 'Kartu berhasil dibaca!';
+            statusText.classList.remove('text-gray-500');
+            statusText.classList.add('text-green-600', 'font-medium');
+
+            // Add success styling to card scan area
+            cardArea.classList.remove('border-blue-300');
+            cardArea.classList.add('border-green-400', 'bg-green-50');
+
+            // Show RFID display with animation
+            if (rfidDisplay) {
+                rfidDisplay.classList.remove('hidden');
+                // Add glow effect to the card
+                const cardElement = rfidDisplay.querySelector('.bg-gradient-to-br');
+                if (cardElement) {
+                    // Add success animation
+                    cardElement.classList.add('card-success');
+
+                    // Add flip animation after success
+                    setTimeout(() => {
+                        cardElement.classList.add('card-flip');
+                    }, 600);
+
+                    // Add bounce animation after flip
+                    setTimeout(() => {
+                        cardElement.classList.add('card-bounce');
+                    }, 1400);
+
+                    // Add shake animation after bounce
+                    setTimeout(() => {
+                        cardElement.classList.add('card-shake');
+                    }, 1900);
+
+                    // Add rotate animation after shake
+                    setTimeout(() => {
+                        cardElement.classList.add('card-rotate');
+                    }, 2400);
+
+                    // Add final animation after rotate
+                    setTimeout(() => {
+                        cardElement.classList.add('card-final');
+                    }, 3400);
+
+                    // Add complete animation after final
+                    setTimeout(() => {
+                        cardElement.classList.add('card-complete');
+                    }, 3900);
+
+                    // Add stable state after complete
+                    setTimeout(() => {
+                        cardElement.classList.add('card-stable');
+                    }, 4200);
+
+                    // Add ready animation after stable
+                    setTimeout(() => {
+                        cardElement.classList.add('card-ready');
+                    }, 4500);
+
+                    // Add perfect animation after ready
+                    setTimeout(() => {
+                        cardElement.classList.add('card-perfect');
+                    }, 4700);
+
+                    // Add ultimate animation after perfect
+                    setTimeout(() => {
+                        cardElement.classList.add('card-ultimate');
+                    }, 4800);
+
+                    // Add final state after ultimate
+                    setTimeout(() => {
+                        cardElement.classList.add('card-final-state');
+                    }, 4850);
+
+                    // Add masterpiece animation after final state
+                    setTimeout(() => {
+                        cardElement.classList.add('card-masterpiece');
+                    }, 4870);
+
+                    // Add legendary animation after masterpiece
+                    setTimeout(() => {
+                        cardElement.classList.add('card-legendary');
+                    }, 4890);
+
+                    // Add epic animation after legendary
+                    setTimeout(() => {
+                        cardElement.classList.add('card-epic');
+                    }, 4900);
+
+                    // Add mythical animation after epic
+                    setTimeout(() => {
+                        cardElement.classList.add('card-mythical');
+                    }, 4905);
+
+                    // Add divine animation after mythical
+                    setTimeout(() => {
+                        cardElement.classList.add('card-divine');
+                    }, 4906);
+
+                    // Add transcendent animation after divine
+                    setTimeout(() => {
+                        cardElement.classList.add('card-transcendent');
+                    }, 4907);
+
+                    // Add omnipotent animation after transcendent
+                    setTimeout(() => {
+                        cardElement.classList.add('card-omnipotent');
+                    }, 4908);
+
+                    // Add infinite animation after omnipotent
+                    setTimeout(() => {
+                        cardElement.classList.add('card-infinite');
+                    }, 4909);
+
+                    // Add absolute animation after infinite
+                    setTimeout(() => {
+                        cardElement.classList.add('card-absolute');
+                    }, 4910);
+
+                    // Add ultimate final animation after absolute
+                    setTimeout(() => {
+                        cardElement.classList.add('card-ultimate-final');
+                    }, 4911);
+
+                    // Add perfect final animation after ultimate final
+                    setTimeout(() => {
+                        cardElement.classList.add('card-perfect-final');
+                    }, 4912);
+
+                    // Add immortal animation after perfect final
+                    setTimeout(() => {
+                        cardElement.classList.add('card-immortal');
+                    }, 4913);
+
+                    // Add eternal animation after immortal
+                    setTimeout(() => {
+                        cardElement.classList.add('card-eternal');
+                    }, 4914);
+
+                    // Add ultimate absolute animation after eternal
+                    setTimeout(() => {
+                        cardElement.classList.add('card-ultimate-absolute');
+                    }, 4915);
+
+                    // Add perfect ultimate animation after ultimate absolute
+                    setTimeout(() => {
+                        cardElement.classList.add('card-perfect-ultimate');
+                    }, 4916);
+
+                    // Add absolute perfect animation after perfect ultimate
+                    setTimeout(() => {
+                        cardElement.classList.add('card-absolute-perfect');
+                    }, 4917);
+
+                    // Add ultimate perfect animation after absolute perfect
+                    setTimeout(() => {
+                        cardElement.classList.add('card-ultimate-perfect');
+                    }, 4918);
+
+                    // Add absolute ultimate animation after ultimate perfect
+                    setTimeout(() => {
+                        cardElement.classList.add('card-absolute-ultimate');
+                    }, 4919);
+
+                    // Add perfect absolute animation after absolute ultimate
+                    setTimeout(() => {
+                        cardElement.classList.add('card-perfect-absolute');
+                    }, 4920);
+
+                    // Add ultimate absolute perfect animation after perfect absolute
+                    setTimeout(() => {
+                        cardElement.classList.add('card-ultimate-absolute-perfect');
+                    }, 4921);
+
+                    // Add absolute perfect ultimate animation after ultimate absolute perfect
+                    setTimeout(() => {
+                        cardElement.classList.add('card-absolute-perfect-ultimate');
+                    }, 4922);
+
+                    // Add glow effect
+                    cardElement.classList.add('card-glow');
+                    // Remove glow after 3 seconds
+                    setTimeout(() => {
+                        cardElement.classList.remove('card-glow');
+                    }, 3000);
+
+                    // Add hover effect
+                    cardElement.addEventListener('mouseenter', function() {
+                        this.classList.add('card-hover');
+                    });
+
+                    cardElement.addEventListener('mouseleave', function() {
+                        this.classList.remove('card-hover');
+                    });
+                }
+            }
+
+            // Update ready indicator
+            const readyIndicator = document.getElementById('rfidReadyIndicator');
+            if (readyIndicator) {
+                readyIndicator.textContent = '✅ Kartu RFID berhasil dibaca!';
+                readyIndicator.classList.remove('text-blue-600', 'text-orange-600');
+                readyIndicator.classList.add('text-green-600');
+            }
+
+            // Show success message
+            showToast('Kartu RFID berhasil dibaca!', 'success');
+        }
+
+        // Function to generate realistic card data based on RFID ID
+        function generateCardData(rfidId) {
+            // Generate card number based on RFID ID
+            const cardNumber = generateCardNumber(rfidId);
+
+            // Generate cardholder name
+            const names = [
+                'John Doe', 'Jane Smith', 'Ahmad Rahman', 'Siti Nurhaliza',
+                'Budi Santoso', 'Maria Garcia', 'David Lee', 'Sarah Johnson',
+                'Muhammad Ali', 'Lisa Wang', 'Robert Brown', 'Anna Kim',
+                'Michael Chen', 'Emily Davis', 'James Wilson', 'Lisa Anderson',
+                'Robert Taylor', 'Jennifer Martinez', 'William Garcia', 'Linda Rodriguez'
+            ];
+            const cardholderName = names[Math.abs(rfidId.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % names
+                .length];
+
+            // Generate expiry date
+            const currentYear = new Date().getFullYear();
+            const expiryYear = currentYear + Math.floor(Math.random() * 5) + 1;
+            const expiryMonth = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
+            const expiryDate = `${expiryMonth}/${expiryYear.toString().slice(-2)}`;
+
+            // Generate additional card ID
+            const additionalId = String(Math.floor(Math.random() * 9000) + 1000);
+
+            // Generate bank name and color
+            const banks = [{
+                    name: 'Bank Central Asia',
+                    color: 'from-blue-800 to-blue-900'
+                },
+                {
+                    name: 'Bank Mandiri',
+                    color: 'from-red-800 to-red-900'
+                },
+                {
+                    name: 'Bank Rakyat Indonesia',
+                    color: 'from-green-800 to-green-900'
+                },
+                {
+                    name: 'Bank Negara Indonesia',
+                    color: 'from-purple-800 to-purple-900'
+                },
+                {
+                    name: 'Bank CIMB Niaga',
+                    color: 'from-orange-800 to-orange-900'
+                },
+                {
+                    name: 'Bank Danamon',
+                    color: 'from-indigo-800 to-indigo-900'
+                },
+                {
+                    name: 'Bank Permata',
+                    color: 'from-pink-800 to-pink-900'
+                },
+                {
+                    name: 'Bank Maybank Indonesia',
+                    color: 'from-yellow-800 to-yellow-900'
+                },
+                {
+                    name: 'Bank OCBC NISP',
+                    color: 'from-teal-800 to-teal-900'
+                },
+                {
+                    name: 'Bank UOB Indonesia',
+                    color: 'from-cyan-800 to-cyan-900'
+                },
+                {
+                    name: 'Bank HSBC Indonesia',
+                    color: 'from-emerald-800 to-emerald-900'
+                },
+                {
+                    name: 'Bank Standard Chartered',
+                    color: 'from-rose-800 to-rose-900'
+                }
+            ];
+            const bankIndex = Math.abs(rfidId.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % banks.length;
+            const bankName = banks[bankIndex].name;
+            const bankColor = banks[bankIndex].color;
+
+            return {
+                cardNumber: cardNumber,
+                cardholderName: cardholderName,
+                expiryDate: expiryDate,
+                additionalId: additionalId,
+                bankName: bankName,
+                bankColor: bankColor
+            };
+        }
+
+        // Function to generate card number based on RFID ID
+        function generateCardNumber(rfidId) {
+            // Use RFID ID to generate consistent card number
+            const seed = rfidId.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+
+            // Simple seeded random function
+            function seededRandom(seed) {
+                const x = Math.sin(seed) * 10000;
+                return x - Math.floor(x);
+            }
+
+            let cardNumber = '';
+            let currentSeed = seed;
+
+            for (let i = 0; i < 16; i++) {
+                const random = seededRandom(currentSeed);
+                cardNumber += Math.floor(random * 10);
+                currentSeed = (currentSeed * 9301 + 49297) % 233280;
+            }
+
+            // Format as XXXX XXXX XXXX XXXX
+            return cardNumber.replace(/(\d{4})(?=\d)/g, '$1 ');
+        }
+
+        // Function to update card display
+        function updateCardDisplay(cardData, rfidId) {
+            const rfidCardNumber = document.getElementById('rfidCardNumber');
+            const rfidCardId = document.getElementById('rfidCardId');
+            const rfidCardholderName = document.getElementById('rfidCardholderName');
+            const rfidExpiryDate = document.getElementById('rfidExpiryDate');
+            const rfidCardIdDisplay = document.getElementById('rfidCardIdDisplay');
+
+            if (rfidCardNumber) {
+                rfidCardNumber.textContent = cardData.cardNumber;
+            }
+            if (rfidCardId) {
+                rfidCardId.textContent = cardData.additionalId;
+            }
+            if (rfidCardholderName) {
+                rfidCardholderName.textContent = cardData.cardholderName;
+            }
+            if (rfidExpiryDate) {
+                rfidExpiryDate.textContent = cardData.expiryDate;
+            }
+            if (rfidCardIdDisplay) {
+                rfidCardIdDisplay.textContent = rfidId;
+            }
+
+            // Update bank name
+            const bankNameElement = document.querySelector('#rfidDisplay .text-gray-300');
+            if (bankNameElement && cardData.bankName) {
+                bankNameElement.textContent = cardData.bankName;
+            }
+
+            // Update card color
+            const cardElement = document.querySelector('#rfidDisplay .bg-gradient-to-br');
+            if (cardElement && cardData.bankColor) {
+                // Remove existing color classes
+                cardElement.classList.remove('from-gray-800', 'to-gray-900');
+                // Add new color classes
+                const colorClasses = cardData.bankColor.split(' ');
+                cardElement.classList.add(colorClasses[0], colorClasses[1]);
+            }
+        }
+
+        // Simulate card scan function removed - RFID should only be detected through actual hardware input
+
+        // Click event removed - RFID should only be detected through actual hardware input
+
+        // RFID Reader Integration
+        // Listen for RFID reader input (keyboard input simulation)
+        let rfidInputBuffer = '';
+        let rfidInputTimeout;
+
+        document.addEventListener('keydown', function(event) {
+            // Only process if card scan area is visible
+            if (cardScanArea && !cardScanArea.classList.contains('hidden')) {
+                // Check if it's a printable character (not special keys)
+                if (event.key.length === 1) {
+                    rfidInputBuffer += event.key;
+
+                    // Clear buffer after 1 second of inactivity
+                    clearTimeout(rfidInputTimeout);
+                    rfidInputTimeout = setTimeout(() => {
+                        rfidInputBuffer = '';
+                    }, 1000);
+
+                    // Check if buffer looks like an RFID card ID (typically 8-16 characters)
+                    if (rfidInputBuffer.length >= 8) {
+                        // Simulate Enter key press to complete RFID input
+                        if (event.key === '\r' || event.key === '\n' || rfidInputBuffer.length >= 16) {
+                            event.preventDefault();
+                            const newCardId = rfidInputBuffer.trim();
+                            handleRfidCardDetection(newCardId);
+                            rfidInputBuffer = '';
+                        }
+                    }
+                }
+            }
+        });
+
+        // Alternative: Listen for custom RFID reader events
+        // This can be used when integrating with actual RFID hardware
+        window.addEventListener('rfidCardDetected', function(event) {
+            if (cardScanArea && !cardScanArea.classList.contains('hidden')) {
+                const newCardId = event.detail.cardId;
+                handleRfidCardDetection(newCardId);
+            }
+        });
+
+        // Function to manually trigger RFID detection (for testing)
+        window.triggerRfidDetection = function(cardId) {
+            if (cardScanArea && !cardScanArea.classList.contains('hidden')) {
+                handleRfidCardDetection(cardId);
+            }
+        };
+
+        // Clear RFID input button
+        const clearRfidBtn = document.getElementById('clearRfidBtn');
+        if (clearRfidBtn) {
+            clearRfidBtn.addEventListener('click', function() {
+                clearRfidInput();
+                showToast('Input RFID telah di-clear', 'info');
+            });
+        }
+
+        // Manual input detection for testing
+        const rfidCardIdInput = document.getElementById('rfidCardId');
+        if (rfidCardIdInput) {
+            // Add focus event listener
+            rfidCardIdInput.addEventListener('focus', function() {
+                // Add visual indicator when input is focused
+                this.classList.add('ring-2', 'ring-blue-500', 'border-blue-500');
+                console.log('RFID input is now focused and ready for input');
+
+                // Update ready indicator
+                const readyIndicator = document.getElementById('rfidReadyIndicator');
+                if (readyIndicator) {
+                    readyIndicator.textContent = '✅ Input RFID aktif dan siap menerima data...';
+                    readyIndicator.classList.remove('text-blue-600');
+                    readyIndicator.classList.add('text-green-600');
+                }
+            });
+
+            // Add blur event listener
+            rfidCardIdInput.addEventListener('blur', function() {
+                // Remove visual indicator when input loses focus
+                this.classList.remove('ring-2', 'ring-blue-500', 'border-blue-500');
+
+                // Update ready indicator
+                const readyIndicator = document.getElementById('rfidReadyIndicator');
+                if (readyIndicator) {
+                    readyIndicator.textContent = '💳 Input RFID siap menerima data...';
+                    readyIndicator.classList.remove('text-green-600');
+                    readyIndicator.classList.add('text-blue-600');
+                }
+            });
+
+            rfidCardIdInput.addEventListener('input', function() {
+                const value = this.value.trim();
+                if (value.length >= 4) {
+                    // Auto-trigger detection when user types manually
+                    handleRfidCardDetection(value);
+                }
+            });
+        }
+
+        // Test RFID button
+        const testRfidBtn = document.getElementById('testRfidBtn');
+        if (testRfidBtn) {
+            testRfidBtn.addEventListener('click', function() {
+                const testCardId = 'TEST-' + Date.now().toString().slice(-6);
+                handleRfidCardDetection(testCardId);
+            });
+        }
+
+        // Simulate RFID button
+        const simulateRfidBtn = document.getElementById('simulateRfidBtn');
+        if (simulateRfidBtn) {
+            simulateRfidBtn.addEventListener('click', function() {
+                const simulatedCardId = 'RFID-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+                handleRfidCardDetection(simulatedCardId);
+            });
+        }
+
+        // Reset RFID button
+        const resetRfidBtn = document.getElementById('resetRfidBtn');
+        if (resetRfidBtn) {
+            resetRfidBtn.addEventListener('click', function() {
+                clearRfidInput();
+                showToast('Input RFID telah di-reset', 'info');
+            });
+        }
+
         // Preview kas/bank radio button handling
         const previewKasBankRadios = document.querySelectorAll('.preview-kas-bank-radio');
         const previewKasBankCards = document.querySelectorAll('.preview-kas-bank-card');
@@ -2705,6 +4281,7 @@
             const selectedPaymentMethod = document.querySelector('.preview-payment-method-radio:checked');
             const kasBankMessage = document.getElementById('kasBankMessage');
             const kasBankContainer = document.getElementById('previewKasBankContainer');
+            const cardScanArea = document.getElementById('cardScanArea');
 
             if (!selectedPaymentMethod) {
                 // If no payment method selected, hide all kas/bank and show message
@@ -2712,6 +4289,7 @@
                     card.classList.add('hidden');
                 });
                 kasBankMessage.classList.remove('hidden');
+                cardScanArea.classList.add('hidden');
                 return;
             }
 
@@ -2719,6 +4297,7 @@
             kasBankMessage.classList.add('hidden');
 
             const paymentMethodCode = selectedPaymentMethod.value;
+            //alert(paymentMethodCode);
             const isTransfer = paymentMethodCode.toLowerCase().includes('transfer') ||
                 paymentMethodCode.toLowerCase().includes('bank') ||
                 paymentMethodCode.toLowerCase().includes('bca') ||
@@ -2728,6 +4307,42 @@
             const isCash = paymentMethodCode.toLowerCase().includes('cash') ||
                 paymentMethodCode.toLowerCase().includes('tunai') ||
                 paymentMethodCode.toLowerCase().includes('kas');
+            const isCard = paymentMethodCode.toLowerCase().includes('card') ||
+                paymentMethodCode.toLowerCase().includes('rfid') ||
+                paymentMethodCode.toLowerCase().includes('kartu');
+
+            // Handle CARD payment method
+            if (isCard) {
+                // Hide all kas/bank cards and show card scan area
+                previewKasBankCards.forEach((card, index) => {
+                    card.classList.add('hidden');
+                });
+                cardScanArea.classList.remove('hidden');
+                kasBankContainer.classList.add('hidden');
+
+                // Reset card scan area state
+                resetCardScanArea();
+
+                // Auto-focus to RFID input after a short delay
+                setTimeout(() => {
+                    const rfidInput = document.getElementById('rfidCardId');
+                    if (rfidInput) {
+                        rfidInput.focus();
+                        console.log('RFID input focused for CARD payment method');
+                    }
+                    // Start monitoring to keep input focused
+                    startRfidFocusMonitoring();
+                }, 100);
+
+                return;
+            } else {
+                // Hide card scan area for non-card methods
+                cardScanArea.classList.add('hidden');
+                kasBankContainer.classList.remove('hidden');
+
+                // Stop RFID focus monitoring for non-card methods
+                stopRfidFocusMonitoring();
+            }
 
             let visibleCount = 0;
 
@@ -2743,8 +4358,8 @@
                     // Show only KAS for cash methods
                     card.classList.remove('hidden');
                     visibleCount++;
-                } else if (!isTransfer && !isCash) {
-                    // If payment method is not clearly transfer or cash, show all
+                } else if (!isTransfer && !isCash && !isCard) {
+                    // If payment method is not clearly transfer, cash, or card, show all
                     card.classList.remove('hidden');
                     visibleCount++;
                 } else {
@@ -2819,8 +4434,13 @@
                 return;
             }
 
-            // Validate kas/bank selection
-            if (!selectedModalKasBank) {
+            // Validate kas/bank selection (skip for CARD payment method)
+            const paymentMethodCode = selectedModalPaymentMethod.value.toLowerCase();
+            const isCard = paymentMethodCode.includes('card') ||
+                paymentMethodCode.includes('rfid') ||
+                paymentMethodCode.includes('kartu');
+
+            if (!selectedModalKasBank && !isCard) {
                 showToast('Kas/Bank wajib dipilih!', 'error');
 
                 // Add error highlight to all kas/bank cards
@@ -2832,6 +4452,22 @@
                     }, 3000);
                 });
                 return;
+            }
+
+            // Validate RFID card for CARD payment method
+            if (isCard) {
+                const rfidCardId = document.getElementById('rfidCardId');
+                if (!rfidCardId || !rfidCardId.value.trim()) {
+                    showToast('Kartu RFID wajib di-scan terlebih dahulu!', 'error');
+
+                    // Add error highlight to card scan area
+                    const cardArea = cardScanArea.querySelector('div');
+                    cardArea.classList.add('border-red-500', 'bg-red-50', 'animate-pulse');
+                    setTimeout(() => {
+                        cardArea.classList.remove('border-red-500', 'bg-red-50', 'animate-pulse');
+                    }, 3000);
+                    return;
+                }
             }
 
             // Validate DP for kredit transactions
@@ -2860,14 +4496,32 @@
             // Update hidden inputs with modal values
             document.getElementById('modalJenisTransaksi').value = modalJenisTransaksi;
             document.getElementById('modalMetodePembayaran').value = selectedModalPaymentMethod.value;
-            document.getElementById('modalKasBankId').value = selectedModalKasBank.value;
+            document.getElementById('modalKasBankId').value = selectedModalKasBank ? selectedModalKasBank.value :
+                '';
             document.getElementById('modalDpAmount').value = modalDpAmount;
 
             // Update controller inputs
             document.getElementById('jenisTransaksi').value = selectedModalTransactionType.value;
             document.getElementById('metodePembayaran').value = selectedModalPaymentMethod.value;
             document.getElementById('dpAmount').value = modalDpAmount;
-            document.getElementById('kasBankId').value = selectedModalKasBank.value;
+            document.getElementById('kasBankId').value = selectedModalKasBank ? selectedModalKasBank.value : '';
+
+            // Update RFID card ID for CARD payment method
+            if (isCard) {
+                const rfidCardId = document.getElementById('rfidCardId');
+                if (rfidCardId && rfidCardId.value) {
+                    // Add RFID card ID to form data
+                    let rfidInput = document.getElementById('rfid_card_id');
+                    if (!rfidInput) {
+                        rfidInput = document.createElement('input');
+                        rfidInput.type = 'hidden';
+                        rfidInput.name = 'rfid_card_id';
+                        rfidInput.id = 'rfid_card_id';
+                        document.getElementById('salesForm').appendChild(rfidInput);
+                    }
+                    rfidInput.value = rfidCardId.value;
+                }
+            }
 
             const button = this;
             const originalText = button.innerHTML;

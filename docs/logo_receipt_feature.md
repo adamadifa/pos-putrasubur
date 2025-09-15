@@ -134,3 +134,10 @@ Logo diambil dari `pengaturan_umum` table:
 -   `PengaturanUmum` model dengan `getLogoUrlAttribute()` accessor
 -   Global `$pengaturanUmum` variable via Service Provider
 
+
+
+
+
+
+
+

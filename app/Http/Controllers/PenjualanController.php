@@ -766,6 +766,7 @@ class PenjualanController extends Controller
             $autoPrint = session('printer_settings.auto_print', false);
 
             if (!$autoPrint) {
+                Log::info('Auto-print disabled, skipping receipt generation');
                 return; // Auto-print tidak aktif
             }
 
@@ -783,11 +784,16 @@ class PenjualanController extends Controller
             // Log untuk debugging
             Log::info('Auto-print receipt triggered', [
                 'no_faktur' => $penjualan->no_faktur,
-                'printer_settings' => session('printer_settings', [])
+                'printer_settings' => session('printer_settings', []),
+                'receipt_data_size' => count($receiptData['receipt_data'] ?? [])
             ]);
 
             // Simpan receipt data ke session untuk diambil frontend
             session(['pending_receipt' => $receiptData]);
+
+            Log::info('Pending receipt saved to session', [
+                'no_faktur' => $penjualan->no_faktur
+            ]);
         } catch (\Exception $e) {
             Log::error('Auto-print receipt failed: ' . $e->getMessage());
         }
@@ -798,86 +804,101 @@ class PenjualanController extends Controller
      */
     private function generateReceiptData($penjualan)
     {
-        $receiptLines = [];
+        try {
+            $receiptLines = [];
 
-        // Header
-        $receiptLines[] = "\x1B\x40"; // Initialize printer
-        $receiptLines[] = "\x1B\x61\x01"; // Center align
-        $receiptLines[] = "PUTRA SUBUR\n";
-        $receiptLines[] = "Toko Kelontong\n";
-        $receiptLines[] = "Jl. Raya No. 123\n";
-        $receiptLines[] = "Telp: 021-1234567\n";
-        $receiptLines[] = "================================\n";
+            // Header
+            $receiptLines[] = "\x1B\x40"; // Initialize printer
+            $receiptLines[] = "\x1B\x61\x01"; // Center align
+            $receiptLines[] = "PUTRA SUBUR\n";
+            $receiptLines[] = "Toko Kelontong\n";
+            $receiptLines[] = "Jl. Raya No. 123\n";
+            $receiptLines[] = "Telp: 021-1234567\n";
+            $receiptLines[] = "================================\n";
 
-        // Transaction info
-        $receiptLines[] = "\x1B\x61\x00"; // Left align
-        $receiptLines[] = "No. Faktur: " . $penjualan->no_faktur . "\n";
-        $receiptLines[] = "Tanggal: " . $penjualan->tanggal->format('d/m/Y H:i') . "\n";
-        $receiptLines[] = "Pelanggan: " . $penjualan->pelanggan->nama . "\n";
-        $receiptLines[] = "Kasir: " . $penjualan->kasir->name . "\n";
-        $receiptLines[] = "================================\n";
+            // Transaction info
+            $receiptLines[] = "\x1B\x61\x00"; // Left align
+            $receiptLines[] = "No. Faktur: " . $penjualan->no_faktur . "\n";
+            $receiptLines[] = "Tanggal: " . $penjualan->tanggal->format('d/m/Y H:i') . "\n";
+            $receiptLines[] = "Pelanggan: " . ($penjualan->pelanggan->nama ?? 'Umum') . "\n";
+            $receiptLines[] = "Kasir: " . ($penjualan->kasir->name ?? 'Unknown') . "\n";
+            $receiptLines[] = "================================\n";
 
-        // Items
-        foreach ($penjualan->detailPenjualan as $detail) {
-            $produkNama = substr($detail->produk->nama_produk, 0, 20);
-            $qty = number_format($detail->qty, 0);
-            $harga = number_format($detail->harga, 0);
-            $subtotal = number_format($detail->subtotal, 0);
-            $satuan = $detail->produk->satuan->nama ?? 'pcs';
+            // Items
+            foreach ($penjualan->detailPenjualan as $detail) {
+                $produkNama = substr($detail->produk->nama_produk, 0, 20);
+                $qty = number_format($detail->qty, 0);
+                $harga = number_format($detail->harga, 0);
+                $subtotal = number_format($detail->subtotal, 0);
+                $satuan = $detail->produk->satuan->nama ?? 'pcs';
 
-            $receiptLines[] = $produkNama . "\n";
-            $receiptLines[] = sprintf(
-                "  %s %s x %s = %s\n",
-                $qty,
-                $satuan,
-                $harga,
-                $subtotal
-            );
+                $receiptLines[] = $produkNama . "\n";
+                $receiptLines[] = sprintf(
+                    "  %s %s x %s = %s\n",
+                    $qty,
+                    $satuan,
+                    $harga,
+                    $subtotal
+                );
 
-            if ($detail->discount > 0) {
-                $receiptLines[] = sprintf("  Diskon: -%s\n", number_format($detail->discount, 0));
+                if ($detail->discount > 0) {
+                    $receiptLines[] = sprintf("  Diskon: -%s\n", number_format($detail->discount, 0));
+                }
             }
-        }
 
-        $receiptLines[] = "--------------------------------\n";
+            $receiptLines[] = "--------------------------------\n";
 
-        // Totals
-        $subtotalSebelumDiskon = $penjualan->total + $penjualan->diskon;
-        $receiptLines[] = sprintf("Subtotal: Rp %s\n", number_format($subtotalSebelumDiskon, 0));
+            // Totals
+            $subtotalSebelumDiskon = $penjualan->total + $penjualan->diskon;
+            $receiptLines[] = sprintf("Subtotal: Rp %s\n", number_format($subtotalSebelumDiskon, 0));
 
-        if ($penjualan->diskon > 0) {
-            $receiptLines[] = sprintf("Diskon: -Rp %s\n", number_format($penjualan->diskon, 0));
-        }
-
-        $receiptLines[] = sprintf("TOTAL: Rp %s\n", number_format($penjualan->total, 0));
-
-        // Payment info
-        $totalBayar = $penjualan->pembayaranPenjualan->sum('jumlah');
-        if ($totalBayar > 0) {
-            $receiptLines[] = sprintf("Bayar: Rp %s\n", number_format($totalBayar, 0));
-
-            if ($totalBayar >= $penjualan->total) {
-                $kembalian = $totalBayar - $penjualan->total;
-                $receiptLines[] = sprintf("Kembalian: Rp %s\n", number_format($kembalian, 0));
-            } else {
-                $sisa = $penjualan->total - $totalBayar;
-                $receiptLines[] = sprintf("Sisa: Rp %s\n", number_format($sisa, 0));
+            if ($penjualan->diskon > 0) {
+                $receiptLines[] = sprintf("Diskon: -Rp %s\n", number_format($penjualan->diskon, 0));
             }
+
+            $receiptLines[] = sprintf("TOTAL: Rp %s\n", number_format($penjualan->total, 0));
+
+            // Payment info
+            $totalBayar = $penjualan->pembayaranPenjualan->sum('jumlah_bayar');
+            if ($totalBayar > 0) {
+                $receiptLines[] = sprintf("Bayar: Rp %s\n", number_format($totalBayar, 0));
+
+                if ($totalBayar >= $penjualan->total) {
+                    $kembalian = $totalBayar - $penjualan->total;
+                    $receiptLines[] = sprintf("Kembalian: Rp %s\n", number_format($kembalian, 0));
+                } else {
+                    $sisa = $penjualan->total - $totalBayar;
+                    $receiptLines[] = sprintf("Sisa: Rp %s\n", number_format($sisa, 0));
+                }
+            }
+
+            $receiptLines[] = "================================\n";
+            $receiptLines[] = "\x1B\x61\x01"; // Center align
+            $receiptLines[] = "Terima kasih atas kunjungan Anda\n";
+            $receiptLines[] = "Barang yang sudah dibeli\n";
+            $receiptLines[] = "tidak dapat dikembalikan\n";
+            $receiptLines[] = "\n\n\n";
+            $receiptLines[] = "\x1D\x56\x42\x00"; // Cut paper
+
+            return [
+                'no_faktur' => $penjualan->no_faktur,
+                'receipt_data' => $receiptLines,
+                'timestamp' => now()->toISOString()
+            ];
+        } catch (\Exception $e) {
+            Log::error('Error generating receipt data: ' . $e->getMessage(), [
+                'penjualan_id' => $penjualan->id ?? 'unknown',
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // Return minimal receipt data to prevent complete failure
+            return [
+                'no_faktur' => $penjualan->no_faktur ?? 'UNKNOWN',
+                'receipt_data' => ["Error generating receipt: " . $e->getMessage()],
+                'timestamp' => now()->toISOString(),
+                'error' => true
+            ];
         }
-
-        $receiptLines[] = "================================\n";
-        $receiptLines[] = "\x1B\x61\x01"; // Center align
-        $receiptLines[] = "Terima kasih atas kunjungan Anda\n";
-        $receiptLines[] = "Barang yang sudah dibeli\n";
-        $receiptLines[] = "tidak dapat dikembalikan\n";
-        $receiptLines[] = "\n\n\n";
-        $receiptLines[] = "\x1D\x56\x42\x00"; // Cut paper
-
-        return [
-            'no_faktur' => $penjualan->no_faktur,
-            'receipt_data' => $receiptLines,
-            'timestamp' => now()->toISOString()
-        ];
     }
 
     /**
@@ -885,21 +906,30 @@ class PenjualanController extends Controller
      */
     public function getPendingReceipt(): JsonResponse
     {
-        $pendingReceipt = session('pending_receipt');
+        try {
+            $pendingReceipt = session('pending_receipt');
 
-        if ($pendingReceipt) {
-            // Clear dari session setelah diambil
-            session()->forget('pending_receipt');
+            if ($pendingReceipt) {
+                // Clear dari session setelah diambil
+                session()->forget('pending_receipt');
+
+                return response()->json([
+                    'success' => true,
+                    'receipt' => $pendingReceipt
+                ]);
+            }
 
             return response()->json([
-                'success' => true,
-                'receipt' => $pendingReceipt
+                'success' => false,
+                'message' => 'No pending receipt'
             ]);
-        }
+        } catch (\Exception $e) {
+            Log::error('Error in getPendingReceipt: ' . $e->getMessage());
 
-        return response()->json([
-            'success' => false,
-            'message' => 'No pending receipt'
-        ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving pending receipt: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

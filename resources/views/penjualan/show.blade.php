@@ -1133,9 +1133,19 @@
                     credentials: 'same-origin'
                 })
                 .then(response => {
+                    console.log('Response status:', response.status);
+                    console.log('Response headers:', response.headers);
+
                     if (!response.ok) {
                         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                     }
+
+                    // Check if response is actually JSON
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        throw new Error('Response is not JSON. Content-Type: ' + contentType);
+                    }
+
                     return response.json();
                 })
                 .then(data => {
@@ -1149,7 +1159,16 @@
                 })
                 .catch(error => {
                     console.error('Error checking pending receipt:', error);
-                    showToast('Error checking pending receipt: ' + error.message, 'error');
+                    console.error('Error details:', {
+                        name: error.name,
+                        message: error.message,
+                        stack: error.stack
+                    });
+
+                    // Don't show error toast for missing pending receipt
+                    if (!error.message.includes('Response is not JSON')) {
+                        showToast('Error checking pending receipt: ' + error.message, 'error');
+                    }
                 });
         }
 
