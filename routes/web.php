@@ -24,6 +24,7 @@ use App\Http\Controllers\LaporanPiutangController;
 use App\Http\Controllers\LaporanHutangController;
 use App\Http\Controllers\PenyesuaianStokController;
 use App\Http\Controllers\PengaturanUmumController;
+use App\Http\Controllers\UserController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -85,12 +86,23 @@ Route::middleware('auth')->group(function () {
     // Master Data Produk Routes
     Route::resource('produk', ProdukController::class);
 
+    // User Management Routes (Admin only)
+    Route::prefix('users')->name('users.')->middleware('role:admin')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('index');
+        Route::get('/create', [UserController::class, 'create'])->name('create');
+        Route::post('/', [UserController::class, 'store'])->name('store');
+        Route::get('/{encryptedId}', [UserController::class, 'show'])->name('show');
+        Route::get('/{encryptedId}/edit', [UserController::class, 'edit'])->name('edit');
+        Route::put('/{encryptedId}', [UserController::class, 'update'])->name('update');
+        Route::delete('/{encryptedId}', [UserController::class, 'destroy'])->name('destroy');
+    });
 
-    // Kategori Produk Routes
-    Route::resource('kategori', \App\Http\Controllers\KategoriController::class)->except(['show']);
 
-    // Satuan Routes
-    Route::resource('satuan', \App\Http\Controllers\SatuanController::class)->except(['show']);
+    // Kategori Produk Routes (Admin & Kasir only)
+    Route::resource('kategori', \App\Http\Controllers\KategoriController::class)->except(['show'])->middleware('role:admin,kasir');
+
+    // Satuan Routes (Admin & Kasir only)
+    Route::resource('satuan', \App\Http\Controllers\SatuanController::class)->except(['show'])->middleware('role:admin,kasir');
 
     // Metode Pembayaran Routes
     Route::prefix('metode-pembayaran')->name('metode-pembayaran.')->group(function () {
@@ -116,8 +128,8 @@ Route::middleware('auth')->group(function () {
     });
     Route::get('pelanggan/search', [PelangganController::class, 'search'])->name('pelanggan.search');
 
-    // Supplier Routes
-    Route::prefix('supplier')->name('supplier.')->group(function () {
+    // Supplier Routes (Admin & Kasir only)
+    Route::prefix('supplier')->name('supplier.')->middleware('role:admin,kasir')->group(function () {
         Route::get('/', [SupplierController::class, 'index'])->name('index');
         Route::get('/create', [SupplierController::class, 'create'])->name('create');
         Route::post('/', [SupplierController::class, 'store'])->name('store');
@@ -128,14 +140,14 @@ Route::middleware('auth')->group(function () {
     });
     Route::get('supplier/search', [SupplierController::class, 'getSuppliers'])->name('supplier.search');
 
-    // Kas & Bank Routes
-    Route::resource('kas-bank', KasBankController::class);
+    // Kas & Bank Routes (Admin & Kasir only)
+    Route::resource('kas-bank', KasBankController::class)->middleware('role:admin,kasir');
 
-    // Transaksi Kas & Bank Routes
-    Route::resource('transaksi-kas-bank', TransaksiKasBankController::class);
-    Route::resource('saldo-awal-bulanan', SaldoAwalBulananController::class)->except(['show', 'edit', 'update']);
-    Route::resource('saldo-awal-produk', SaldoAwalProdukController::class)->except(['show', 'edit', 'update']);
-    Route::resource('penyesuaian-stok', PenyesuaianStokController::class);
+    // Transaksi Kas & Bank Routes (Admin & Kasir only)
+    Route::resource('transaksi-kas-bank', TransaksiKasBankController::class)->middleware('role:admin,kasir');
+    Route::resource('saldo-awal-bulanan', SaldoAwalBulananController::class)->except(['show', 'edit', 'update'])->middleware('role:admin,kasir');
+    Route::resource('saldo-awal-produk', SaldoAwalProdukController::class)->except(['show', 'edit', 'update'])->middleware('role:admin,kasir');
+    Route::resource('penyesuaian-stok', PenyesuaianStokController::class)->middleware('role:admin,kasir');
 
     // Saldo Awal Bulanan API Routes
     Route::post('saldo-awal-bulanan/get-saldo-akhir', [SaldoAwalBulananController::class, 'getSaldoAkhirBulanSebelumnya'])->name('saldo-awal-bulanan.get-saldo-akhir');
@@ -144,8 +156,8 @@ Route::middleware('auth')->group(function () {
     Route::post('saldo-awal-produk/get-all-produk', [SaldoAwalProdukController::class, 'getAllProduk'])->name('saldo-awal-produk.get-all-produk');
     Route::get('saldo-awal-produk/{saldoAwalProduk}/detail', [SaldoAwalProdukController::class, 'showDetail'])->name('saldo-awal-produk.detail');
 
-    // Transaksi Pembelian Routes
-    Route::prefix('pembelian')->name('pembelian.')->group(function () {
+    // Transaksi Pembelian Routes (Admin & Kasir only)
+    Route::prefix('pembelian')->name('pembelian.')->middleware('role:admin,kasir')->group(function () {
         Route::get('/', [PembelianController::class, 'index'])->name('index');
         Route::get('/create', [PembelianController::class, 'create'])->name('create');
         Route::post('/', [PembelianController::class, 'store'])->name('store');
@@ -156,8 +168,8 @@ Route::middleware('auth')->group(function () {
     });
     Route::get('pembelian/search', [PembelianController::class, 'getPembelian'])->name('pembelian.search');
 
-    // Pembayaran Pembelian Routes
-    Route::prefix('pembayaran-pembelian')->name('pembayaran-pembelian.')->group(function () {
+    // Pembayaran Pembelian Routes (Admin & Kasir only)
+    Route::prefix('pembayaran-pembelian')->name('pembayaran-pembelian.')->middleware('role:admin,kasir')->group(function () {
         Route::get('/', [PembayaranPembelianController::class, 'index'])->name('index');
         Route::get('/create', [PembayaranPembelianController::class, 'create'])->name('create');
         Route::post('/', [PembayaranPembelianController::class, 'store'])->name('store');
@@ -169,8 +181,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/{id}/print', [PembayaranPembelianController::class, 'print'])->name('print');
     });
 
-    // Laporan Routes
-    Route::prefix('laporan')->name('laporan.')->group(function () {
+    // Laporan Routes (Admin & Manager only)
+    Route::prefix('laporan')->name('laporan.')->middleware('role:admin,manager')->group(function () {
         Route::get('/penjualan', function () {
             return view('laporan.penjualan');
         })->name('penjualan');
@@ -185,8 +197,8 @@ Route::middleware('auth')->group(function () {
         })->name('pembelian');
     });
 
-    // Printer Settings Routes
-    Route::prefix('printer')->name('printer.')->group(function () {
+    // Printer Settings Routes (Admin & Manager only)
+    Route::prefix('printer')->name('printer.')->middleware('role:admin,manager')->group(function () {
         Route::get('/settings', [PrinterSettingController::class, 'index'])->name('settings');
         Route::post('/test-print', [PrinterSettingController::class, 'testPrint'])->name('test-print');
         Route::get('/get-settings', [PrinterSettingController::class, 'getSettings'])->name('get-settings');
@@ -201,8 +213,8 @@ Route::middleware('auth')->group(function () {
         });
     });
 
-    // Laporan Routes
-    Route::prefix('laporan')->name('laporan.')->group(function () {
+    // Laporan Routes (Admin, Manager & Kasir)
+    Route::prefix('laporan')->name('laporan.')->middleware('role:admin,manager,kasir')->group(function () {
         Route::get('/', function () {
             return view('laporan.index');
         })->name('index');
@@ -244,8 +256,8 @@ Route::middleware('auth')->group(function () {
         });
     });
 
-    // Pengaturan Umum
-    Route::prefix('pengaturan-umum')->name('pengaturan-umum.')->group(function () {
+    // Pengaturan Umum (Admin & Manager only)
+    Route::prefix('pengaturan-umum')->name('pengaturan-umum.')->middleware('role:admin,manager')->group(function () {
         Route::get('/', [PengaturanUmumController::class, 'index'])->name('index');
         Route::get('/create', [PengaturanUmumController::class, 'create'])->name('create');
         Route::post('/', [PengaturanUmumController::class, 'store'])->name('store');
