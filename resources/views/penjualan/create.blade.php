@@ -633,7 +633,7 @@
                                         </p>
 
                                         <!-- Input untuk menerima ID RFID -->
-                                        <div class="mt-4 w-full">
+                                        <div class="mt-4 w-full hidden">
                                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                                 ID Kartu RFID
                                             </label>
@@ -650,6 +650,17 @@
                                                 Input akan terisi otomatis saat kartu RFID di-scan, atau ketik manual untuk
                                                 testing
                                             </p>
+                                            <!-- Progress indicator untuk 10 karakter -->
+                                            <div class="mt-2">
+                                                <div class="flex justify-between items-center mb-1">
+                                                    <span class="text-xs text-gray-600">Progress RFID ID:</span>
+                                                    <span class="text-xs text-gray-600" id="rfidProgress">0/10</span>
+                                                </div>
+                                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                                                        id="rfidProgressBar" style="width: 0%"></div>
+                                                </div>
+                                            </div>
                                             <div class="mt-2 flex gap-2">
                                                 <button type="button" id="testRfidBtn"
                                                     class="px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
@@ -670,8 +681,8 @@
                                         <div id="rfidDisplay" class="hidden mt-4">
                                             <div class="relative animate-fadeInUp card-container">
                                                 <!-- Kartu Kredit -->
-                                                <div
-                                                    class="w-full max-w-sm mx-auto bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl overflow-hidden transform hover:scale-105 transition-all duration-300 relative border border-gray-700 card-pattern card-texture card-3d card-glow-effect card-pulse">
+                                                <div class="w-full max-w-lg mx-auto bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl shadow-2xl overflow-hidden transform hover:scale-105 transition-all duration-300 relative border border-blue-500 card-pattern card-texture card-3d card-glow-effect card-pulse"
+                                                    style="aspect-ratio: 1.586; min-width: 400px; min-height: 252px;">
                                                     <!-- Shine effect -->
                                                     <div
                                                         class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 hover:opacity-10 transition-opacity duration-500 transform -skew-x-12">
@@ -686,10 +697,11 @@
                                                         </div>
                                                     </div>
                                                     <!-- Header Kartu -->
-                                                    <div class="flex justify-between items-start p-6 relative z-10">
+                                                    <div class="flex justify-between items-start p-5 relative z-10">
                                                         <div class="text-white card-emboss">
-                                                            <h3 class="text-lg font-semibold">Credit Card</h3>
-                                                            <p class="text-sm text-gray-300">Bank Name</p>
+                                                            <h3 class="text-lg font-semibold">Kartu Siswa</h3>
+                                                            <p class="text-sm text-gray-300"
+                                                                style="color:white !important;">Koperasi Tsarwah</p>
                                                         </div>
                                                         <div class="text-right text-white">
                                                             <div
@@ -702,46 +714,52 @@
                                                         </div>
                                                     </div>
 
-                                                    <!-- Chip EMV -->
-                                                    <div class="px-6 pb-4 relative z-10">
-                                                        <div
-                                                            class="w-12 h-8 card-chip card-chip-hologram rounded-sm flex items-center justify-center shadow-lg">
+                                                    <!-- Chip EMV dan Nomor Kartu -->
+                                                    <div class="px-5 pb-2 relative z-10 flex items-start gap-4">
+                                                        <!-- Chip EMV -->
+                                                        <div class="flex-shrink-0">
                                                             <div
-                                                                class="w-10 h-6 bg-yellow-300 rounded-sm flex items-center justify-center">
+                                                                class="w-12 h-8 card-chip card-chip-hologram rounded-sm flex items-center justify-center shadow-lg">
                                                                 <div
-                                                                    class="w-8 h-4 bg-yellow-200 rounded-sm flex items-center justify-center">
-                                                                    <div class="w-6 h-3 bg-yellow-100 rounded-sm"></div>
+                                                                    class="w-10 h-6 bg-yellow-300 rounded-sm flex items-center justify-center">
+                                                                    <div
+                                                                        class="w-8 h-4 bg-yellow-200 rounded-sm flex items-center justify-center">
+                                                                        <div class="w-6 h-3 bg-yellow-100 rounded-sm">
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
+
+                                                        <!-- Nomor Kartu -->
+                                                        <div class="flex-1">
+                                                            <div class="text-white font-mono text-xl tracking-wider card-emboss card-number"
+                                                                id="rfidCardNumber">
+                                                                3960 4221 7700 0000
+                                                            </div>
+
+                                                        </div>
                                                     </div>
 
-                                                    <!-- Nomor Kartu -->
-                                                    <div class="px-6 pb-4 relative z-10">
-                                                        <div class="text-white font-mono text-xl tracking-wider card-emboss card-number"
-                                                            id="rfidCardNumber">
-                                                            1234 5678 9012 3456
+                                                    <!-- Nama Pemegang -->
+                                                    <div class="px-5 pb-2 relative z-30">
+                                                        <div class="text-white text-xl font-bold card-emboss card-name"
+                                                            id="rfidCardholderName"
+                                                            style="text-shadow: 2px 2px 4px rgba(0,0,0,0.8); background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 4px; display: inline-block;">
+                                                            DAVID LEE
                                                         </div>
-                                                        <div class="text-white font-mono text-sm mt-1 opacity-80 card-emboss"
-                                                            id="rfidCardId">
-                                                            0123
-                                                        </div>
+                                                    </div>
+
+                                                    <!-- Decorative Elements -->
+                                                    {{-- <div class="px-5 pb-2 relative z-5">
                                                         <!-- Magnetic Strip -->
                                                         <div class="card-magnetic"></div>
                                                         <!-- Security Strip -->
                                                         <div class="card-security"></div>
-                                                    </div>
-
-                                                    <!-- Nama Pemegang -->
-                                                    <div class="px-6 pb-4 relative z-10">
-                                                        <div class="text-white text-lg font-medium card-emboss card-name"
-                                                            id="rfidCardholderName">
-                                                            Name Surname
-                                                        </div>
-                                                    </div>
+                                                    </div> --}}
 
                                                     <!-- Valid Thru -->
-                                                    <div class="px-6 pb-6 flex justify-between items-end relative z-10">
+                                                    <div class="px-5 pb-5 flex justify-between items-end relative z-10">
                                                         <div class="text-white text-sm card-emboss">
                                                             <div class="text-xs text-gray-300">VALID THRU</div>
                                                             <div class="font-mono text-lg card-expiry"
@@ -755,15 +773,6 @@
                                                     </div>
                                                 </div>
 
-                                                <!-- Status Indicator -->
-                                                <div class="mt-4 text-center">
-                                                    <div
-                                                        class="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium shadow-lg card-status">
-                                                        <div class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse">
-                                                        </div>
-                                                        Kartu RFID Berhasil Dibaca
-                                                    </div>
-                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1380,8 +1389,13 @@
         }
 
         .card-name {
-            font-weight: 500;
-            letter-spacing: 0.05em;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #ffffff !important;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            position: relative;
+            z-index: 30;
         }
 
         .card-expiry {
@@ -2823,14 +2837,14 @@
                         </div>
                         
                         ${discount > 0 ? `
-                                                                                                                                                                                                                                                                                                                                                                                                <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                                                                                                                                                                                                                                                    <span class="text-orange-600 flex items-center">
-                                                                                                                                                                                                                                                                                                                                                                                                        <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                        Potongan Harga
-                                                                                                                                                                                                                                                                                                                                                                                                    </span>
-                                                                                                                                                                                                                                                                                                                                                                                                    <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                                                                                                                                                                                                </div>
-                                                                                                                                                                                                                                                                                                                                                                                                ` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Potongan Harga
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ` : ''}
                         
                         <!-- Total Line -->
                         <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -2896,14 +2910,14 @@
                 </div>
                 
                 ${discount > 0 ? `
-                                                                                                                                                                                                                                                                                                                                                                                        <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                                                                                                                                                                                                                                            <span class="text-orange-600 flex items-center">
-                                                                                                                                                                                                                                                                                                                                                                                                <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                Potongan Harga
-                                                                                                                                                                                                                                                                                                                                                                                            </span>
-                                                                                                                                                                                                                                                                                                                                                                                            <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                                                                                                                                                                                        </div>
-                                                                                                                                                                                                                                                                                                                                                                                        ` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Potongan Harga
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ` : ''}
                 
                 <!-- Total Line -->
                 <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -3353,11 +3367,11 @@
                                 <span>Rp ${formatNumber(subtotal)}</span>
                             </div>
                             ${discount > 0 ? `
-                                                                                                                                                                                                                                                                                                                                                                                                <div class="flex justify-between text-xs">
-                                                                                                                                                                                                                                                                                                                                                                                                    <span class="text-orange-600">Potongan</span>
-                                                                                                                                                                                                                                                                                                                                                                                                    <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                                                                                                                                                                                                </div>
-                                                                                                                                                                                                                                                                                                                                                                                                ` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <div class="flex justify-between text-xs">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <span class="text-orange-600">Potongan</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ` : ''}
                             <div class="flex justify-between text-sm font-medium">
                                 <span>Total</span>
                                 <span class="text-blue-600">Rp ${formatNumber(total)}</span>
@@ -3585,7 +3599,7 @@
             // Reset to initial state
             scanIcon.classList.remove('animate-spin');
             scanIcon.classList.add('animate-pulse');
-            statusText.textContent = 'Menunggu kartu terdeteksi...';
+            // statusText.textContent = 'Menunggu kartu terdeteksi...';
             statusText.classList.remove('text-green-600', 'font-medium');
             statusText.classList.add('text-gray-500');
 
@@ -3624,6 +3638,13 @@
                 rfidCardId.value = '';
             }
 
+            // Clear stored RFID ID
+            storedRfidId = '';
+            console.log('Stored RFID ID cleared');
+
+            // Reset progress bar
+            updateRfidProgress(0);
+
             if (rfidDisplay) {
                 rfidDisplay.classList.add('hidden');
             }
@@ -3659,7 +3680,7 @@
                 rfidCardId.textContent = '0123';
             }
             if (rfidCardholderName) {
-                rfidCardholderName.textContent = 'Name Surname';
+                rfidCardholderName.textContent = 'DAVID LEE';
             }
             if (rfidExpiryDate) {
                 rfidExpiryDate.textContent = '01/80';
@@ -3712,7 +3733,6 @@
             // Change to success state
             scanIcon.classList.remove('animate-pulse', 'animate-spin');
             scanIcon.classList.add('animate-pulse');
-            statusText.textContent = 'Kartu berhasil dibaca!';
             statusText.classList.remove('text-gray-500');
             statusText.classList.add('text-green-600', 'font-medium');
 
@@ -3924,16 +3944,8 @@
             // Generate card number based on RFID ID
             const cardNumber = generateCardNumber(rfidId);
 
-            // Generate cardholder name
-            const names = [
-                'John Doe', 'Jane Smith', 'Ahmad Rahman', 'Siti Nurhaliza',
-                'Budi Santoso', 'Maria Garcia', 'David Lee', 'Sarah Johnson',
-                'Muhammad Ali', 'Lisa Wang', 'Robert Brown', 'Anna Kim',
-                'Michael Chen', 'Emily Davis', 'James Wilson', 'Lisa Anderson',
-                'Robert Taylor', 'Jennifer Martinez', 'William Garcia', 'Linda Rodriguez'
-            ];
-            const cardholderName = names[Math.abs(rfidId.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % names
-                .length];
+            // Generate cardholder name - using dummy name
+            const cardholderName = 'DAVID LEE';
 
             // Generate expiry date
             const currentYear = new Date().getFullYear();
@@ -4011,21 +4023,32 @@
         // Function to generate card number based on RFID ID
         function generateCardNumber(rfidId) {
             // Use RFID ID to generate consistent card number
-            const seed = rfidId.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+            // Start with fixed prefix like in the image: 3960
+            let cardNumber = '3960';
 
-            // Simple seeded random function
-            function seededRandom(seed) {
-                const x = Math.sin(seed) * 10000;
-                return x - Math.floor(x);
-            }
+            // Convert RFID ID to numbers and use for the remaining 12 digits
+            const rfidNumeric = rfidId.toString().replace(/\D/g, ''); // Remove non-digits
 
-            let cardNumber = '';
-            let currentSeed = seed;
+            if (rfidNumeric.length >= 4) {
+                // Use RFID digits directly if available, pad or truncate to 12 digits
+                const remainingDigits = rfidNumeric.padEnd(12, '0').substring(0, 12);
+                cardNumber += remainingDigits;
+            } else {
+                // Use RFID ID to generate seed for consistent numbers
+                const seed = rfidId.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
 
-            for (let i = 0; i < 16; i++) {
-                const random = seededRandom(currentSeed);
-                cardNumber += Math.floor(random * 10);
-                currentSeed = (currentSeed * 9301 + 49297) % 233280;
+                // Simple seeded random function
+                function seededRandom(seed) {
+                    const x = Math.sin(seed) * 10000;
+                    return x - Math.floor(x);
+                }
+
+                let currentSeed = seed;
+                for (let i = 0; i < 12; i++) {
+                    const random = seededRandom(currentSeed);
+                    cardNumber += Math.floor(random * 10);
+                    currentSeed = (currentSeed * 9301 + 49297) % 233280;
+                }
             }
 
             // Format as XXXX XXXX XXXX XXXX
@@ -4053,23 +4076,29 @@
                 rfidExpiryDate.textContent = cardData.expiryDate;
             }
             if (rfidCardIdDisplay) {
-                rfidCardIdDisplay.textContent = rfidId;
+                // Gunakan storedRfidId jika tersedia, jika tidak gunakan rfidId
+                rfidCardIdDisplay.textContent = storedRfidId || rfidId;
             }
 
             // Update bank name
             const bankNameElement = document.querySelector('#rfidDisplay .text-gray-300');
-            if (bankNameElement && cardData.bankName) {
-                bankNameElement.textContent = cardData.bankName;
-            }
+            // if (bankNameElement && cardData.bankName) {
+            //     bankNameElement.textContent = cardData.bankName;
+            // }
 
-            // Update card color
+            // Update card color - Force blue gradient
             const cardElement = document.querySelector('#rfidDisplay .bg-gradient-to-br');
-            if (cardElement && cardData.bankColor) {
-                // Remove existing color classes
-                cardElement.classList.remove('from-gray-800', 'to-gray-900');
-                // Add new color classes
-                const colorClasses = cardData.bankColor.split(' ');
-                cardElement.classList.add(colorClasses[0], colorClasses[1]);
+            if (cardElement) {
+                // Remove any existing color classes
+                cardElement.classList.remove('from-gray-800', 'to-gray-900', 'from-blue-800', 'to-blue-900', 'from-red-800',
+                    'to-red-900', 'from-green-800', 'to-green-900', 'from-yellow-800', 'to-yellow-900',
+                    'from-purple-800', 'to-purple-900', 'from-indigo-800', 'to-indigo-900', 'from-pink-800',
+                    'to-pink-900', 'from-teal-800', 'to-teal-900', 'from-orange-800', 'to-orange-900', 'from-cyan-800',
+                    'to-cyan-900', 'from-emerald-800', 'to-emerald-900', 'from-lime-800', 'to-lime-900',
+                    'from-amber-800', 'to-amber-900', 'from-violet-800', 'to-violet-900', 'from-fuchsia-800',
+                    'to-fuchsia-900', 'from-rose-800', 'to-rose-900');
+                // Always use blue gradient
+                cardElement.classList.add('from-blue-600', 'to-blue-800');
             }
         }
 
@@ -4081,6 +4110,34 @@
         // Listen for RFID reader input (keyboard input simulation)
         let rfidInputBuffer = '';
         let rfidInputTimeout;
+        let storedRfidId = ''; // Variabel untuk menyimpan RFID ID 10 karakter
+
+        // Function untuk update progress bar RFID
+        function updateRfidProgress(currentLength) {
+            const progressText = document.getElementById('rfidProgress');
+            const progressBar = document.getElementById('rfidProgressBar');
+
+            if (progressText) {
+                progressText.textContent = `${currentLength}/10`;
+            }
+
+            if (progressBar) {
+                const percentage = (currentLength / 10) * 100;
+                progressBar.style.width = `${percentage}%`;
+
+                // Change color based on progress
+                if (currentLength === 10) {
+                    progressBar.classList.remove('bg-blue-500', 'bg-yellow-500');
+                    progressBar.classList.add('bg-green-500');
+                } else if (currentLength >= 7) {
+                    progressBar.classList.remove('bg-blue-500', 'bg-green-500');
+                    progressBar.classList.add('bg-yellow-500');
+                } else {
+                    progressBar.classList.remove('bg-yellow-500', 'bg-green-500');
+                    progressBar.classList.add('bg-blue-500');
+                }
+            }
+        }
 
         document.addEventListener('keydown', function(event) {
             // Only process if card scan area is visible
@@ -4095,16 +4152,36 @@
                         rfidInputBuffer = '';
                     }, 1000);
 
-                    // Check if buffer looks like an RFID card ID (typically 8-16 characters)
-                    if (rfidInputBuffer.length >= 8) {
-                        // Simulate Enter key press to complete RFID input
-                        if (event.key === '\r' || event.key === '\n' || rfidInputBuffer.length >= 16) {
-                            event.preventDefault();
-                            const newCardId = rfidInputBuffer.trim();
-                            handleRfidCardDetection(newCardId);
-                            rfidInputBuffer = '';
+                    // Check if buffer mencapai 10 karakter (RFID ID length)
+                    if (rfidInputBuffer.length === 10) {
+                        event.preventDefault();
+                        const newCardId = rfidInputBuffer.trim();
+
+                        // Simpan ID ke variabel
+                        storedRfidId = newCardId;
+                        console.log('RFID ID tersimpan:', storedRfidId);
+
+                        // Trigger card detection dengan ID yang tersimpan
+                        handleRfidCardDetection(storedRfidId);
+
+                        // Reset buffer untuk input berikutnya
+                        rfidInputBuffer = '';
+
+                        // Reset input field
+                        const rfidInput = document.getElementById('rfidCardId');
+                        if (rfidInput) {
+                            rfidInput.value = '';
                         }
                     }
+
+                    // Update input field dengan buffer saat ini (untuk debugging)
+                    const rfidInput = document.getElementById('rfidCardId');
+                    if (rfidInput && rfidInputBuffer.length < 10) {
+                        rfidInput.value = rfidInputBuffer;
+                    }
+
+                    // Update progress bar
+                    updateRfidProgress(rfidInputBuffer.length);
                 }
             }
         });
@@ -4168,9 +4245,29 @@
 
             rfidCardIdInput.addEventListener('input', function() {
                 const value = this.value.trim();
-                if (value.length >= 4) {
-                    // Auto-trigger detection when user types manually
-                    handleRfidCardDetection(value);
+
+                // Update progress bar
+                updateRfidProgress(Math.min(value.length, 10));
+
+                // Jika mencapai 10 karakter, simpan dan reset input
+                if (value.length === 10) {
+                    storedRfidId = value;
+                    console.log('RFID ID tersimpan (manual input):', storedRfidId);
+
+                    // Trigger card detection dengan ID yang tersimpan
+                    handleRfidCardDetection(storedRfidId);
+
+                    // Reset input field dan progress
+                    this.value = '';
+                    updateRfidProgress(0);
+                } else if (value.length > 10) {
+                    // Potong jika lebih dari 10 karakter
+                    this.value = value.substring(0, 10);
+                    storedRfidId = this.value;
+                    console.log('RFID ID tersimpan (manual input, dipotong):', storedRfidId);
+                    handleRfidCardDetection(storedRfidId);
+                    this.value = '';
+                    updateRfidProgress(0);
                 }
             });
         }
