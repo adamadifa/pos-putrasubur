@@ -59,27 +59,27 @@
                     <!-- Bulan Filter (for bulan type) -->
                     <div id="bulanFilterDesktop" class="{{ $jenisPeriode == 'tanggal' ? 'hidden' : '' }}">
                         <label for="bulan" class="block text-sm font-medium text-gray-700 mb-1">Bulan</label>
-                        <select name="bulan" id="bulan"
+                            <select name="bulan" id="bulan"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
-                            @foreach ($bulanList as $key => $bulan)
-                                <option value="{{ $key }}" {{ $selectedBulan == $key ? 'selected' : '' }}>
-                                    {{ $bulan }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+                                @foreach ($bulanList as $key => $bulan)
+                                    <option value="{{ $key }}" {{ $selectedBulan == $key ? 'selected' : '' }}>
+                                        {{ $bulan }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
                     <!-- Tahun Filter (for bulan type) -->
                     <div id="tahunFilterDesktop" class="{{ $jenisPeriode == 'tanggal' ? 'hidden' : '' }}">
                         <label for="tahun" class="block text-sm font-medium text-gray-700 mb-1">Tahun</label>
-                        <select name="tahun" id="tahun"
+                            <select name="tahun" id="tahun"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
-                            @foreach ($tahunList as $tahun)
-                                <option value="{{ $tahun }}" {{ $selectedTahun == $tahun ? 'selected' : '' }}>
-                                    {{ $tahun }}
-                                </option>
-                            @endforeach
-                        </select>
+                                @foreach ($tahunList as $tahun)
+                                    <option value="{{ $tahun }}" {{ $selectedTahun == $tahun ? 'selected' : '' }}>
+                                        {{ $tahun }}
+                                    </option>
+                                @endforeach
+                            </select>
                     </div>
 
                     <!-- Tanggal Dari (for tanggal type) -->
@@ -217,27 +217,27 @@
                                 <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
                                     <i class="ti ti-calendar text-gray-400 text-sm"></i>
                                 </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
                 <!-- Mobile Action Buttons -->
                 <div class="lg:hidden grid grid-cols-2 gap-2">
-                    <button type="submit"
+                        <button type="submit"
                         class="mobile-button inline-flex items-center justify-center px-4 py-2 bg-primary-600 border border-transparent rounded-lg font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
-                        <i class="ti ti-search text-lg mr-2"></i>
+                            <i class="ti ti-search text-lg mr-2"></i>
                         <span class="hidden sm:inline">Tampilkan</span>
                         <span class="sm:hidden">Cari</span>
-                    </button>
-                    @if ($laporanData)
-                        <button type="button" onclick="exportToPdf()"
+                        </button>
+                        @if ($laporanData)
+                            <button type="button" onclick="exportToPdf()"
                             class="mobile-button inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
-                            <i class="ti ti-file-download text-lg mr-2"></i>
+                                <i class="ti ti-file-download text-lg mr-2"></i>
                             <span class="hidden sm:inline">Export PDF</span>
                             <span class="sm:hidden">PDF</span>
-                        </button>
-                    @endif
+                            </button>
+                        @endif
                 </div>
             </form>
         </div>

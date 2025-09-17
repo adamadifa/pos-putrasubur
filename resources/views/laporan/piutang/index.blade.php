@@ -1,21 +1,25 @@
 @extends('layouts.pos')
 
+@section('title', 'Laporan Piutang')
+@section('page-title', 'Laporan Piutang')
+
 @section('content')
-    <div class="container mx-auto px-4 py-6">
-        <!-- Header -->
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">Laporan Piutang</h1>
-            <p class="text-gray-600">Laporan detail piutang pelanggan berdasarkan periode</p>
+    <div class="space-y-6">
+        <!-- Header Actions -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h2 class="text-xl font-semibold text-gray-900">Laporan Piutang</h2>
+                <p class="text-sm text-gray-600">Laporan detail piutang pelanggan berdasarkan periode</p>
+            </div>
         </div>
 
         <!-- Filter Form -->
-        <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+        <div class="bg-white rounded-lg md:rounded-xl shadow-lg border border-gray-100 p-4 md:p-6">
             <form action="{{ route('laporan.piutang.index') }}" method="GET" id="filterForm">
-
                 <!-- Periode Type Selection -->
-                <div class="mb-6">
+                <div class="mb-4 md:mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-3">Jenis Periode</label>
-                    <div class="flex space-x-4">
+                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
                         <label class="flex items-center">
                             <input type="radio" name="jenis_periode" value="semua"
                                 {{ request('jenis_periode') == 'semua' || request('jenis_periode') == '' || request('jenis_periode') == null ? 'checked' : '' }}
@@ -40,11 +44,11 @@
                     </div>
                 </div>
 
-                <!-- Filter Controls -->
-                <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+                <!-- Desktop Layout - All elements aligned with equal width -->
+                <div class="hidden lg:grid grid-cols-6 gap-4 mb-4">
                     <!-- Pelanggan Filter -->
-                    <div class="space-y-2">
-                        <label for="pelanggan_id" class="block text-sm font-medium text-gray-700">Pelanggan</label>
+                    <div>
+                        <label for="pelanggan_id" class="block text-sm font-medium text-gray-700 mb-1">Pelanggan</label>
                         <select name="pelanggan_id" id="pelanggan_id"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                             <option value="">Semua Pelanggan</option>
@@ -57,8 +61,8 @@
                     </div>
 
                     <!-- Status Filter -->
-                    <div class="space-y-2">
-                        <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                         <select name="status" id="status"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                             <option value="">Semua Status</option>
@@ -70,10 +74,10 @@
                         </select>
                     </div>
 
-                    <!-- Bulan/Tahun Filter -->
-                    <div id="bulanTahunFilter" class="space-y-2"
-                        style="display: {{ request('jenis_periode') == 'bulan' ? 'block' : 'none' }};">
-                        <label for="bulan" class="block text-sm font-medium text-gray-700">Bulan</label>
+                    <!-- Bulan Filter (for bulan type) -->
+                    <div id="bulanFilterDesktop"
+                        class="{{ request('jenis_periode') == 'tanggal' || request('jenis_periode') == 'semua' ? 'hidden' : '' }}">
+                        <label for="bulan" class="block text-sm font-medium text-gray-700 mb-1">Bulan</label>
                         <select name="bulan" id="bulan"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                             @foreach ($bulanList as $key => $value)
@@ -85,9 +89,10 @@
                         </select>
                     </div>
 
-                    <div id="tahunFilter" class="space-y-2"
-                        style="display: {{ request('jenis_periode') == 'bulan' ? 'block' : 'none' }};">
-                        <label for="tahun" class="block text-sm font-medium text-gray-700">Tahun</label>
+                    <!-- Tahun Filter (for bulan type) -->
+                    <div id="tahunFilterDesktop"
+                        class="{{ request('jenis_periode') == 'tanggal' || request('jenis_periode') == 'semua' ? 'hidden' : '' }}">
+                        <label for="tahun" class="block text-sm font-medium text-gray-700 mb-1">Tahun</label>
                         <select name="tahun" id="tahun"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                             @foreach ($tahunList as $tahun)
@@ -99,60 +104,180 @@
                         </select>
                     </div>
 
-                    <!-- Date Range Filter -->
-                    <div id="tanggalFilter" class="space-y-2"
-                        style="display: {{ request('jenis_periode') == 'tanggal' ? 'block' : 'none' }};">
-                        <label for="tanggal_dari" class="block text-sm font-medium text-gray-700">Tanggal Dari</label>
+                    <!-- Tanggal Dari (for tanggal type) -->
+                    <div id="tanggalDariFilterDesktop"
+                        class="{{ request('jenis_periode') == 'bulan' || request('jenis_periode') == 'semua' ? 'hidden' : '' }}">
+                        <label for="tanggal_dari" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Dari</label>
                         <div class="relative">
                             <input type="text" id="tanggal_dari" name="tanggal_dari"
                                 value="{{ request('tanggal_dari') }}"
-                                class="w-full px-3 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                class="w-full px-3 py-2 pl-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                 placeholder="Pilih tanggal dari" readonly>
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="ti ti-calendar text-gray-400"></i>
+                            <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                                <i class="ti ti-calendar text-gray-400 text-sm"></i>
                             </div>
                         </div>
                     </div>
 
-                    <div id="tanggalSampaiFilter" class="space-y-2"
-                        style="display: {{ request('jenis_periode') == 'tanggal' ? 'block' : 'none' }};">
-                        <label for="tanggal_sampai" class="block text-sm font-medium text-gray-700">Tanggal Sampai</label>
+                    <!-- Tanggal Sampai (for tanggal type) -->
+                    <div id="tanggalSampaiFilterDesktop"
+                        class="{{ request('jenis_periode') == 'bulan' || request('jenis_periode') == 'semua' ? 'hidden' : '' }}">
+                        <label for="tanggal_sampai" class="block text-sm font-medium text-gray-700 mb-1">Tanggal
+                            Sampai</label>
                         <div class="relative">
-                        <input type="text" id="tanggal_sampai" name="tanggal_sampai"
-                            value="{{ request('tanggal_sampai') }}"
-                                class="w-full px-3 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                            <input type="text" id="tanggal_sampai" name="tanggal_sampai"
+                                value="{{ request('tanggal_sampai') }}"
+                                class="w-full px-3 py-2 pl-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                 placeholder="Pilih tanggal sampai" readonly>
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="ti ti-calendar text-gray-400"></i>
+                            <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                                <i class="ti ti-calendar text-gray-400 text-sm"></i>
                             </div>
                         </div>
                     </div>
+
                     <!-- Action Buttons -->
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700 opacity-0">Action</label>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">&nbsp;</label>
                         <button type="submit"
                             class="w-full inline-flex items-center justify-center px-4 py-2 bg-primary-600 border border-transparent rounded-lg font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
+                            <i class="ti ti-search text-lg mr-2"></i>
                             Generate
                         </button>
                     </div>
 
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700 opacity-0">Export</label>
-                        <button type="button" id="exportPdfBtn"
-                            class="w-full inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
-                            {{ !isset($laporanData) ? 'disabled' : '' }}>
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                </path>
-                            </svg>
-                            Export PDF
-                        </button>
+                    @if (isset($laporanData))
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">&nbsp;</label>
+                            <button type="button" id="exportPdfBtn"
+                                class="w-full inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                                <i class="ti ti-file-download text-lg mr-2"></i>
+                                Export PDF
+                            </button>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Mobile/Tablet Layout - Responsive grid -->
+                <div class="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3 mb-2 md:mb-3">
+                    <!-- Pelanggan Filter -->
+                    <div class="sm:col-span-2">
+                        <label for="pelanggan_id_mobile"
+                            class="block text-sm font-medium text-gray-700 mb-1">Pelanggan</label>
+                        <select name="pelanggan_id" id="pelanggan_id_mobile"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">Semua Pelanggan</option>
+                            @foreach ($pelangganList ?? [] as $pelanggan)
+                                <option value="{{ $pelanggan->id }}"
+                                    {{ request('pelanggan_id') == $pelanggan->id ? 'selected' : '' }}>
+                                    {{ $pelanggan->nama }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
+
+                    <!-- Status Filter -->
+                    <div class="sm:col-span-2">
+                        <label for="status_mobile" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select name="status" id="status_mobile"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">Semua Status</option>
+                            <option value="belum_bayar" {{ request('status') == 'belum_bayar' ? 'selected' : '' }}>Belum
+                                Bayar</option>
+                            <option value="dp" {{ request('status') == 'dp' ? 'selected' : '' }}>Down Payment</option>
+                            <option value="angsuran" {{ request('status') == 'angsuran' ? 'selected' : '' }}>Angsuran
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Bulan/Tahun Filter (for bulan type) -->
+                    <div id="bulanTahunFilterMobile"
+                        class="sm:col-span-2 {{ request('jenis_periode') == 'tanggal' || request('jenis_periode') == 'semua' ? 'hidden' : '' }}"
+                        style="display: {{ request('jenis_periode') == 'bulan' ? 'block' : 'none' }};">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Bulan Filter -->
+                            <div>
+                                <label for="bulan_mobile"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Bulan</label>
+                                <select name="bulan" id="bulan_mobile"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                    @foreach ($bulanList as $key => $value)
+                                        <option value="{{ $key }}"
+                                            {{ request('bulan') == $key || (request('bulan') == null && $key == date('n')) ? 'selected' : '' }}>
+                                            {{ $value }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Tahun Filter -->
+                            <div>
+                                <label for="tahun_mobile"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Tahun</label>
+                                <select name="tahun" id="tahun_mobile"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                    @foreach ($tahunList as $tahun)
+                                        <option value="{{ $tahun }}"
+                                            {{ request('tahun') == $tahun || (request('tahun') == null && $tahun == date('Y')) ? 'selected' : '' }}>
+                                            {{ $tahun }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tanggal Filter (for tanggal type) -->
+                    <div id="tanggalFilterMobile"
+                        class="sm:col-span-2 {{ request('jenis_periode') == 'bulan' || request('jenis_periode') == 'semua' ? 'hidden' : '' }}"
+                        style="display: {{ request('jenis_periode') == 'tanggal' ? 'block' : 'none' }};">
+                        <!-- Tanggal Dari -->
+                        <div class="mb-2">
+                            <label for="tanggal_dari_mobile" class="block text-sm font-medium text-gray-700 mb-1">Tanggal
+                                Dari</label>
+                            <div class="relative">
+                                <input type="text" id="tanggal_dari_mobile" name="tanggal_dari"
+                                    value="{{ request('tanggal_dari') }}"
+                                    class="w-full px-3 py-2 pl-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                    placeholder="Pilih tanggal dari" readonly>
+                                <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                                    <i class="ti ti-calendar text-gray-400 text-sm"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tanggal Sampai -->
+                        <div>
+                            <label for="tanggal_sampai_mobile"
+                                class="block text-sm font-medium text-gray-700 mb-1">Tanggal Sampai</label>
+                            <div class="relative">
+                                <input type="text" id="tanggal_sampai_mobile" name="tanggal_sampai"
+                                    value="{{ request('tanggal_sampai') }}"
+                                    class="w-full px-3 py-2 pl-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                    placeholder="Pilih tanggal sampai" readonly>
+                                <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                                    <i class="ti ti-calendar text-gray-400 text-sm"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile Action Buttons -->
+                <div class="lg:hidden grid grid-cols-2 gap-2">
+                    <button type="submit"
+                        class="mobile-button inline-flex items-center justify-center px-4 py-2 bg-primary-600 border border-transparent rounded-lg font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                        <i class="ti ti-search text-lg mr-2"></i>
+                        <span class="hidden sm:inline">Generate</span>
+                        <span class="sm:hidden">Cari</span>
+                    </button>
+                    @if (isset($laporanData))
+                        <button type="button" id="exportPdfBtnMobile"
+                            class="mobile-button inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                            <i class="ti ti-file-download text-lg mr-2"></i>
+                            <span class="hidden sm:inline">Export PDF</span>
+                            <span class="sm:hidden">PDF</span>
+                        </button>
+                    @endif
                 </div>
             </form>
         </div>
@@ -244,7 +369,7 @@
                                 </svg>
                                 Detail Piutang
                             </h3>
-                    @if (isset($laporanData['periode']))
+                            @if (isset($laporanData['periode']))
                                 <p class="text-sm text-gray-600 mt-2 flex items-center">
                                     <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
@@ -252,18 +377,18 @@
                                             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
                                         </path>
                                     </svg>
-                            Periode:
-                            @if ($laporanData['periode']['jenis'] == 'semua')
-                                {{ $laporanData['periode']['deskripsi'] }}
-                            @elseif ($laporanData['periode']['jenis'] == 'bulan')
-                                {{ $laporanData['periode']['bulan_nama'] }} {{ $laporanData['periode']['tahun'] }}
-                            @else
+                                    Periode:
+                                    @if ($laporanData['periode']['jenis'] == 'semua')
+                                        {{ $laporanData['periode']['deskripsi'] }}
+                                    @elseif ($laporanData['periode']['jenis'] == 'bulan')
+                                        {{ $laporanData['periode']['bulan_nama'] }} {{ $laporanData['periode']['tahun'] }}
+                                    @else
                                         {{ \Carbon\Carbon::parse($laporanData['periode']['tanggal_dari'])->format('d M Y') }}
                                         -
-                                {{ \Carbon\Carbon::parse($laporanData['periode']['tanggal_sampai'])->format('d M Y') }}
+                                        {{ \Carbon\Carbon::parse($laporanData['periode']['tanggal_sampai'])->format('d M Y') }}
+                                    @endif
+                                </p>
                             @endif
-                        </p>
-                    @endif
                         </div>
                         <div class="flex items-center space-x-2">
                             <span
@@ -279,8 +404,95 @@
                     </div>
                 </div>
 
-                <!-- Table Content -->
-                <div class="overflow-x-auto">
+                <!-- Mobile Card View -->
+                <div class="block md:hidden p-4 space-y-3">
+                    @forelse($laporanData['piutangs'] ?? [] as $piutang)
+                        <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <div class="text-sm font-semibold text-gray-900 mb-1">{{ $piutang['no_faktur'] }}
+                                    </div>
+                                    <div class="text-xs text-gray-600">
+                                        {{ \Carbon\Carbon::parse($piutang['tanggal'])->format('d M Y') }}</div>
+                                </div>
+                                <div>
+                                    @if ($piutang['status'] == 'lunas')
+                                        <span
+                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                            Lunas
+                                        </span>
+                                    @elseif($piutang['status'] == 'dp')
+                                        <span
+                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                            DP
+                                        </span>
+                                    @elseif($piutang['status'] == 'angsuran')
+                                        <span
+                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                            Angsuran
+                                        </span>
+                                    @else
+                                        <span
+                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                            Belum Bayar
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-xs text-gray-600">Pelanggan:</span>
+                                    <span class="text-sm font-medium text-gray-900">{{ $piutang['pelanggan'] }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-xs text-gray-600">Total:</span>
+                                    <span class="text-sm font-semibold text-gray-900">Rp
+                                        {{ number_format($piutang['total'], 0, ',', '.') }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-xs text-gray-600">Terbayar:</span>
+                                    <span class="text-sm font-medium text-green-600">Rp
+                                        {{ number_format($piutang['terbayar'], 0, ',', '.') }}</span>
+                                </div>
+                                <div class="flex justify-between border-t border-gray-200 pt-2">
+                                    <span class="text-xs font-semibold text-gray-800">Sisa:</span>
+                                    <span class="text-sm font-bold text-red-600">Rp
+                                        {{ number_format($piutang['sisa'], 0, ',', '.') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="bg-white rounded-lg border border-gray-200 p-8 text-center">
+                            <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="ti ti-file-report text-xl text-gray-400"></i>
+                            </div>
+                            <p class="text-sm text-gray-500">Tidak ada data piutang pada periode ini</p>
+                        </div>
+                    @endforelse
+                </div>
+
+                <!-- Desktop Table View -->
+                <div class="hidden md:block overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
@@ -540,7 +752,82 @@
                             <h3 class="text-lg font-semibold text-white">Rekap Berdasarkan Pelanggan</h3>
                         </div>
                     </div>
-                    <div class="overflow-x-auto">
+                    <!-- Mobile Card View -->
+                    <div class="block md:hidden p-4 space-y-3">
+                        @foreach ($laporanData['rekap_pelanggan'] as $rekap)
+                            <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                                <div class="flex justify-between items-start mb-3">
+                                    <div class="flex items-center">
+                                        <div
+                                            class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center mr-3">
+                                            <span class="text-white font-semibold text-sm">
+                                                {{ substr($rekap['pelanggan'], 0, 2) }}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-semibold text-gray-900">{{ $rekap['pelanggan'] }}
+                                            </div>
+                                            <div class="text-xs text-gray-600">{{ $rekap['total_transaksi'] }} Transaksi
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        @if ($rekap['sisa_piutang'] <= 0)
+                                            <span
+                                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd"
+                                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                        clip-rule="evenodd"></path>
+                                                </svg>
+                                                Lunas
+                                            </span>
+                                        @elseif ($rekap['total_terbayar'] > 0)
+                                            <span
+                                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd"
+                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                        clip-rule="evenodd"></path>
+                                                </svg>
+                                                Angsuran
+                                            </span>
+                                        @else
+                                            <span
+                                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd"
+                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                                        clip-rule="evenodd"></path>
+                                                </svg>
+                                                Belum Bayar
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-xs text-gray-600">Total Piutang:</span>
+                                        <span class="text-sm font-semibold text-gray-900">Rp
+                                            {{ number_format($rekap['total_piutang'], 0, ',', '.') }}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-xs text-gray-600">Terbayar:</span>
+                                        <span class="text-sm font-medium text-green-600">Rp
+                                            {{ number_format($rekap['total_terbayar'], 0, ',', '.') }}</span>
+                                    </div>
+                                    <div class="flex justify-between border-t border-gray-200 pt-2">
+                                        <span class="text-xs font-semibold text-gray-800">Sisa:</span>
+                                        <span class="text-sm font-bold text-red-600">Rp
+                                            {{ number_format($rekap['sisa_piutang'], 0, ',', '.') }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <!-- Desktop Table View -->
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gradient-to-r from-gray-50 to-blue-50">
                                 <tr>
@@ -746,34 +1033,80 @@
         @endif
     </div>
 
+    <style>
+        .mobile-button {
+            @apply text-sm;
+        }
+
+        @media (max-width: 640px) {
+            .mobile-button {
+                @apply text-xs px-3 py-2;
+            }
+        }
+    </style>
+
     <script>
         // Initialize flatpickr for date inputs
         function initializeFlatpickr() {
-            // Initialize flatpickr for tanggal_dari
-            flatpickr("#tanggal_dari", {
-                dateFormat: "Y-m-d",
-                locale: "id",
-                allowInput: false,
-                clickOpens: true,
-                onChange: function(selectedDates, dateStr, instance) {
-                    // Update tanggal_sampai min date
-                    if (selectedDates.length > 0) {
-                        const tanggalSampaiInput = document.getElementById('tanggal_sampai');
-                        if (tanggalSampaiInput._flatpickr) {
-                            tanggalSampaiInput._flatpickr.set('minDate', dateStr);
+            // Initialize flatpickr for desktop tanggal_dari
+            if (document.getElementById('tanggal_dari')) {
+                flatpickr("#tanggal_dari", {
+                    dateFormat: "d/m/Y",
+                    locale: "id",
+                    allowInput: false,
+                    clickOpens: true,
+                    onChange: function(selectedDates, dateStr, instance) {
+                        // Update tanggal_sampai min date
+                        if (selectedDates.length > 0) {
+                            const tanggalSampaiInput = document.getElementById('tanggal_sampai');
+                            if (tanggalSampaiInput && tanggalSampaiInput._flatpickr) {
+                                tanggalSampaiInput._flatpickr.set('minDate', dateStr);
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
 
-            // Initialize flatpickr for tanggal_sampai
-            flatpickr("#tanggal_sampai", {
-                dateFormat: "Y-m-d",
-                locale: "id",
-                allowInput: false,
-                clickOpens: true,
-                minDate: document.getElementById('tanggal_dari').value || "today"
-            });
+            // Initialize flatpickr for desktop tanggal_sampai
+            if (document.getElementById('tanggal_sampai')) {
+                flatpickr("#tanggal_sampai", {
+                    dateFormat: "d/m/Y",
+                    locale: "id",
+                    allowInput: false,
+                    clickOpens: true,
+                    minDate: document.getElementById('tanggal_dari')?.value || "today"
+                });
+            }
+
+            // Initialize flatpickr for mobile tanggal_dari
+            if (document.getElementById('tanggal_dari_mobile')) {
+                flatpickr("#tanggal_dari_mobile", {
+                    dateFormat: "d/m/Y",
+                    locale: "id",
+                    allowInput: false,
+                    clickOpens: true,
+                    onChange: function(selectedDates, dateStr, instance) {
+                        // Update tanggal_sampai min date
+                        if (selectedDates.length > 0) {
+                            const tanggalSampaiInput = document.getElementById('tanggal_sampai_mobile');
+                            if (tanggalSampaiInput && tanggalSampaiInput._flatpickr) {
+                                tanggalSampaiInput._flatpickr.set('minDate', dateStr);
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Initialize flatpickr for mobile tanggal_sampai
+            if (document.getElementById('tanggal_sampai_mobile')) {
+                flatpickr("#tanggal_sampai_mobile", {
+                    dateFormat: "d/m/Y",
+                    locale: "id",
+                    allowInput: false,
+                    clickOpens: true,
+                    minDate: document.getElementById('tanggal_dari_mobile')?.value || "today"
+                });
+            }
         }
 
         // Initialize flatpickr when page loads
@@ -784,164 +1117,220 @@
         // Re-initialize flatpickr when periode type changes
         function togglePeriodeType() {
             const jenisPeriode = document.querySelector('input[name="jenis_periode"]:checked').value;
-            const bulanTahunFilter = document.getElementById('bulanTahunFilter');
-            const tahunFilter = document.getElementById('tahunFilter');
-            const tanggalFilter = document.getElementById('tanggalFilter');
-            const tanggalSampaiFilter = document.getElementById('tanggalSampaiFilter');
+
+            // Desktop filters
+            const bulanFilterDesktop = document.getElementById('bulanFilterDesktop');
+            const tahunFilterDesktop = document.getElementById('tahunFilterDesktop');
+            const tanggalDariFilterDesktop = document.getElementById('tanggalDariFilterDesktop');
+            const tanggalSampaiFilterDesktop = document.getElementById('tanggalSampaiFilterDesktop');
+
+            // Mobile filters
+            const bulanTahunFilterMobile = document.getElementById('bulanTahunFilterMobile');
+            const tanggalFilterMobile = document.getElementById('tanggalFilterMobile');
 
             if (jenisPeriode === 'bulan') {
-                bulanTahunFilter.style.display = 'block';
-                tahunFilter.style.display = 'block';
-                tanggalFilter.style.display = 'none';
-                tanggalSampaiFilter.style.display = 'none';
+                // Show bulan/tahun filters
+                if (bulanFilterDesktop) bulanFilterDesktop.classList.remove('hidden');
+                if (tahunFilterDesktop) tahunFilterDesktop.classList.remove('hidden');
+                if (tanggalDariFilterDesktop) tanggalDariFilterDesktop.classList.add('hidden');
+                if (tanggalSampaiFilterDesktop) tanggalSampaiFilterDesktop.classList.add('hidden');
 
-                // Re-initialize Select2 for pelanggan
-                setTimeout(() => {
-                    $('#pelanggan_id').select2({
-                        placeholder: 'Semua Pelanggan',
-                        allowClear: true,
-                        width: '100%',
-                        language: {
-                            noResults: function() {
-                                return "Tidak ada pelanggan ditemukan";
-                            },
-                            searching: function() {
-                                return "Mencari pelanggan...";
-                            }
-                        }
-                    });
-                }, 100);
+                if (bulanTahunFilterMobile) bulanTahunFilterMobile.style.display = 'block';
+                if (tanggalFilterMobile) tanggalFilterMobile.style.display = 'none';
             } else if (jenisPeriode === 'tanggal') {
-                bulanTahunFilter.style.display = 'none';
-                tahunFilter.style.display = 'none';
-                tanggalFilter.style.display = 'block';
-                tanggalSampaiFilter.style.display = 'block';
+                // Show tanggal filters
+                if (bulanFilterDesktop) bulanFilterDesktop.classList.add('hidden');
+                if (tahunFilterDesktop) tahunFilterDesktop.classList.add('hidden');
+                if (tanggalDariFilterDesktop) tanggalDariFilterDesktop.classList.remove('hidden');
+                if (tanggalSampaiFilterDesktop) tanggalSampaiFilterDesktop.classList.remove('hidden');
+
+                if (bulanTahunFilterMobile) bulanTahunFilterMobile.style.display = 'none';
+                if (tanggalFilterMobile) tanggalFilterMobile.style.display = 'block';
 
                 // Re-initialize flatpickr for date inputs
                 setTimeout(() => {
                     initializeFlatpickr();
                 }, 100);
-
-                // Re-initialize Select2 for pelanggan
-                setTimeout(() => {
-                    $('#pelanggan_id').select2({
-                        placeholder: 'Semua Pelanggan',
-                        allowClear: true,
-                        width: '100%',
-                        language: {
-                            noResults: function() {
-                                return "Tidak ada pelanggan ditemukan";
-                            },
-                            searching: function() {
-                                return "Mencari pelanggan...";
-                            }
-                        }
-                    });
-                }, 100);
             } else if (jenisPeriode === 'semua') {
-                bulanTahunFilter.style.display = 'none';
-                tahunFilter.style.display = 'none';
-                tanggalFilter.style.display = 'none';
-                tanggalSampaiFilter.style.display = 'none';
+                // Hide all filters
+                if (bulanFilterDesktop) bulanFilterDesktop.classList.add('hidden');
+                if (tahunFilterDesktop) tahunFilterDesktop.classList.add('hidden');
+                if (tanggalDariFilterDesktop) tanggalDariFilterDesktop.classList.add('hidden');
+                if (tanggalSampaiFilterDesktop) tanggalSampaiFilterDesktop.classList.add('hidden');
 
-                // Re-initialize Select2 for pelanggan
-                setTimeout(() => {
-                    $('#pelanggan_id').select2({
-                        placeholder: 'Semua Pelanggan',
-                        allowClear: true,
-                        width: '100%',
-                        language: {
-                            noResults: function() {
-                                return "Tidak ada pelanggan ditemukan";
-                            },
-                            searching: function() {
-                                return "Mencari pelanggan...";
-                            }
+                if (bulanTahunFilterMobile) bulanTahunFilterMobile.style.display = 'none';
+                if (tanggalFilterMobile) tanggalFilterMobile.style.display = 'none';
+            }
+
+            // Re-initialize Select2 for pelanggan
+            setTimeout(() => {
+                $('#pelanggan_id, #pelanggan_id_mobile').select2({
+                    placeholder: 'Semua Pelanggan',
+                    allowClear: true,
+                    width: '100%',
+                    language: {
+                        noResults: function() {
+                            return "Tidak ada pelanggan ditemukan";
+                        },
+                        searching: function() {
+                            return "Mencari pelanggan...";
                         }
-                    });
-                }, 100);
+                    }
+                });
+            }, 100);
+        }
+
+        // Setup form synchronization between desktop and mobile
+        function setupFormSynchronization() {
+            // Sync pelanggan
+            const pelangganDesktop = document.getElementById('pelanggan_id');
+            const pelangganMobile = document.getElementById('pelanggan_id_mobile');
+            if (pelangganDesktop && pelangganMobile) {
+                pelangganDesktop.addEventListener('change', function() {
+                    pelangganMobile.value = this.value;
+                    pelangganMobile.dispatchEvent(new Event('change'));
+                });
+                pelangganMobile.addEventListener('change', function() {
+                    pelangganDesktop.value = this.value;
+                    pelangganDesktop.dispatchEvent(new Event('change'));
+                });
+            }
+
+            // Sync status
+            const statusDesktop = document.getElementById('status');
+            const statusMobile = document.getElementById('status_mobile');
+            if (statusDesktop && statusMobile) {
+                statusDesktop.addEventListener('change', function() {
+                    statusMobile.value = this.value;
+                });
+                statusMobile.addEventListener('change', function() {
+                    statusDesktop.value = this.value;
+                });
+            }
+
+            // Sync bulan
+            const bulanDesktop = document.getElementById('bulan');
+            const bulanMobile = document.getElementById('bulan_mobile');
+            if (bulanDesktop && bulanMobile) {
+                bulanDesktop.addEventListener('change', function() {
+                    bulanMobile.value = this.value;
+                });
+                bulanMobile.addEventListener('change', function() {
+                    bulanDesktop.value = this.value;
+                });
+            }
+
+            // Sync tahun
+            const tahunDesktop = document.getElementById('tahun');
+            const tahunMobile = document.getElementById('tahun_mobile');
+            if (tahunDesktop && tahunMobile) {
+                tahunDesktop.addEventListener('change', function() {
+                    tahunMobile.value = this.value;
+                });
+                tahunMobile.addEventListener('change', function() {
+                    tahunDesktop.value = this.value;
+                });
+            }
+
+            // Sync tanggal_dari
+            const tanggalDariDesktop = document.getElementById('tanggal_dari');
+            const tanggalDariMobile = document.getElementById('tanggal_dari_mobile');
+            if (tanggalDariDesktop && tanggalDariMobile) {
+                tanggalDariDesktop.addEventListener('change', function() {
+                    tanggalDariMobile.value = this.value;
+                });
+                tanggalDariMobile.addEventListener('change', function() {
+                    tanggalDariDesktop.value = this.value;
+                });
+            }
+
+            // Sync tanggal_sampai
+            const tanggalSampaiDesktop = document.getElementById('tanggal_sampai');
+            const tanggalSampaiMobile = document.getElementById('tanggal_sampai_mobile');
+            if (tanggalSampaiDesktop && tanggalSampaiMobile) {
+                tanggalSampaiDesktop.addEventListener('change', function() {
+                    tanggalSampaiMobile.value = this.value;
+                });
+                tanggalSampaiMobile.addEventListener('change', function() {
+                    tanggalSampaiDesktop.value = this.value;
+                });
             }
         }
 
         // Enable/disable export button based on data availability
         function toggleExportButton() {
             const exportBtn = document.getElementById('exportPdfBtn');
+            const exportBtnMobile = document.getElementById('exportPdfBtnMobile');
             const hasData = {{ isset($laporanData) ? 'true' : 'false' }};
-            exportBtn.disabled = !hasData;
+
+            if (exportBtn) exportBtn.disabled = !hasData;
+            if (exportBtnMobile) exportBtnMobile.disabled = !hasData;
         }
 
-        // Initialize export button state
-        toggleExportButton();
+        // Setup export buttons
+        function setupExportButtons() {
+            const exportBtn = document.getElementById('exportPdfBtn');
+            const exportBtnMobile = document.getElementById('exportPdfBtnMobile');
 
-        // Enable export button when form is submitted and data is available
-        document.getElementById('filterForm').addEventListener('submit', function() {
-            // Enable export button after a short delay to allow data to load
-            setTimeout(() => {
-                const exportBtn = document.getElementById('exportPdfBtn');
-                exportBtn.disabled = false;
-            }, 1000);
-        });
+            function handleExport(btn) {
+                if (!document.getElementById('filterForm').checkValidity()) {
+                    document.getElementById('filterForm').reportValidity();
+                    return;
+                }
 
-        // Export PDF functionality
-        document.getElementById('exportPdfBtn').addEventListener('click', function() {
-            if (!document.getElementById('filterForm').checkValidity()) {
-                document.getElementById('filterForm').reportValidity();
-                return;
+                const form = document.getElementById('filterForm');
+                const formData = new FormData(form);
+
+                // Show loading
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="ti ti-loader animate-spin text-lg mr-2"></i>Exporting...';
+                btn.disabled = true;
+
+                fetch('{{ route('laporan.piutang.export-pdf') }}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            return response.blob();
+                        }
+                        throw new Error('Export failed');
+                    })
+                    .then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'laporan_piutang.pdf';
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Terjadi kesalahan dalam export PDF');
+                    })
+                    .finally(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    });
             }
 
-            const form = document.getElementById('filterForm');
-            const formData = new FormData(form);
+            if (exportBtn) {
+                exportBtn.addEventListener('click', () => handleExport(exportBtn));
+            }
+            if (exportBtnMobile) {
+                exportBtnMobile.addEventListener('click', () => handleExport(exportBtnMobile));
+            }
+        }
 
-            // Show loading
-            const btn = this;
-            const originalText = btn.innerHTML;
-            btn.innerHTML =
-                '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Exporting...';
-            btn.disabled = true;
-
-            fetch('{{ route('laporan.piutang.export-pdf') }}', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                            'content')
-                    }
-                })
-                .then(response => {
-                    if (response.ok) {
-                        return response.blob();
-                    }
-                    throw new Error('Export failed');
-                })
-                .then(blob => {
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'laporan_piutang.pdf';
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    document.body.removeChild(a);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Terjadi kesalahan dalam export PDF');
-                })
-                .finally(() => {
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                });
-        });
-
-        // Enable export button when form is submitted
-        document.getElementById('filterForm').addEventListener('submit', function() {
-            document.getElementById('exportPdfBtn').disabled = false;
-        });
-
-        // Initialize Flatpickr for date inputs
+        // Initialize everything when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Select2 for pelanggan select
-            $('#pelanggan_id').select2({
+            // Initialize Select2 for pelanggan selects
+            $('#pelanggan_id, #pelanggan_id_mobile').select2({
                 placeholder: 'Semua Pelanggan',
                 allowClear: true,
                 width: '100%',
@@ -955,18 +1344,27 @@
                 }
             });
 
-            flatpickr("#tanggal_dari", {
-                dateFormat: "d/m/Y",
-                locale: "id"
-            });
+            // Initialize flatpickr
+            initializeFlatpickr();
 
-            flatpickr("#tanggal_sampai", {
-                dateFormat: "d/m/Y",
-                locale: "id"
+            // Setup form synchronization
+            setupFormSynchronization();
+
+            // Setup export buttons
+            setupExportButtons();
+
+            // Initialize export button state
+            toggleExportButton();
+
+            // Initialize periode type
+            togglePeriodeType();
+
+            // Enable export button when form is submitted
+            document.getElementById('filterForm').addEventListener('submit', function() {
+                setTimeout(() => {
+                    toggleExportButton();
+                }, 1000);
             });
         });
-
-        // Initialize on page load
-        togglePeriodeType();
     </script>
 @endsection
