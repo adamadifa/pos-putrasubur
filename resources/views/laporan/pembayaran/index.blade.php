@@ -4,7 +4,28 @@
 @section('page-title', 'Laporan Pembayaran')
 
 @section('content')
-    <div class="space-y-6">
+    <style>
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            .mobile-button {
+                @apply px-3 py-2 text-sm;
+            }
+
+            .mobile-card {
+                @apply rounded-lg p-4 mb-3 border border-gray-200;
+            }
+
+            .mobile-table-card {
+                @apply rounded-lg p-3 mb-2 bg-gray-50 border border-gray-200;
+            }
+
+            .mobile-summary-card {
+                @apply rounded-lg p-4 mb-3 bg-white border border-gray-200;
+            }
+        }
+    </style>
+
+    <div class="space-y-4 md:space-y-6">
         <!-- Header Actions -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -14,13 +35,12 @@
         </div>
 
         <!-- Filter Form -->
-        <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-            <form method="POST" action="{{ route('laporan.pembayaran.generate') }}" id="laporanForm">
-                @csrf
+        <div class="bg-white rounded-lg md:rounded-xl shadow-lg border border-gray-100 p-4 md:p-6">
+            <form method="GET" action="{{ route('laporan.pembayaran.index') }}" id="laporanForm">
                 <!-- Periode Type Selection -->
-                <div class="mb-6">
+                <div class="mb-4 md:mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-3">Jenis Periode</label>
-                    <div class="flex space-x-4">
+                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
                         <label class="flex items-center">
                             <input type="radio" name="jenis_periode" value="bulan"
                                 {{ $jenisPeriode == 'bulan' ? 'checked' : '' }}
@@ -38,13 +58,14 @@
                     </div>
                 </div>
 
-                <div class="space-y-4 lg:space-y-0 lg:flex lg:items-end lg:space-x-4">
+                <!-- Desktop Layout - All elements aligned with equal width -->
+                <div class="hidden lg:grid grid-cols-10 gap-4 mb-4">
                     <!-- Jenis Transaksi Filter -->
-                    <div class="flex-1">
-                        <label for="jenis_transaksi" class="block text-sm font-medium text-gray-700 mb-2">Jenis Transaksi
+                    <div class="col-span-1">
+                        <label for="jenis_transaksi" class="block text-sm font-medium text-gray-700 mb-1">Jenis Transaksi
                             <span class="text-red-500">*</span></label>
                         <select name="jenis_transaksi" id="jenis_transaksi"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                             required>
                             <option value="">Pilih Jenis Transaksi</option>
                             <option value="penjualan" {{ $selectedJenisTransaksi == 'penjualan' ? 'selected' : '' }}>
@@ -56,10 +77,10 @@
                     </div>
 
                     <!-- Kas/Bank Filter -->
-                    <div class="flex-1">
-                        <label for="kas_bank_id" class="block text-sm font-medium text-gray-700 mb-2">Kas/Bank</label>
+                    <div class="col-span-1">
+                        <label for="kas_bank_id" class="block text-sm font-medium text-gray-700 mb-1">Kas/Bank</label>
                         <select name="kas_bank_id" id="kas_bank_id"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
                             <option value="">Semua Kas/Bank</option>
                             @foreach ($kasBankList as $kasBank)
                                 <option value="{{ $kasBank->id }}"
@@ -71,11 +92,146 @@
                     </div>
 
                     <!-- Metode Pembayaran Filter -->
-                    <div class="flex-1">
-                        <label for="metode_pembayaran_id" class="block text-sm font-medium text-gray-700 mb-2">Metode
+                    <div class="col-span-2">
+                        <label for="metode_pembayaran_id" class="block text-sm font-medium text-gray-700 mb-1">Metode
                             Pembayaran</label>
                         <select name="metode_pembayaran_id" id="metode_pembayaran_id"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
+                            <option value="">Semua Metode Pembayaran</option>
+                            @foreach ($metodePembayaranList as $metode)
+                                <option value="{{ $metode->id }}"
+                                    {{ $selectedMetodePembayaran == $metode->id ? 'selected' : '' }}>
+                                    {{ $metode->nama }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Bulan Filter (for bulan type) -->
+                    <div id="bulanFilterDesktop" class="col-span-1 {{ $jenisPeriode == 'tanggal' ? 'hidden' : '' }}">
+                        <label for="bulan" class="block text-sm font-medium text-gray-700 mb-1">Bulan</label>
+                        <select name="bulan" id="bulan"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
+                            @foreach ($bulanList as $key => $bulan)
+                                <option value="{{ $key }}" {{ $selectedBulan == $key ? 'selected' : '' }}>
+                                    {{ $bulan }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Tahun Filter (for bulan type) -->
+                    <div id="tahunFilterDesktop" class="col-span-1 {{ $jenisPeriode == 'tanggal' ? 'hidden' : '' }}">
+                        <label for="tahun" class="block text-sm font-medium text-gray-700 mb-1">Tahun</label>
+                        <select name="tahun" id="tahun"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
+                            @foreach ($tahunList as $tahun)
+                                <option value="{{ $tahun }}" {{ $selectedTahun == $tahun ? 'selected' : '' }}>
+                                    {{ $tahun }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Tanggal Dari (for tanggal type) -->
+                    <div id="tanggalDariFilterDesktop" class="col-span-1 {{ $jenisPeriode == 'bulan' ? 'hidden' : '' }}">
+                        <label for="tanggal_dari" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Dari</label>
+                        <div class="relative">
+                            <input type="text" name="tanggal_dari" id="tanggal_dari" value="{{ $tanggalDari }}"
+                                class="w-full px-3 py-2 pl-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                                placeholder="Pilih tanggal dari" readonly>
+                            <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                                <i class="ti ti-calendar text-gray-400 text-sm"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tanggal Sampai (for tanggal type) -->
+                    <div id="tanggalSampaiFilterDesktop" class="col-span-1 {{ $jenisPeriode == 'bulan' ? 'hidden' : '' }}">
+                        <label for="tanggal_sampai" class="block text-sm font-medium text-gray-700 mb-1">Tanggal
+                            Sampai</label>
+                        <div class="relative">
+                            <input type="text" name="tanggal_sampai" id="tanggal_sampai" value="{{ $tanggalSampai }}"
+                                class="w-full px-3 py-2 pl-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                                placeholder="Pilih tanggal sampai" readonly>
+                            <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                                <i class="ti ti-calendar text-gray-400 text-sm"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="col-span-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">&nbsp;</label>
+                        <button type="submit"
+                            class="w-full inline-flex items-center justify-center px-4 py-2 bg-primary-600 border border-transparent rounded-lg font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                            Tampilkan
+                        </button>
+                    </div>
+
+                    @if ($laporanData)
+                        <div class="col-span-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">&nbsp;</label>
+                            <button type="button" id="exportPdfBtn"
+                                class="w-full inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                    </path>
+                                </svg>
+                                Export PDF
+                            </button>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Mobile/Tablet Layout - Responsive grid -->
+                <div class="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3 mb-2 md:mb-3">
+                    <!-- Jenis Transaksi Filter -->
+                    <div class="sm:col-span-2">
+                        <label for="jenis_transaksi_mobile" class="block text-sm font-medium text-gray-700 mb-1">Jenis
+                            Transaksi
+                            <span class="text-red-500">*</span></label>
+                        <select name="jenis_transaksi" id="jenis_transaksi_mobile"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                            required>
+                            <option value="">Pilih Jenis Transaksi</option>
+                            <option value="penjualan" {{ $selectedJenisTransaksi == 'penjualan' ? 'selected' : '' }}>
+                                Penjualan</option>
+                            <option value="pembelian" {{ $selectedJenisTransaksi == 'pembelian' ? 'selected' : '' }}>
+                                Pembelian</option>
+                            <option value="semua" {{ $selectedJenisTransaksi == 'semua' ? 'selected' : '' }}>Semua
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Kas/Bank Filter -->
+                    <div>
+                        <label for="kas_bank_id_mobile"
+                            class="block text-sm font-medium text-gray-700 mb-1">Kas/Bank</label>
+                        <select name="kas_bank_id" id="kas_bank_id_mobile"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
+                            <option value="">Semua Kas/Bank</option>
+                            @foreach ($kasBankList as $kasBank)
+                                <option value="{{ $kasBank->id }}"
+                                    {{ $selectedKasBank == $kasBank->id ? 'selected' : '' }}>
+                                    {{ $kasBank->nama }} ({{ $kasBank->jenis }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Metode Pembayaran Filter -->
+                    <div>
+                        <label for="metode_pembayaran_id_mobile"
+                            class="block text-sm font-medium text-gray-700 mb-1">Metode
+                            Pembayaran</label>
+                        <select name="metode_pembayaran_id" id="metode_pembayaran_id_mobile"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
                             <option value="">Semua Metode Pembayaran</option>
                             @foreach ($metodePembayaranList as $metode)
                                 <option value="{{ $metode->id }}"
@@ -87,84 +243,102 @@
                     </div>
 
                     <!-- Bulan/Tahun Filter (for bulan type) -->
-                    <div id="bulanTahunFilter"
-                        class="lg:flex lg:space-x-4 {{ $jenisPeriode == 'tanggal' ? 'hidden' : '' }}"
-                        style="display: {{ $jenisPeriode == 'tanggal' ? 'none' : 'flex' }};">
-                        <!-- Bulan Filter -->
-                        <div class="lg:w-48">
-                            <label for="bulan" class="block text-sm font-medium text-gray-700 mb-2">Bulan</label>
-                            <select name="bulan" id="bulan"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
-                                @foreach ($bulanList as $key => $bulan)
-                                    <option value="{{ $key }}" {{ $selectedBulan == $key ? 'selected' : '' }}>
-                                        {{ $bulan }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                    <div id="bulanTahunFilterMobile"
+                        class="sm:col-span-2 {{ $jenisPeriode == 'tanggal' ? 'hidden' : '' }}"
+                        style="display: {{ $jenisPeriode == 'tanggal' ? 'none' : 'block' }};">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Bulan Filter -->
+                            <div>
+                                <label for="bulan_mobile"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Bulan</label>
+                                <select name="bulan" id="bulan_mobile"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
+                                    @foreach ($bulanList as $key => $bulan)
+                                        <option value="{{ $key }}"
+                                            {{ $selectedBulan == $key ? 'selected' : '' }}>
+                                            {{ $bulan }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
 
-                        <!-- Tahun Filter -->
-                        <div class="lg:w-32">
-                            <label for="tahun" class="block text-sm font-medium text-gray-700 mb-2">Tahun</label>
-                            <select name="tahun" id="tahun"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
-                                @foreach ($tahunList as $tahun)
-                                    <option value="{{ $tahun }}" {{ $selectedTahun == $tahun ? 'selected' : '' }}>
-                                        {{ $tahun }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <!-- Tahun Filter -->
+                            <div>
+                                <label for="tahun_mobile"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Tahun</label>
+                                <select name="tahun" id="tahun_mobile"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
+                                    @foreach ($tahunList as $tahun)
+                                        <option value="{{ $tahun }}"
+                                            {{ $selectedTahun == $tahun ? 'selected' : '' }}>
+                                            {{ $tahun }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Tanggal Filter (for tanggal type) -->
-                    <div id="tanggalFilter" class="lg:flex lg:space-x-4 {{ $jenisPeriode == 'bulan' ? 'hidden' : '' }}"
-                        style="display: {{ $jenisPeriode == 'bulan' ? 'none' : 'flex' }};">
+                    <div id="tanggalFilterMobile" class="sm:col-span-2 {{ $jenisPeriode == 'bulan' ? 'hidden' : '' }}"
+                        style="display: {{ $jenisPeriode == 'bulan' ? 'none' : 'block' }};">
                         <!-- Tanggal Dari -->
-                        <div class="lg:w-48">
-                            <label for="tanggal_dari" class="block text-sm font-medium text-gray-700 mb-2">Tanggal
+                        <div class="mb-2">
+                            <label for="tanggal_dari_mobile" class="block text-sm font-medium text-gray-700 mb-1">Tanggal
                                 Dari</label>
                             <div class="relative">
-                                <input type="text" name="tanggal_dari" id="tanggal_dari" value="{{ $tanggalDari }}"
-                                    class="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                                <input type="text" name="tanggal_dari" id="tanggal_dari_mobile"
+                                    value="{{ $tanggalDari }}"
+                                    class="w-full px-3 py-2 pl-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                                     placeholder="Pilih tanggal dari" readonly>
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="ti ti-calendar text-gray-400"></i>
+                                <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                                    <i class="ti ti-calendar text-gray-400 text-sm"></i>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Tanggal Sampai -->
-                        <div class="lg:w-48">
-                            <label for="tanggal_sampai" class="block text-sm font-medium text-gray-700 mb-2">Tanggal
+                        <div>
+                            <label for="tanggal_sampai_mobile"
+                                class="block text-sm font-medium text-gray-700 mb-1">Tanggal
                                 Sampai</label>
                             <div class="relative">
-                                <input type="text" name="tanggal_sampai" id="tanggal_sampai"
+                                <input type="text" name="tanggal_sampai" id="tanggal_sampai_mobile"
                                     value="{{ $tanggalSampai }}"
-                                    class="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                                    class="w-full px-3 py-2 pl-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                                     placeholder="Pilih tanggal sampai" readonly>
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="ti ti-calendar text-gray-400"></i>
+                                <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                                    <i class="ti ti-calendar text-gray-400 text-sm"></i>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Action Buttons -->
-                    <div class="flex space-x-3 lg:flex-none">
-                        <button type="submit"
-                            class="inline-flex items-center px-6 py-3 bg-primary-600 border border-transparent rounded-lg font-medium text-sm text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
-                            <i class="ti ti-search text-lg mr-2"></i>
-                            Tampilkan Laporan
+
+                <!-- Mobile Action Buttons -->
+                <div class="lg:hidden grid grid-cols-2 gap-2">
+                    <button type="submit"
+                        class="mobile-button inline-flex items-center justify-center px-4 py-2 bg-primary-600 border border-transparent rounded-lg font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <span class="hidden sm:inline">Tampilkan</span>
+                        <span class="sm:hidden">Cari</span>
+                    </button>
+                    @if ($laporanData)
+                        <button type="button" id="exportPdfBtn"
+                            class="mobile-button inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                </path>
+                            </svg>
+                            <span class="hidden sm:inline">Export PDF</span>
+                            <span class="sm:hidden">PDF</span>
                         </button>
-                        @if ($laporanData)
-                            <button type="button" id="exportPdfBtn"
-                                class="inline-flex items-center px-6 py-3 bg-red-600 border border-transparent rounded-lg font-medium text-sm text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
-                                <i class="ti ti-file-download text-lg mr-2"></i>
-                                Export PDF
-                            </button>
-                        @endif
-                    </div>
+                    @endif
                 </div>
             </form>
         </div>
@@ -172,18 +346,19 @@
         <!-- Laporan Data -->
         @if ($laporanData)
             <!-- Summary Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <!-- Total Pembayaran -->
-                <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+                <div
+                    class="mobile-summary-card bg-white rounded-lg md:rounded-xl shadow-lg border border-gray-100 p-4 md:p-6">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <i class="ti ti-credit-card text-blue-600 text-xl"></i>
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="ti ti-credit-card text-blue-600 text-lg md:text-xl"></i>
                             </div>
                         </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-500">Total Pembayaran</p>
-                            <p class="text-2xl font-bold text-gray-900">
+                        <div class="ml-3 md:ml-4">
+                            <p class="text-xs md:text-sm font-medium text-gray-500">Total Pembayaran</p>
+                            <p class="text-lg md:text-2xl font-bold text-gray-900">
                                 {{ number_format($laporanData['summary']['total_pembayaran'], 0, ',', '.') }}
                             </p>
                         </div>
@@ -191,16 +366,18 @@
                 </div>
 
                 <!-- Total Nilai -->
-                <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+                <div
+                    class="mobile-summary-card bg-white rounded-lg md:rounded-xl shadow-lg border border-gray-100 p-4 md:p-6">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                                <i class="ti ti-currency-dollar text-purple-600 text-xl"></i>
+                            <div
+                                class="w-10 h-10 md:w-12 md:h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i class="ti ti-currency-dollar text-purple-600 text-lg md:text-xl"></i>
                             </div>
                         </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-500">Total Nilai</p>
-                            <p class="text-2xl font-bold text-gray-900">
+                        <div class="ml-3 md:ml-4">
+                            <p class="text-xs md:text-sm font-medium text-gray-500">Total Nilai</p>
+                            <p class="text-lg md:text-2xl font-bold text-gray-900">
                                 Rp {{ number_format($laporanData['summary']['total_nilai'], 0, ',', '.') }}
                             </p>
                         </div>
@@ -209,8 +386,8 @@
             </div>
 
             <!-- Laporan Header -->
-            <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-                <div class="flex items-center justify-between mb-6">
+            <div class="bg-white rounded-lg md:rounded-xl shadow-lg border border-gray-100 p-4 md:p-6">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4 md:mb-6">
                     <div>
                         <h3 class="text-lg font-semibold text-gray-900">Laporan Pembayaran</h3>
                         <p class="text-sm text-gray-600">
@@ -234,15 +411,67 @@
                             @endif
                         </p>
                     </div>
-                    <div class="text-right">
+                    <div class="text-left md:text-right mt-2 md:mt-0">
                         <p class="text-sm text-gray-500">Dicetak pada:</p>
                         <p class="text-sm font-medium text-gray-900">{{ now()->format('d/m/Y H:i') }}</p>
                     </div>
                 </div>
 
+                <!-- Mobile Card View -->
+                <div class="block md:hidden">
+                    @forelse($laporanData['pembayaran'] as $pembayaran)
+                        <div class="mobile-table-card">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="flex-1">
+                                    <div class="text-sm font-semibold text-gray-900">{{ $pembayaran->no_faktur }}</div>
+                                    <div class="text-xs text-gray-500">{{ $pembayaran->tanggal->format('d/m/Y') }}</div>
+                                </div>
+                                <div class="text-right">
+                                    @if ($pembayaran->jenis == 'Penjualan')
+                                        <span
+                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            Penjualan
+                                        </span>
+                                    @else
+                                        <span
+                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                            Pembelian
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
 
-                <!-- Transaksi Table -->
-                <div class="overflow-x-auto">
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-xs text-gray-500">Pelanggan/Supplier:</span>
+                                    <span
+                                        class="text-xs font-medium text-gray-900">{{ $pembayaran->nama_pelanggan_supplier }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-xs text-gray-500">Metode:</span>
+                                    <span
+                                        class="text-xs font-medium text-gray-900">{{ $pembayaran->metode_pembayaran }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-xs text-gray-500">Kas Bank:</span>
+                                    <span class="text-xs font-medium text-gray-900">{{ $pembayaran->kas_bank }}</span>
+                                </div>
+                                <div class="flex justify-between border-t border-gray-200 pt-2">
+                                    <span class="text-sm font-semibold text-gray-900">Jumlah:</span>
+                                    <span class="text-sm font-bold text-gray-900">Rp
+                                        {{ number_format($pembayaran->jumlah, 0, ',', '.') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center py-8">
+                            <div class="text-sm text-gray-500">Tidak ada data pembayaran untuk periode yang dipilih.</div>
+                        </div>
+                    @endforelse
+                </div>
+
+                <!-- Desktop Table View -->
+                <div class="hidden md:block overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
@@ -321,9 +550,34 @@
 
                 <!-- Summary by Metode Pembayaran -->
                 @if (isset($laporanData['metode_pembayaran_counts']) && count($laporanData['metode_pembayaran_counts']) > 0)
-                    <div class="mt-8">
+                    <div class="mt-6 md:mt-8">
                         <h4 class="text-lg font-semibold text-gray-900 mb-4">Rekap Metode Pembayaran</h4>
-                        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+
+                        <!-- Mobile Card View -->
+                        <div class="block md:hidden space-y-2">
+                            @foreach ($laporanData['metode_pembayaran_counts'] as $metode)
+                                <div class="mobile-table-card">
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex-1">
+                                            <div class="text-sm font-semibold text-gray-900">{{ $metode['nama'] }}</div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="text-xs text-gray-500">Transaksi</div>
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {{ number_format($metode['count'], 0, ',', '.') }}</div>
+                                        </div>
+                                        <div class="text-right ml-4">
+                                            <div class="text-xs text-gray-500">Total</div>
+                                            <div class="text-sm font-bold text-gray-900">Rp
+                                                {{ number_format($metode['nilai'], 0, ',', '.') }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <!-- Desktop Table View -->
+                        <div class="hidden md:block bg-white rounded-lg border border-gray-200 overflow-hidden">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
@@ -358,9 +612,34 @@
 
                 <!-- Summary by Kas Bank -->
                 @if (isset($laporanData['kas_bank_counts']) && count($laporanData['kas_bank_counts']) > 0)
-                    <div class="mt-8">
+                    <div class="mt-6 md:mt-8">
                         <h4 class="text-lg font-semibold text-gray-900 mb-4">Rekap Kas Bank</h4>
-                        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+
+                        <!-- Mobile Card View -->
+                        <div class="block md:hidden space-y-2">
+                            @foreach ($laporanData['kas_bank_counts'] as $kasBank)
+                                <div class="mobile-table-card">
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex-1">
+                                            <div class="text-sm font-semibold text-gray-900">{{ $kasBank['nama'] }}</div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="text-xs text-gray-500">Transaksi</div>
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {{ number_format($kasBank['count'], 0, ',', '.') }}</div>
+                                        </div>
+                                        <div class="text-right ml-4">
+                                            <div class="text-xs text-gray-500">Total</div>
+                                            <div class="text-sm font-bold text-gray-900">Rp
+                                                {{ number_format($kasBank['nilai'], 0, ',', '.') }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <!-- Desktop Table View -->
+                        <div class="hidden md:block bg-white rounded-lg border border-gray-200 overflow-hidden">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
@@ -395,12 +674,12 @@
             </div>
         @else
             <!-- Empty State -->
-            <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-12 text-center">
+            <div class="bg-white rounded-lg md:rounded-xl shadow-lg border border-gray-100 p-8 md:p-12 text-center">
                 <div class="flex flex-col items-center">
-                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                        <i class="ti ti-file-report text-2xl text-gray-400"></i>
+                    <div class="w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="ti ti-file-report text-xl md:text-2xl text-gray-400"></i>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">Pilih Parameter Laporan</h3>
+                    <h3 class="text-base md:text-lg font-medium text-gray-900 mb-2">Pilih Parameter Laporan</h3>
                     <p class="text-gray-500 text-sm mb-6">
                         Pilih kas/bank, bulan, dan tahun untuk menampilkan laporan
                     </p>
@@ -416,12 +695,125 @@
         document.addEventListener('DOMContentLoaded', function() {
             togglePeriodeType();
             initializeFlatpickr();
+            setupFormSynchronization();
+
+            // Handle form submission
+            const form = document.getElementById('laporanForm');
+            form.addEventListener('submit', function(e) {
+                // Only submit if jenis_transaksi is selected
+                const jenisTransaksi = document.getElementById('jenis_transaksi').value;
+                if (!jenisTransaksi) {
+                    e.preventDefault();
+                    alert('Pilih jenis transaksi terlebih dahulu!');
+                    return false;
+                }
+
+                // Validate date range if periode is tanggal
+                const jenisPeriode = document.querySelector('input[name="jenis_periode"]:checked').value;
+                if (jenisPeriode === 'tanggal') {
+                    const tanggalDari = document.getElementById('tanggal_dari').value;
+                    const tanggalSampai = document.getElementById('tanggal_sampai').value;
+
+                    if (!tanggalDari || !tanggalSampai) {
+                        e.preventDefault();
+                        alert('Pilih tanggal dari dan tanggal sampai!');
+                        return false;
+                    }
+                }
+            });
         });
+
+        // Synchronize form elements between desktop and mobile
+        function setupFormSynchronization() {
+            // Sync jenis_transaksi
+            const jenisTransaksiDesktop = document.getElementById('jenis_transaksi');
+            const jenisTransaksiMobile = document.getElementById('jenis_transaksi_mobile');
+            if (jenisTransaksiDesktop && jenisTransaksiMobile) {
+                jenisTransaksiDesktop.addEventListener('change', function() {
+                    jenisTransaksiMobile.value = this.value;
+                });
+                jenisTransaksiMobile.addEventListener('change', function() {
+                    jenisTransaksiDesktop.value = this.value;
+                });
+            }
+
+            // Sync kas_bank_id
+            const kasBankDesktop = document.getElementById('kas_bank_id');
+            const kasBankMobile = document.getElementById('kas_bank_id_mobile');
+            if (kasBankDesktop && kasBankMobile) {
+                kasBankDesktop.addEventListener('change', function() {
+                    kasBankMobile.value = this.value;
+                });
+                kasBankMobile.addEventListener('change', function() {
+                    kasBankDesktop.value = this.value;
+                });
+            }
+
+            // Sync metode_pembayaran_id
+            const metodePembayaranDesktop = document.getElementById('metode_pembayaran_id');
+            const metodePembayaranMobile = document.getElementById('metode_pembayaran_id_mobile');
+            if (metodePembayaranDesktop && metodePembayaranMobile) {
+                metodePembayaranDesktop.addEventListener('change', function() {
+                    metodePembayaranMobile.value = this.value;
+                });
+                metodePembayaranMobile.addEventListener('change', function() {
+                    metodePembayaranDesktop.value = this.value;
+                });
+            }
+
+            // Sync bulan
+            const bulanDesktop = document.getElementById('bulan');
+            const bulanMobile = document.getElementById('bulan_mobile');
+            if (bulanDesktop && bulanMobile) {
+                bulanDesktop.addEventListener('change', function() {
+                    bulanMobile.value = this.value;
+                });
+                bulanMobile.addEventListener('change', function() {
+                    bulanDesktop.value = this.value;
+                });
+            }
+
+            // Sync tahun
+            const tahunDesktop = document.getElementById('tahun');
+            const tahunMobile = document.getElementById('tahun_mobile');
+            if (tahunDesktop && tahunMobile) {
+                tahunDesktop.addEventListener('change', function() {
+                    tahunMobile.value = this.value;
+                });
+                tahunMobile.addEventListener('change', function() {
+                    tahunDesktop.value = this.value;
+                });
+            }
+
+            // Sync tanggal_dari
+            const tanggalDariDesktop = document.getElementById('tanggal_dari');
+            const tanggalDariMobile = document.getElementById('tanggal_dari_mobile');
+            if (tanggalDariDesktop && tanggalDariMobile) {
+                tanggalDariDesktop.addEventListener('change', function() {
+                    tanggalDariMobile.value = this.value;
+                });
+                tanggalDariMobile.addEventListener('change', function() {
+                    tanggalDariDesktop.value = this.value;
+                });
+            }
+
+            // Sync tanggal_sampai
+            const tanggalSampaiDesktop = document.getElementById('tanggal_sampai');
+            const tanggalSampaiMobile = document.getElementById('tanggal_sampai_mobile');
+            if (tanggalSampaiDesktop && tanggalSampaiMobile) {
+                tanggalSampaiDesktop.addEventListener('change', function() {
+                    tanggalSampaiMobile.value = this.value;
+                });
+                tanggalSampaiMobile.addEventListener('change', function() {
+                    tanggalSampaiDesktop.value = this.value;
+                });
+            }
+        }
 
         function initializeFlatpickr() {
             // Initialize flatpickr for tanggal_dari
             flatpickr("#tanggal_dari", {
-                dateFormat: "Y-m-d",
+                dateFormat: "d/m/Y",
                 locale: "id",
                 allowInput: false,
                 clickOpens: true,
@@ -438,7 +830,7 @@
 
             // Initialize flatpickr for tanggal_sampai
             flatpickr("#tanggal_sampai", {
-                dateFormat: "Y-m-d",
+                dateFormat: "d/m/Y",
                 locale: "id",
                 allowInput: false,
                 clickOpens: true,
@@ -448,35 +840,49 @@
 
         function togglePeriodeType() {
             const jenisPeriode = document.querySelector('input[name="jenis_periode"]:checked').value;
-            const bulanTahunFilter = document.getElementById('bulanTahunFilter');
-            const tanggalFilter = document.getElementById('tanggalFilter');
 
-            // Get form elements
+            // Desktop elements
+            const bulanFilterDesktop = document.getElementById('bulanFilterDesktop');
+            const tahunFilterDesktop = document.getElementById('tahunFilterDesktop');
+            const tanggalDariFilterDesktop = document.getElementById('tanggalDariFilterDesktop');
+            const tanggalSampaiFilterDesktop = document.getElementById('tanggalSampaiFilterDesktop');
+
+            // Mobile elements
+            const bulanTahunFilterMobile = document.getElementById('bulanTahunFilterMobile');
+            const tanggalFilterMobile = document.getElementById('tanggalFilterMobile');
+
+            // Get form elements for clearing values
             const bulanSelect = document.getElementById('bulan');
             const tahunSelect = document.getElementById('tahun');
             const tanggalDariInput = document.getElementById('tanggal_dari');
             const tanggalSampaiInput = document.getElementById('tanggal_sampai');
 
             if (jenisPeriode === 'bulan') {
-                // Show bulan/tahun filter, hide tanggal filter
-                bulanTahunFilter.style.display = 'flex';
-                tanggalFilter.style.display = 'none';
-                bulanTahunFilter.classList.remove('hidden');
-                tanggalFilter.classList.add('hidden');
+                // Show bulan/tahun filters, hide tanggal filters
+                if (bulanFilterDesktop) bulanFilterDesktop.classList.remove('hidden');
+                if (tahunFilterDesktop) tahunFilterDesktop.classList.remove('hidden');
+                if (tanggalDariFilterDesktop) tanggalDariFilterDesktop.classList.add('hidden');
+                if (tanggalSampaiFilterDesktop) tanggalSampaiFilterDesktop.classList.add('hidden');
+
+                if (bulanTahunFilterMobile) bulanTahunFilterMobile.style.display = 'block';
+                if (tanggalFilterMobile) tanggalFilterMobile.style.display = 'none';
 
                 // Clear tanggal values
-                tanggalDariInput.value = '';
-                tanggalSampaiInput.value = '';
+                if (tanggalDariInput) tanggalDariInput.value = '';
+                if (tanggalSampaiInput) tanggalSampaiInput.value = '';
             } else {
-                // Hide bulan/tahun filter, show tanggal filter
-                bulanTahunFilter.style.display = 'none';
-                tanggalFilter.style.display = 'flex';
-                bulanTahunFilter.classList.add('hidden');
-                tanggalFilter.classList.remove('hidden');
+                // Hide bulan/tahun filters, show tanggal filters
+                if (bulanFilterDesktop) bulanFilterDesktop.classList.add('hidden');
+                if (tahunFilterDesktop) tahunFilterDesktop.classList.add('hidden');
+                if (tanggalDariFilterDesktop) tanggalDariFilterDesktop.classList.remove('hidden');
+                if (tanggalSampaiFilterDesktop) tanggalSampaiFilterDesktop.classList.remove('hidden');
+
+                if (bulanTahunFilterMobile) bulanTahunFilterMobile.style.display = 'none';
+                if (tanggalFilterMobile) tanggalFilterMobile.style.display = 'block';
 
                 // Clear bulan/tahun values
-                bulanSelect.value = '';
-                tahunSelect.value = '';
+                if (bulanSelect) bulanSelect.value = '';
+                if (tahunSelect) tahunSelect.value = '';
 
                 // Re-initialize flatpickr for date inputs
                 setTimeout(() => {

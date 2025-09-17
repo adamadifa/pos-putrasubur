@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\Pembelian;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 
 class LaporanPembelianController extends Controller
 {
@@ -162,6 +163,10 @@ class LaporanPembelianController extends Controller
 
     public function generateLaporanByDateRange($tanggal_mulai, $tanggal_selesai)
     {
+        // Parse tanggal dengan format d/m/Y
+        $tanggal_mulai = Carbon::createFromFormat('d/m/Y', $tanggal_mulai)->startOfDay();
+        $tanggal_selesai = Carbon::createFromFormat('d/m/Y', $tanggal_selesai)->endOfDay();
+
         // Ambil data pembelian berdasarkan range tanggal
         $pembelians = Pembelian::with(['detailPembelian.produk', 'supplier'])
             ->whereBetween('tanggal', [$tanggal_mulai, $tanggal_selesai])
@@ -213,9 +218,9 @@ class LaporanPembelianController extends Controller
         return [
             'periode' => [
                 'jenis' => 'tanggal',
-                'tanggal_mulai' => $tanggal_mulai,
-                'tanggal_selesai' => $tanggal_selesai,
-                'label' => $this->formatDate($tanggal_mulai) . ' - ' . $this->formatDate($tanggal_selesai)
+                'tanggal_mulai' => $tanggal_mulai->format('d/m/Y'),
+                'tanggal_selesai' => $tanggal_selesai->format('d/m/Y'),
+                'label' => $tanggal_mulai->format('d/m/Y') . ' - ' . $tanggal_selesai->format('d/m/Y')
             ],
             'summary' => [
                 'total_pembelian' => $total_pembelian,
@@ -295,10 +300,5 @@ class LaporanPembelianController extends Controller
             12 => 'Desember'
         ];
         return $months[$month] ?? 'Unknown';
-    }
-
-    private function formatDate($date)
-    {
-        return \Carbon\Carbon::parse($date)->format('d/m/Y');
     }
 }

@@ -161,8 +161,8 @@ class LaporanPenjualanController extends Controller
      */
     private function generateLaporanByDateRange($tanggalDari, $tanggalSampai)
     {
-        $tanggalDari = Carbon::parse($tanggalDari);
-        $tanggalSampai = Carbon::parse($tanggalSampai);
+        $tanggalDari = Carbon::createFromFormat('d/m/Y', $tanggalDari)->startOfDay();
+        $tanggalSampai = Carbon::createFromFormat('d/m/Y', $tanggalSampai)->endOfDay();
 
         // Get penjualan data
         $penjualan = Penjualan::with(['pelanggan', 'kasir', 'detailPenjualan.produk', 'pembayaranPenjualan'])
@@ -282,8 +282,8 @@ class LaporanPenjualanController extends Controller
 
             if ($request->jenis_periode === 'tanggal') {
                 $request->validate([
-                    'tanggal_dari' => 'required|date',
-                    'tanggal_sampai' => 'required|date|after_or_equal:tanggal_dari',
+                    'tanggal_dari' => 'required|date_format:d/m/Y',
+                    'tanggal_sampai' => 'required|date_format:d/m/Y|after_or_equal:tanggal_dari',
                 ]);
 
                 $laporanData = $this->generateLaporanByDateRange(

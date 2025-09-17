@@ -44,13 +44,13 @@ class LaporanPembayaranController extends Controller
         $jenisPeriode = $request->jenis_periode ?: 'bulan';
         $laporanData = null;
 
-        // Generate laporan if form is submitted
-        if ($request->isMethod('post')) {
+        // Generate laporan if parameters are provided
+        if ($request->has('jenis_transaksi') && $request->jenis_transaksi) {
             if ($jenisPeriode === 'tanggal') {
                 $request->validate([
                     'jenis_transaksi' => 'required|in:penjualan,pembelian,semua',
-                    'tanggal_dari' => 'required|date',
-                    'tanggal_sampai' => 'required|date|after_or_equal:tanggal_dari',
+                    'tanggal_dari' => 'required|date_format:d/m/Y',
+                    'tanggal_sampai' => 'required|date_format:d/m/Y|after_or_equal:tanggal_dari',
                 ]);
 
                 $laporanData = $this->generateLaporanByDateRange(
@@ -275,8 +275,8 @@ class LaporanPembayaranController extends Controller
      */
     private function generateLaporanByDateRange($kasBankId, $metodePembayaranId, $jenisTransaksi, $tanggalDari, $tanggalSampai)
     {
-        $tanggalDari = Carbon::parse($tanggalDari);
-        $tanggalSampai = Carbon::parse($tanggalSampai);
+        $tanggalDari = Carbon::createFromFormat('d/m/Y', $tanggalDari)->startOfDay();
+        $tanggalSampai = Carbon::createFromFormat('d/m/Y', $tanggalSampai)->endOfDay();
 
         // Get pembayaran penjualan (only if jenis_transaksi is 'penjualan' or 'semua')
         $pembayaranPenjualan = collect();
@@ -420,8 +420,8 @@ class LaporanPembayaranController extends Controller
             if ($jenisPeriode === 'tanggal') {
                 $request->validate([
                     'jenis_transaksi' => 'required|in:penjualan,pembelian,semua',
-                    'tanggal_dari' => 'required|date',
-                    'tanggal_sampai' => 'required|date|after_or_equal:tanggal_dari',
+                    'tanggal_dari' => 'required|date_format:d/m/Y',
+                    'tanggal_sampai' => 'required|date_format:d/m/Y|after_or_equal:tanggal_dari',
                 ]);
 
                 $laporanData = $this->generateLaporanByDateRange(
@@ -454,7 +454,9 @@ class LaporanPembayaranController extends Controller
             // Generate filename
             $filename = 'Laporan_Pembayaran_';
             if ($laporanData['periode']['jenis'] == 'tanggal') {
-                $filename .= $request->tanggal_dari . '_sampai_' . $request->tanggal_sampai;
+                $tanggalDari = str_replace('/', '-', $request->tanggal_dari);
+                $tanggalSampai = str_replace('/', '-', $request->tanggal_sampai);
+                $filename .= $tanggalDari . '_sampai_' . $tanggalSampai;
             } else {
                 $filename .= $laporanData['periode']['bulan_nama'] . '_' . $laporanData['periode']['tahun'];
             }
