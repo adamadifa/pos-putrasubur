@@ -110,27 +110,27 @@
                     <!-- Bulan Filter (for bulan type) -->
                     <div id="bulanFilterDesktop" class="{{ $jenisPeriode == 'tanggal' ? 'hidden' : '' }}">
                         <label for="bulan" class="block text-sm font-medium text-gray-700 mb-1">Bulan</label>
-                            <select name="bulan" id="bulan"
+                        <select name="bulan" id="bulan"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
-                                @foreach ($bulanList as $key => $bulan)
-                                    <option value="{{ $key }}" {{ $selectedBulan == $key ? 'selected' : '' }}>
-                                        {{ $bulan }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                            @foreach ($bulanList as $key => $bulan)
+                                <option value="{{ $key }}" {{ $selectedBulan == $key ? 'selected' : '' }}>
+                                    {{ $bulan }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
                     <!-- Tahun Filter (for bulan type) -->
                     <div id="tahunFilterDesktop" class="{{ $jenisPeriode == 'tanggal' ? 'hidden' : '' }}">
                         <label for="tahun" class="block text-sm font-medium text-gray-700 mb-1">Tahun</label>
-                            <select name="tahun" id="tahun"
+                        <select name="tahun" id="tahun"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
-                                @foreach ($tahunList as $tahun)
-                                    <option value="{{ $tahun }}" {{ $selectedTahun == $tahun ? 'selected' : '' }}>
-                                        {{ $tahun }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            @foreach ($tahunList as $tahun)
+                                <option value="{{ $tahun }}" {{ $selectedTahun == $tahun ? 'selected' : '' }}>
+                                    {{ $tahun }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
 
                     <!-- Tanggal Dari (for tanggal type) -->
@@ -318,7 +318,7 @@
 
                 <!-- Mobile Action Buttons -->
                 <div class="lg:hidden grid grid-cols-2 gap-2">
-                        <button type="submit"
+                    <button type="submit"
                         class="mobile-button inline-flex items-center justify-center px-4 py-2 bg-primary-600 border border-transparent rounded-lg font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -326,9 +326,9 @@
                         </svg>
                         <span class="hidden sm:inline">Tampilkan</span>
                         <span class="sm:hidden">Cari</span>
-                        </button>
-                        @if ($laporanData)
-                            <button type="button" id="exportPdfBtn"
+                    </button>
+                    @if ($laporanData)
+                        <button type="button" id="exportPdfBtn"
                             class="mobile-button inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -337,8 +337,8 @@
                             </svg>
                             <span class="hidden sm:inline">Export PDF</span>
                             <span class="sm:hidden">PDF</span>
-                            </button>
-                        @endif
+                        </button>
+                    @endif
                 </div>
             </form>
         </div>
@@ -554,22 +554,25 @@
                         <h4 class="text-lg font-semibold text-gray-900 mb-4">Rekap Metode Pembayaran</h4>
 
                         <!-- Mobile Card View -->
-                        <div class="block md:hidden space-y-2">
+                        <div class="block md:hidden space-y-3">
                             @foreach ($laporanData['metode_pembayaran_counts'] as $metode)
-                                <div class="mobile-table-card">
-                                    <div class="flex justify-between items-center">
-                                        <div class="flex-1">
-                                            <div class="text-sm font-semibold text-gray-900">{{ $metode['nama'] }}</div>
+                                <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                                    <div class="mb-3">
+                                        <h5 class="text-sm font-semibold text-gray-900 mb-1">{{ $metode['nama'] }}</h5>
+                                    </div>
+
+                                    <div class="space-y-3">
+                                        <div class="bg-gray-50 rounded-lg p-3">
+                                            <div class="text-xs text-gray-500 mb-1">Jumlah Transaksi</div>
+                                            <div class="text-lg font-bold text-gray-900">
+                                                {{ number_format($metode['count'], 0, ',', '.') }}
+                                            </div>
                                         </div>
-                                        <div class="text-right">
-                                            <div class="text-xs text-gray-500">Transaksi</div>
-                                            <div class="text-sm font-medium text-gray-900">
-                                                {{ number_format($metode['count'], 0, ',', '.') }}</div>
-                                        </div>
-                                        <div class="text-right ml-4">
-                                            <div class="text-xs text-gray-500">Total</div>
-                                            <div class="text-sm font-bold text-gray-900">Rp
-                                                {{ number_format($metode['nilai'], 0, ',', '.') }}</div>
+                                        <div class="bg-gray-50 rounded-lg p-3">
+                                            <div class="text-xs text-gray-500 mb-1">Total Nilai</div>
+                                            <div class="text-lg font-bold text-gray-900">
+                                                Rp {{ number_format($metode['nilai'], 0, ',', '.') }}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -616,22 +619,26 @@
                         <h4 class="text-lg font-semibold text-gray-900 mb-4">Rekap Kas Bank</h4>
 
                         <!-- Mobile Card View -->
-                        <div class="block md:hidden space-y-2">
+                        <div class="block md:hidden space-y-3">
                             @foreach ($laporanData['kas_bank_counts'] as $kasBank)
-                                <div class="mobile-table-card">
-                                    <div class="flex justify-between items-center">
-                                        <div class="flex-1">
-                                            <div class="text-sm font-semibold text-gray-900">{{ $kasBank['nama'] }}</div>
+                                <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                                    <div class="mb-3">
+                                        <h5 class="text-sm font-semibold text-gray-900 mb-1">{{ $kasBank['nama'] }}</h5>
+                                        <div class="text-xs text-gray-500">{{ $kasBank['jenis'] }}</div>
+                                    </div>
+
+                                    <div class="space-y-3">
+                                        <div class="bg-gray-50 rounded-lg p-3">
+                                            <div class="text-xs text-gray-500 mb-1">Jumlah Transaksi</div>
+                                            <div class="text-lg font-bold text-gray-900">
+                                                {{ number_format($kasBank['count'], 0, ',', '.') }}
+                                            </div>
                                         </div>
-                                        <div class="text-right">
-                                            <div class="text-xs text-gray-500">Transaksi</div>
-                                            <div class="text-sm font-medium text-gray-900">
-                                                {{ number_format($kasBank['count'], 0, ',', '.') }}</div>
-                                        </div>
-                                        <div class="text-right ml-4">
-                                            <div class="text-xs text-gray-500">Total</div>
-                                            <div class="text-sm font-bold text-gray-900">Rp
-                                                {{ number_format($kasBank['nilai'], 0, ',', '.') }}</div>
+                                        <div class="bg-gray-50 rounded-lg p-3">
+                                            <div class="text-xs text-gray-500 mb-1">Total Nilai</div>
+                                            <div class="text-lg font-bold text-gray-900">
+                                                Rp {{ number_format($kasBank['nilai'], 0, ',', '.') }}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -811,7 +818,7 @@
         }
 
         function initializeFlatpickr() {
-            // Initialize flatpickr for tanggal_dari
+            // Initialize flatpickr for desktop tanggal_dari
             flatpickr("#tanggal_dari", {
                 dateFormat: "d/m/Y",
                 locale: "id",
@@ -821,20 +828,54 @@
                     // Update tanggal_sampai min date
                     if (selectedDates.length > 0) {
                         const tanggalSampaiInput = document.getElementById('tanggal_sampai');
+                        const tanggalSampaiMobileInput = document.getElementById('tanggal_sampai_mobile');
                         if (tanggalSampaiInput._flatpickr) {
                             tanggalSampaiInput._flatpickr.set('minDate', dateStr);
+                        }
+                        if (tanggalSampaiMobileInput._flatpickr) {
+                            tanggalSampaiMobileInput._flatpickr.set('minDate', dateStr);
                         }
                     }
                 }
             });
 
-            // Initialize flatpickr for tanggal_sampai
+            // Initialize flatpickr for desktop tanggal_sampai
             flatpickr("#tanggal_sampai", {
                 dateFormat: "d/m/Y",
                 locale: "id",
                 allowInput: false,
                 clickOpens: true,
                 minDate: document.getElementById('tanggal_dari').value || "today"
+            });
+
+            // Initialize flatpickr for mobile tanggal_dari
+            flatpickr("#tanggal_dari_mobile", {
+                dateFormat: "d/m/Y",
+                locale: "id",
+                allowInput: false,
+                clickOpens: true,
+                onChange: function(selectedDates, dateStr, instance) {
+                    // Update tanggal_sampai min date
+                    if (selectedDates.length > 0) {
+                        const tanggalSampaiInput = document.getElementById('tanggal_sampai');
+                        const tanggalSampaiMobileInput = document.getElementById('tanggal_sampai_mobile');
+                        if (tanggalSampaiInput._flatpickr) {
+                            tanggalSampaiInput._flatpickr.set('minDate', dateStr);
+                        }
+                        if (tanggalSampaiMobileInput._flatpickr) {
+                            tanggalSampaiMobileInput._flatpickr.set('minDate', dateStr);
+                        }
+                    }
+                }
+            });
+
+            // Initialize flatpickr for mobile tanggal_sampai
+            flatpickr("#tanggal_sampai_mobile", {
+                dateFormat: "d/m/Y",
+                locale: "id",
+                allowInput: false,
+                clickOpens: true,
+                minDate: document.getElementById('tanggal_dari_mobile').value || "today"
             });
         }
 

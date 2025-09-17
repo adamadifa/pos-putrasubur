@@ -9,6 +9,7 @@ use App\Models\PembayaranPenjualan;
 use App\Models\PembayaranPembelian;
 use App\Models\KasBank;
 use App\Models\MetodePembayaran;
+use Illuminate\Support\Facades\Log;
 
 class LaporanPembayaranController extends Controller
 {
@@ -211,6 +212,7 @@ class LaporanPembayaranController extends Controller
             if (!isset($kasBankCounts[$kasBankNama])) {
                 $kasBankCounts[$kasBankNama] = [
                     'nama' => $kasBankNama,
+                    'jenis' => $pembayaran->kasBank->jenis ?? 'Tidak Diketahui',
                     'count' => 0,
                     'nilai' => 0
                 ];
@@ -238,6 +240,7 @@ class LaporanPembayaranController extends Controller
             if (!isset($kasBankCounts[$kasBankNama])) {
                 $kasBankCounts[$kasBankNama] = [
                     'nama' => $kasBankNama,
+                    'jenis' => $pembayaran->kasBank->jenis ?? 'Tidak Diketahui',
                     'count' => 0,
                     'nilai' => 0
                 ];
@@ -348,6 +351,7 @@ class LaporanPembayaranController extends Controller
             if (!isset($kasBankCounts[$kasBankNama])) {
                 $kasBankCounts[$kasBankNama] = [
                     'nama' => $kasBankNama,
+                    'jenis' => $pembayaran->kasBank->jenis ?? 'Tidak Diketahui',
                     'count' => 0,
                     'nilai' => 0
                 ];
@@ -375,6 +379,7 @@ class LaporanPembayaranController extends Controller
             if (!isset($kasBankCounts[$kasBankNama])) {
                 $kasBankCounts[$kasBankNama] = [
                     'nama' => $kasBankNama,
+                    'jenis' => $pembayaran->kasBank->jenis ?? 'Tidak Diketahui',
                     'count' => 0,
                     'nilai' => 0
                 ];
@@ -464,7 +469,7 @@ class LaporanPembayaranController extends Controller
 
             return $pdf->stream($filename);
         } catch (\Exception $e) {
-            \Log::error('PDF Export Error: ' . $e->getMessage());
+            Log::error('PDF Export Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan dalam mengexport PDF: ' . $e->getMessage()
