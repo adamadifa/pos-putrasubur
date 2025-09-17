@@ -1002,7 +1002,7 @@
                         <div class="flex justify-between mb-1">
                             <span>No. Faktur:</span>
                             <span class="font-semibold">${penjualan.no_faktur}</span>
-                        </div>
+                                </div>
                         <div class="flex justify-between mb-1">
                             <span>Tanggal:</span>
                             <span>${penjualan.tanggal} ${penjualan.jam}</span>
@@ -1018,14 +1018,14 @@
                         <div class="flex justify-between mb-1">
                             <span>Status:</span>
                             <span class="font-semibold ${penjualan.status_pembayaran === 'lunas' ? 'text-green-600' : 'text-red-600'}">
-                                ${penjualan.status_pembayaran === 'lunas' ? 'LUNAS' : 'BELUM LUNAS'}
-                            </span>
-                        </div>
+                                        ${penjualan.status_pembayaran === 'lunas' ? 'LUNAS' : 'BELUM LUNAS'}
+                                    </span>
+                                </div>
                         <div class="flex justify-between mb-2">
                             <span>Jenis:</span>
                             <span class="font-semibold">${penjualan.jenis_transaksi.toUpperCase()}</span>
-                        </div>
-                    </div>
+                                </div>
+                            </div>
 
                     <!-- Garis Pemisah -->
                     <div class="border-t border-dashed border-gray-400"></div>
@@ -1034,30 +1034,30 @@
                     <div class="py-3 px-4">
                         <div class="text-xs font-semibold mb-2 text-center">DETAIL PRODUK</div>
                         ${penjualan.detail_penjualan.map(detail => `
-                                <div class="mb-3 pb-2 border-b border-gray-200 last:border-b-0">
-                                    <div class="text-xs font-semibold text-gray-900 mb-1">${detail.produk?.nama_produk || 'N/A'}</div>
-                                    <div class="grid grid-cols-2 gap-2 text-xs">
-                                        <div class="flex justify-between">
-                                            <span>Qty:</span>
-                                            <span>${formatNumber(detail.qty, 2)}</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span>Harga:</span>
-                                            <span>Rp ${formatNumber(detail.harga)}</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span>Diskon:</span>
-                                            <span>Rp ${formatNumber(detail.diskon || 0)}</span>
-                                        </div>
-                                        <div class="flex justify-between font-semibold">
-                                            <span>Subtotal:</span>
-                                            <span>Rp ${formatNumber(detail.subtotal)}</span>
-                                        </div>
+                                    <div class="mb-3 pb-2 border-b border-gray-200 last:border-b-0">
+                                        <div class="text-xs font-semibold text-gray-900 mb-1">${detail.produk?.nama_produk || 'N/A'}</div>
+                                        <div class="grid grid-cols-2 gap-2 text-xs">
+                                            <div class="flex justify-between">
+                                                <span>Qty:</span>
+                                                <span>${formatNumber(detail.qty, 2)}</span>
+                            </div>
+                                            <div class="flex justify-between">
+                                                <span>Harga:</span>
+                                                <span>Rp ${formatNumber(detail.harga)}</span>
+                                    </div>
+                                            <div class="flex justify-between">
+                                                <span>Diskon:</span>
+                                                <span>Rp ${formatNumber(detail.diskon || 0)}</span>
+                                    </div>
+                                            <div class="flex justify-between font-semibold">
+                                                <span>Subtotal:</span>
+                                                <span>Rp ${formatNumber(detail.subtotal)}</span>
                                     </div>
                                 </div>
-                            `).join('')}
+                            </div>
+                                `).join('')}
                     </div>
-
+                    
                     <!-- Garis Pemisah -->
                     <div class="border-t border-dashed border-gray-400"></div>
 

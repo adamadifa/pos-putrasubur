@@ -59,9 +59,9 @@
                 </div>
 
                 <!-- Desktop Layout - All elements aligned with equal width -->
-                <div class="hidden lg:grid grid-cols-10 gap-4 mb-4">
+                <div class="hidden lg:grid grid-cols-8 gap-4 mb-4">
                     <!-- Jenis Transaksi Filter -->
-                    <div class="col-span-1">
+                    <div>
                         <label for="jenis_transaksi" class="block text-sm font-medium text-gray-700 mb-1">Jenis Transaksi
                             <span class="text-red-500">*</span></label>
                         <select name="jenis_transaksi" id="jenis_transaksi"
@@ -77,7 +77,7 @@
                     </div>
 
                     <!-- Kas/Bank Filter -->
-                    <div class="col-span-1">
+                    <div>
                         <label for="kas_bank_id" class="block text-sm font-medium text-gray-700 mb-1">Kas/Bank</label>
                         <select name="kas_bank_id" id="kas_bank_id"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
@@ -92,7 +92,7 @@
                     </div>
 
                     <!-- Metode Pembayaran Filter -->
-                    <div class="col-span-2">
+                    <div>
                         <label for="metode_pembayaran_id" class="block text-sm font-medium text-gray-700 mb-1">Metode
                             Pembayaran</label>
                         <select name="metode_pembayaran_id" id="metode_pembayaran_id"
@@ -108,33 +108,33 @@
                     </div>
 
                     <!-- Bulan Filter (for bulan type) -->
-                    <div id="bulanFilterDesktop" class="col-span-1 {{ $jenisPeriode == 'tanggal' ? 'hidden' : '' }}">
+                    <div id="bulanFilterDesktop" class="{{ $jenisPeriode == 'tanggal' ? 'hidden' : '' }}">
                         <label for="bulan" class="block text-sm font-medium text-gray-700 mb-1">Bulan</label>
-                        <select name="bulan" id="bulan"
+                            <select name="bulan" id="bulan"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
-                            @foreach ($bulanList as $key => $bulan)
-                                <option value="{{ $key }}" {{ $selectedBulan == $key ? 'selected' : '' }}>
-                                    {{ $bulan }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+                                @foreach ($bulanList as $key => $bulan)
+                                    <option value="{{ $key }}" {{ $selectedBulan == $key ? 'selected' : '' }}>
+                                        {{ $bulan }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
                     <!-- Tahun Filter (for bulan type) -->
-                    <div id="tahunFilterDesktop" class="col-span-1 {{ $jenisPeriode == 'tanggal' ? 'hidden' : '' }}">
+                    <div id="tahunFilterDesktop" class="{{ $jenisPeriode == 'tanggal' ? 'hidden' : '' }}">
                         <label for="tahun" class="block text-sm font-medium text-gray-700 mb-1">Tahun</label>
-                        <select name="tahun" id="tahun"
+                            <select name="tahun" id="tahun"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
-                            @foreach ($tahunList as $tahun)
-                                <option value="{{ $tahun }}" {{ $selectedTahun == $tahun ? 'selected' : '' }}>
-                                    {{ $tahun }}
-                                </option>
-                            @endforeach
-                        </select>
+                                @foreach ($tahunList as $tahun)
+                                    <option value="{{ $tahun }}" {{ $selectedTahun == $tahun ? 'selected' : '' }}>
+                                        {{ $tahun }}
+                                    </option>
+                                @endforeach
+                            </select>
                     </div>
 
                     <!-- Tanggal Dari (for tanggal type) -->
-                    <div id="tanggalDariFilterDesktop" class="col-span-1 {{ $jenisPeriode == 'bulan' ? 'hidden' : '' }}">
+                    <div id="tanggalDariFilterDesktop" class="{{ $jenisPeriode == 'bulan' ? 'hidden' : '' }}">
                         <label for="tanggal_dari" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Dari</label>
                         <div class="relative">
                             <input type="text" name="tanggal_dari" id="tanggal_dari" value="{{ $tanggalDari }}"
@@ -147,7 +147,7 @@
                     </div>
 
                     <!-- Tanggal Sampai (for tanggal type) -->
-                    <div id="tanggalSampaiFilterDesktop" class="col-span-1 {{ $jenisPeriode == 'bulan' ? 'hidden' : '' }}">
+                    <div id="tanggalSampaiFilterDesktop" class="{{ $jenisPeriode == 'bulan' ? 'hidden' : '' }}">
                         <label for="tanggal_sampai" class="block text-sm font-medium text-gray-700 mb-1">Tanggal
                             Sampai</label>
                         <div class="relative">
@@ -161,7 +161,7 @@
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="col-span-1">
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">&nbsp;</label>
                         <button type="submit"
                             class="w-full inline-flex items-center justify-center px-4 py-2 bg-primary-600 border border-transparent rounded-lg font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
@@ -174,7 +174,7 @@
                     </div>
 
                     @if ($laporanData)
-                        <div class="col-span-1">
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">&nbsp;</label>
                             <button type="button" id="exportPdfBtn"
                                 class="w-full inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
@@ -318,7 +318,7 @@
 
                 <!-- Mobile Action Buttons -->
                 <div class="lg:hidden grid grid-cols-2 gap-2">
-                    <button type="submit"
+                        <button type="submit"
                         class="mobile-button inline-flex items-center justify-center px-4 py-2 bg-primary-600 border border-transparent rounded-lg font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -326,9 +326,9 @@
                         </svg>
                         <span class="hidden sm:inline">Tampilkan</span>
                         <span class="sm:hidden">Cari</span>
-                    </button>
-                    @if ($laporanData)
-                        <button type="button" id="exportPdfBtn"
+                        </button>
+                        @if ($laporanData)
+                            <button type="button" id="exportPdfBtn"
                             class="mobile-button inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -337,8 +337,8 @@
                             </svg>
                             <span class="hidden sm:inline">Export PDF</span>
                             <span class="sm:hidden">PDF</span>
-                        </button>
-                    @endif
+                            </button>
+                        @endif
                 </div>
             </form>
         </div>
