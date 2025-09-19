@@ -59,6 +59,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{encryptedId}/edit', [PenjualanController::class, 'edit'])->name('edit');
         Route::put('/{encryptedId}', [PenjualanController::class, 'update'])->name('update');
         Route::delete('/{encryptedId}', [PenjualanController::class, 'destroy'])->name('destroy');
+        Route::post('/{encryptedId}/export-pdf', [PenjualanController::class, 'exportPdf'])->name('export-pdf');
     });
 
     // API Routes for Penjualan
@@ -165,6 +166,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{encryptedId}/edit', [PembelianController::class, 'edit'])->name('edit');
         Route::put('/{encryptedId}', [PembelianController::class, 'update'])->name('update');
         Route::delete('/{encryptedId}', [PembelianController::class, 'destroy'])->name('destroy');
+        Route::post('/{encryptedId}/export-pdf', [PembelianController::class, 'exportPdf'])->name('export-pdf');
     });
     Route::get('pembelian/search', [PembelianController::class, 'getPembelian'])->name('pembelian.search');
 

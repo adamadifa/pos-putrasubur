@@ -932,4 +932,33 @@ class PenjualanController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Export penjualan to PDF with receipt format
+     */
+    public function exportPdf($encryptedId)
+    {
+        try {
+            $penjualan = Penjualan::findByEncryptedId($encryptedId);
+            $penjualan->load(['pelanggan', 'kasir', 'detailPenjualan.produk.satuan', 'pembayaranPenjualan.user', 'pembayaranPenjualan.kasBank']);
+
+            // Generate PDF using DomPDF
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('penjualan.pdf-receipt', compact('penjualan'));
+
+            // Set paper size and orientation
+            $pdf->setPaper([0, 0, 226.77, 841.89], 'portrait'); // 80mm width, A4 height
+
+            // Generate filename
+            $filename = 'Invoice_' . $penjualan->no_faktur . '_' . date('Y-m-d_H-i-s') . '.pdf';
+
+            return $pdf->stream($filename);
+        } catch (\Exception $e) {
+            Log::error('Error exporting penjualan PDF: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengexport PDF: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

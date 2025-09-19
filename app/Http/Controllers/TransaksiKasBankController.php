@@ -145,22 +145,22 @@ class TransaksiKasBankController extends Controller
 
     public function show($id)
     {
-        $transaksi = TransaksiKasBank::with(['kasBank'])->findOrFail($id);
+        $transaksiKasBank = TransaksiKasBank::with(['kasBank'])->findOrFail($id);
 
-        return view('transaksi-kas-bank.show', compact('transaksi'));
+        return view('transaksi-kas-bank.show', compact('transaksiKasBank'));
     }
 
     public function edit($id)
     {
-        $transaksi = TransaksiKasBank::findOrFail($id);
+        $transaksiKasBank = TransaksiKasBank::findOrFail($id);
         $kasBankList = KasBank::orderBy('nama')->get();
 
-        return view('transaksi-kas-bank.edit', compact('transaksi', 'kasBankList'));
+        return view('transaksi-kas-bank.edit', compact('transaksiKasBank', 'kasBankList'));
     }
 
     public function update(Request $request, $id)
     {
-        $transaksi = TransaksiKasBank::findOrFail($id);
+        $transaksiKasBank = TransaksiKasBank::findOrFail($id);
 
         $request->validate([
             'tanggal_hidden' => 'required|date',
@@ -177,11 +177,11 @@ class TransaksiKasBankController extends Controller
         DB::beginTransaction();
         try {
             // Kembalikan saldo lama
-            $oldKasBank = KasBank::find($transaksi->kas_bank_id);
-            if ($transaksi->jenis_transaksi == 'D') {
-                $oldKasBank->saldo_terkini -= $transaksi->jumlah;
+            $oldKasBank = KasBank::find($transaksiKasBank->kas_bank_id);
+            if ($transaksiKasBank->jenis_transaksi == 'D') {
+                $oldKasBank->saldo_terkini -= $transaksiKasBank->jumlah;
             } else {
-                $oldKasBank->saldo_terkini += $transaksi->jumlah;
+                $oldKasBank->saldo_terkini += $transaksiKasBank->jumlah;
             }
             $oldKasBank->save();
 
@@ -197,7 +197,7 @@ class TransaksiKasBankController extends Controller
             }
 
             // Update transaksi
-            $transaksi->update([
+            $transaksiKasBank->update([
                 'tanggal' => $request->tanggal_hidden,
                 'kas_bank_id' => $request->kas_bank_id,
                 'kategori_transaksi' => $request->kategori_transaksi,
@@ -223,26 +223,26 @@ class TransaksiKasBankController extends Controller
 
     public function destroy($id)
     {
-        $transaksi = TransaksiKasBank::findOrFail($id);
+        $transaksiKasBank = TransaksiKasBank::findOrFail($id);
 
         // Hanya transaksi manual yang bisa dihapus
-        if ($transaksi->referensi_tipe !== 'MN') {
+        if ($transaksiKasBank->referensi_tipe !== 'MN') {
             return back()->with('error', 'Transaksi otomatis tidak dapat dihapus.');
         }
 
         DB::beginTransaction();
         try {
             // Kembalikan saldo
-            $kasBank = KasBank::find($transaksi->kas_bank_id);
-            if ($transaksi->jenis_transaksi == 'D') {
-                $kasBank->saldo_terkini -= $transaksi->jumlah;
+            $kasBank = KasBank::find($transaksiKasBank->kas_bank_id);
+            if ($transaksiKasBank->jenis_transaksi == 'D') {
+                $kasBank->saldo_terkini -= $transaksiKasBank->jumlah;
             } else {
-                $kasBank->saldo_terkini += $transaksi->jumlah;
+                $kasBank->saldo_terkini += $transaksiKasBank->jumlah;
             }
             $kasBank->save();
 
             // Hapus transaksi
-            $transaksi->delete();
+            $transaksiKasBank->delete();
 
             DB::commit();
 

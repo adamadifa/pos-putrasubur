@@ -11,8 +11,8 @@
                 <p class="text-gray-600">Detail informasi transaksi kas dan bank</p>
             </div>
             <div class="flex space-x-3">
-                @if ($transaksi->referensi_tipe == 'MN')
-                    <a href="{{ route('transaksi-kas-bank.edit', $transaksi->id) }}"
+                @if ($transaksiKasBankKasBank->referensi_tipe == 'MN')
+                    <a href="{{ route('transaksi-kas-bank.edit', $transaksiKasBankKasBank->id) }}"
                         class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" class="w-5 h-5 inline mr-2">
@@ -45,24 +45,24 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700">No Bukti</label>
-                            <p class="mt-1 text-sm text-gray-900 font-semibold">{{ $transaksi->no_bukti }}</p>
+                            <p class="mt-1 text-sm text-gray-900 font-semibold">{{ $transaksiKasBank->no_bukti }}</p>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Tanggal</label>
                             <p class="mt-1 text-sm text-gray-900">
-                                {{ \Carbon\Carbon::parse($transaksi->tanggal)->format('d/m/Y') }}</p>
+                                {{ \Carbon\Carbon::parse($transaksiKasBank->tanggal)->format('d/m/Y') }}</p>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Kas/Bank</label>
-                            <p class="mt-1 text-sm text-gray-900">{{ $transaksi->kasBank->nama }}</p>
+                            <p class="mt-1 text-sm text-gray-900">{{ $transaksiKasBank->kasBank->nama }}</p>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Kategori Transaksi</label>
                             <p class="mt-1 text-sm text-gray-900">
-                                {{ $transaksi->kategori_transaksi == 'PJ' ? 'Penjualan' : ($transaksi->kategori_transaksi == 'PB' ? 'Pembelian' : ($transaksi->kategori_transaksi == 'MN' ? 'Manual' : 'Transfer')) }}
+                                {{ $transaksiKasBank->kategori_transaksi == 'PJ' ? 'Penjualan' : ($transaksiKasBank->kategori_transaksi == 'PB' ? 'Pembelian' : ($transaksiKasBank->kategori_transaksi == 'MN' ? 'Manual' : 'Transfer')) }}
                             </p>
                         </div>
                     </div>
@@ -74,8 +74,8 @@
                             <p class="mt-1">
                                 <span
                                     class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
-                                {{ $transaksi->jenis_transaksi == 'D' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                    {{ $transaksi->jenis_transaksi == 'D' ? 'IN' : 'OUT' }}
+                                {{ $transaksiKasBank->jenis_transaksi == 'D' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                    {{ $transaksiKasBank->jenis_transaksi == 'D' ? 'IN' : 'OUT' }}
                                 </span>
                             </p>
                         </div>
@@ -83,12 +83,12 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Jumlah</label>
                             <p class="mt-1 text-lg font-bold text-gray-900">Rp
-                                {{ number_format($transaksi->jumlah, 0, ',', '.') }}</p>
+                                {{ number_format($transaksiKasBank->jumlah, 0, ',', '.') }}</p>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Keterangan</label>
-                            <p class="mt-1 text-sm text-gray-900">{{ $transaksi->keterangan ?? '-' }}</p>
+                            <p class="mt-1 text-sm text-gray-900">{{ $transaksiKasBank->keterangan ?? '-' }}</p>
                         </div>
 
                         <div>
@@ -96,8 +96,8 @@
                             <p class="mt-1 text-sm text-gray-900">
                                 <span
                                     class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
-                                {{ $transaksi->referensi_tipe == 'MN' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                    {{ ucfirst($transaksi->referensi_tipe) }}
+                                {{ $transaksiKasBank->referensi_tipe == 'MN' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                    {{ ucfirst($transaksiKasBank->referensi_tipe) }}
                                 </span>
                             </p>
                         </div>
@@ -111,36 +111,36 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Dibuat Pada</label>
                             <p class="mt-1 text-sm text-gray-900">
-                                {{ \Carbon\Carbon::parse($transaksi->created_at)->format('d/m/Y H:i') }}</p>
+                                {{ \Carbon\Carbon::parse($transaksiKasBank->created_at)->format('d/m/Y H:i') }}</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Terakhir Diupdate</label>
                             <p class="mt-1 text-sm text-gray-900">
-                                {{ \Carbon\Carbon::parse($transaksi->updated_at)->format('d/m/Y H:i') }}</p>
+                                {{ \Carbon\Carbon::parse($transaksiKasBank->updated_at)->format('d/m/Y H:i') }}</p>
                         </div>
-                        @if ($transaksi->referensi_id)
+                        @if ($transaksiKasBank->referensi_id)
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">ID Referensi</label>
-                                <p class="mt-1 text-sm text-gray-900">{{ $transaksi->referensi_id }}</p>
+                                <p class="mt-1 text-sm text-gray-900">{{ $transaksiKasBank->referensi_id }}</p>
                             </div>
                         @endif
                     </div>
                 </div>
 
                 <!-- Action Buttons -->
-                @if ($transaksi->referensi_tipe == 'MN')
+                @if ($transaksiKasBank->referensi_tipe == 'MN')
                     <div class="mt-6 pt-6 border-t border-gray-200">
                         <div class="flex justify-between items-center">
                             <div class="text-sm text-gray-500">
                                 Transaksi ini dapat diedit karena merupakan transaksi manual
                             </div>
                             <div class="flex space-x-3">
-                                <a href="{{ route('transaksi-kas-bank.edit', $transaksi->id) }}"
+                                <a href="{{ route('transaksi-kas-bank.edit', $transaksiKasBank->id) }}"
                                     class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors">
                                     Edit Transaksi
                                 </a>
-                                <form action="{{ route('transaksi-kas-bank.destroy', $transaksi->id) }}" method="POST"
-                                    class="inline"
+                                <form action="{{ route('transaksi-kas-bank.destroy', $transaksiKasBank->id) }}"
+                                    method="POST" class="inline"
                                     onsubmit="return confirm('Apakah Anda yakin ingin menghapus transaksi ini?')">
                                     @csrf
                                     @method('DELETE')

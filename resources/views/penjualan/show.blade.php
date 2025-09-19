@@ -642,11 +642,20 @@
 
                             <!-- Browser Print Button -->
                             <button onclick="printInvoiceRaw()"
-                                class="w-full flex items-center justify-center px-3 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 shadow-sm hover:shadow-md text-sm">
+                                class="hidden w-full items-center justify-center px-3 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 shadow-sm hover:shadow-md text-sm">
                                 <div class="w-4 h-4 bg-white/20 rounded flex items-center justify-center mr-2">
                                     <i class="ti ti-device-floppy text-xs"></i>
                                 </div>
                                 Cetak Raw (Browser)
+                            </button>
+
+                            <!-- Export PDF Button -->
+                            <button onclick="exportToPDF()"
+                                class="w-full flex items-center justify-center px-3 py-2 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-lg hover:from-red-600 hover:to-rose-600 transition-all duration-200 shadow-sm hover:shadow-md text-sm">
+                                <div class="w-4 h-4 bg-white/20 rounded flex items-center justify-center mr-2">
+                                    <i class="ti ti-file-download text-xs"></i>
+                                </div>
+                                Export PDF
                             </button>
                         </div>
 
@@ -1539,12 +1548,7 @@
             @if ($totalBayar > 0)
                 invoiceLines.push("Bayar: Rp {{ number_format($totalBayar, 0) }}\n");
 
-                @if ($totalBayar >= $penjualan->total_setelah_diskon)
-                    @php
-                        $kembalian = $totalBayar - $penjualan->total_setelah_diskon;
-                    @endphp
-                    invoiceLines.push("Kembalian: Rp {{ number_format($kembalian, 0) }}\n");
-                @else
+                @if ($totalBayar < $penjualan->total_setelah_diskon)
                     @php
                         $sisa = $penjualan->total_setelah_diskon - $totalBayar;
                     @endphp
@@ -1558,7 +1562,7 @@
                 invoiceLines.push("RIWAYAT PEMBAYARAN:\n");
                 invoiceLines.push("--------------------------------\n");
                 invoiceLines.push(
-                    "Faktur: {{ $penjualan->no_faktur }} - {{ $penjualan->tanggal->format('d/m/Y H:i') }}\n");
+                    "Faktur: {{ $penjualan->no_faktur }} - {{ $penjualan->created_at->format('d/m/Y H:i') }}\n");
                 invoiceLines.push("--------------------------------\n");
                 @foreach ($penjualan->pembayaranPenjualan->sortBy('created_at') as $pembayaran)
                     invoiceLines.push("{{ $pembayaran->no_bukti }}\n");
@@ -2019,16 +2023,25 @@
 
             // Header
             content += '================================\n';
-            content += '        PUTRA SUBUR\n';
-            content += '       Toko Kelontong\n';
-            content += '      Jl. Raya No. 123\n';
-            content += '      Telp: 021-1234567\n';
+            content += '        {{ $pengaturanUmum->nama_toko }}\n';
+            @if ($pengaturanUmum->deskripsi)
+                content += '       {{ $pengaturanUmum->deskripsi }}\n';
+            @endif
+            @if ($pengaturanUmum->alamat)
+                content += '      {{ $pengaturanUmum->alamat }}\n';
+            @endif
+            @if ($pengaturanUmum->no_telepon)
+                content += '      Telp: {{ $pengaturanUmum->no_telepon }}\n';
+            @endif
+            @if ($pengaturanUmum->email)
+                content += '      Email: {{ $pengaturanUmum->email }}\n';
+            @endif
             content += '================================\n\n';
 
             // Invoice info
             content += 'INVOICE\n';
             content += 'No. Faktur: {{ $penjualan->no_faktur }}\n';
-            content += 'Tanggal: {{ $penjualan->tanggal->format('d/m/Y H:i') }}\n';
+            content += 'Tanggal: {{ $penjualan->created_at->format('d/m/Y H:i') }}\n';
             content += 'Pelanggan: {{ $penjualan->pelanggan->nama }}\n';
             content += 'Kasir: {{ $penjualan->kasir->name }}\n';
             content += '================================\n\n';
@@ -2062,12 +2075,7 @@
             @if ($totalBayar > 0)
                 content += 'Bayar: Rp {{ number_format($totalBayar, 0) }}\n';
 
-                @if ($totalBayar >= $penjualan->total_setelah_diskon)
-                    @php
-                        $kembalian = $totalBayar - $penjualan->total_setelah_diskon;
-                    @endphp
-                    content += 'Kembalian: Rp {{ number_format($kembalian, 0) }}\n';
-                @else
+                @if ($totalBayar < $penjualan->total_setelah_diskon)
                     @php
                         $sisa = $penjualan->total_setelah_diskon - $totalBayar;
                     @endphp
@@ -2393,6 +2401,72 @@
                     }
                 }, 300);
             }, 3000);
+        }
+
+        // Export to PDF function
+        function exportToPDF() {
+            const button = document.querySelector('button[onclick="exportToPDF()"]');
+            const originalText = button.innerHTML;
+
+            // Show loading state
+            button.disabled = true;
+            button.innerHTML = `
+                <div class="w-4 h-4 bg-white/20 rounded flex items-center justify-center mr-2">
+                    <i class="ti ti-loader animate-spin text-xs"></i>
+                </div>
+                Exporting...
+            `;
+
+            // Use fetch API like laporan penjualan
+            fetch('{{ route('penjualan.export-pdf', $penjualan->encrypted_id) }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/pdf'
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(response => {
+                    if (response.headers.get('Content-Type') === 'application/pdf') {
+                        return response.blob();
+                    } else {
+                        return response.json();
+                    }
+                })
+                .then(data => {
+                    if (data instanceof Blob) {
+                        // Handle PDF response - open in new tab for preview
+                        const url = window.URL.createObjectURL(data);
+                        window.open(url, '_blank');
+                        // Clean up the URL after a delay
+                        setTimeout(() => {
+                            window.URL.revokeObjectURL(url);
+                        }, 1000);
+                    } else {
+                        // Handle JSON response (error)
+                        if (data.success === false) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message || 'Terjadi kesalahan dalam mengexport PDF'
+                            });
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Gagal mengexport PDF: ' + error.message
+                    });
+                })
+                .finally(() => {
+                    // Reset button
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                });
         }
     </script>
 @endpush

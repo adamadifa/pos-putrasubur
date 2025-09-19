@@ -4,8 +4,8 @@
 
 @section('content')
     <div class="min-h-screen py-8">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Header -->
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Header -->
             <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-8">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-4">
@@ -18,17 +18,17 @@
                         </a>
                         <div class="flex items-center space-x-4">
                             <div class="p-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                                    stroke="currentColor" class="w-6 h-6 text-white">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-white">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
                                 </svg>
                             </div>
-            <div>
+                            <div>
                                 <h1
                                     class="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                                    Edit Transaksi Kas & Bank
-                                </h1>
-                                <p class="text-gray-500 mt-1">Edit data transaksi kas dan bank</p>
+                                    Edit Transaksi Kas & Bank</h1>
+                                <p class="text-gray-500 mt-1">Edit transaksi kas atau bank yang sudah ada</p>
                             </div>
                         </div>
                     </div>
@@ -45,7 +45,7 @@
 
             <!-- Success Alert -->
             @if (session('success'))
-                <div class="bg-green-50 border border-green-200 rounded-xl p-4 shadow-sm mb-6">
+                <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-6 shadow-sm">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -59,13 +59,26 @@
                                 {{ session('success') }}
                             </p>
                         </div>
+                        <div class="ml-auto pl-3">
+                            <div class="-mx-1.5 -my-1.5">
+                                <button type="button"
+                                    class="inline-flex bg-green-50 rounded-lg p-1.5 text-green-500 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-green-50"
+                                    onclick="this.parentElement.parentElement.parentElement.parentElement.remove()">
+                                    <span class="sr-only">Dismiss</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             @endif
 
             <!-- Error Alert -->
-            @if (session('error'))
-                <div class="bg-red-50 border border-red-200 rounded-xl p-4 shadow-sm mb-6">
+            @if ($errors->any())
+                <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 shadow-sm">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -75,9 +88,29 @@
                             </svg>
                         </div>
                         <div class="ml-3">
-                            <p class="text-sm font-medium text-red-800">
-                                {{ session('error') }}
-                            </p>
+                            <h3 class="text-sm font-medium text-red-800">
+                                Terdapat {{ $errors->count() }} kesalahan yang perlu diperbaiki:
+                            </h3>
+                            <div class="mt-2 text-sm text-red-700">
+                                <ul class="list-disc pl-5 space-y-1">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="ml-auto pl-3">
+                            <div class="-mx-1.5 -my-1.5">
+                                <button type="button"
+                                    class="inline-flex bg-red-50 rounded-lg p-1.5 text-red-500 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 focus:ring-offset-red-50"
+                                    onclick="this.parentElement.parentElement.parentElement.parentElement.remove()">
+                                    <span class="sr-only">Dismiss</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -88,157 +121,115 @@
                 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
                     <div class="flex items-center space-x-3">
                         <div class="p-2 bg-blue-100 rounded-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-5 h-5 text-blue-600">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-                </svg>
+                            <i class="ti ti-credit-card text-blue-600 text-lg"></i>
                         </div>
-                        <h2 class="text-lg font-semibold text-gray-800">Form Edit Transaksi Kas & Bank</h2>
+                        <h2 class="text-lg font-semibold text-gray-800">Form Edit Transaksi</h2>
                     </div>
-        </div>
+                </div>
 
-                <form action="{{ route('transaksi-kas-bank.update', $transaksi->id) }}" method="POST" class="p-8"
-                    id="editTransaksiForm">
+                <form action="{{ route('transaksi-kas-bank.update', $transaksiKasBank->id) }}" method="POST"
+                    class="p-8" id="editTransaksiForm">
                     @csrf
                     @method('PUT')
 
                     <div class="space-y-8">
-                        <!-- No Bukti (Read Only) -->
+                        <!-- Tanggal -->
                         <div class="space-y-2">
-                            <label for="no_bukti" class="block text-sm font-semibold text-gray-700">
-                                No Bukti
+                            <label for="tanggal" class="block text-sm font-semibold text-gray-700">
+                                Tanggal <span class="text-red-500">*</span>
                             </label>
                             <div class="relative group">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <i
-                                        class="ti ti-receipt text-gray-400 group-hover:text-blue-500 transition-colors text-lg"></i>
+                                        class="ti ti-calendar text-gray-400 group-hover:text-blue-500 transition-colors text-lg"></i>
                                 </div>
-                            <input type="text" value="{{ $transaksi->no_bukti }}" readonly
-                                    class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed">
+                                <input type="text" id="tanggal"
+                                    value="{{ old('tanggal_display', $transaksiKasBank->tanggal->format('d/m/Y')) }}"
+                                    class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('tanggal_hidden') border-red-500 @enderror"
+                                    placeholder="Pilih tanggal" readonly>
+                                <input type="hidden" name="tanggal_hidden" id="tanggal_hidden"
+                                    value="{{ old('tanggal_hidden', $transaksiKasBank->tanggal->format('Y-m-d')) }}">
                             </div>
                             <p class="text-xs text-gray-500 flex items-center">
                                 <i class="ti ti-info-circle text-gray-400 mr-1"></i>
-                                Nomor bukti tidak dapat diubah
+                                Pilih tanggal transaksi
                             </p>
-                        </div>
-
-                        <!-- Tanggal dan Kas/Bank -->
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <!-- Tanggal -->
-                            <div class="space-y-2">
-                                <label for="tanggal" class="block text-sm font-semibold text-gray-700">
-                                Tanggal <span class="text-red-500">*</span>
-                            </label>
-                                <div class="relative group">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor"
-                                            class="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-                                        </svg>
-                                    </div>
-                                    <input type="text" name="tanggal" id="tanggal" readonly
-                                        value="{{ old('tanggal', \Carbon\Carbon::parse($transaksi->tanggal)->format('d/m/Y')) }}"
-                                        placeholder="Pilih tanggal"
-                                        class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white cursor-pointer hover:bg-gray-50 @error('tanggal') border-red-500 @enderror"
-                                required>
-                                    <input type="hidden" name="tanggal_hidden" id="tanggal_hidden"
-                                        value="{{ old('tanggal', \Carbon\Carbon::parse($transaksi->tanggal)->format('Y-m-d')) }}">
-                                </div>
-                            @error('tanggal')
+                            @error('tanggal_hidden')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
 
                         <!-- Kas/Bank -->
-                            <div class="space-y-2">
-                                <label for="kas_bank_id" class="block text-sm font-semibold text-gray-700">
+                        <div class="space-y-2">
+                            <label for="kas_bank_id" class="block text-sm font-semibold text-gray-700">
                                 Kas/Bank <span class="text-red-500">*</span>
                             </label>
-                                <div class="relative group">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor"
-                                            class="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-                                        </svg>
-                                    </div>
-                            <select name="kas_bank_id" id="kas_bank_id"
-                                        class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('kas_bank_id') border-red-500 @enderror"
-                                required>
-                                <option value="">Pilih Kas/Bank</option>
-                                @foreach ($kasBankList as $kasBank)
-                                    <option value="{{ $kasBank->id }}"
-                                        {{ old('kas_bank_id', $transaksi->kas_bank_id) == $kasBank->id ? 'selected' : '' }}>
-                                                {{ $kasBank->nama }} - No. Rek: {{ $kasBank->no_rekening ?? '-' }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i
+                                        class="ti ti-building-bank text-gray-400 group-hover:text-blue-500 transition-colors text-lg"></i>
                                 </div>
+                                <select name="kas_bank_id" id="kas_bank_id"
+                                    class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('kas_bank_id') border-red-500 @enderror">
+                                    <option value="">Pilih Kas/Bank</option>
+                                    @foreach ($kasBankList as $kasBank)
+                                        <option value="{{ $kasBank->id }}"
+                                            {{ old('kas_bank_id', $transaksiKasBank->kas_bank_id) == $kasBank->id ? 'selected' : '' }}
+                                            data-jenis="{{ $kasBank->jenis }}"
+                                            data-saldo="{{ number_format($kasBank->saldo_terkini, 0, ',', '.') }}">
+                                            {{ $kasBank->nama }} ({{ $kasBank->kode }})@if ($kasBank->no_rekening)
+                                                - {{ $kasBank->no_rekening }}
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <p class="text-xs text-gray-500 flex items-center">
+                                <i class="ti ti-info-circle text-gray-400 mr-1"></i>
+                                Pilih kas atau bank untuk transaksi
+                            </p>
                             @error('kas_bank_id')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
-                        </div>
+
+                        <!-- Kategori Transaksi (Hidden - Default Manual) -->
+                        <input type="hidden" name="kategori_transaksi" value="MN">
 
                         <!-- Jenis Transaksi -->
                         <div class="space-y-2">
                             <label class="block text-sm font-semibold text-gray-700">
                                 Jenis Transaksi <span class="text-red-500">*</span>
                             </label>
-                            <div class="grid grid-cols-2 gap-4">
-                                <label class="relative cursor-pointer transaction-type-option">
-                                    <input type="radio" name="jenis_transaksi" id="jenis_transaksi_masuk"
-                                        value="D"
-                                        {{ old('jenis_transaksi', $transaksi->jenis_transaksi) == 'D' ? 'checked' : '' }}
-                                        class="sr-only transaction-type-radio">
-                                    <div
-                                        class="p-6 border-2 border-gray-200 rounded-xl hover:border-green-300 hover:bg-green-50 transition-all duration-200 transaction-type-card">
-                                        <div class="flex flex-col items-center text-center">
-                                            <div
-                                                class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-3">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                    class="w-6 h-6 text-green-600">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M12 4.5v15m7.5-7.5h-15" />
-                                                </svg>
-                                            </div>
-                                            <span class="text-lg font-semibold text-gray-900">Masuk</span>
-                                            <span class="text-sm text-gray-500">Transaksi masuk ke kas/bank</span>
-                                        </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label
+                                    class="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                    <input type="radio" name="jenis_transaksi" value="D"
+                                        {{ old('jenis_transaksi', $transaksiKasBank->jenis_transaksi) === 'D' ? 'checked' : '' }}
+                                        class="mr-3 text-blue-600 focus:ring-blue-500" required>
+                                    <div class="flex items-center">
+                                        <i class="ti ti-arrow-down text-lg text-green-600 mr-2"></i>
+                                        <span class="text-sm font-medium">Masuk</span>
                                     </div>
                                 </label>
-
-                                <label class="relative cursor-pointer transaction-type-option">
-                                    <input type="radio" name="jenis_transaksi" id="jenis_transaksi_keluar"
-                                        value="K"
-                                        {{ old('jenis_transaksi', $transaksi->jenis_transaksi) == 'K' ? 'checked' : '' }}
-                                        class="sr-only transaction-type-radio">
-                                    <div
-                                        class="p-6 border-2 border-gray-200 rounded-xl hover:border-red-300 hover:bg-red-50 transition-all duration-200 transaction-type-card">
-                                        <div class="flex flex-col items-center text-center">
-                                            <div
-                                                class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mb-3">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                    class="w-6 h-6 text-red-600">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M19.5 4.5l-15 15m0 0h11.25m-11.25 0V8.25" />
-                                                </svg>
-                                            </div>
-                                            <span class="text-lg font-semibold text-gray-900">Keluar</span>
-                                            <span class="text-sm text-gray-500">Transaksi keluar dari kas/bank</span>
-                                        </div>
+                                <label
+                                    class="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                    <input type="radio" name="jenis_transaksi" value="K"
+                                        {{ old('jenis_transaksi', $transaksiKasBank->jenis_transaksi) === 'K' ? 'checked' : '' }}
+                                        class="mr-3 text-blue-600 focus:ring-blue-500" required>
+                                    <div class="flex items-center">
+                                        <i class="ti ti-arrow-up text-lg text-red-600 mr-2"></i>
+                                        <span class="text-sm font-medium">Keluar</span>
                                     </div>
                                 </label>
                             </div>
                             @error('jenis_transaksi')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
+                            <p class="text-xs text-gray-500 flex items-center">
+                                <i class="ti ti-info-circle text-gray-400 mr-1"></i>
+                                Masuk untuk uang masuk, Keluar untuk uang keluar
+                            </p>
                         </div>
 
                         <!-- Jumlah -->
@@ -248,17 +239,21 @@
                             </label>
                             <div class="relative group">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span
-                                        class="text-gray-500 font-medium group-hover:text-green-500 transition-colors">Rp</span>
+                                    <i
+                                        class="ti ti-currency-rupee text-gray-400 group-hover:text-blue-500 transition-colors text-lg"></i>
                                 </div>
-                                <input type="text" id="jumlah" name="jumlah"
-                                    value="{{ old('jumlah', number_format($transaksi->jumlah, 0, ',', '.')) }}"
-                                    class="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('jumlah') border-red-500 @enderror text-right text-lg font-semibold"
-                                    placeholder="0" required>
+                                <input type="text" name="jumlah" id="jumlah"
+                                    value="{{ old('jumlah', number_format($transaksiKasBank->jumlah, 0, ',', '.')) }}"
+                                    class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white text-right @error('jumlah_raw') border-red-500 @enderror"
+                                    placeholder="0" style="text-align: right;">
                                 <input type="hidden" name="jumlah_raw" id="jumlah_raw"
-                                    value="{{ old('jumlah_raw', $transaksi->jumlah) }}">
+                                    value="{{ old('jumlah_raw', $transaksiKasBank->jumlah) }}">
                             </div>
-                            @error('jumlah')
+                            <p class="text-xs text-gray-500 flex items-center">
+                                <i class="ti ti-info-circle text-gray-400 mr-1"></i>
+                                Masukkan jumlah transaksi (akan diformat otomatis)
+                            </p>
+                            @error('jumlah_raw')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
@@ -270,65 +265,72 @@
                             </label>
                             <div class="relative group">
                                 <div class="absolute inset-y-0 left-0 pl-3 pt-3 flex items-start pointer-events-none">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor"
-                                        class="w-5 h-5 text-gray-400 group-hover:text-purple-500 transition-colors">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-                                    </svg>
+                                    <i
+                                        class="ti ti-note text-gray-400 group-hover:text-blue-500 transition-colors text-lg"></i>
                                 </div>
-                                <textarea id="keterangan" name="keterangan" rows="3"
+                                <textarea name="keterangan" id="keterangan" rows="3"
                                     class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('keterangan') border-red-500 @enderror"
-                                placeholder="Masukkan keterangan transaksi (opsional)">{{ old('keterangan', $transaksi->keterangan) }}</textarea>
+                                    placeholder="Masukkan keterangan transaksi (opsional)" maxlength="255">{{ old('keterangan', $transaksiKasBank->keterangan) }}</textarea>
                             </div>
                             <p class="text-xs text-gray-500 flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-3 h-3 mr-1">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.847a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.847.813a4.5 4.5 0 0 0-3.09 3.09Z" />
-                                </svg>
-                                Catatan tambahan untuk transaksi ini
+                                <i class="ti ti-info-circle text-gray-400 mr-1"></i>
+                                Keterangan tambahan untuk transaksi (opsional)
                             </p>
                             @error('keterangan')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
-                    </div>
+                        </div>
 
-                        <!-- Hidden input for kategori_transaksi -->
-                        <input type="hidden" name="kategori_transaksi" value="MN">
+                        <!-- Preview Card -->
+                        <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-4">Preview Transaksi</h4>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div
+                                        class="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center mr-4">
+                                        <i class="ti ti-exchange text-blue-600 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-base font-medium text-gray-900" id="preview-kas-bank">
+                                            Pilih Kas/Bank
+                                        </div>
+                                        <div class="text-sm text-gray-500">
+                                            <span id="preview-kategori">Manual</span> •
+                                            <span id="preview-jenis">Debet</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-lg font-bold text-gray-900" id="preview-jumlah">
+                                        Rp 0
+                                    </div>
+                                    <div class="text-sm text-gray-500" id="preview-tanggal">
+                                        {{ date('d M Y') }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Action Buttons -->
                     <div class="flex items-center justify-between pt-8 mt-8 border-t border-gray-200">
                         <a href="{{ route('transaksi-kas-bank.index') }}"
                             class="inline-flex items-center px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold text-base rounded-xl hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 group">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-3 group-hover:text-gray-600">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
+                            <i class="ti ti-x text-lg mr-3 group-hover:text-gray-600"></i>
                             Batal
                         </a>
 
                         <div class="flex items-center space-x-4">
-                            <button type="reset" id="resetBtn"
+                            <button type="reset"
                                 class="inline-flex items-center px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold text-base rounded-xl hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 group">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor"
-                                    class="w-6 h-6 mr-3 group-hover:text-gray-600">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-                                </svg>
+                                <i class="ti ti-refresh text-lg mr-3 group-hover:text-gray-600"></i>
                                 Reset Form
                             </button>
                             <button type="submit" id="submitBtn"
                                 class="inline-flex items-center px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-base rounded-xl shadow-lg hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform hover:scale-[1.02] transition-all duration-200">
-                                <svg id="submitIcon" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-3">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-                                </svg>
-                                <span id="submitBtnText">Update Transaksi</span>
-                        </button>
+                                <i class="ti ti-device-floppy text-lg mr-3"></i>
+                                Update Transaksi
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -341,13 +343,14 @@
                         <i class="ti ti-info-circle text-blue-400 text-lg"></i>
                     </div>
                     <div class="ml-3">
-                        <h3 class="text-sm font-medium text-blue-800">Tips Edit Transaksi</h3>
+                        <h3 class="text-sm font-medium text-blue-800">Tips Edit Transaksi Kas & Bank</h3>
                         <div class="mt-2 text-sm text-blue-700">
                             <ul class="list-disc pl-5 space-y-1">
-                                <li>Pastikan data yang diubah sudah benar sebelum menyimpan</li>
-                                <li>Perubahan jumlah akan mempengaruhi saldo kas/bank</li>
-                                <li>Nomor bukti tidak dapat diubah setelah transaksi dibuat</li>
-                                <li>Gunakan keterangan untuk mencatat alasan perubahan</li>
+                                <li>Pilih kas/bank yang sesuai untuk transaksi</li>
+                                <li>Masuk untuk uang masuk, Keluar untuk uang keluar</li>
+                                <li>Transaksi ini akan disimpan sebagai transaksi manual</li>
+                                <li>Isi keterangan untuk memudahkan pelacakan transaksi</li>
+                                <li>Pastikan jumlah transaksi sudah benar sebelum disimpan</li>
                             </ul>
                         </div>
                     </div>
@@ -357,196 +360,151 @@
     </div>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
     <script>
         $(document).ready(function() {
-            console.log('Document ready, initializing transaction form...');
-
-
-            const jumlahInput = document.getElementById('jumlah');
-
-            // Number formatting for amount
-            let isFormatting = false;
-            let lastValidValue = '0';
-
-            jumlahInput.addEventListener('input', function(e) {
-                if (isFormatting) return;
-
-                const cursorPosition = e.target.selectionStart;
-                const oldValue = e.target.value;
-
-                // Get the raw numeric value
-                let rawValue = e.target.value.replace(/[^\d,]/g, '');
-
-                if (!rawValue) {
-                    document.getElementById('jumlah_raw').value = '';
-                    return;
-                }
-
-                // Handle decimal separator
-                let hasDecimal = rawValue.includes(',');
-                let integerPart = '';
-                let decimalPart = '';
-
-                if (hasDecimal) {
-                    let parts = rawValue.split(',');
-                    integerPart = parts[0] || '';
-                    decimalPart = parts[1] || '';
-
-                if (parts.length > 2) {
-                        decimalPart = parts.slice(1).join('');
-                    }
-                } else {
-                    integerPart = rawValue;
-                }
-
-                // Format the value
-                let newValue = '';
-                if (integerPart) {
-                    if (integerPart.length >= 4) {
-                        integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-                    }
-                    newValue = integerPart;
-                }
-
-                if (hasDecimal) {
-                    newValue += ',' + decimalPart;
-                }
-
-                // Store last valid value
-                let numericValue = parseFormattedDecimal(newValue);
-                if (numericValue > 0) {
-                    lastValidValue = newValue;
-                }
-
-                // Store raw value
-                document.getElementById('jumlah_raw').value = numericValue;
-
-                if (newValue !== oldValue) {
-                    isFormatting = true;
-                    e.target.value = newValue;
-                    isFormatting = false;
-                }
-            });
-
-            // Helper functions for decimal formatting
-            function formatDecimalInput(value) {
-                if (!value && value !== 0) return '';
-
-                let strValue = value.toString();
-                if (strValue.includes(',')) {
-                    let parts = strValue.split(',');
-                    let integerPart = parts[0].replace(/\./g, '');
-                    let decimalPart = parts[1] || '';
-
-                    if (integerPart && integerPart !== '0') {
-                        integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-                    }
-
-                    if (decimalPart !== '') {
-                        return integerPart + ',' + decimalPart;
-                    } else {
-                        return integerPart;
-                    }
-                } else {
-                    let numValue;
-                    if (typeof value === 'number') {
-                        numValue = value;
-                    } else {
-                        let cleanValue = strValue.replace(',', '.');
-                        numValue = parseFloat(cleanValue);
-                    }
-
-                    if (isNaN(numValue)) return '';
-
-                    let parts = numValue.toString().split('.');
-                    let integerPart = parts[0];
-                    let decimalPart = parts[1] || '';
-
-                    integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-
-                    if (decimalPart) {
-                        return integerPart + ',' + decimalPart;
-                    } else {
-                        return integerPart;
-                    }
-                }
-            }
-
-            function parseFormattedDecimal(value) {
-                if (!value) return 0;
-
-                // Handle Indonesian number format (1.000.000,50)
-                let cleanValue = value.toString()
-                    .replace(/\./g, '') // Remove thousand separators
-                    .replace(',', '.'); // Replace decimal separator
-
-                let numValue = parseFloat(cleanValue);
-                return isNaN(numValue) ? 0 : numValue;
-            }
-
-            // Handle focus and blur for amount
-            jumlahInput.addEventListener('focus', function() {
-                const rawValue = document.getElementById('jumlah_raw').value;
-                if (rawValue && rawValue !== '0') {
-                    this.value = rawValue;
-                    this.select();
-                }
-            });
-
-            jumlahInput.addEventListener('blur', function() {
-                let inputValue = this.value.trim();
-
-                if (!inputValue) {
-                    this.value = lastValidValue || '0';
-                    return;
-                }
-
-                let value = parseFormattedDecimal(inputValue);
-                if (value <= 0 || isNaN(value)) {
-                    this.value = lastValidValue || '0';
-                } else {
-                    let formattedValue = formatDecimalInput(value);
-                    this.value = formattedValue;
-                    lastValidValue = formattedValue;
-                }
-            });
-
             // Frontend Validation Rules and Messages
             const validationRules = {
-                tanggal_hidden: {
-                    required: true
-                },
                 kas_bank_id: {
                     required: true
                 },
-                jumlah: {
+                jenis_transaksi: {
                     required: true
+                },
+                jumlah_raw: {
+                    required: true,
+                    min: 1
+                },
+                keterangan: {
+                    maxLength: 255
                 }
             };
 
             const validationMessages = {
-                tanggal_hidden: {
-                    required: 'Tanggal wajib diisi.'
-                },
                 kas_bank_id: {
                     required: 'Kas/Bank wajib dipilih.'
                 },
-                jumlah: {
-                    required: 'Jumlah wajib diisi.'
+                jenis_transaksi: {
+                    required: 'Jenis transaksi wajib dipilih.'
+                },
+                jumlah_raw: {
+                    required: 'Jumlah wajib diisi.',
+                    min: 'Jumlah minimal 1.'
+                },
+                keterangan: {
+                    maxLength: 'Keterangan maksimal 255 karakter.'
                 }
             };
 
+            // Format number input with thousand separator
+            function formatNumberInput(value) {
+                // Remove all non-digit characters
+                const numericValue = value.toString().replace(/\D/g, '');
+                // Format with thousand separator
+                return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            }
+
+            // Parse formatted number back to numeric value
+            function parseFormattedNumber(value) {
+                return parseInt(value.replace(/\./g, '')) || 0;
+            }
+
+            // Setup number input formatting
+            function setupNumberInput(input) {
+                input.addEventListener('input', function(e) {
+                    const cursorPosition = e.target.selectionStart;
+                    const oldValue = e.target.value;
+                    const newValue = formatNumberInput(e.target.value);
+
+                    e.target.value = newValue;
+
+                    // Adjust cursor position
+                    const diff = newValue.length - oldValue.length;
+                    e.target.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
+
+                    // Update hidden field
+                    $('#jumlah_raw').val(parseFormattedNumber(newValue));
+
+                    // Trigger validation for jumlah_raw field
+                    setTimeout(function() {
+                        validateField('jumlah_raw', parseFormattedNumber(newValue));
+                    }, 100);
+                });
+
+                input.addEventListener('blur', function(e) {
+                    if (e.target.value === '' || e.target.value === '0') {
+                        e.target.value = '';
+                        $('#jumlah_raw').val('');
+                        // Trigger validation for empty value
+                        setTimeout(function() {
+                            validateField('jumlah_raw', '');
+                        }, 100);
+                    } else {
+                        // Trigger validation for non-empty value
+                        setTimeout(function() {
+                            validateField('jumlah_raw', parseFormattedNumber(e.target.value));
+                        }, 100);
+                    }
+                });
+            }
+
+            // Live Preview Function
+            function updatePreview() {
+                const kasBankSelect = $('#kas_bank_id');
+                const selectedOption = kasBankSelect.find('option:selected');
+                const kasBankName = selectedOption.text() || 'Pilih Kas/Bank';
+                const kategori = 'MN'; // Always Manual
+                const jenis = $('input[name="jenis_transaksi"]:checked').val() || 'D';
+                const jumlah = $('#jumlah').val() || 'Rp 0';
+                const tanggal = $('#tanggal').val();
+
+                // Extract kas/bank name without no rekening
+                let displayName = kasBankName;
+                if (kasBankName.includes(' - ')) {
+                    displayName = kasBankName.split(' - ')[0];
+                }
+
+                $('#preview-kas-bank').text(displayName || 'Pilih Kas/Bank');
+                $('#preview-kategori').text('Manual');
+                $('#preview-jenis').text(jenis === 'D' ? 'Masuk' : 'Keluar');
+                $('#preview-jumlah').text(jumlah);
+
+                if (tanggal) {
+                    // Parse tanggal dari format d/m/Y ke Date object
+                    const dateParts = tanggal.split('/');
+                    if (dateParts.length === 3) {
+                        const day = parseInt(dateParts[0]);
+                        const month = parseInt(dateParts[1]) - 1; // Month is 0-indexed
+                        const year = parseInt(dateParts[2]);
+                        const date = new Date(year, month, day);
+
+                        if (!isNaN(date.getTime())) {
+                            const formattedDate = date.toLocaleDateString('id-ID', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric'
+                            });
+                            $('#preview-tanggal').text(formattedDate);
+                        } else {
+                            $('#preview-tanggal').text('Invalid Date');
+                        }
+                    } else {
+                        $('#preview-tanggal').text('Invalid Date');
+                    }
+                } else {
+                    $('#preview-tanggal').text('Pilih Tanggal');
+                }
+            }
+
             // Real-time validation for form fields
-            const fieldsToValidate = ['tanggal_hidden', 'kas_bank_id', 'jumlah'];
+            const fieldsToValidate = ['kas_bank_id', 'jumlah_raw', 'keterangan'];
 
             fieldsToValidate.forEach(function(fieldName) {
                 const field = $(`#${fieldName}`);
                 let validationTimeout;
-
-                // Skip validation for tanggal field to avoid interference
-                if (fieldName === 'tanggal') {
-                    return;
-                }
 
                 field.on('input change blur', function() {
                     const value = $(this).val();
@@ -573,12 +531,6 @@
                 });
             });
 
-            // Clear error states for transaction type cards
-            $('.transaction-type-radio').on('change', function() {
-                $('.transaction-type-card').removeClass('border-red-500');
-                $('.transaction-type-card').siblings('.error-message').remove();
-            });
-
             // Frontend Validate field function
             function validateField(fieldName, value) {
                 const field = $(`#${fieldName}`);
@@ -603,6 +555,16 @@
                     isValid = false;
                     errorMessage = messages.required;
                 }
+                // Min validation for numbers
+                else if (rules.min && value && parseFloat(value) < rules.min) {
+                    isValid = false;
+                    errorMessage = messages.min;
+                }
+                // Max length validation
+                else if (rules.maxLength && value && value.trim().length > rules.maxLength) {
+                    isValid = false;
+                    errorMessage = messages.maxLength;
+                }
 
                 if (!isValid) {
                     // Add error styling
@@ -610,7 +572,8 @@
 
                     // Add error message
                     const errorHtml = `
-                        <p class="mt-1 text-sm text-red-600 error-message">
+                        <p class="mt-2 text-sm text-red-600 flex items-center error-message">
+                            <i class="ti ti-alert-circle text-red-500 mr-2"></i>
                             ${errorMessage}
                         </p>
                     `;
@@ -621,19 +584,42 @@
                 }
             }
 
+            // Setup number input formatting for jumlah
+            const jumlahInput = document.getElementById('jumlah');
+            setupNumberInput(jumlahInput);
+
+            // Initialize Flatpickr for tanggal
+            flatpickr("#tanggal", {
+                dateFormat: "d/m/Y",
+                locale: "id",
+                allowInput: false,
+                clickOpens: true,
+                defaultDate: "today",
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (selectedDates.length > 0) {
+                        // Update hidden field with Y-m-d format for backend
+                        const backendDate = selectedDates[0].toISOString().split('T')[
+                            0]; // Y-m-d format
+                        document.getElementById('tanggal_hidden').value = backendDate;
+                    }
+                }
+            });
+
+            // Live preview functionality
+            $('#kas_bank_id, #tanggal').on('change', updatePreview);
+            $('input[name="jenis_transaksi"]').on('change', updatePreview);
+            $('#jumlah').on('input', function() {
+                updatePreview();
+            });
+
             // Form submission validation
-            $('form').on('submit', function(e) {
+            $('#editTransaksiForm').on('submit', function(e) {
                 let hasErrors = false;
-                const errorMessages = [];
 
-                // Reset all error states
-                $('.border-red-500').removeClass('border-red-500').addClass('border-gray-300');
-                $('.error-message').remove();
-
-                // Ensure jumlah_raw has the correct value before submission
-                const jumlahDisplay = $('#jumlah').val();
-                const jumlahRaw = parseFormattedDecimal(jumlahDisplay);
-                $('#jumlah_raw').val(jumlahRaw);
+                // Check for any visible error messages
+                if ($('.error-message').length > 0) {
+                    hasErrors = true;
+                }
 
                 // Check for empty required fields
                 fieldsToValidate.forEach(function(fieldName) {
@@ -642,39 +628,13 @@
                     if (rules.required && !field.val()) {
                         hasErrors = true;
                         validateField(fieldName, field.val());
-                        errorMessages.push(
-                            `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)} wajib diisi`
-                        );
                     }
                 });
 
-                // Validate transaction type (radio button)
-                const transactionType = $('input[name="jenis_transaksi"]:checked').val();
-                if (!transactionType) {
+                // Check radio buttons
+                if (!$('input[name="jenis_transaksi"]:checked').length) {
                     hasErrors = true;
-                    $('.transaction-type-card').addClass('border-red-500');
-                    $('.transaction-type-card').first().after(
-                        '<p class="mt-1 text-sm text-red-600 error-message">Pilih jenis transaksi</p>'
-                    );
-                    errorMessages.push('Jenis transaksi wajib dipilih');
-                }
-
-                // Validate amount
-                if (jumlahRaw <= 0) {
-                    hasErrors = true;
-                    $('#jumlah').removeClass('border-gray-300').addClass('border-red-500');
-                    $('#jumlah').after(
-                        '<p class="mt-1 text-sm text-red-600 error-message">Jumlah harus lebih dari 0</p>'
-                    );
-                    errorMessages.push('Jumlah harus lebih dari 0');
-                }
-
-                // Check for any visible error messages
-                if ($('.error-message').length > 0) {
-                    hasErrors = true;
-                    $('.error-message').each(function() {
-                        errorMessages.push($(this).text());
-                    });
+                    alert('Jenis transaksi wajib dipilih');
                 }
 
                 if (hasErrors) {
@@ -688,8 +648,8 @@
                         }, 500);
                     }
 
-                    // Show notification with all errors
-                    showNotification(errorMessages.join(', '), 'error');
+                    // Show notification
+                    showNotification('Harap perbaiki kesalahan pada form sebelum melanjutkan.', 'error');
                 } else {
                     // Disable submit button and show loading state
                     const submitButton = $('#submitBtn');
@@ -707,7 +667,7 @@
                     `);
 
                     // Show notification
-                    showNotification('Sedang menyimpan data transaksi...', 'info');
+                    showNotification('Sedang mengupdate data transaksi...', 'info');
 
                     // Re-enable button if form submission fails (fallback)
                     setTimeout(function() {
@@ -723,411 +683,96 @@
                 }
             });
 
-            // Initialize transaction type cards
-            function initializeTransactionTypeCards() {
-                $('.transaction-type-card').removeClass('border-green-500 bg-green-50 border-red-500 bg-red-50')
-                    .addClass('border-gray-200');
-                $('.transaction-type-radio:checked').each(function() {
-                    $(this).closest('.transaction-type-option').find('.transaction-type-card')
-                        .removeClass('border-gray-200').addClass(this.value === 'D' ?
-                            'border-green-500 bg-green-50' : 'border-red-500 bg-red-50');
-                });
-            }
-
-            // Initialize on page load
-            initializeTransactionTypeCards();
-
-            // Transaction type card selection
-            $('.transaction-type-radio').on('change', function() {
-                $('.transaction-type-card').removeClass(
-                    'border-green-500 bg-green-50 border-red-500 bg-red-50').addClass('border-gray-200');
-                if (this.checked) {
-                    $(this).closest('.transaction-type-option').find('.transaction-type-card')
-                        .removeClass('border-gray-200').addClass(this.value === 'D' ?
-                            'border-green-500 bg-green-50' : 'border-red-500 bg-red-50');
-                }
-            });
-
-
-            // Clear transaction type error states
-            $('.transaction-type-radio').on('change', function() {
-                $('.transaction-type-card').removeClass('border-red-500');
-                $('.transaction-type-card').siblings('.error-message').remove();
-            });
-
             // Show notification function
             function showNotification(message, type = 'info') {
-                let icon;
+                let bgColor, icon;
 
                 switch (type) {
-                    case 'success':
-                        icon = `<svg class="toast-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>`;
-                        break;
                     case 'error':
-                        icon = `<svg class="toast-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>`;
+                        bgColor = 'bg-red-500';
+                        icon = `<i class="ti ti-alert-circle text-lg mr-2"></i>`;
+                        break;
+                    case 'success':
+                        bgColor = 'bg-green-500';
+                        icon = `<i class="ti ti-check text-lg mr-2"></i>`;
+                        break;
+                    case 'info':
+                        bgColor = 'bg-blue-500';
+                        icon = `<i class="ti ti-loader-2 animate-spin text-lg mr-2"></i>`;
                         break;
                     default:
-                        icon = `<svg class="toast-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>`;
+                        bgColor = 'bg-blue-500';
+                        icon = `<i class="ti ti-info-circle text-lg mr-2"></i>`;
                 }
 
                 const notification = $(`
-                    <div class="toast-notification ${type}">
-                        ${icon}
-                        <div class="toast-message">${message}</div>
-                        <button class="toast-close" type="button">
-                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
+                    <div class="fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-xl z-50 notification transform transition-all duration-300 translate-x-full">
+                        <div class="flex items-center">
+                            ${icon}
+                            ${message}
+                        </div>
                     </div>
                 `);
 
                 $('body').append(notification);
 
-                // Show notification with animation
-                setTimeout(() => {
-                    notification.addClass('show');
+                // Animate in
+                setTimeout(function() {
+                    notification.removeClass('translate-x-full');
                 }, 100);
 
-                // Auto remove after 5 seconds
-                setTimeout(() => {
-                    notification.removeClass('show');
-                    setTimeout(() => {
+                // Animate out and remove
+                setTimeout(function() {
+                    notification.addClass('translate-x-full');
+                    setTimeout(function() {
                         notification.remove();
                     }, 300);
-                }, 5000);
+                }, 4000);
+            }
 
-                // Click to close
-                notification.find('.toast-close').on('click', function() {
-                    notification.removeClass('show');
-                    setTimeout(() => {
-                        notification.remove();
-                    }, 300);
+            // Show success toast notification after page load
+            @if (session('success'))
+                setTimeout(function() {
+                    showNotification('{{ session('success') }}', 'success');
+                }, 500);
+            @endif
+
+            // Reset form functionality
+            $('#resetBtn').on('click', function(e) {
+                e.preventDefault();
+
+                // Show confirmation dialog
+                Swal.fire({
+                    title: 'Reset Form?',
+                    text: 'Apakah Anda yakin ingin mereset form? Semua data yang sudah diisi akan hilang.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Ya, Reset!',
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Reset form
+                        $('#editTransaksiForm')[0].reset();
+
+                        // Clear validation states
+                        $('.error-message').remove();
+                        $('input, select, textarea').removeClass('border-red-500 border-green-500')
+                            .addClass('border-gray-300');
+
+                        // Reset preview
+                        updatePreview();
+
+                        // Show success notification
+                        showNotification('Form berhasil direset!', 'success');
+                    }
                 });
-            }
-        });
-    </script>
-
-    <style>
-        /* Error state styling */
-        .border-red-500 {
-            border-color: #ef4444 !important;
-            box-shadow: 0 0 0 1px #ef4444;
-        }
-
-        .error-message {
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Loading animation */
-        .animate-spin {
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            from {
-                transform: rotate(0deg);
-            }
-
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* Disabled button styles */
-        .opacity-50 {
-            opacity: 0.5;
-        }
-
-        .cursor-not-allowed {
-            cursor: not-allowed;
-        }
-
-        /* Transaction type card styling */
-        .transaction-type-card {
-            transition: all 0.2s ease-in-out;
-        }
-
-        .transaction-type-card:hover {
-            transform: translateY(-2px);
-        }
-
-        .transaction-type-radio:checked+.transaction-type-card {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .transaction-type-radio:checked+.transaction-type-card.border-green-500 {
-            border-color: #10b981;
-            background-color: #ecfdf5;
-        }
-
-        .transaction-type-radio:checked+.transaction-type-card.border-red-500 {
-            border-color: #ef4444;
-            background-color: #fef2f2;
-        }
-
-        .transaction-type-card.border-red-500 {
-            border-color: #ef4444 !important;
-            background-color: #fef2f2;
-        }
-
-        /* Error state styling */
-        .border-red-500 {
-            border-color: #ef4444 !important;
-            box-shadow: 0 0 0 1px #ef4444;
-        }
-
-        .error-message {
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Toast notification styles */
-        .toast-notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            min-width: 300px;
-            max-width: 500px;
-            padding: 16px 20px;
-            border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            transform: translateX(100%);
-            transition: transform 0.3s ease-in-out;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .toast-notification.show {
-            transform: translateX(0);
-        }
-
-        .toast-notification.error {
-            background: linear-gradient(135deg, #fee2e2, #fecaca);
-            border: 1px solid #fca5a5;
-            color: #dc2626;
-        }
-
-        .toast-notification.success {
-            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-            border: 1px solid #86efac;
-            color: #16a34a;
-        }
-
-        .toast-notification.info {
-            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-            border: 1px solid #93c5fd;
-            color: #2563eb;
-        }
-
-        .toast-icon {
-            flex-shrink: 0;
-            width: 20px;
-            height: 20px;
-        }
-
-        .toast-message {
-            flex: 1;
-            font-weight: 500;
-            line-height: 1.4;
-        }
-
-        .toast-close {
-            flex-shrink: 0;
-            background: none;
-            border: none;
-            color: inherit;
-            cursor: pointer;
-            padding: 4px;
-            border-radius: 4px;
-            transition: background-color 0.2s;
-        }
-
-        .toast-close:hover {
-            background-color: rgba(0, 0, 0, 0.1);
-        }
-    </style>
-
-    <!-- Flatpickr CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-@endsection
-
-@push('styles')
-    <style>
-        /* Custom Flatpickr Styling - Sesuai Tema Aplikasi */
-        .flatpickr-calendar {
-            background: #ffffff !important;
-            border: 1px solid #e5e7eb !important;
-            border-radius: 16px !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-            font-family: 'Inter', sans-serif !important;
-            font-size: 14px !important;
-        }
-
-        .flatpickr-months {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
-            border-radius: 16px 16px 0 0 !important;
-            padding: 16px 0 !important;
-        }
-
-        .flatpickr-month {
-            color: #ffffff !important;
-            font-weight: 600 !important;
-        }
-
-        .flatpickr-current-month {
-            color: #ffffff !important;
-        }
-
-        .flatpickr-monthDropdown-months {
-            color: #ffffff !important;
-            font-weight: 600 !important;
-        }
-
-        .flatpickr-current-month .numInputWrapper {
-            color: #ffffff !important;
-            font-weight: 600 !important;
-        }
-
-        .flatpickr-weekdays {
-            background: #f8fafc !important;
-            border-bottom: 1px solid #e5e7eb !important;
-        }
-
-        .flatpickr-weekday {
-            color: #64748b !important;
-            font-weight: 600 !important;
-            font-size: 12px !important;
-            text-transform: uppercase !important;
-            letter-spacing: 0.05em !important;
-        }
-
-        .flatpickr-day {
-            color: #374151 !important;
-            border-radius: 8px !important;
-            margin: 2px !important;
-            font-weight: 500 !important;
-            transition: all 0.2s ease !important;
-        }
-
-        .flatpickr-day:hover {
-            background: #dbeafe !important;
-            color: #1e40af !important;
-            transform: scale(1.05) !important;
-        }
-
-        .flatpickr-day.selected {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
-            color: #ffffff !important;
-            border: none !important;
-            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3) !important;
-        }
-
-        .flatpickr-day.selected:hover {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
-            transform: scale(1.05) !important;
-        }
-
-        .flatpickr-day.today {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-            color: #ffffff !important;
-            border: none !important;
-            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3) !important;
-        }
-
-        .flatpickr-day.today:hover {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
-            transform: scale(1.05) !important;
-        }
-
-        .flatpickr-day.prevMonthDay,
-        .flatpickr-day.nextMonthDay {
-            color: #9ca3af !important;
-            opacity: 0.6 !important;
-        }
-
-        .flatpickr-day.prevMonthDay:hover,
-        .flatpickr-day.nextMonthDay:hover {
-            background: #f3f4f6 !important;
-            color: #6b7280 !important;
-        }
-
-        .flatpickr-months .flatpickr-prev-month,
-        .flatpickr-months .flatpickr-next-month {
-            color: #ffffff !important;
-            fill: #ffffff !important;
-            padding: 8px !important;
-            border-radius: 8px !important;
-            transition: all 0.2s ease !important;
-        }
-
-        .flatpickr-months .flatpickr-prev-month:hover,
-        .flatpickr-months .flatpickr-next-month:hover {
-            background: rgba(255, 255, 255, 0.1) !important;
-            transform: scale(1.1) !important;
-        }
-
-        .flatpickr-months .flatpickr-prev-month svg,
-        .flatpickr-months .flatpickr-next-month svg {
-            width: 16px !important;
-            height: 16px !important;
-        }
-    </style>
-@endpush
-
-@push('scripts')
-    <!-- Flatpickr JS -->
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
-
-    <script>
-        // Initialize Flatpickr Date Picker
-        document.addEventListener('DOMContentLoaded', function() {
-            const datePicker = flatpickr("#tanggal", {
-                locale: "id",
-                dateFormat: "d/m/Y",
-                allowInput: false,
-                clickOpens: true,
-                onChange: function(selectedDates, dateStr, instance) {
-                    // Update hidden input with ISO date format
-                    document.getElementById('tanggal_hidden').value = selectedDates[0]
-                        .toISOString().split('T')[0];
-
-                    // Update visible input with formatted date
-                    instance.input.value = dateStr;
-                }
             });
+
+            // Initialize preview
+            updatePreview();
         });
     </script>
-@endpush
+@endsection
