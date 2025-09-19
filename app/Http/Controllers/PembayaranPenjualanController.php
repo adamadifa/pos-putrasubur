@@ -256,8 +256,10 @@ class PembayaranPenjualanController extends Controller
                 ]);
             }
 
-            return redirect()->route('penjualan.show', $penjualan->encrypted_id)
-                ->with('success', 'Pembayaran berhasil dihapus!');
+            return response()->json([
+                'success' => true,
+                'message' => 'Pembayaran berhasil dihapus!'
+            ]);
         } catch (\Exception $e) {
             DB::rollback();
             Log::error('Payment deletion failed: ' . $e->getMessage(), [

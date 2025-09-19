@@ -698,11 +698,11 @@
         </div>
 
         <!-- Payment Modal -->
-        <div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
-            <div class="flex items-center justify-center min-h-screen p-4">
-                <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-auto">
+        <div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden overflow-y-auto">
+            <div class="flex items-start justify-center min-h-full p-2 sm:p-4">
+                <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-auto my-4 sm:my-8 max-h-full flex flex-col">
                     <!-- Modal Header -->
-                    <div class="px-6 py-4 border-b bg-gradient-to-r from-green-50 to-emerald-50">
+                    <div class="px-4 sm:px-6 py-4 border-b bg-gradient-to-r from-green-50 to-emerald-50 flex-shrink-0">
                         <div class="flex items-center justify-between">
                             <h3 class="text-lg font-semibold text-gray-800 flex items-center">
                                 <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor"
@@ -722,10 +722,10 @@
                     </div>
 
                     <!-- Modal Body -->
-                    <div class="p-6">
+                    <div class="p-4 sm:p-6 flex-1 overflow-y-auto min-h-0">
                         <!-- Payment Summary - Compact -->
                         <div class="mb-4 p-3 bg-gray-50 rounded-lg">
-                            <div class="grid grid-cols-3 gap-3 text-sm">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                                 <div>
                                     <span class="text-gray-600 text-xs">Total:</span>
                                     <div class="font-semibold text-gray-800">Rp {{ number_format($penjualan->total, 0) }}
@@ -749,17 +749,17 @@
                             @csrf
                             <input type="hidden" name="penjualan_id" value="{{ $penjualan->id }}">
 
-                            <div class="space-y-4">
+                            <div class="space-y-3 sm:space-y-4">
                                 <!-- Row 1: Tanggal dan Nominal bersebelahan -->
-                                <div class="grid grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                     <!-- Payment Date -->
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">
                                             Tanggal Pembayaran <span class="text-red-500">*</span>
                                         </label>
-                                        <input type="date" name="tanggal" value="{{ date('Y-m-d') }}"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
-                                            required>
+                                        <input type="text" name="tanggal" id="paymentDate"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200 bg-gray-50"
+                                            value="{{ date('d/m/Y') }}" required>
                                     </div>
 
                                     <!-- Payment Amount -->
@@ -792,7 +792,7 @@
                                     <label class="block text-sm font-medium text-gray-700 mb-2">
                                         Metode Pembayaran <span class="text-red-500">*</span>
                                     </label>
-                                    <div class="grid grid-cols-2 gap-3">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         @foreach ($metodePembayaran as $metode)
                                             <label class="relative cursor-pointer payment-method-option">
                                                 <input type="radio" name="metode_pembayaran"
@@ -801,15 +801,17 @@
                                                     class="sr-only payment-method-radio">
                                                 <div
                                                     class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 payment-method-card">
-                                                    <div class="flex flex-col items-center text-center">
+                                                    <div class="flex items-center space-x-3">
                                                         <div
-                                                            class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-2">
+                                                            class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                                             <i
                                                                 class="ti {{ $metode->icon_display }} text-blue-600 text-lg"></i>
                                                         </div>
-                                                        <span
-                                                            class="text-sm font-medium text-gray-900">{{ $metode->nama }}</span>
-                                                        <span class="text-xs text-gray-500">{{ $metode->kode }}</span>
+                                                        <div class="flex-1">
+                                                            <span
+                                                                class="text-sm font-medium text-gray-900 block">{{ $metode->nama }}</span>
+                                                            <span class="text-xs text-gray-500">{{ $metode->kode }}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </label>
@@ -885,7 +887,7 @@
                             <!-- Payment Preview - Compact -->
                             <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                                 <h4 class="font-medium text-blue-800 mb-2 text-sm">Preview Pembayaran:</h4>
-                                <div class="grid grid-cols-3 gap-4 text-sm">
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-sm">
                                     <div>
                                         <span class="text-blue-700 text-xs">Jumlah Bayar:</span>
                                         <div class="font-medium" id="previewAmount">Rp
@@ -925,13 +927,13 @@
                             </div>
 
                             <!-- Action Buttons -->
-                            <div class="flex space-x-3 mt-4">
+                            <div class="flex space-x-2 sm:space-x-3 mt-4">
                                 <button type="button" onclick="closePaymentModal()"
-                                    class="flex-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">
+                                    class="flex-1 px-3 sm:px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200 text-sm sm:text-base">
                                     Batal
                                 </button>
                                 <button type="submit" id="submitPaymentBtn"
-                                    class="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-colors duration-200 font-medium">
+                                    class="flex-1 px-3 sm:px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-colors duration-200 font-medium text-sm sm:text-base">
                                     <span id="submitBtnText">Simpan Pembayaran</span>
                                 </button>
                             </div>
@@ -1103,6 +1105,8 @@
 
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script>
         // Global flag to prevent multiple connection attempts
         let qzConnecting = false;
@@ -1650,6 +1654,15 @@
             document.getElementById('paymentForm').reset();
             document.getElementById('paymentAmount').value = {{ $penjualan->sisa_pembayaran }};
             updatePaymentInfo();
+
+            // Initialize Flatpickr for payment date
+            flatpickr("#paymentDate", {
+                dateFormat: "d/m/Y",
+                defaultDate: "today",
+                allowInput: true,
+                clickOpens: true,
+                locale: "id"
+            });
         }
 
         function closePaymentModal() {
@@ -1829,12 +1842,23 @@
             // Update form data with parsed values
             formData.set('jumlah', jumlah);
 
+            // Convert tanggal from dd/mm/yyyy to Y-m-d format for backend
+            try {
+                const [day, month, year] = tanggal.split('/');
+                const formattedTanggal = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                formData.set('tanggal', formattedTanggal);
+            } catch (error) {
+                showPaymentError('Format tanggal tidak valid!');
+                document.querySelector('input[name="tanggal"]').focus();
+                return;
+            }
+
             // Log form data for debugging
             console.log('Submitting payment:', {
                 jumlah: jumlah,
                 metode_pembayaran: metode_pembayaran,
                 kas_bank_id: kas_bank_id,
-                tanggal: tanggal,
+                tanggal: formData.get('tanggal'), // Use converted tanggal
                 penjualan_id: formData.get('penjualan_id'),
                 keterangan: formData.get('keterangan')
             });

@@ -114,7 +114,7 @@ class PembayaranPembelianController extends Controller
             'jumlah' => 'required|string',
             'metode_pembayaran' => 'required|string|max:50',
             'kas_bank_id' => 'nullable|exists:kas_bank,id',
-            'tanggal' => 'required|date',
+            'tanggal' => 'required|date_format:d/m/Y',
             'keterangan' => 'nullable|string|max:255',
         ], [
             'pembelian_id.required' => 'Transaksi wajib dipilih.',
@@ -123,7 +123,7 @@ class PembayaranPembelianController extends Controller
             'metode_pembayaran.required' => 'Metode pembayaran wajib dipilih.',
             'kas_bank_id.exists' => 'Kas/Bank yang dipilih tidak valid.',
             'tanggal.required' => 'Tanggal pembayaran wajib diisi.',
-            'tanggal.date' => 'Format tanggal tidak valid.',
+            'tanggal.date_format' => 'Format tanggal tidak valid. Gunakan format dd/mm/yyyy.',
             'keterangan.max' => 'Keterangan maksimal 255 karakter.',
         ]);
 
@@ -146,13 +146,13 @@ class PembayaranPembelianController extends Controller
         // Update validated data with clean numeric value
         $validated['jumlah_raw'] = $jumlahNumeric;
 
-        // Convert datetime-local to proper format
+        // Convert tanggal from dd/mm/yyyy to Y-m-d format
         try {
-            $tanggal = \Carbon\Carbon::parse($validated['tanggal']);
-            $validated['tanggal'] = $tanggal->format('Y-m-d H:i:s');
+            $tanggalFormatted = \Carbon\Carbon::createFromFormat('d/m/Y', $validated['tanggal'])->format('Y-m-d');
+            $validated['tanggal'] = $tanggalFormatted;
         } catch (\Exception $e) {
             return back()->withInput()
-                ->with('error', 'Format tanggal tidak valid.');
+                ->with('error', 'Format tanggal tidak valid. Gunakan format dd/mm/yyyy.');
         }
 
         DB::beginTransaction();
@@ -642,6 +642,4 @@ class PembayaranPembelianController extends Controller
             ]);
         }
     }
-
-
 }
