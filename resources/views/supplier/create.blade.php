@@ -107,28 +107,6 @@
                 @csrf
 
                 <div class="space-y-8">
-                    <!-- Kode Supplier -->
-                    <div class="space-y-2">
-                        <label for="kode_supplier" class="block text-sm font-semibold text-gray-700">
-                            Kode Supplier <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative group">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i
-                                    class="ti ti-barcode text-lg text-gray-400 group-hover:text-blue-500 transition-colors"></i>
-                            </div>
-                            <input type="text" name="kode_supplier" id="kode_supplier" value="{{ old('kode_supplier') }}"
-                                class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('kode_supplier') border-red-500 @enderror"
-                                placeholder="Contoh: SUP001" maxlength="20">
-                        </div>
-                        <p class="text-xs text-gray-500 flex items-center">
-                            <i class="ti ti-sparkles text-xs mr-1"></i>
-                            Kode unik untuk identifikasi supplier
-                        </p>
-                        @error('kode_supplier')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
 
                     <!-- Nama Supplier -->
                     <div class="space-y-2">
@@ -276,7 +254,6 @@
                             </div>
                             <div>
                                 <div class="text-base font-medium text-gray-900" id="preview-nama">Nama Supplier</div>
-                                <div class="text-sm text-gray-500" id="preview-kode">Kode: SUP001</div>
                                 <div class="text-sm text-gray-500" id="preview-phone">08123456789</div>
                             </div>
                         </div>
@@ -337,11 +314,6 @@
         $(document).ready(function() {
             // Frontend Validation Rules and Messages
             const validationRules = {
-                kode_supplier: {
-                    required: true,
-                    maxLength: 20,
-                    minLength: 3
-                },
                 nama: {
                     required: true,
                     maxLength: 100,
@@ -368,11 +340,6 @@
             };
 
             const validationMessages = {
-                kode_supplier: {
-                    required: 'Kode supplier wajib diisi.',
-                    maxLength: 'Kode supplier maksimal 20 karakter.',
-                    minLength: 'Kode supplier minimal 3 karakter.'
-                },
                 nama: {
                     required: 'Nama supplier wajib diisi.',
                     maxLength: 'Nama supplier maksimal 100 karakter.',
@@ -395,7 +362,7 @@
             };
 
             // Real-time validation for form fields
-            const fieldsToValidate = ['kode_supplier', 'nama', 'telepon', 'email', 'alamat', 'keterangan'];
+            const fieldsToValidate = ['nama', 'telepon', 'email', 'alamat', 'keterangan'];
 
             fieldsToValidate.forEach(function(fieldName) {
                 const field = $(`#${fieldName}`);
@@ -431,10 +398,7 @@
                 $('#preview-nama').text(nama);
             });
 
-            $('#kode_supplier').on('input', function() {
-                const kode = $(this).val() || 'SUP001';
-                $('#preview-kode').text(`Kode: ${kode}`);
-            });
+            // Kode supplier is auto-generated, no need for input handler
 
             $('#telepon').on('input', function() {
                 const phone = $(this).val() || '08123456789';

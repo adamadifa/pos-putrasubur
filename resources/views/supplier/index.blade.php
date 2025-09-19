@@ -27,7 +27,7 @@
 
         <!-- Success Alert -->
         @if (session('success'))
-            <div class="bg-green-50 border border-green-200 rounded-xl p-4 shadow-sm">
+            <div class="bg-green-50 border border-green-200 rounded-xl p-4 shadow-sm mb-6">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
                         <i class="ti ti-check-circle text-lg text-green-400"></i>
@@ -41,6 +41,32 @@
                         <div class="-mx-1.5 -my-1.5">
                             <button type="button"
                                 class="inline-flex bg-green-50 rounded-lg p-1.5 text-green-500 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-green-50"
+                                onclick="this.parentElement.parentElement.parentElement.parentElement.remove()">
+                                <span class="sr-only">Dismiss</span>
+                                <i class="ti ti-x text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <!-- Error Alert -->
+        @if (session('error'))
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4 shadow-sm mb-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="ti ti-alert-circle text-lg text-red-400"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-red-800">
+                            {{ session('error') }}
+                        </p>
+                    </div>
+                    <div class="ml-auto pl-3">
+                        <div class="-mx-1.5 -my-1.5">
+                            <button type="button"
+                                class="inline-flex bg-red-50 rounded-lg p-1.5 text-red-500 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 focus:ring-red-50"
                                 onclick="this.parentElement.parentElement.parentElement.parentElement.remove()">
                                 <span class="sr-only">Dismiss</span>
                                 <i class="ti ti-x text-lg"></i>

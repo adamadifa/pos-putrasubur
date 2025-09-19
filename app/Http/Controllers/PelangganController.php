@@ -65,13 +65,50 @@ class PelangganController extends Controller
      */
     public function create(): View
     {
-        return view('pelanggan.create');
+        $kodePelanggan = $this->generateKodePelanggan();
+        return view('pelanggan.create', compact('kodePelanggan'));
+    }
+
+    /**
+     * Generate automatic customer code with format PEL{YYMM}{001}
+     * Example: PEL2509001 (September 2025, customer #001)
+     */
+    private function generateKodePelanggan()
+    {
+        // Get current year and month (YYMM format)
+        $currentYearMonth = date('ym'); // e.g., 2509 for September 2025
+
+        // Find the last customer code for current month/year
+        $lastPelanggan = Pelanggan::where('kode_pelanggan', 'LIKE', 'PEL' . $currentYearMonth . '%')
+            ->orderBy('kode_pelanggan', 'desc')
+            ->first();
+
+        if ($lastPelanggan) {
+            // Extract number from last code (e.g., PEL2509001 -> 001)
+            $lastCode = $lastPelanggan->kode_pelanggan;
+            if (preg_match('/PEL' . $currentYearMonth . '(\d{3})/', $lastCode, $matches)) {
+                $lastNumber = (int) $matches[1];
+                $newNumber = $lastNumber + 1;
+
+                // If we reach 1000 for current month, throw an exception
+                if ($newNumber > 999) {
+                    throw new \Exception('Tidak dapat membuat kode pelanggan baru. Sudah mencapai limit 999 pelanggan untuk bulan ' . date('F Y') . '.');
+                }
+            } else {
+                $newNumber = 1;
+            }
+        } else {
+            $newNumber = 1;
+        }
+
+        // Format: PEL + YYMM + 001
+        return 'PEL' . $currentYearMonth . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
         $validated = $request->validate(
             $this->getValidationRules(),
@@ -83,12 +120,19 @@ class PelangganController extends Controller
             $validated['foto'] = $request->file('foto')->store('pelanggan', 'public');
         }
 
-        // Auto-generate kode_pelanggan if not provided
-        if (empty($validated['kode_pelanggan'])) {
-            $validated['kode_pelanggan'] = 'P-' . str_pad(Pelanggan::count() + 1, 4, '0', STR_PAD_LEFT);
-        }
+        // Auto-generate kode_pelanggan
+        $validated['kode_pelanggan'] = $this->generateKodePelanggan();
 
-        Pelanggan::create($validated);
+        $pelanggan = Pelanggan::create($validated);
+
+        // Return JSON response for AJAX requests
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Pelanggan berhasil ditambahkan.',
+                'pelanggan' => $pelanggan
+            ]);
+        }
 
         return redirect()->route('pelanggan.index')
             ->with('success', 'Pelanggan berhasil ditambahkan.');
@@ -163,12 +207,6 @@ class PelangganController extends Controller
     private function getValidationRules($pelangganId = null): array
     {
         return [
-            'kode_pelanggan' => [
-                'nullable',
-                'string',
-                'max:50',
-                Rule::unique('pelanggan', 'kode_pelanggan')->ignore($pelangganId),
-            ],
             'nama' => 'required|string|max:100',
             'nomor_telepon' => 'nullable|string|max:20',
             'alamat' => 'nullable|string|max:255',
@@ -183,10 +221,6 @@ class PelangganController extends Controller
     private function getValidationMessages(): array
     {
         return [
-            'kode_pelanggan.string' => 'Kode pelanggan harus berupa teks.',
-            'kode_pelanggan.max' => 'Kode pelanggan maksimal 50 karakter.',
-            'kode_pelanggan.unique' => 'Kode pelanggan sudah digunakan.',
-
             'nama.required' => 'Nama pelanggan wajib diisi.',
             'nama.string' => 'Nama pelanggan harus berupa teks.',
             'nama.max' => 'Nama pelanggan maksimal 100 karakter.',

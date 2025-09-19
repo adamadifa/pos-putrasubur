@@ -57,24 +57,67 @@ class SupplierController extends Controller
     }
 
     /**
+     * Generate automatic supplier code with format SUP{YYMM}{001}
+     * Example: SUP2509001 (September 2025, supplier #001)
+     */
+    private function generateKodeSupplier()
+    {
+        // Get current year and month (YYMM format)
+        $currentYearMonth = date('ym'); // e.g., 2509 for September 2025
+
+        // Find the last supplier code for current month/year
+        $lastSupplier = Supplier::where('kode_supplier', 'LIKE', 'SUP' . $currentYearMonth . '%')
+            ->orderBy('kode_supplier', 'desc')
+            ->first();
+
+        if ($lastSupplier) {
+            // Extract number from last code (e.g., SUP2509001 -> 001)
+            $lastCode = $lastSupplier->kode_supplier;
+            if (preg_match('/SUP' . $currentYearMonth . '(\d{3})/', $lastCode, $matches)) {
+                $lastNumber = (int) $matches[1];
+                $newNumber = $lastNumber + 1;
+
+                // If we reach 1000 for current month, throw an exception
+                if ($newNumber > 999) {
+                    throw new \Exception('Tidak dapat membuat kode supplier baru. Sudah mencapai limit 999 supplier untuk bulan ' . date('F Y') . '.');
+                }
+            } else {
+                $newNumber = 1;
+            }
+        } else {
+            $newNumber = 1;
+        }
+
+        // Format: SUP + YYMM + 001
+        return 'SUP' . $currentYearMonth . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'kode_supplier' => 'required|string|max:20|unique:supplier,kode_supplier',
-            'nama' => 'required|string|max:100',
-            'alamat' => 'nullable|string',
-            'telepon' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:100',
-            'keterangan' => 'nullable|string',
-            'status' => 'boolean',
-        ]);
+        try {
+            $validated = $request->validate([
+                'nama' => 'required|string|max:100',
+                'alamat' => 'nullable|string',
+                'telepon' => 'nullable|string|max:20',
+                'email' => 'nullable|email|max:100',
+                'keterangan' => 'nullable|string',
+                'status' => 'boolean',
+            ]);
 
-        Supplier::create($validated);
+            // Auto-generate kode supplier
+            $validated['kode_supplier'] = $this->generateKodeSupplier();
 
-        return redirect()->route('supplier.index')
-            ->with('success', 'Supplier berhasil ditambahkan.');
+            Supplier::create($validated);
+
+            return redirect()->route('supplier.index')
+                ->with('success', 'Supplier berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            return redirect()->route('supplier.index')
+                ->with('error', 'Gagal menambahkan supplier: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -119,7 +162,6 @@ class SupplierController extends Controller
             $supplier = Supplier::findOrFail(Crypt::decryptString($id));
 
             $validated = $request->validate([
-                'kode_supplier' => 'required|string|max:20|unique:supplier,kode_supplier,' . $supplier->id,
                 'nama' => 'required|string|max:100',
                 'alamat' => 'nullable|string',
                 'telepon' => 'nullable|string|max:20',

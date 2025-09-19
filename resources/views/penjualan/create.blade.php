@@ -481,12 +481,140 @@
 
                 <!-- Add New Customer Button -->
                 <div class="mt-4 pt-4 border-t border-gray-200">
-                    <a href="{{ route('pelanggan.create') }}" target="_blank"
+                    <button type="button" id="addNewCustomerBtn"
                         class="w-full flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                         <i class="ti ti-plus text-lg mr-2"></i>
                         Tambah Pelanggan Baru
-                    </a>
+                    </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add New Customer Modal -->
+    <div id="addCustomerModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 xl:w-1/3 shadow-lg rounded-xl bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">Tambah Pelanggan Baru</h3>
+                    <button type="button" id="closeAddCustomerModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="ti ti-x text-2xl"></i>
+                    </button>
+                </div>
+
+                <form id="addCustomerForm" class="space-y-4">
+                    @csrf
+
+                    <!-- Kode Pelanggan -->
+                    <div>
+                        <label for="new_kode_pelanggan" class="block text-sm font-medium text-gray-700 mb-2">
+                            Kode Pelanggan
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="ti ti-barcode text-lg text-gray-400"></i>
+                            </div>
+                            <input type="text" name="kode_pelanggan" id="new_kode_pelanggan"
+                                value="{{ $kodePelanggan }}"
+                                class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white"
+                                placeholder="Contoh: PEL2509001" maxlength="20" readonly>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <i class="ti ti-lock text-sm text-gray-400"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 flex items-center mt-1">
+                            <i class="ti ti-sparkles text-xs mr-1"></i>
+                            Format: PEL{YYMM}{001} (contoh: PEL2509001 untuk September 2025)
+                        </p>
+                    </div>
+
+                    <!-- Nama Pelanggan -->
+                    <div>
+                        <label for="new_nama" class="block text-sm font-medium text-gray-700 mb-2">
+                            Nama Pelanggan <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="ti ti-user text-lg text-gray-400"></i>
+                            </div>
+                            <input type="text" name="nama" id="new_nama"
+                                class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Masukkan nama pelanggan" maxlength="100" required>
+                        </div>
+                    </div>
+
+                    <!-- Nomor Telepon -->
+                    <div>
+                        <label for="new_nomor_telepon" class="block text-sm font-medium text-gray-700 mb-2">
+                            Nomor Telepon
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="ti ti-phone text-lg text-gray-400"></i>
+                            </div>
+                            <input type="text" name="nomor_telepon" id="new_nomor_telepon"
+                                class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Masukkan nomor telepon" maxlength="20">
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label for="new_email" class="block text-sm font-medium text-gray-700 mb-2">
+                            Email
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="ti ti-mail text-lg text-gray-400"></i>
+                            </div>
+                            <input type="email" name="email" id="new_email"
+                                class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Masukkan email" maxlength="100">
+                        </div>
+                    </div>
+
+                    <!-- Alamat -->
+                    <div>
+                        <label for="new_alamat" class="block text-sm font-medium text-gray-700 mb-2">
+                            Alamat
+                        </label>
+                        <div class="relative">
+                            <div class="absolute top-3 left-3 flex items-start pointer-events-none">
+                                <i class="ti ti-map-pin text-lg text-gray-400"></i>
+                            </div>
+                            <textarea name="alamat" id="new_alamat" rows="3"
+                                class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Masukkan alamat"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Keterangan -->
+                    <div>
+                        <label for="new_keterangan" class="block text-sm font-medium text-gray-700 mb-2">
+                            Keterangan
+                        </label>
+                        <div class="relative">
+                            <div class="absolute top-3 left-3 flex items-start pointer-events-none">
+                                <i class="ti ti-note text-lg text-gray-400"></i>
+                            </div>
+                            <textarea name="keterangan" id="new_keterangan" rows="2"
+                                class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Masukkan keterangan"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex space-x-3 pt-4">
+                        <button type="button" id="cancelAddCustomer"
+                            class="flex-1 px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                            Batal
+                        </button>
+                        <button type="submit" id="saveNewCustomer"
+                            class="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            Simpan
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -2292,6 +2420,147 @@
             }
         @endif
 
+        // Add New Customer Modal functionality
+        const addCustomerModal = document.getElementById('addCustomerModal');
+        const addNewCustomerBtn = document.getElementById('addNewCustomerBtn');
+        const closeAddCustomerModal = document.getElementById('closeAddCustomerModal');
+        const cancelAddCustomer = document.getElementById('cancelAddCustomer');
+        const addCustomerForm = document.getElementById('addCustomerForm');
+
+        // Open add customer modal
+        addNewCustomerBtn.addEventListener('click', () => {
+            addCustomerModal.classList.remove('hidden');
+            document.getElementById('new_nama').focus();
+        });
+
+        // Close add customer modal
+        function closeAddCustomerModalHandler() {
+            addCustomerModal.classList.add('hidden');
+            addCustomerForm.reset();
+            document.getElementById('new_kode_pelanggan').value = '{{ $kodePelanggan }}';
+        }
+
+        closeAddCustomerModal.addEventListener('click', closeAddCustomerModalHandler);
+        cancelAddCustomer.addEventListener('click', closeAddCustomerModalHandler);
+
+        // Close modal when clicking outside
+        addCustomerModal.addEventListener('click', (e) => {
+            if (e.target === addCustomerModal) {
+                closeAddCustomerModalHandler();
+            }
+        });
+
+        // Close modal with ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !addCustomerModal.classList.contains('hidden')) {
+                closeAddCustomerModalHandler();
+            }
+        });
+
+        // Handle add customer form submission
+        addCustomerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const saveBtn = document.getElementById('saveNewCustomer');
+            const originalText = saveBtn.innerHTML;
+
+            // Show loading state
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="ti ti-loader animate-spin mr-2"></i>Menyimpan...';
+
+            try {
+                const formData = new FormData(addCustomerForm);
+
+                const response = await fetch('{{ route('pelanggan.store') }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content'),
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Close modal
+                    closeAddCustomerModalHandler();
+
+                    // Add new customer to the list
+                    const customerList = document.getElementById('customerList');
+                    const newCustomerHtml = `
+                        <div class="customer-item p-4 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-all duration-200"
+                            data-id="${result.pelanggan.id}" data-name="${result.pelanggan.nama}"
+                            data-code="${result.pelanggan.kode_pelanggan}"
+                            data-phone="${result.pelanggan.nomor_telepon || ''}"
+                            data-address="${result.pelanggan.alamat || ''}">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                                            <i class="ti ti-user text-white"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-semibold text-gray-900">${result.pelanggan.nama}</h4>
+                                            <p class="text-sm text-gray-500">${result.pelanggan.kode_pelanggan}</p>
+                                            ${result.pelanggan.nomor_telepon ? `<p class="text-xs text-gray-400">${result.pelanggan.nomor_telepon}</p>` : ''}
+                                        </div>
+                                    </div>
+                                    ${result.pelanggan.alamat ? `<p class="text-xs text-gray-500 mt-2 ml-13">${result.pelanggan.alamat.substring(0, 50)}${result.pelanggan.alamat.length > 50 ? '...' : ''}</p>` : ''}
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Baru</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    customerList.insertAdjacentHTML('beforeend', newCustomerHtml);
+
+                    // Add click event to new customer item
+                    const newCustomerItem = customerList.lastElementChild;
+                    newCustomerItem.addEventListener('click', () => {
+                        const customerId = newCustomerItem.dataset.id;
+                        const customerName = newCustomerItem.dataset.name;
+                        const customerCode = newCustomerItem.dataset.code;
+
+                        // Update form fields
+                        pelangganId.value = customerId;
+                        customerDisplay.value = `${customerName} (${customerCode})`;
+
+                        // Show clear button
+                        clearCustomerBtn.classList.remove('hidden');
+
+                        // Close customer selection modal
+                        customerModal.classList.add('hidden');
+
+                        // Show success message
+                        showToast(`Pelanggan ${customerName} dipilih`, 'success');
+
+                        // Remove previous selection styling
+                        document.querySelectorAll('.customer-item').forEach(i => {
+                            i.classList.remove('bg-blue-100', 'border-blue-500');
+                        });
+
+                        // Add selection styling
+                        newCustomerItem.classList.add('bg-blue-100', 'border-blue-500');
+                    });
+
+                    showToast('Pelanggan berhasil ditambahkan', 'success');
+                } else {
+                    showToast(result.message || 'Gagal menambahkan pelanggan', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Terjadi kesalahan saat menambahkan pelanggan', 'error');
+            } finally {
+                // Reset button
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalText;
+            }
+        });
+
 
 
         // Setup number formatting for input fields
@@ -2837,14 +3106,14 @@
                         </div>
                         
                         ${discount > 0 ? `
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <span class="text-orange-600 flex items-center">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Potongan Harga
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            Potongan Harga
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ` : ''}
                         
                         <!-- Total Line -->
                         <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -2910,14 +3179,14 @@
                 </div>
                 
                 ${discount > 0 ? `
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="text-orange-600 flex items-center">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Potongan Harga
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    Potongan Harga
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ` : ''}
                 
                 <!-- Total Line -->
                 <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -3367,11 +3636,11 @@
                                 <span>Rp ${formatNumber(subtotal)}</span>
                             </div>
                             ${discount > 0 ? `
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <div class="flex justify-between text-xs">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <span class="text-orange-600">Potongan</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="flex justify-between text-xs">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span class="text-orange-600">Potongan</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ` : ''}
                             <div class="flex justify-between text-sm font-medium">
                                 <span>Total</span>
                                 <span class="text-blue-600">Rp ${formatNumber(total)}</span>

@@ -129,26 +129,6 @@
                         @enderror
                     </div>
 
-                    <!-- Kode Pelanggan (Opsional) -->
-                    <div class="space-y-2">
-                        <label for="kode_pelanggan" class="block text-sm font-semibold text-gray-700">
-                            Kode Pelanggan (opsional)
-                        </label>
-                        <div class="relative group">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i
-                                    class="ti ti-barcode text-lg text-gray-400 group-hover:text-blue-500 transition-colors"></i>
-                            </div>
-                            <input type="text" name="kode_pelanggan" id="kode_pelanggan"
-                                value="{{ old('kode_pelanggan') }}"
-                                class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('kode_pelanggan') border-red-500 @enderror"
-                                placeholder="Contoh: P-0001" maxlength="50">
-                        </div>
-                        <p class="text-xs text-gray-500">Biarkan kosong untuk generate otomatis</p>
-                        @error('kode_pelanggan')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
 
                     <!-- Status -->
                     <div class="space-y-2">
@@ -240,7 +220,6 @@
                             </div>
                             <div>
                                 <div class="text-base font-medium text-gray-900" id="preview-nama">Nama Pelanggan</div>
-                                <div class="text-sm text-gray-500" id="preview-kode">Kode: (otomatis)</div>
                                 <div class="text-sm text-gray-500" id="preview-phone">08123456789</div>
                             </div>
                         </div>
@@ -368,10 +347,6 @@
                 $('#preview-nama').text(nama);
             });
 
-            $('#kode_pelanggan').on('input', function() {
-                const kode = $(this).val() || '(otomatis)';
-                $('#preview-kode').text(`Kode: ${kode}`);
-            });
 
             $('#nomor_telepon').on('input', function() {
                 const phone = $(this).val() || '08123456789';

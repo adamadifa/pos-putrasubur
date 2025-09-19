@@ -152,7 +152,46 @@ class PenjualanController extends Controller
 
         $invoiceNumber = $this->generateInvoiceNumber($lastInvoice);
 
-        return view('penjualan.create', compact('pelanggan', 'produk', 'metodePembayaran', 'kasBank', 'invoiceNumber'));
+        // Generate automatic customer code
+        $kodePelanggan = $this->generateKodePelanggan();
+
+        return view('penjualan.create', compact('pelanggan', 'produk', 'metodePembayaran', 'kasBank', 'invoiceNumber', 'kodePelanggan'));
+    }
+
+    /**
+     * Generate automatic customer code with format PEL{YYMM}{001}
+     * Example: PEL2509001 (September 2025, customer #001)
+     */
+    private function generateKodePelanggan()
+    {
+        // Get current year and month (YYMM format)
+        $currentYearMonth = date('ym'); // e.g., 2509 for September 2025
+
+        // Find the last customer code for current month/year
+        $lastPelanggan = Pelanggan::where('kode_pelanggan', 'LIKE', 'PEL' . $currentYearMonth . '%')
+            ->orderBy('kode_pelanggan', 'desc')
+            ->first();
+
+        if ($lastPelanggan) {
+            // Extract number from last code (e.g., PEL2509001 -> 001)
+            $lastCode = $lastPelanggan->kode_pelanggan;
+            if (preg_match('/PEL' . $currentYearMonth . '(\d{3})/', $lastCode, $matches)) {
+                $lastNumber = (int) $matches[1];
+                $newNumber = $lastNumber + 1;
+
+                // If we reach 1000 for current month, throw an exception
+                if ($newNumber > 999) {
+                    throw new \Exception('Tidak dapat membuat kode pelanggan baru. Sudah mencapai limit 999 pelanggan untuk bulan ' . date('F Y') . '.');
+                }
+            } else {
+                $newNumber = 1;
+            }
+        } else {
+            $newNumber = 1;
+        }
+
+        // Format: PEL + YYMM + 001
+        return 'PEL' . $currentYearMonth . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
     }
 
     /**
