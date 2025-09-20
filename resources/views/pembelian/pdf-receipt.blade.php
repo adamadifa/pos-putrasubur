@@ -169,7 +169,7 @@
         <div class="product-item">
             <div class="product-name">{{ $detail->produk->nama_produk }}</div>
             <div class="product-details">
-                {{ number_format($detail->qty, 0) }} {{ $detail->produk->satuan->nama ?? 'Kg' }} x
+                {{ number_format($detail->qty, 2) }} {{ $detail->produk->satuan->nama ?? 'Kg' }} x
                 {{ number_format($detail->harga_beli, 0) }} = {{ number_format($detail->subtotal, 0) }}
                 @if ($detail->discount > 0)
                     <br>Diskon: -{{ number_format($detail->discount, 0) }}
