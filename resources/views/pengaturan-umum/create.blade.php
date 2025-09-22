@@ -15,21 +15,20 @@
                     <div class="flex items-center space-x-4">
                         <a href="{{ route('pengaturan-umum.index') }}"
                             class="group p-2 text-gray-500 hover:text-white hover:bg-gradient-to-r hover:from-blue-500 hover:to-indigo-600 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                                stroke="currentColor" class="w-6 h-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                                class="w-6 h-6">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                             </svg>
                         </a>
                         <div class="flex items-center space-x-4">
                             <div class="p-3 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl shadow-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-white">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                    class="w-6 h-6 text-white">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                                 </svg>
                             </div>
                             <div>
-                                <h1
-                                    class="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                                <h1 class="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
                                     Buat Pengaturan Umum
                                 </h1>
                                 <p class="text-sm text-gray-600 mt-1">Isi informasi dasar toko Anda</p>
@@ -41,8 +40,7 @@
 
             <!-- Form -->
             <div class="bg-white rounded-xl shadow-lg border border-gray-100">
-                <form action="{{ route('pengaturan-umum.store') }}" method="POST" enctype="multipart/form-data"
-                    id="pengaturanForm">
+                <form action="{{ route('pengaturan-umum.store') }}" method="POST" enctype="multipart/form-data" id="pengaturanForm">
                     @csrf
                     <div class="p-8 space-y-8">
                         <!-- Informasi Dasar -->
@@ -66,8 +64,7 @@
                                     </label>
                                     <div class="relative group">
                                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <i
-                                                class="ti ti-building-store text-gray-400 group-hover:text-blue-500 transition-colors text-lg"></i>
+                                            <i class="ti ti-building-store text-gray-400 group-hover:text-blue-500 transition-colors text-lg"></i>
                                         </div>
                                         <input type="text" name="nama_toko" id="nama_toko"
                                             class="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:outline-none transition-all duration-200 bg-white focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 @error('nama_toko') border-red-500 ring-4 ring-red-100 @enderror"
@@ -89,14 +86,35 @@
                                     </label>
                                     <div class="relative group">
                                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <i
-                                                class="ti ti-phone text-gray-400 group-hover:text-green-500 transition-colors text-lg"></i>
+                                            <i class="ti ti-phone text-gray-400 group-hover:text-green-500 transition-colors text-lg"></i>
                                         </div>
                                         <input type="text" name="no_telepon" id="no_telepon"
                                             class="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:outline-none transition-all duration-200 bg-white focus:bg-white focus:border-green-500 focus:ring-4 focus:ring-green-100 @error('no_telepon') border-red-500 ring-4 ring-red-100 @enderror"
                                             placeholder="Contoh: 081234567890" value="{{ old('no_telepon') }}">
                                     </div>
                                     @error('no_telepon')
+                                        <p class="mt-2 text-sm text-red-600 flex items-center">
+                                            <i class="ti ti-alert-circle text-red-500 mr-1"></i>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+
+                                <!-- No Rekening Koperasi -->
+                                <div class="space-y-3">
+                                    <label for="no_rekening_koperasi" class="block text-sm font-semibold text-gray-700">
+                                        <i class="ti ti-credit-card text-purple-600 mr-1"></i>
+                                        No. Rekening Koperasi
+                                    </label>
+                                    <div class="relative group">
+                                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                            <i class="ti ti-credit-card text-gray-400 group-hover:text-purple-500 transition-colors text-lg"></i>
+                                        </div>
+                                        <input type="text" name="no_rekening_koperasi" id="no_rekening_koperasi"
+                                            class="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:outline-none transition-all duration-200 bg-white focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-100 @error('no_rekening_koperasi') border-red-500 ring-4 ring-red-100 @enderror"
+                                            placeholder="Contoh: 1234567890" value="{{ old('no_rekening_koperasi') }}">
+                                    </div>
+                                    @error('no_rekening_koperasi')
                                         <p class="mt-2 text-sm text-red-600 flex items-center">
                                             <i class="ti ti-alert-circle text-red-500 mr-1"></i>
                                             {{ $message }}
@@ -112,8 +130,7 @@
                                     </label>
                                     <div class="relative group">
                                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <i
-                                                class="ti ti-mail text-gray-400 group-hover:text-purple-500 transition-colors text-lg"></i>
+                                            <i class="ti ti-mail text-gray-400 group-hover:text-purple-500 transition-colors text-lg"></i>
                                         </div>
                                         <input type="email" name="email" id="email"
                                             class="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:outline-none transition-all duration-200 bg-white focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-100 @error('email') border-red-500 ring-4 ring-red-100 @enderror"
@@ -136,8 +153,7 @@
                                 </label>
                                 <div class="relative group">
                                     <div class="absolute inset-y-0 left-0 pl-4 pt-4 flex items-start pointer-events-none">
-                                        <i
-                                            class="ti ti-map-pin text-gray-400 group-hover:text-orange-500 transition-colors text-lg"></i>
+                                        <i class="ti ti-map-pin text-gray-400 group-hover:text-orange-500 transition-colors text-lg"></i>
                                     </div>
                                     <textarea name="alamat" id="alamat" rows="3"
                                         class="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:outline-none transition-all duration-200 bg-white focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-100 resize-none @error('alamat') border-red-500 ring-4 ring-red-100 @enderror"
@@ -159,8 +175,7 @@
                                 </label>
                                 <div class="relative group">
                                     <div class="absolute inset-y-0 left-0 pl-4 pt-4 flex items-start pointer-events-none">
-                                        <i
-                                            class="ti ti-note text-gray-400 group-hover:text-gray-500 transition-colors text-lg"></i>
+                                        <i class="ti ti-note text-gray-400 group-hover:text-gray-500 transition-colors text-lg"></i>
                                     </div>
                                     <textarea name="deskripsi" id="deskripsi" rows="3"
                                         class="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:outline-none transition-all duration-200 bg-white focus:bg-white focus:border-gray-500 focus:ring-4 focus:ring-gray-100 resize-none @error('deskripsi') border-red-500 ring-4 ring-red-100 @enderror"
@@ -206,8 +221,7 @@
                                         </div>
                                     </div>
                                     <input type="file" name="logo" id="logo" accept="image/*"
-                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        onchange="previewLogo(this)">
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="previewLogo(this)">
                                 </div>
 
                                 @error('logo')
@@ -273,8 +287,7 @@
                                         </div>
                                     </div>
                                     <input type="file" name="foto_toko" id="foto_toko" accept="image/*"
-                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        onchange="previewFotoToko(this)">
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="previewFotoToko(this)">
                                 </div>
 
                                 @error('foto_toko')

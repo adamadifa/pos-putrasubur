@@ -15,245 +15,232 @@ class ProdukSeeder extends Seeder
     public function run(): void
     {
         $produks = [
+            // Makanan
             [
-                'kode_produk' => 'KMD001',
-                'nama_produk' => 'Cengkeh',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 145000,
-                'stok' => 450,
-                'stok_minimal' => 50,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode_produk' => 'KMD002',
-                'nama_produk' => 'Kapol',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 105000,
-                'stok' => 175,
-                'stok_minimal' => 25,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode_produk' => 'KMD003',
-                'nama_produk' => 'Kopi',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 95000,
-                'stok' => 350,
-                'stok_minimal' => 40,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode_produk' => 'KMD004',
-                'nama_produk' => 'Coklat',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 45000,
-                'stok' => 720,
-                'stok_minimal' => 80,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode_produk' => 'KMD005',
-                'nama_produk' => 'Rinu',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 85000,
-                'stok' => 120,
+                'kode_produk' => 'MIN001',
+                'nama_produk' => 'Nasi Goreng Instan',
+                'kategori_id' => 1, // Makanan
+                'satuan_id' => 3, // Pcs
+                'harga_jual' => 3500,
+                'stok' => 150,
                 'stok_minimal' => 20,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'kode_produk' => 'KMD006',
-                'nama_produk' => 'Pakang',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 65000,
-                'stok' => 95,
-                'stok_minimal' => 15,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode_produk' => 'KMD007',
-                'nama_produk' => 'Jagung',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 12000,
-                'stok' => 800,
-                'stok_minimal' => 100,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode_produk' => 'KMD008',
-                'nama_produk' => 'Lada Pt',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 135000,
-                'stok' => 160,
-                'stok_minimal' => 25,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode_produk' => 'KMD009',
-                'nama_produk' => 'Lada Hitam',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 115000,
-                'stok' => 280,
-                'stok_minimal' => 30,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode_produk' => 'KMD010',
-                'nama_produk' => 'Vaneli',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 3200000,
-                'stok' => 20,
-                'stok_minimal' => 3,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode_produk' => 'KMD011',
-                'nama_produk' => 'Pala',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 220000,
-                'stok' => 175,
-                'stok_minimal' => 25,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode_produk' => 'KMD012',
-                'nama_produk' => 'Minyak Pala',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 450000,
-                'stok' => 45,
-                'stok_minimal' => 10,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode_produk' => 'KMD013',
-                'nama_produk' => 'Minyak Clo',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 380000,
-                'stok' => 60,
-                'stok_minimal' => 12,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode_produk' => 'KMD014',
-                'nama_produk' => 'Abu Cengkeh',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 25000,
+                'kode_produk' => 'MIN002',
+                'nama_produk' => 'Mie Instan Indomie',
+                'kategori_id' => 1, // Makanan
+                'satuan_id' => 3, // Pcs
+                'harga_jual' => 2500,
                 'stok' => 200,
                 'stok_minimal' => 30,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'kode_produk' => 'KMD015',
-                'nama_produk' => 'Jambe',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 18000,
-                'stok' => 150,
-                'stok_minimal' => 25,
+                'kode_produk' => 'MIN003',
+                'nama_produk' => 'Roti Tawar',
+                'kategori_id' => 1, // Makanan
+                'satuan_id' => 4, // Bungkus
+                'harga_jual' => 12000,
+                'stok' => 25,
+                'stok_minimal' => 5,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'kode_produk' => 'KMD016',
-                'nama_produk' => 'Daun Ck',
-                'kategori_id' => 1,
+                'kode_produk' => 'MIN004',
+                'nama_produk' => 'Telur Ayam',
+                'kategori_id' => 1, // Makanan
+                'satuan_id' => 3, // Pcs
+                'harga_jual' => 2000,
+                'stok' => 100,
+                'stok_minimal' => 20,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'kode_produk' => 'MIN005',
+                'nama_produk' => 'Beras Premium',
+                'kategori_id' => 1, // Makanan
                 'satuan_id' => 1, // Kg
-                'harga_jual' => 35000,
+                'harga_jual' => 15000,
+                'stok' => 50,
+                'stok_minimal' => 10,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+
+            // Minuman
+            [
+                'kode_produk' => 'MIN006',
+                'nama_produk' => 'Aqua Botol 600ml',
+                'kategori_id' => 2, // Minuman
+                'satuan_id' => 5, // Botol
+                'harga_jual' => 3000,
+                'stok' => 100,
+                'stok_minimal' => 20,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'kode_produk' => 'MIN007',
+                'nama_produk' => 'Coca Cola 330ml',
+                'kategori_id' => 2, // Minuman
+                'satuan_id' => 5, // Botol
+                'harga_jual' => 5000,
                 'stok' => 80,
                 'stok_minimal' => 15,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'kode_produk' => 'KMD017',
-                'nama_produk' => 'Buah Laja',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 75000,
-                'stok' => 110,
-                'stok_minimal' => 20,
+                'kode_produk' => 'MIN008',
+                'nama_produk' => 'Teh Botol Sosro',
+                'kategori_id' => 2, // Minuman
+                'satuan_id' => 5, // Botol
+                'harga_jual' => 4000,
+                'stok' => 60,
+                'stok_minimal' => 12,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'kode_produk' => 'KMD018',
-                'nama_produk' => 'BM',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 95000,
-                'stok' => 90,
-                'stok_minimal' => 15,
+                'kode_produk' => 'MIN009',
+                'nama_produk' => 'Susu Ultra 1L',
+                'kategori_id' => 2, // Minuman
+                'satuan_id' => 5, // Botol
+                'harga_jual' => 12000,
+                'stok' => 30,
+                'stok_minimal' => 8,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'kode_produk' => 'KMD019',
-                'nama_produk' => 'Sempra',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 125000,
-                'stok' => 140,
-                'stok_minimal' => 25,
+                'kode_produk' => 'MIN010',
+                'nama_produk' => 'Kopi Kapal Api',
+                'kategori_id' => 2, // Minuman
+                'satuan_id' => 4, // Bungkus
+                'harga_jual' => 8000,
+                'stok' => 40,
+                'stok_minimal' => 10,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+
+            // Snack
             [
-                'kode_produk' => 'KMD020',
-                'nama_produk' => 'Kayu Manis',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 58000,
-                'stok' => 8,
+                'kode_produk' => 'MIN011',
+                'nama_produk' => 'Keripik Singkong',
+                'kategori_id' => 3, // Snack
+                'satuan_id' => 4, // Bungkus
+                'harga_jual' => 6000,
+                'stok' => 50,
                 'stok_minimal' => 10,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'kode_produk' => 'KMD021',
-                'nama_produk' => 'Sempra Broken',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 95000,
-                'stok' => 75,
+                'kode_produk' => 'MIN012',
+                'nama_produk' => 'Biskuit Oreo',
+                'kategori_id' => 3, // Snack
+                'satuan_id' => 4, // Bungkus
+                'harga_jual' => 8000,
+                'stok' => 35,
+                'stok_minimal' => 8,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'kode_produk' => 'MIN013',
+                'nama_produk' => 'Permen Mentos',
+                'kategori_id' => 3, // Snack
+                'satuan_id' => 3, // Pcs
+                'harga_jual' => 2000,
+                'stok' => 80,
                 'stok_minimal' => 15,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'kode_produk' => 'KMD022',
-                'nama_produk' => 'Cengkeh Hutan',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 120000,
-                'stok' => 65,
-                'stok_minimal' => 15,
+                'kode_produk' => 'MIN014',
+                'nama_produk' => 'Coklat Silver Queen',
+                'kategori_id' => 3, // Snack
+                'satuan_id' => 3, // Pcs
+                'harga_jual' => 3000,
+                'stok' => 60,
+                'stok_minimal' => 12,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'kode_produk' => 'MIN015',
+                'nama_produk' => 'Kacang Garuda',
+                'kategori_id' => 3, // Snack
+                'satuan_id' => 4, // Bungkus
+                'harga_jual' => 5000,
+                'stok' => 45,
+                'stok_minimal' => 10,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+
+            // Rokok
+            [
+                'kode_produk' => 'MIN016',
+                'nama_produk' => 'Rokok Sampoerna Mild',
+                'kategori_id' => 4, // Rokok
+                'satuan_id' => 3, // Pcs
+                'harga_jual' => 25000,
+                'stok' => 20,
+                'stok_minimal' => 5,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'kode_produk' => 'MIN017',
+                'nama_produk' => 'Rokok Djarum Super',
+                'kategori_id' => 4, // Rokok
+                'satuan_id' => 3, // Pcs
+                'harga_jual' => 22000,
+                'stok' => 25,
+                'stok_minimal' => 5,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+
+            // Kebutuhan Rumah Tangga
+            [
+                'kode_produk' => 'MIN018',
+                'nama_produk' => 'Sabun Mandi Lifebuoy',
+                'kategori_id' => 6, // Kebutuhan Rumah Tangga
+                'satuan_id' => 3, // Pcs
+                'harga_jual' => 4000,
+                'stok' => 40,
+                'stok_minimal' => 8,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'kode_produk' => 'MIN019',
+                'nama_produk' => 'Shampoo Pantene',
+                'kategori_id' => 6, // Kebutuhan Rumah Tangga
+                'satuan_id' => 5, // Botol
+                'harga_jual' => 15000,
+                'stok' => 20,
+                'stok_minimal' => 5,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'kode_produk' => 'MIN020',
+                'nama_produk' => 'Pasta Gigi Pepsodent',
+                'kategori_id' => 6, // Kebutuhan Rumah Tangga
+                'satuan_id' => 3, // Pcs
+                'harga_jual' => 8000,
+                'stok' => 30,
+                'stok_minimal' => 6,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

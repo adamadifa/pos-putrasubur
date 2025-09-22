@@ -177,8 +177,7 @@
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <i class="ti ti-search text-lg text-gray-400"></i>
                                 </div>
-                                <input type="text" name="search" value="{{ request('search') }}"
-                                    placeholder="Cari kode, nama, atau no rekening..."
+                                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari kode, nama, atau no rekening..."
                                     class="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all">
                             </div>
                         </div>
@@ -216,36 +215,32 @@
                     <table class="min-w-full divide-y divide-gray-200 table-fixed">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th scope="col"
-                                    class="w-1/12 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" class="w-1/12 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     No
                                 </th>
-                                <th scope="col"
-                                    class="w-2/12 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" class="w-2/12 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Kode
                                 </th>
-                                <th scope="col"
-                                    class="w-3/12 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" class="w-3/12 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Nama
                                 </th>
-                                <th scope="col"
-                                    class="w-2/12 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" class="w-2/12 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     No. Rekening
                                 </th>
-                                <th scope="col"
-                                    class="w-2/12 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" class="w-2/12 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Jenis
+                                </th>
+                                <th scope="col" class="w-2/12 px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Card Payment
                                 </th>
                                 {{-- <th scope="col"
                                     class="w-2/12 px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Saldo Terkini
                                 </th> --}}
-                                <th scope="col"
-                                    class="w-3/12 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" class="w-3/12 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Logo
                                 </th>
-                                <th scope="col"
-                                    class="w-2/12 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" class="w-2/12 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Aksi
                                 </th>
                             </tr>
@@ -294,6 +289,21 @@
                                             </span>
                                         @endif
                                     </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        @if ($item->status_card_payment)
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                <i class="ti ti-check text-sm mr-1"></i>
+                                                Aktif
+                                            </span>
+                                        @else
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                <i class="ti ti-x text-sm mr-1"></i>
+                                                Nonaktif
+                                            </span>
+                                        @endif
+                                    </td>
                                     {{-- <td class="px-6 py-4 whitespace-nowrap text-right">
                                         <div class="text-sm font-semibold text-gray-900">
                                             Rp {{ number_format($item->saldo_terkini, 0, ',', '.') }}
@@ -306,8 +316,7 @@
                                                     class="max-w-full max-h-full object-contain rounded-lg border shadow-sm">
                                             </div>
                                         @else
-                                            <div
-                                                class="w-full h-12 rounded-lg bg-gray-100 flex items-center justify-center border">
+                                            <div class="w-full h-12 rounded-lg bg-gray-100 flex items-center justify-center border">
                                                 <i class="ti ti-image text-gray-400 text-lg"></i>
                                             </div>
                                         @endif

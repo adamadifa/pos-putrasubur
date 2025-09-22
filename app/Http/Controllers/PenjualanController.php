@@ -7,6 +7,8 @@ use App\Models\Pelanggan;
 use App\Models\Produk;
 use App\Models\DetailPenjualan;
 use App\Models\PembayaranPenjualan;
+use App\Models\KasBank;
+use App\Helpers\PengaturanUmumHelper;
 
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -16,6 +18,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 
 class PenjualanController extends Controller
 {
@@ -195,6 +198,102 @@ class PenjualanController extends Controller
     }
 
     /**
+     * Get API configuration for RFID services
+     */
+    private function getRfidApiConfig()
+    {
+        return [
+            'url' => config('services.rfid_api.url'),
+            'token' => config('services.rfid_api.token'),
+            'transfer_endpoint' => config('services.rfid_api.transfer_endpoint'),
+            'rekening_endpoint' => config('services.rfid_api.rekening_endpoint'),
+        ];
+    }
+
+    /**
+     * Send transfer data to API
+     */
+    private function sendTransferToApi($rekeningPengirim, $rekeningPenerima, $jumlah, $berita)
+    {
+        try {
+            $apiConfig = $this->getRfidApiConfig();
+
+            if (!$apiConfig['url']) {
+                return [
+                    'success' => false,
+                    'message' => 'API URL tidak dikonfigurasi'
+                ];
+            }
+
+            $response = Http::withHeaders([
+                'X-API-Token' => $apiConfig['token'],
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json'
+            ])->timeout(10)->post($apiConfig['url'] . $apiConfig['transfer_endpoint'], [
+                'rekening_pengirim' => $rekeningPengirim,
+                'rekening_penerima' => $rekeningPenerima,
+                'jumlah' => $jumlah,
+                'berita' => $berita
+            ]);
+
+            if ($response->successful()) {
+                $responseData = $response->json();
+
+                if ($responseData['success'] === true) {
+                    Log::info('Transfer API berhasil', [
+                        'response' => $responseData,
+                        'rekening_pengirim' => $rekeningPengirim,
+                        'rekening_penerima' => $rekeningPenerima,
+                        'jumlah' => $jumlah
+                    ]);
+
+                    return [
+                        'success' => true,
+                        'data' => $responseData['data']
+                    ];
+                } else {
+                    Log::error('Transfer API gagal - response tidak sukses', [
+                        'response' => $responseData,
+                        'rekening_pengirim' => $rekeningPengirim,
+                        'rekening_penerima' => $rekeningPenerima,
+                        'jumlah' => $jumlah
+                    ]);
+
+                    return [
+                        'success' => false,
+                        'message' => $responseData['message'] ?? 'Transfer gagal'
+                    ];
+                }
+            } else {
+                Log::error('Transfer API gagal - HTTP error', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'rekening_pengirim' => $rekeningPengirim,
+                    'rekening_penerima' => $rekeningPenerima,
+                    'jumlah' => $jumlah
+                ]);
+
+                return [
+                    'success' => false,
+                    'message' => 'Gagal menghubungi API transfer'
+                ];
+            }
+        } catch (\Exception $e) {
+            Log::error('Transfer API exception', [
+                'error' => $e->getMessage(),
+                'rekening_pengirim' => $rekeningPengirim,
+                'rekening_penerima' => $rekeningPenerima,
+                'jumlah' => $jumlah
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengirim data ke API: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request): RedirectResponse
@@ -205,10 +304,11 @@ class PenjualanController extends Controller
             'pelanggan_id' => 'required|exists:pelanggan,id',
             'jenis_transaksi' => 'required|in:tunai,kredit',
             'metode_pembayaran' => 'nullable|string|exists:metode_pembayaran,kode',
-            'kas_bank_id' => 'required|exists:kas_bank,id',
+            'kas_bank_id' => 'nullable|exists:kas_bank,id',
             'dp_amount' => 'nullable|numeric|min:0',
             'diskon' => 'nullable|numeric|min:0',
             'jatuh_tempo' => 'nullable|date|after_or_equal:tanggal',
+            'no_rekening' => 'nullable|string|max:50',
             'items' => 'required|array|min:1',
             'items.*.produk_id' => 'required|exists:produk,id',
             'items.*.qty' => 'required|numeric|min:0.1',
@@ -223,7 +323,6 @@ class PenjualanController extends Controller
             'jenis_transaksi.required' => 'Jenis transaksi wajib dipilih.',
             'jenis_transaksi.in' => 'Jenis transaksi tidak valid.',
             'metode_pembayaran.exists' => 'Metode pembayaran tidak valid.',
-            'kas_bank_id.required' => 'Kas/Bank wajib dipilih.',
             'kas_bank_id.exists' => 'Kas/Bank tidak valid.',
             'dp_amount.min' => 'Jumlah pembayaran tidak boleh negatif.',
             'items.required' => 'Minimal harus ada 1 produk.',
@@ -246,6 +345,25 @@ class PenjualanController extends Controller
             if (!$metodeExists) {
                 return back()->withInput()
                     ->withErrors(['metode_pembayaran' => 'Metode pembayaran yang dipilih tidak aktif.']);
+            }
+        }
+
+        // Determine kas_bank_id based on payment method
+        if ($validated['metode_pembayaran'] === 'CARD') {
+            // For CARD payment, use the bank with active card payment status
+            $activeCardPaymentBank = KasBank::getActiveCardPaymentBank();
+
+            if (!$activeCardPaymentBank) {
+                return back()->withInput()
+                    ->withErrors(['metode_pembayaran' => 'Tidak ada bank yang dikonfigurasi untuk card payment. Silakan aktifkan status card payment pada salah satu bank.']);
+            }
+
+            $validated['kas_bank_id'] = $activeCardPaymentBank->id;
+        } elseif (in_array($validated['metode_pembayaran'], ['TUNAI', 'TRANSFER', 'QRIS'])) {
+            // For other payment methods, kas_bank_id is required
+            if (empty($validated['kas_bank_id'])) {
+                return back()->withInput()
+                    ->withErrors(['kas_bank_id' => 'Kas/Bank wajib dipilih untuk metode pembayaran ini.']);
             }
         }
 
@@ -381,6 +499,39 @@ class PenjualanController extends Controller
                     'jenis_transaksi' => $jenisTransaksi,
                     'dp_amount' => $dpAmount,
                     'status_pembayaran' => $statusPembayaran
+                ]);
+            }
+
+            // Check if payment method is CARD and no_rekening is provided
+            $metodePembayaran = $validated['metode_pembayaran'] ?? null;
+            $noRekening = $validated['no_rekening'] ?? null;
+
+            if ($metodePembayaran === 'CARD' && $noRekening && $paymentAmount > 0) {
+                // // Get no_rekening_koperasi from pengaturan umum
+                $noRekeningKoperasi = PengaturanUmumHelper::getNoRekeningKoperasi();
+
+                if (!$noRekeningKoperasi) {
+                    throw new \Exception('Nomor rekening koperasi belum dikonfigurasi di pengaturan umum.');
+                }
+
+                // Send transfer to API
+                $berita = "PAYMENT-KOPERASI-" . $validated['no_faktur'];
+                $transferResult = $this->sendTransferToApi(
+                    $noRekening, // rekening_pengirim (dari RFID scan)
+                    $noRekeningKoperasi, // rekening_penerima (dari pengaturan umum)
+                    $paymentAmount, // jumlah
+                    $berita // berita
+                );
+
+                //dd($transferResult);
+                if (!$transferResult['success']) {
+                    throw new \Exception('Transfer gagal: ' . $transferResult['message']);
+                }
+
+                Log::info('Transfer API berhasil diproses', [
+                    'penjualan_id' => $penjualan->id,
+                    'no_faktur' => $validated['no_faktur'],
+                    'transfer_data' => $transferResult['data']
                 ]);
             }
 
@@ -1007,10 +1158,9 @@ class PenjualanController extends Controller
     public function getRfidData($rfid): JsonResponse
     {
         try {
-            $apiUrl = config('services.rfid_api.url');
-            $apiToken = config('services.rfid_api.token');
+            $apiConfig = $this->getRfidApiConfig();
 
-            if (!$apiUrl) {
+            if (!$apiConfig['url']) {
                 return response()->json([
                     'success' => false,
                     'message' => 'API URL tidak dikonfigurasi'
@@ -1019,9 +1169,9 @@ class PenjualanController extends Controller
 
             // Make API call to external service
             $client = new \GuzzleHttp\Client();
-            $response = $client->get($apiUrl . '/api/public/rekening/' . $rfid, [
+            $response = $client->get($apiConfig['url'] . $apiConfig['rekening_endpoint'] . '/' . $rfid, [
                 'headers' => [
-                    'X-API-Token' => $apiToken,
+                    'X-API-Token' => $apiConfig['token'],
                     'Accept' => 'application/json',
                     'Content-Type' => 'application/json',
                 ],

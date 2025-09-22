@@ -25,22 +25,42 @@ class SatuanSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'nama' => 'Ton',
+                'nama' => 'Pcs',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'nama' => 'Kwintal',
+                'nama' => 'Bungkus',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'nama' => 'Karung',
+                'nama' => 'Botol',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'nama' => 'Sak',
+                'nama' => 'Kaleng',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'nama' => 'Dus',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'nama' => 'Pak',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'nama' => 'Liter',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'nama' => 'Ml',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

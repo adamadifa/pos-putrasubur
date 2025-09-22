@@ -34,6 +34,8 @@ return [
     'rfid_api' => [
         'url' => env('API_URL'),
         'token' => env('API_TOKEN', 'sipren-api-token-2024'),
+        'transfer_endpoint' => '/api/public/rekening/transfer',
+        'rekening_endpoint' => '/api/public/rekening',
     ],
 
 ];

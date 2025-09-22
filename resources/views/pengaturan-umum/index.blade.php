@@ -72,8 +72,7 @@
                                     </h4>
                                     @if ($pengaturan->logo)
                                         <div class="w-32 h-32 mx-auto rounded-lg overflow-hidden border border-gray-200">
-                                            <img src="{{ $pengaturan->logo_url }}" alt="Logo Toko"
-                                                class="w-full h-full object-cover">
+                                            <img src="{{ $pengaturan->logo_url }}" alt="Logo Toko" class="w-full h-full object-cover">
                                         </div>
                                     @else
                                         <div
@@ -95,8 +94,7 @@
                                 </h4>
                                 @if ($pengaturan->foto_toko)
                                     <div class="w-full h-48 mx-auto rounded-lg overflow-hidden border border-gray-200">
-                                        <img src="{{ $pengaturan->foto_toko_url }}" alt="Foto Toko"
-                                            class="w-full h-full object-cover">
+                                        <img src="{{ $pengaturan->foto_toko_url }}" alt="Foto Toko" class="w-full h-full object-cover">
                                     </div>
                                 @else
                                     <div
@@ -140,6 +138,16 @@
                                                     Email
                                                 </h6>
                                                 <p class="text-gray-700 text-sm">{{ $pengaturan->email }}</p>
+                                            </div>
+                                        @endif
+
+                                        @if ($pengaturan->no_rekening_koperasi)
+                                            <div class="bg-gray-50 rounded-lg p-4">
+                                                <h6 class="font-medium text-gray-900 text-sm mb-1 flex items-center">
+                                                    <i class="ti ti-credit-card text-gray-500 mr-2"></i>
+                                                    No. Rekening Koperasi
+                                                </h6>
+                                                <p class="text-gray-700 text-sm">{{ $pengaturan->no_rekening_koperasi }}</p>
                                             </div>
                                         @endif
                                     </div>
