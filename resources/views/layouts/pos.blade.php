@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Dashboard') - {{ config('app.name', 'Putra Subur') }}</title>
+    <title>@yield('title', 'Dashboard') - {{ $pengaturanUmum->nama_toko ?? config('app.name', 'Putra Subur') }}</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,12 +21,12 @@
     <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
-    <!-- Flatpickr JS -->
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/iconfont/tabler-icons.min.css">
 
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
 
     <style>
         /* Custom Flatpickr Styling - Clean & Modern */
@@ -318,6 +318,121 @@
                 transform: translateY(0) scale(1);
             }
         }
+
+        /* Select2 Custom Styling - Tailwind Compatible */
+        .select2-container {
+            width: 100% !important;
+        }
+
+        .select2-container--default .select2-selection--single {
+            height: 42px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0;
+            background: white;
+            transition: all 0.2s ease;
+        }
+
+        .select2-container--default .select2-selection--single:hover {
+            border-color: #3b82f6;
+        }
+
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: #374151;
+            line-height: 40px;
+            padding-left: 12px;
+            padding-right: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__placeholder {
+            color: #9ca3af;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 40px;
+            right: 8px;
+            top: 1px;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow b {
+            border-color: #6b7280 transparent transparent transparent;
+            border-width: 5px 5px 0 5px;
+            margin-left: -5px;
+            margin-top: -2px;
+        }
+
+        .select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+            border-color: transparent transparent #6b7280 transparent;
+            border-width: 0 5px 5px 5px;
+            margin-top: -7px;
+        }
+
+        .select2-dropdown {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            background: white;
+            z-index: 9999;
+        }
+
+        .select2-container--default .select2-results__option {
+            padding: 8px 12px;
+            font-size: 14px;
+            color: #374151;
+            transition: all 0.2s ease;
+        }
+
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .select2-container--default .select2-results__option[aria-selected=true] {
+            background-color: #dbeafe;
+            color: #1e40af;
+            font-weight: 600;
+        }
+
+        .select2-container--default .select2-results__option--highlighted[aria-selected=true] {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .select2-search--dropdown .select2-search__field {
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 14px;
+            margin: 8px;
+            width: calc(100% - 16px);
+        }
+
+        .select2-search--dropdown .select2-search__field:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+
+        .select2-results__message {
+            color: #6b7280;
+            font-style: italic;
+            padding: 8px 12px;
+        }
+
+        /* Loading spinner */
+        .select2-container--default .select2-selection--single .select2-selection__loading {
+            background-image: url("data:image/svg+xml,%3csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3e%3cpath fill='%236b7280' d='M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16zm0 2a6 6 0 1 1 0 12 6 6 0 0 1 0-12z'/%3e%3cpath fill='%236b7280' d='M10 2a8 8 0 0 1 8 8h-2a6 6 0 0 0-6-6V2z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+        }
     </style>
 
     <script>
@@ -392,6 +507,29 @@
             will-change: transform, opacity;
         }
 
+        /* Sidebar toggle button animations */
+        .sidebar-toggle-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-toggle-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .sidebar-toggle-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Sidebar slide animation */
+        .sidebar-slide {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Icon rotation animation */
+        .icon-rotate {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         /* Fix for mobile scrolling */
         @media (max-width: 1024px) {
             .overflow-y-auto {
@@ -428,167 +566,144 @@
     @stack('styles')
 </head>
 
-<body class="bg-gray-50 font-sans antialiased" x-data="{ sidebarOpen: false }">
+<body class="bg-gray-50 font-sans antialiased" x-data="{
+    sidebarOpen: false,
+    init() {
+        // Get saved sidebar state from localStorage
+        const savedState = localStorage.getItem('sidebarOpen');
+
+        // Set initial state based on screen size
+        // Always default to closed on mobile, open on desktop
+        this.sidebarOpen = window.innerWidth >= 1024;
+
+        // Only use saved state if it's desktop and we have a saved state
+        if (savedState !== null && window.innerWidth >= 1024) {
+            this.sidebarOpen = savedState === 'true';
+        }
+
+        // Save sidebar state to localStorage whenever it changes (only on desktop)
+        this.$watch('sidebarOpen', (value) => {
+            if (window.innerWidth >= 1024) {
+                localStorage.setItem('sidebarOpen', value.toString());
+            }
+        });
+
+        // Handle window resize with debounce
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                // Auto-close sidebar on mobile if it was open
+                if (window.innerWidth < 1024 && this.sidebarOpen) {
+                    this.sidebarOpen = false;
+                }
+                // Auto-open sidebar on desktop if it was closed
+                else if (window.innerWidth >= 1024 && !this.sidebarOpen) {
+                    this.sidebarOpen = true;
+                }
+            }, 100);
+        });
+    }
+}">
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
         <aside
-            class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0"
-            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-            x-show="sidebarOpen || window.innerWidth >= 1024" x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0"
-            x-transition:leave="transition ease-in duration-300" x-transition:leave-start="translate-x-0"
-            x-transition:leave-end="-translate-x-full">
+            class="sidebar-slide fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-all duration-300 ease-in-out flex flex-col"
+            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" x-show="sidebarOpen"
+            x-transition:enter="transition ease-out duration-300" x-transition:enter-start="-translate-x-full"
+            x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-300"
+            x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full"
+            style="backdrop-filter: blur(10px);">
             <!-- Logo -->
-            <div class="flex items-center justify-center h-16 px-4 border-b border-gray-200">
-                <div class="flex items-center gap-2">
-                    <div class="h-8 w-8 rounded-lg bg-primary-600 text-white grid place-items-center text-sm font-bold">
-                        P
+            <div class="flex items-center justify-center h-16 px-4 border-b border-gray-200 flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    @if ($pengaturanUmum->logo_url)
+                        <div class="h-10 w-10 rounded-lg overflow-hidden border-2 border-gray-100 shadow-sm">
+                            <img src="{{ $pengaturanUmum->logo_url }}" alt="{{ $pengaturanUmum->nama_toko }}"
+                                class="w-full h-full object-cover">
+                        </div>
+                    @else
+                        <div
+                            class="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white grid place-items-center text-sm font-bold shadow-lg">
+                            {{ strtoupper(substr($pengaturanUmum->nama_toko, 0, 1)) }}
+                        </div>
+                    @endif
+                    <div class="flex flex-col">
+                        <span
+                            class="text-lg font-bold text-gray-900 leading-tight">{{ $pengaturanUmum->nama_toko }}</span>
+                        @if ($pengaturanUmum->deskripsi)
+                            <span
+                                class="text-xs text-gray-500 leading-tight">{{ Str::limit($pengaturanUmum->deskripsi, 20) }}</span>
+                        @endif
                     </div>
-                    <span class="text-xl font-semibold text-gray-900">PUTRA SUBUR</span>
                 </div>
             </div>
 
             <!-- Navigation -->
-            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto min-h-0">
+                @php
+                    $menus = \App\Helpers\MenuHelper::getMenuItems();
+                @endphp
+
                 <!-- Dashboard -->
-                <a href="{{ route('dashboard') }}"
-                    class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('dashboard') ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-700 hover:bg-gray-50' }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-5 h-5 mr-3">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-                    </svg>
-                    Dashboard
-                </a>
+                @if (isset($menus['dashboard']))
+                    <a href="{{ route($menus['dashboard']['route']) }}"
+                        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs($menus['dashboard']['route']) ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-700 hover:bg-gray-50' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-5 h-5 mr-3">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="{{ $menus['dashboard']['icon'] }}" />
+                        </svg>
+                        {{ $menus['dashboard']['name'] }}
+                    </a>
+                @endif
 
-                <!-- Transaksi Section -->
-                <div class="pt-4">
-                    <h3 class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Transaksi</h3>
-                    <div class="mt-2 space-y-1">
-                        <a href="{{ route('penjualan.index') }}"
-                            class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('penjualan.*') ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-700 hover:bg-gray-50' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
-                            </svg>
-                            Penjualan
-                        </a>
+                @foreach ($menus as $sectionKey => $section)
+                    @if ($sectionKey !== 'dashboard' && isset($section['items']) && count($section['items']) > 0)
+                        <div class="pt-4">
+                            <h3 class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                {{ $section['name'] }}</h3>
+                            <div class="mt-2 space-y-1">
+                                @foreach ($section['items'] as $itemKey => $item)
+                                    <a href="{{ route($item['route']) }}"
+                                        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs($item['route'] . '*') ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-700 hover:bg-gray-50' }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="{{ $item['icon'] }}" />
+                                        </svg>
+                                        {{ $item['name'] }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                @endforeach
 
-                        <a href="{{ route('pembayaran.index') }}"
-                            class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('pembayaran.*') ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-700 hover:bg-gray-50' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-                            </svg>
-                            Pembayaran
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Master Data Section -->
-                <div class="pt-4">
-                    <h3 class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Master Data</h3>
-                    <div class="mt-2 space-y-1">
-                        <a href="{{ route('produk.index') }}"
-                            class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('produk.*') ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-700 hover:bg-gray-50' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
-                            </svg>
-                            Produk
-                        </a>
-
-                        <a href="{{ route('kategori.index') }}"
-                            class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('kategori.*') ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-700 hover:bg-gray-50' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z" />
-                            </svg>
-                            Kategori
-                        </a>
-
-                        <a href="{{ route('satuan.index') }}"
-                            class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('satuan.*') ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-700 hover:bg-gray-50' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M9 4.5v15m6-15v15m-10.875 0h15.75c.621 0 1.125-.504 1.125-1.125V5.625c0-.621-.504-1.125-1.125-1.125H4.125C3.504 4.5 3 5.004 3 5.625v12.75c0 .621.504 1.125 1.125 1.125z" />
-                            </svg>
-                            Satuan
-                        </a>
-
-                        <a href="{{ route('pelanggan.index') }}"
-                            class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('pelanggan.*') ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-700 hover:bg-gray-50' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-                            </svg>
-                            Pelanggan
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Laporan Section -->
-                <div class="pt-4">
-                    <h3 class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Laporan</h3>
-                    <div class="mt-2 space-y-1">
-                        <a href="{{ route('laporan.penjualan') }}"
-                            class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('laporan.penjualan') ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-700 hover:bg-gray-50' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-                            </svg>
-                            Laporan Penjualan
-                        </a>
-
-                        <a href="{{ route('laporan.produk') }}"
-                            class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('laporan.produk') ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-700 hover:bg-gray-50' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                            </svg>
-                            Laporan Produk
-                        </a>
-
-                        <a href="{{ route('laporan.pembayaran') }}"
-                            class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('laporan.pembayaran') ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-700 hover:bg-gray-50' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Laporan Pembayaran
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Pengaturan Section -->
-                <div class="pt-4">
-                    <h3 class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Pengaturan</h3>
-                    <div class="mt-2 space-y-1">
-                        <a href="{{ route('printer.settings') }}"
-                            class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('printer.*') ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-700 hover:bg-gray-50' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M18.25 9.456v5.294M21 7.5V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v1.5m18 0V9a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9v.75m18-2.25h-18M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
-                            </svg>
-                            Pengaturan Printer
-                        </a>
-                    </div>
-                </div>
             </nav>
 
             <!-- User Section -->
-            <div class="p-4 border-t border-gray-200">
+            <div class="p-4 border-t border-gray-200 flex-shrink-0">
+                <!-- Store Contact Info -->
+                @if ($pengaturanUmum->no_telepon || $pengaturanUmum->email)
+                    <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div class="space-y-2">
+                            @if ($pengaturanUmum->no_telepon)
+                                <div class="flex items-center gap-2 text-xs text-gray-600">
+                                    <i class="ti ti-phone text-blue-500"></i>
+                                    <span>{{ $pengaturanUmum->no_telepon }}</span>
+                                </div>
+                            @endif
+                            @if ($pengaturanUmum->email)
+                                <div class="flex items-center gap-2 text-xs text-gray-600">
+                                    <i class="ti ti-mail text-green-500"></i>
+                                    <span>{{ $pengaturanUmum->email }}</span>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+
                 <div class="flex items-center gap-3 mb-3">
                     <div
                         class="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-sm font-medium text-gray-700">
@@ -604,8 +719,8 @@
                     @csrf
                     <button type="submit"
                         class="w-full flex items-center px-3 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-5 h-5 mr-3">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
                         </svg>
@@ -615,23 +730,26 @@
             </div>
         </aside>
 
-        <!-- Sidebar overlay for mobile -->
-        <div x-show="sidebarOpen" x-transition:enter="transition-opacity ease-linear duration-300"
-            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-            x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0" class="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
-            @click="sidebarOpen = false"></div>
+        <!-- Sidebar overlay (only for mobile) -->
+        <div x-show="sidebarOpen && window.innerWidth < 1024"
+            x-transition:enter="transition-opacity ease-linear duration-300" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-linear duration-300"
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+            class="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden" @click="sidebarOpen = false"></div>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden lg:ml-0">
+        <div class="flex-1 flex flex-col overflow-hidden lg:ml-0" :class="sidebarOpen ? 'lg:ml-64' : 'lg:ml-0'"
+            style="transition: margin-left 0.3s ease-in-out;">
             <!-- Top Navigation -->
             <header class="bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
                 <div class="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
                     <div class="flex items-center gap-4">
-                        <!-- Mobile menu button -->
+                        <!-- Sidebar toggle button (mobile & desktop) -->
                         <button @click="sidebarOpen = !sidebarOpen"
-                            class="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500">
-                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            class="sidebar-toggle-btn p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 transition-all duration-200"
+                            :class="sidebarOpen ? 'bg-primary-50 text-primary-600' : ''" title="Toggle Sidebar">
+                            <svg class="h-6 w-6 icon-rotate" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" :class="sidebarOpen ? 'rotate-180' : ''">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M4 6h16M4 12h16M4 18h16" />
                             </svg>
@@ -738,11 +856,20 @@
 
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
     <!-- Tabler Icons -->
     <script src="https://unpkg.com/@tabler/icons@latest/icons-react/dist/index.umd.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/iconfont/tabler-icons.min.css">
 
+    <!-- jQuery (required for Select2) -->
+    {{-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script> --}}
+
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
     <script>
         // Optimize scrolling performance
         document.addEventListener('DOMContentLoaded', function() {
@@ -789,6 +916,7 @@
             };
 
             // Show/hide scroll to top button
+
             const scrollToTopBtn = document.getElementById('scrollToTop');
             if (mainContent && scrollToTopBtn) {
                 mainContent.addEventListener('scroll', function() {
@@ -803,6 +931,7 @@
                         setTimeout(() => {
                             scrollToTopBtn.style.display = 'none';
                         }, 300);
+
                     }
                 });
             }

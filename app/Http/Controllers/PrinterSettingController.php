@@ -111,6 +111,40 @@ class PrinterSettingController extends Controller
     }
 
     /**
+     * Get printer settings for frontend (simplified)
+     */
+    public function getSettings(): JsonResponse
+    {
+        try {
+            $defaultPrinter = PrinterSetting::getDefault();
+
+            if (!$defaultPrinter) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No default printer found'
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'settings' => [
+                    'default_printer' => $defaultPrinter->printer_name,
+                    'paper_size' => $defaultPrinter->printer_config['paper_size'] ?? 'A4',
+                    'orientation' => $defaultPrinter->printer_config['orientation'] ?? 'portrait',
+                    'auto_print' => $defaultPrinter->printer_config['auto_print'] ?? false
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to get printer settings: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get printer settings: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Store a newly created printer setting
      */
     public function store(Request $request): JsonResponse

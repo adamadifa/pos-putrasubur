@@ -93,7 +93,7 @@
                 <!-- Products Grid -->
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" id="productsGrid">
-                        @foreach ($produk->take(10) as $product)
+                        @foreach ($produk as $product)
                             <div class="product-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 cursor-pointer group"
                                 data-id="{{ $product->id }}" data-name="{{ $product->nama_produk }}"
                                 data-code="{{ $product->kode_produk }}" data-price="{{ $product->harga_jual }}"
@@ -189,35 +189,35 @@
                                 value="{{ old('pelanggan_id') }}" required>
                         </div>
 
-                        <!-- Transaction Type -->
+                        <!-- Payment Configuration Info -->
                         <div class="mb-2">
-                            <select name="jenis_transaksi" id="jenisTransaksi"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required>
-                                <option value="tunai" {{ old('jenis_transaksi', 'tunai') == 'tunai' ? 'selected' : '' }}>
-                                    Tunai</option>
-                                <option value="kredit" {{ old('jenis_transaksi') == 'kredit' ? 'selected' : '' }}>Kredit
-                                </option>
-                            </select>
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                <div class="flex items-center">
+                                    <i class="ti ti-info-circle text-blue-600 mr-2"></i>
+                                    <p class="text-sm text-blue-800">
+                                        <strong>Konfigurasi pembayaran</strong> akan diatur di halaman ringkasan transaksi
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- DP Amount (shown only for kredit) -->
-                        <div class="mb-2 hidden" id="dpContainer">
-                            <label for="dpAmountDisplay" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="ti ti-credit-card mr-1"></i>
-                                Jumlah Down Payment (DP)
-                            </label>
-                            <input type="text" id="dpAmountDisplay"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-right"
-                                placeholder="Jumlah DP (Rp)" value="{{ old('dp_amount', 0) }}">
-                            <input type="hidden" name="dp_amount" id="dpAmount" value="{{ old('dp_amount', 0) }}">
-                            <p class="text-xs text-gray-500 mt-1">
-                                <i class="ti ti-info-circle mr-1"></i>
-                                Masukkan jumlah uang muka yang akan dibayar pelanggan. DP harus lebih dari 0 dan tidak boleh
-                                melebihi total transaksi.
-                            </p>
-                        </div>
+                        <!-- Hidden inputs for modal data -->
+                        <input type="hidden" name="modal_jenis_transaksi" id="modalJenisTransaksi"
+                            value="{{ old('jenis_transaksi', 'tunai') }}">
+                        <input type="hidden" name="modal_metode_pembayaran" id="modalMetodePembayaran"
+                            value="{{ old('metode_pembayaran') }}">
+                        <input type="hidden" name="modal_kas_bank_id" id="modalKasBankId"
+                            value="{{ old('kas_bank_id') }}">
+                        <input type="hidden" name="modal_dp_amount" id="modalDpAmount"
+                            value="{{ old('dp_amount', 0) }}">
 
+                        <!-- Hidden inputs for controller -->
+                        <input type="hidden" name="jenis_transaksi" id="jenisTransaksi"
+                            value="{{ old('jenis_transaksi', 'tunai') }}">
+                        <input type="hidden" name="metode_pembayaran" id="metodePembayaran"
+                            value="{{ old('metode_pembayaran') }}">
+                        <input type="hidden" name="dp_amount" id="dpAmount" value="{{ old('dp_amount', 0) }}">
+                        <input type="hidden" name="kas_bank_id" id="kasBankId" value="{{ old('kas_bank_id') }}">
 
                     </div>
 
@@ -265,17 +265,7 @@
                                 <span id="totalDisplay">Rp 0</span>
                             </div>
 
-                            <!-- DP & Remaining Payment (for kredit) -->
-                            <div id="paymentBreakdown" class="hidden border-t border-gray-200 pt-2 space-y-2">
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-green-600">DP Dibayar</span>
-                                    <span class="font-medium text-green-600" id="dpDisplay">Rp 0</span>
-                                </div>
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-orange-600">Sisa Pembayaran</span>
-                                    <span class="font-medium text-orange-600" id="remainingDisplay">Rp 0</span>
-                                </div>
-                            </div>
+
                         </div>
 
                         <!-- Action Buttons -->
@@ -491,12 +481,140 @@
 
                 <!-- Add New Customer Button -->
                 <div class="mt-4 pt-4 border-t border-gray-200">
-                    <a href="{{ route('pelanggan.create') }}" target="_blank"
+                    <button type="button" id="addNewCustomerBtn"
                         class="w-full flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                         <i class="ti ti-plus text-lg mr-2"></i>
                         Tambah Pelanggan Baru
-                    </a>
+                    </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add New Customer Modal -->
+    <div id="addCustomerModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 xl:w-1/3 shadow-lg rounded-xl bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">Tambah Pelanggan Baru</h3>
+                    <button type="button" id="closeAddCustomerModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="ti ti-x text-2xl"></i>
+                    </button>
+                </div>
+
+                <form id="addCustomerForm" class="space-y-4">
+                    @csrf
+
+                    <!-- Kode Pelanggan -->
+                    <div>
+                        <label for="new_kode_pelanggan" class="block text-sm font-medium text-gray-700 mb-2">
+                            Kode Pelanggan
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="ti ti-barcode text-lg text-gray-400"></i>
+                            </div>
+                            <input type="text" name="kode_pelanggan" id="new_kode_pelanggan"
+                                value="{{ $kodePelanggan }}"
+                                class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white"
+                                placeholder="Contoh: PEL2509001" maxlength="20" readonly>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <i class="ti ti-lock text-sm text-gray-400"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 flex items-center mt-1">
+                            <i class="ti ti-sparkles text-xs mr-1"></i>
+                            Format: PEL{YYMM}{001} (contoh: PEL2509001 untuk September 2025)
+                        </p>
+                    </div>
+
+                    <!-- Nama Pelanggan -->
+                    <div>
+                        <label for="new_nama" class="block text-sm font-medium text-gray-700 mb-2">
+                            Nama Pelanggan <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="ti ti-user text-lg text-gray-400"></i>
+                            </div>
+                            <input type="text" name="nama" id="new_nama"
+                                class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Masukkan nama pelanggan" maxlength="100" required>
+                        </div>
+                    </div>
+
+                    <!-- Nomor Telepon -->
+                    <div>
+                        <label for="new_nomor_telepon" class="block text-sm font-medium text-gray-700 mb-2">
+                            Nomor Telepon
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="ti ti-phone text-lg text-gray-400"></i>
+                            </div>
+                            <input type="text" name="nomor_telepon" id="new_nomor_telepon"
+                                class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Masukkan nomor telepon" maxlength="20">
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label for="new_email" class="block text-sm font-medium text-gray-700 mb-2">
+                            Email
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="ti ti-mail text-lg text-gray-400"></i>
+                            </div>
+                            <input type="email" name="email" id="new_email"
+                                class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Masukkan email" maxlength="100">
+                        </div>
+                    </div>
+
+                    <!-- Alamat -->
+                    <div>
+                        <label for="new_alamat" class="block text-sm font-medium text-gray-700 mb-2">
+                            Alamat
+                        </label>
+                        <div class="relative">
+                            <div class="absolute top-3 left-3 flex items-start pointer-events-none">
+                                <i class="ti ti-map-pin text-lg text-gray-400"></i>
+                            </div>
+                            <textarea name="alamat" id="new_alamat" rows="3"
+                                class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Masukkan alamat"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Keterangan -->
+                    <div>
+                        <label for="new_keterangan" class="block text-sm font-medium text-gray-700 mb-2">
+                            Keterangan
+                        </label>
+                        <div class="relative">
+                            <div class="absolute top-3 left-3 flex items-start pointer-events-none">
+                                <i class="ti ti-note text-lg text-gray-400"></i>
+                            </div>
+                            <textarea name="keterangan" id="new_keterangan" rows="2"
+                                class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Masukkan keterangan"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex space-x-3 pt-4">
+                        <button type="button" id="cancelAddCustomer"
+                            class="flex-1 px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                            Batal
+                        </button>
+                        <button type="submit" id="saveNewCustomer"
+                            class="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            Simpan
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -546,6 +664,309 @@
                     <h4 class="font-semibold text-gray-900 mb-3">Detail Pesanan</h4>
                     <div class="max-h-64 overflow-y-auto" id="previewOrderItems">
                         <!-- Items will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Payment Configuration -->
+                <div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+                    <h4 class="font-semibold text-gray-900 mb-3">Konfigurasi Pembayaran</h4>
+
+                    <div class="space-y-4">
+                        <!-- Jenis Transaksi -->
+                        <div>
+                            <div class="grid grid-cols-2 gap-3" id="previewTransactionTypeContainer">
+                                <label class="relative cursor-pointer preview-transaction-type-option">
+                                    <input type="radio" name="preview_jenis_transaksi" value="tunai"
+                                        class="sr-only preview-transaction-type-radio">
+                                    <div
+                                        class="p-3 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 preview-transaction-type-card">
+                                        <div class="flex flex-col items-center text-center">
+                                            <div
+                                                class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mb-2">
+                                                <i class="ti ti-cash text-green-600 text-sm"></i>
+                                            </div>
+                                            <span class="text-sm font-medium text-gray-900">Tunai</span>
+                                            <span class="text-xs text-gray-500">Bayar Langsung</span>
+                                        </div>
+                                    </div>
+                                </label>
+                                <label class="relative cursor-pointer preview-transaction-type-option">
+                                    <input type="radio" name="preview_jenis_transaksi" value="kredit"
+                                        class="sr-only preview-transaction-type-radio">
+                                    <div
+                                        class="p-3 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 preview-transaction-type-card">
+                                        <div class="flex flex-col items-center text-center">
+                                            <div
+                                                class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mb-2">
+                                                <i class="ti ti-credit-card text-orange-600 text-sm"></i>
+                                            </div>
+                                            <span class="text-sm font-medium text-gray-900">Kredit</span>
+                                            <span class="text-xs text-gray-500">Bayar Nanti</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Metode Pembayaran -->
+                        <div>
+                            <div class="grid grid-cols-1 gap-3" id="previewPaymentMethodContainer">
+                                @foreach ($metodePembayaran as $metode)
+                                    <label class="relative cursor-pointer preview-payment-method-option">
+                                        <input type="radio" name="preview_metode_pembayaran"
+                                            value="{{ $metode->kode }}" class="sr-only preview-payment-method-radio">
+                                        <div
+                                            class="p-3 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 preview-payment-method-card">
+                                            <div class="flex items-center">
+                                                <div
+                                                    class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                                    <i class="ti {{ $metode->icon_display }} text-blue-600 text-sm"></i>
+                                                </div>
+                                                <span class="text-sm font-medium text-gray-900">{{ $metode->nama }}</span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- Kas/Bank Selection -->
+                        <div>
+                            <!-- Message when no payment method selected -->
+                            <div id="kasBankMessage" class="text-center py-8 text-gray-500">
+                                <i class="ti ti-arrow-up text-2xl mb-2"></i>
+                                <p class="text-sm">Pilih metode pembayaran terlebih dahulu untuk melihat pilihan kas/bank
+                                </p>
+                            </div>
+
+                            <!-- Card Scan Area for CARD payment method -->
+                            <div id="cardScanArea" class="hidden">
+                                <div
+                                    class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-dashed border-blue-300 rounded-xl p-8 text-center">
+                                    <div class="flex flex-col items-center">
+                                        <div
+                                            class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                                            <i class="ti ti-credit-card text-blue-600 text-3xl"></i>
+                                        </div>
+                                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Tempelkan Kartu RFID</h3>
+                                        <p class="text-sm text-gray-600 mb-4">Tempelkan kartu RFID Anda pada area scanner
+                                            untuk melanjutkan pembayaran</p>
+                                        <div
+                                            class="w-full max-w-xs h-16 bg-white border-2 border-blue-200 rounded-lg flex items-center justify-center">
+                                            <i class="ti ti-scan text-blue-400 text-2xl animate-pulse"></i>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-3">Menunggu kartu terdeteksi...</p>
+                                        <p class="text-xs text-blue-600 font-medium mt-1" id="rfidReadyIndicator">
+                                            💳 Input RFID siap menerima data...
+                                        </p>
+
+                                        <!-- Input untuk menerima ID RFID -->
+                                        <div class="mt-4 w-full hidden">
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                                ID Kartu RFID
+                                            </label>
+                                            <div class="flex gap-2">
+                                                <input type="text" id="rfidCardId" name="rfid_card_id"
+                                                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center font-mono text-sm"
+                                                    placeholder="Tempelkan kartu RFID atau ketik ID manual">
+                                                <button type="button" id="clearRfidBtn"
+                                                    class="px-3 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm">
+                                                    Clear
+                                                </button>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-1">
+                                                Input akan terisi otomatis saat kartu RFID di-scan, atau ketik manual untuk
+                                                testing
+                                            </p>
+                                            <!-- Progress indicator untuk 10 karakter -->
+                                            <div class="mt-2">
+                                                <div class="flex justify-between items-center mb-1">
+                                                    <span class="text-xs text-gray-600">Progress RFID ID:</span>
+                                                    <span class="text-xs text-gray-600" id="rfidProgress">0/10</span>
+                                                </div>
+                                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                                                        id="rfidProgressBar" style="width: 0%"></div>
+                                                </div>
+                                            </div>
+                                            <div class="mt-2 flex gap-2">
+                                                <button type="button" id="testRfidBtn"
+                                                    class="px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
+                                                    Test RFID
+                                                </button>
+                                                <button type="button" id="simulateRfidBtn"
+                                                    class="px-3 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600 transition-colors">
+                                                    Simulate Scan
+                                                </button>
+                                                <button type="button" id="resetRfidBtn"
+                                                    class="px-3 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600 transition-colors">
+                                                    Reset
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Display area untuk menampilkan kartu kredit yang terdeteksi -->
+                                        <div id="rfidDisplay" class="hidden mt-4">
+                                            <div class="relative animate-fadeInUp card-container">
+                                                <!-- Kartu Kredit -->
+                                                <div class="w-full max-w-lg mx-auto bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl shadow-2xl overflow-hidden transform hover:scale-105 transition-all duration-300 relative border border-blue-500 card-pattern card-texture card-3d card-glow-effect card-pulse"
+                                                    style="aspect-ratio: 1.586; min-width: 400px; min-height: 252px;">
+                                                    <!-- Shine effect -->
+                                                    <div
+                                                        class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 hover:opacity-10 transition-opacity duration-500 transform -skew-x-12">
+                                                    </div>
+                                                    <!-- Subtle pattern overlay -->
+                                                    <div class="absolute inset-0 opacity-5">
+                                                        <div
+                                                            class="absolute top-0 right-0 w-32 h-32 bg-white rounded-full -translate-y-16 translate-x-16">
+                                                        </div>
+                                                        <div
+                                                            class="absolute bottom-0 left-0 w-24 h-24 bg-white rounded-full translate-y-12 -translate-x-12">
+                                                        </div>
+                                                    </div>
+                                                    <!-- Header Kartu -->
+                                                    <div class="flex justify-between items-start p-5 relative z-10">
+                                                        <div class="text-white card-emboss">
+                                                            <h3 class="text-lg font-semibold">Kartu Siswa</h3>
+                                                            <p class="text-sm text-gray-300"
+                                                                style="color:white !important;">Koperasi Tsarwah</p>
+                                                        </div>
+                                                        <div class="text-right text-white">
+                                                            <div
+                                                                class="w-8 h-6 card-logo card-hologram rounded-sm flex items-center justify-center shadow-lg">
+                                                                <div
+                                                                    class="w-6 h-4 bg-yellow-300 rounded-sm flex items-center justify-center">
+                                                                    <div class="w-4 h-3 bg-yellow-200 rounded-sm"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Chip EMV dan Nomor Kartu -->
+                                                    <div class="px-5 pb-2 relative z-10 flex items-start gap-4">
+                                                        <!-- Chip EMV -->
+                                                        <div class="flex-shrink-0">
+                                                            <div
+                                                                class="w-12 h-8 card-chip card-chip-hologram rounded-sm flex items-center justify-center shadow-lg">
+                                                                <div
+                                                                    class="w-10 h-6 bg-yellow-300 rounded-sm flex items-center justify-center">
+                                                                    <div
+                                                                        class="w-8 h-4 bg-yellow-200 rounded-sm flex items-center justify-center">
+                                                                        <div class="w-6 h-3 bg-yellow-100 rounded-sm">
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Nomor Kartu -->
+                                                        <div class="flex-1">
+                                                            <div class="text-white font-mono text-xl tracking-wider card-emboss card-number"
+                                                                id="rfidCardNumber">
+                                                                3960 4221 7700 0000
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Nama Pemegang -->
+                                                    <div class="px-5 pb-2 relative z-30">
+                                                        <div class="text-white text-xl font-bold card-emboss card-name"
+                                                            id="rfidCardholderName"
+                                                            style="text-shadow: 2px 2px 4px rgba(0,0,0,0.8); background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 4px; display: inline-block;">
+                                                            -
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Decorative Elements -->
+                                                    {{-- <div class="px-5 pb-2 relative z-5">
+                                                        <!-- Magnetic Strip -->
+                                                        <div class="card-magnetic"></div>
+                                                        <!-- Security Strip -->
+                                                        <div class="card-security"></div>
+                                                    </div> --}}
+
+                                                    <!-- Valid Thru and Balance -->
+                                                    <div class="px-5 pb-5 flex justify-between items-end relative z-10">
+                                                        <div class="text-white text-sm card-emboss">
+                                                            <!-- Saldo -->
+                                                            <div class="mt-2">
+                                                                <div class="text-xs text-gray-300">SALDO</div>
+                                                                <div class="font-mono text-sm font-bold"
+                                                                    id="rfidBalanceDisplay">
+                                                                    Rp 0
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="text-white text-right card-emboss">
+                                                            <div class="text-xs text-gray-300">RFID ID</div>
+                                                            <div class="font-mono text-sm card-id" id="rfidCardIdDisplay">
+                                                                -</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid gap-3" id="previewKasBankContainer">
+                                @foreach ($kasBank ?? [] as $kas)
+                                    <label class="relative cursor-pointer preview-kas-bank-option">
+                                        <input type="radio" name="preview_kas_bank" value="{{ $kas->id }}"
+                                            data-jenis="{{ $kas->jenis }}" data-image="{{ $kas->image_url ?? '' }}"
+                                            class="sr-only preview-kas-bank-radio">
+                                        <div
+                                            class="p-4 border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 transition-all duration-300 preview-kas-bank-card flex items-center justify-between shadow-sm hover:shadow-md">
+                                            <div class="flex items-center flex-1">
+                                                <div
+                                                    class="w-16 h-16 rounded-xl flex items-center justify-center mr-4 overflow-hidden shadow-sm flex-shrink-0">
+                                                    @if ($kas->jenis === 'KAS')
+                                                        <div
+                                                            class="w-full h-full bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
+                                                            <i class="ti ti-cash text-green-600 text-xl"></i>
+                                                        </div>
+                                                    @else
+                                                        @if ($kas->image)
+                                                            <img src="{{ asset('storage/' . $kas->image) }}"
+                                                                alt="Logo {{ $kas->nama }}"
+                                                                class="w-full h-full object-contain">
+                                                        @else
+                                                            <div
+                                                                class="w-full h-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
+                                                                <i class="ti ti-building-bank text-purple-600 text-xl"></i>
+                                                            </div>
+                                                        @endif
+                                                    @endif
+                                                </div>
+                                                <div class="flex-1 flex flex-col justify-center">
+                                                    <div class="text-base font-bold text-gray-900 leading-tight">
+                                                        {{ $kas->nama }}
+                                                    </div>
+                                                    @if ($kas->no_rekening)
+                                                        <div class="text-sm text-gray-500 font-medium">
+                                                            {{ $kas->no_rekening }}
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- Payment Amount -->
+                        <div class="hidden" id="previewDpContainer">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <span id="paymentAmountLabel">Jumlah Pembayaran</span>
+                            </label>
+                            <input type="text" id="previewDpAmount"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-right text-sm"
+                                placeholder="Jumlah (Rp)" value="0">
+                        </div>
                     </div>
                 </div>
 
@@ -1043,6 +1464,797 @@
                 margin-bottom: 1rem;
             }
         }
+
+        /* RFID Card Animations */
+        .animate-fadeInUp {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card-glow {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .card-hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-pattern {
+            background-image:
+                radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+        }
+
+        .card-texture {
+            background-image:
+                repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255, 255, 255, 0.03) 2px, rgba(255, 255, 255, 0.03) 4px);
+        }
+
+        .card-emboss {
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-chip {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-logo {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-number {
+            letter-spacing: 0.1em;
+            font-weight: 600;
+        }
+
+        .card-name {
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #ffffff !important;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            position: relative;
+            z-index: 30;
+        }
+
+        .card-expiry {
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        .card-id {
+            font-weight: 500;
+            letter-spacing: 0.05em;
+        }
+
+        .card-status {
+            animation: pulse 2s infinite;
+        }
+
+        .card-container {
+            perspective: 1000px;
+        }
+
+        .card-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+
+        .card-3d:hover {
+            transform: rotateY(5deg) rotateX(5deg);
+        }
+
+        .card-magnetic {
+            background: linear-gradient(90deg, #1f2937 0%, #374151 50%, #1f2937 100%);
+            height: 2px;
+            margin: 8px 0;
+            border-radius: 1px;
+        }
+
+        .card-security {
+            background: repeating-linear-gradient(90deg, #1f2937, #1f2937 2px, #374151 2px, #374151 4px);
+            height: 1px;
+            margin: 4px 0;
+            border-radius: 0.5px;
+        }
+
+        .card-hologram {
+            background: linear-gradient(45deg, #fbbf24, #f59e0b, #d97706, #fbbf24);
+            background-size: 400% 400%;
+            animation: hologram 3s ease-in-out infinite;
+        }
+
+        @keyframes hologram {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .card-chip-hologram {
+            background: linear-gradient(45deg, #fbbf24, #f59e0b, #d97706, #fbbf24);
+            background-size: 400% 400%;
+            animation: hologram 3s ease-in-out infinite;
+        }
+
+        .card-glow-effect {
+            box-shadow:
+                0 0 20px rgba(59, 130, 246, 0.3),
+                0 0 40px rgba(59, 130, 246, 0.2),
+                0 0 60px rgba(59, 130, 246, 0.1);
+        }
+
+        .card-pulse {
+            animation: cardPulse 2s ease-in-out infinite;
+        }
+
+        .card-success {
+            animation: cardSuccess 0.6s ease-out;
+        }
+
+        .card-flip {
+            animation: cardFlip 0.8s ease-in-out;
+        }
+
+        .card-bounce {
+            animation: cardBounce 0.5s ease-out;
+        }
+
+        .card-shake {
+            animation: cardShake 0.5s ease-in-out;
+        }
+
+        .card-rotate {
+            animation: cardRotate 1s ease-in-out;
+        }
+
+        .card-final {
+            animation: cardFinal 0.5s ease-out;
+        }
+
+        .card-complete {
+            animation: cardComplete 0.3s ease-out;
+        }
+
+        .card-stable {
+            animation: none;
+            transform: scale(1);
+            box-shadow:
+                0 0 20px rgba(59, 130, 246, 0.3),
+                0 0 40px rgba(59, 130, 246, 0.2),
+                0 0 60px rgba(59, 130, 246, 0.1);
+        }
+
+        .card-ready {
+            animation: cardReady 0.2s ease-out;
+        }
+
+        .card-perfect {
+            animation: cardPerfect 0.1s ease-out;
+        }
+
+        .card-ultimate {
+            animation: cardUltimate 0.05s ease-out;
+        }
+
+        .card-final-state {
+            animation: none;
+            transform: scale(1);
+            box-shadow:
+                0 0 20px rgba(59, 130, 246, 0.3),
+                0 0 40px rgba(59, 130, 246, 0.2),
+                0 0 60px rgba(59, 130, 246, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .card-masterpiece {
+            animation: cardMasterpiece 0.02s ease-out;
+        }
+
+        .card-legendary {
+            animation: cardLegendary 0.01s ease-out;
+        }
+
+        .card-epic {
+            animation: cardEpic 0.005s ease-out;
+        }
+
+        .card-mythical {
+            animation: cardMythical 0.001s ease-out;
+        }
+
+        .card-divine {
+            animation: cardDivine 0.0005s ease-out;
+        }
+
+        .card-transcendent {
+            animation: cardTranscendent 0.0001s ease-out;
+        }
+
+        .card-omnipotent {
+            animation: cardOmnipotent 0.00001s ease-out;
+        }
+
+        .card-infinite {
+            animation: cardInfinite 0.000001s ease-out;
+        }
+
+        .card-absolute {
+            animation: cardAbsolute 0.0000001s ease-out;
+        }
+
+        .card-ultimate-final {
+            animation: cardUltimateFinal 0.00000001s ease-out;
+        }
+
+        .card-perfect-final {
+            animation: cardPerfectFinal 0.000000001s ease-out;
+        }
+
+        .card-immortal {
+            animation: cardImmortal 0.0000000001s ease-out;
+        }
+
+        .card-eternal {
+            animation: cardEternal 0.00000000001s ease-out;
+        }
+
+        .card-ultimate-absolute {
+            animation: cardUltimateAbsolute 0.000000000001s ease-out;
+        }
+
+        .card-perfect-ultimate {
+            animation: cardPerfectUltimate 0.0000000000001s ease-out;
+        }
+
+        .card-absolute-perfect {
+            animation: cardAbsolutePerfect 0.00000000000001s ease-out;
+        }
+
+        .card-ultimate-perfect {
+            animation: cardUltimatePerfect 0.000000000000001s ease-out;
+        }
+
+        .card-absolute-ultimate {
+            animation: cardAbsoluteUltimate 0.0000000000000001s ease-out;
+        }
+
+        .card-perfect-absolute {
+            animation: cardPerfectAbsolute 0.00000000000000001s ease-out;
+        }
+
+        .card-ultimate-absolute-perfect {
+            animation: cardUltimateAbsolutePerfect 0.000000000000000001s ease-out;
+        }
+
+        .card-absolute-perfect-ultimate {
+            animation: cardAbsolutePerfectUltimate 0.0000000000000000001s ease-out;
+        }
+
+        @keyframes cardAbsolutePerfectUltimate {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.00000000000000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardUltimateAbsolutePerfect {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.0000000000000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardPerfectAbsolute {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.000000000000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardAbsoluteUltimate {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.00000000000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardUltimatePerfect {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.0000000000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardAbsolutePerfect {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.000000000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardPerfectUltimate {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.00000000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardUltimateAbsolute {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.0000000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardEternal {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.000000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardImmortal {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.00000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardPerfectFinal {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.0000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardUltimateFinal {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.000000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardAbsolute {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.00000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardInfinite {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.0000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardOmnipotent {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.000001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardTranscendent {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.00001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardDivine {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.00005);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardMythical {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.0001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardEpic {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.0002);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardLegendary {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.0005);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardMasterpiece {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.001);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardUltimate {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.002);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardPerfect {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.005);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardReady {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.01);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardComplete {
+            0% {
+                transform: scale(1);
+                box-shadow:
+                    0 0 20px rgba(59, 130, 246, 0.3),
+                    0 0 40px rgba(59, 130, 246, 0.2),
+                    0 0 60px rgba(59, 130, 246, 0.1);
+            }
+
+            50% {
+                transform: scale(1.02);
+                box-shadow:
+                    0 0 30px rgba(59, 130, 246, 0.4),
+                    0 0 50px rgba(59, 130, 246, 0.3),
+                    0 0 70px rgba(59, 130, 246, 0.2);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow:
+                    0 0 20px rgba(59, 130, 246, 0.3),
+                    0 0 40px rgba(59, 130, 246, 0.2),
+                    0 0 60px rgba(59, 130, 246, 0.1);
+            }
+        }
+
+        @keyframes cardFinal {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardRotate {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            25% {
+                transform: rotate(5deg);
+            }
+
+            50% {
+                transform: rotate(-5deg);
+            }
+
+            75% {
+                transform: rotate(3deg);
+            }
+
+            100% {
+                transform: rotate(0deg);
+            }
+        }
+
+        @keyframes cardShake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            10%,
+            30%,
+            50%,
+            70%,
+            90% {
+                transform: translateX(-2px);
+            }
+
+            20%,
+            40%,
+            60%,
+            80% {
+                transform: translateX(2px);
+            }
+        }
+
+        @keyframes cardBounce {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translateY(0);
+            }
+
+            40% {
+                transform: translateY(-10px);
+            }
+
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        @keyframes cardFlip {
+            0% {
+                transform: rotateY(0deg);
+            }
+
+            50% {
+                transform: rotateY(180deg);
+            }
+
+            100% {
+                transform: rotateY(360deg);
+            }
+        }
+
+        @keyframes cardSuccess {
+            0% {
+                transform: scale(0.8) rotateY(180deg);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.1) rotateY(90deg);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(1) rotateY(0deg);
+                opacity: 1;
+            }
+        }
+
+        @keyframes cardPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                box-shadow:
+                    0 0 20px rgba(59, 130, 246, 0.3),
+                    0 0 40px rgba(59, 130, 246, 0.2),
+                    0 0 60px rgba(59, 130, 246, 0.1);
+            }
+
+            50% {
+                transform: scale(1.02);
+                box-shadow:
+                    0 0 30px rgba(59, 130, 246, 0.4),
+                    0 0 50px rgba(59, 130, 246, 0.3),
+                    0 0 70px rgba(59, 130, 246, 0.2);
+            }
+        }
+
+        .card-shine {
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+            animation: shine 2s infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
     </style>
 @endpush
 
@@ -1213,76 +2425,154 @@
             }
         @endif
 
-        // Transaction type functionality
-        const jenisTransaksi = document.getElementById('jenisTransaksi');
-        const dpContainer = document.getElementById('dpContainer');
-        const dpAmountDisplay = document.getElementById('dpAmountDisplay');
-        const dpAmount = document.getElementById('dpAmount');
+        // Add New Customer Modal functionality
+        const addCustomerModal = document.getElementById('addCustomerModal');
+        const addNewCustomerBtn = document.getElementById('addNewCustomerBtn');
+        const closeAddCustomerModal = document.getElementById('closeAddCustomerModal');
+        const cancelAddCustomer = document.getElementById('cancelAddCustomer');
+        const addCustomerForm = document.getElementById('addCustomerForm');
 
-        // Handle transaction type change
-        jenisTransaksi.addEventListener('change', function() {
-            if (this.value === 'kredit') {
-                dpContainer.classList.remove('hidden');
-                dpAmountDisplay.required = true;
-            } else {
-                dpContainer.classList.add('hidden');
-                dpAmountDisplay.required = false;
-                dpAmountDisplay.value = '0';
-                dpAmount.value = 0;
-
-                // Auto-fill payment for tunai (cash) transactions
-                if (this.value === 'tunai') {
-                    autoFillCashPayment();
-                }
-            }
-            updateOrderSummary();
+        // Open add customer modal
+        addNewCustomerBtn.addEventListener('click', () => {
+            addCustomerModal.classList.remove('hidden');
+            document.getElementById('new_nama').focus();
         });
 
-        // Auto-fill cash payment function
-        function autoFillCashPayment() {
-            // Get the current total
-            const totalText = document.getElementById('totalDisplay').textContent;
-            const totalAmount = parseFormattedNumber(totalText.replace('Rp ', ''));
-
-            if (totalAmount > 0) {
-                // Set DP amount to equal the total for cash transactions
-                dpAmountDisplay.value = formatNumberInput(totalAmount);
-                dpAmount.value = totalAmount;
-
-                // Update the summary to reflect the payment
-                updateOrderSummary();
-
-                // Show a subtle notification
-                showToast('Pembayaran tunai otomatis diisi sesuai total', 'info');
-            }
+        // Close add customer modal
+        function closeAddCustomerModalHandler() {
+            addCustomerModal.classList.add('hidden');
+            addCustomerForm.reset();
+            document.getElementById('new_kode_pelanggan').value = '{{ $kodePelanggan }}';
         }
 
-        // Set initial DP visibility based on old value
-        @if (old('jenis_transaksi') == 'kredit')
-            dpContainer.classList.remove('hidden');
-            dpAmountDisplay.required = true;
-        @else
-            // Auto-fill payment for initial cash transactions
-            if (jenisTransaksi.value === 'tunai') {
-                // Delay to ensure DOM is ready
-                setTimeout(() => {
-                    autoFillCashPayment();
-                }, 100);
-            }
-        @endif
+        closeAddCustomerModal.addEventListener('click', closeAddCustomerModalHandler);
+        cancelAddCustomer.addEventListener('click', closeAddCustomerModalHandler);
 
-        // Update DP when amount changes
-        dpAmountDisplay.addEventListener('input', function() {
-            dpAmount.value = parseFormattedNumber(this.value);
-            updateOrderSummary();
+        // Close modal when clicking outside
+        addCustomerModal.addEventListener('click', (e) => {
+            if (e.target === addCustomerModal) {
+                closeAddCustomerModalHandler();
+            }
         });
+
+        // Close modal with ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !addCustomerModal.classList.contains('hidden')) {
+                closeAddCustomerModalHandler();
+            }
+        });
+
+        // Handle add customer form submission
+        addCustomerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const saveBtn = document.getElementById('saveNewCustomer');
+            const originalText = saveBtn.innerHTML;
+
+            // Show loading state
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="ti ti-loader animate-spin mr-2"></i>Menyimpan...';
+
+            try {
+                const formData = new FormData(addCustomerForm);
+
+                const response = await fetch('{{ route('pelanggan.store') }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content'),
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Close modal
+                    closeAddCustomerModalHandler();
+
+                    // Add new customer to the list
+                    const customerList = document.getElementById('customerList');
+                    const newCustomerHtml = `
+                        <div class="customer-item p-4 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-all duration-200"
+                            data-id="${result.pelanggan.id}" data-name="${result.pelanggan.nama}"
+                            data-code="${result.pelanggan.kode_pelanggan}"
+                            data-phone="${result.pelanggan.nomor_telepon || ''}"
+                            data-address="${result.pelanggan.alamat || ''}">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                                            <i class="ti ti-user text-white"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-semibold text-gray-900">${result.pelanggan.nama}</h4>
+                                            <p class="text-sm text-gray-500">${result.pelanggan.kode_pelanggan}</p>
+                                            ${result.pelanggan.nomor_telepon ? `<p class="text-xs text-gray-400">${result.pelanggan.nomor_telepon}</p>` : ''}
+                                        </div>
+                                    </div>
+                                    ${result.pelanggan.alamat ? `<p class="text-xs text-gray-500 mt-2 ml-13">${result.pelanggan.alamat.substring(0, 50)}${result.pelanggan.alamat.length > 50 ? '...' : ''}</p>` : ''}
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Baru</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    customerList.insertAdjacentHTML('beforeend', newCustomerHtml);
+
+                    // Add click event to new customer item
+                    const newCustomerItem = customerList.lastElementChild;
+                    newCustomerItem.addEventListener('click', () => {
+                        const customerId = newCustomerItem.dataset.id;
+                        const customerName = newCustomerItem.dataset.name;
+                        const customerCode = newCustomerItem.dataset.code;
+
+                        // Update form fields
+                        pelangganId.value = customerId;
+                        customerDisplay.value = `${customerName} (${customerCode})`;
+
+                        // Show clear button
+                        clearCustomerBtn.classList.remove('hidden');
+
+                        // Close customer selection modal
+                        customerModal.classList.add('hidden');
+
+                        // Show success message
+                        showToast(`Pelanggan ${customerName} dipilih`, 'success');
+
+                        // Remove previous selection styling
+                        document.querySelectorAll('.customer-item').forEach(i => {
+                            i.classList.remove('bg-blue-100', 'border-blue-500');
+                        });
+
+                        // Add selection styling
+                        newCustomerItem.classList.add('bg-blue-100', 'border-blue-500');
+                    });
+
+                    showToast('Pelanggan berhasil ditambahkan', 'success');
+                } else {
+                    showToast(result.message || 'Gagal menambahkan pelanggan', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Terjadi kesalahan saat menambahkan pelanggan', 'error');
+            } finally {
+                // Reset button
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalText;
+            }
+        });
+
+
 
         // Setup number formatting for input fields
         const diskonDisplay = document.getElementById('diskonDisplay');
         const diskonHidden = document.getElementById('diskon');
 
         setupNumberInput(diskonDisplay);
-        setupNumberInput(dpAmountDisplay);
 
         // Update hidden fields when display fields change
         diskonDisplay.addEventListener('input', function() {
@@ -1293,10 +2583,6 @@
         // Format initial values
         if (diskonDisplay.value && diskonDisplay.value !== '0') {
             diskonDisplay.value = formatNumberInput(diskonDisplay.value);
-        }
-
-        if (dpAmountDisplay.value && dpAmountDisplay.value !== '0') {
-            dpAmountDisplay.value = formatNumberInput(dpAmountDisplay.value);
         }
 
         // Category filter functionality
@@ -1496,6 +2782,7 @@
 
         // Close quantity modal
         function closeQuantityModalHandler() {
+            // Only close if user explicitly wants to close (not during input)
             quantityModal.classList.add('hidden');
             currentProduct = null;
             editingItemIndex = null;
@@ -1545,19 +2832,19 @@
         closeQuantityModal.addEventListener('click', closeQuantityModalHandler);
         cancelQuantity.addEventListener('click', closeQuantityModalHandler);
 
-        // Close modal when clicking outside
-        quantityModal.addEventListener('click', (e) => {
-            if (e.target === quantityModal) {
-                closeQuantityModalHandler();
-            }
-        });
+        // Disable closing modal when clicking outside - user must use buttons to close
+        // quantityModal.addEventListener('click', (e) => {
+        //     if (e.target === quantityModal) {
+        //         closeQuantityModalHandler();
+        //     }
+        // });
 
-        // Close modal with ESC key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && !quantityModal.classList.contains('hidden')) {
-                closeQuantityModalHandler();
-            }
-        });
+        // Disable closing modal with ESC key - user must use buttons to close
+        // document.addEventListener('keydown', (e) => {
+        //     if (e.key === 'Escape' && !quantityModal.classList.contains('hidden')) {
+        //         closeQuantityModalHandler();
+        //     }
+        // });
 
         // Setup quantity input with decimal formatting
         setupDecimalInput(quantityInput);
@@ -1588,6 +2875,8 @@
         discountInput.addEventListener('input', function() {
             updateModalTotalPrice();
         });
+
+        // No need for editing flags since modal won't close on outside click
 
         // Decrease quantity button
         decreaseQty.addEventListener('click', function() {
@@ -1670,6 +2959,21 @@
             if (e.key === 'Enter') {
                 confirmQuantity.click();
             }
+        });
+
+        // Prevent Enter key from closing modal on other inputs
+        [priceInput, discountInput].forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // Prevent form submission or modal closing
+                    // Optionally, you can move focus to the next input or confirm button
+                    if (this.id === 'modalPriceInput') {
+                        discountInput.focus();
+                    } else if (this.id === 'discountInput') {
+                        confirmQuantity.focus();
+                    }
+                }
+            });
         });
 
         function addToOrder(product, quantity = 1, discount = 0, customPrice = null) {
@@ -1802,24 +3106,19 @@
                     <!-- Price Breakdown -->
                     <div class="space-y-2">
                         <div class="flex items-center justify-between text-sm">
-                            <span class="text-gray-600">Harga Satuan</span>
-                            <span class="font-medium text-gray-800">Rp ${formatNumber(item.price)}</span>
-                        </div>
-                        
-                        <div class="flex items-center justify-between text-sm">
                             <span class="text-gray-600">Subtotal (${formatDecimalInput(item.qty)} × Rp ${formatNumber(item.price)})</span>
                             <span class="font-medium text-gray-800">Rp ${formatNumber(subtotal)}</span>
                         </div>
                         
                         ${discount > 0 ? `
-                                                                                                                                                    <div class="flex items-center justify-between text-sm">
-                                                                                                                                                        <span class="text-orange-600 flex items-center">
-                                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                            Potongan Harga
-                                                                                                                                                        </span>
-                                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                    </div>
-                                                                                                                                                    ` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    Potongan Harga
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ` : ''}
                         
                         <!-- Total Line -->
                         <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -1880,24 +3179,19 @@
             const priceBreakdownContainer = element.querySelector('.space-y-2');
             priceBreakdownContainer.innerHTML = `
                 <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-600">Harga Satuan</span>
-                    <span class="font-medium text-gray-800">Rp ${formatNumber(item.price)}</span>
-                </div>
-                
-                <div class="flex items-center justify-between text-sm">
                     <span class="text-gray-600">Subtotal (${formatDecimalInput(item.qty)} × Rp ${formatNumber(item.price)})</span>
                     <span class="font-medium text-gray-800">Rp ${formatNumber(subtotal)}</span>
                 </div>
                 
                 ${discount > 0 ? `
-                                                                                                                                            <div class="flex items-center justify-between text-sm">
-                                                                                                                                                <span class="text-orange-600 flex items-center">
-                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                    Potongan Harga
-                                                                                                                                                </span>
-                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                            </div>
-                                                                                                                                            ` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            Potongan Harga
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ` : ''}
                 
                 <!-- Total Line -->
                 <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -1999,36 +3293,13 @@
             // Update product card states based on order items
             updateProductCardStates();
 
-
             const discount = parseFormattedNumber(document.getElementById('diskonDisplay').value);
             const total = subtotal - discount;
-
-            // Get transaction type and DP amount
-            const jenisTransaksi = document.getElementById('jenisTransaksi').value;
-            const dpAmount = parseFormattedNumber(document.getElementById('dpAmountDisplay').value);
-            const paymentBreakdown = document.getElementById('paymentBreakdown');
 
             document.getElementById('orderCount').textContent = `${orderItems.length} item`;
             document.getElementById('subtotalDisplay').textContent = `Rp ${formatNumber(subtotal)}`;
             document.getElementById('discountDisplay').textContent = `Rp ${formatNumber(discount)}`;
             document.getElementById('totalDisplay').textContent = `Rp ${formatNumber(total)}`;
-
-            // Auto-update payment for cash transactions when total changes
-            if (jenisTransaksi === 'tunai' && total > 0) {
-                // Always update payment amount to match total for cash transactions
-                document.getElementById('dpAmountDisplay').value = formatNumberInput(total);
-                document.getElementById('dpAmount').value = total;
-            }
-
-            // Show/hide payment breakdown for kredit
-            if (jenisTransaksi === 'kredit' && total > 0) {
-                paymentBreakdown.classList.remove('hidden');
-                const remaining = Math.max(0, total - dpAmount);
-                document.getElementById('dpDisplay').textContent = `Rp ${formatNumber(dpAmount)}`;
-                document.getElementById('remainingDisplay').textContent = `Rp ${formatNumber(remaining)}`;
-            } else {
-                paymentBreakdown.classList.add('hidden');
-            }
         }
 
 
@@ -2329,6 +3600,20 @@
             document.getElementById('previewTransactionType').textContent =
                 jenisTransaksi === 'kredit' ? 'Kredit' : 'Tunai';
 
+            // Initialize modal form with current values (no auto-select for transaction type)
+            // User must choose transaction type manually
+            updatePreviewTransactionTypeCards();
+
+            // Set DP amount based on transaction type (will be updated when user selects transaction type)
+            document.getElementById('previewDpAmount').value = '0';
+            document.getElementById('previewDpAmount').readOnly = false;
+            document.getElementById('paymentAmountLabel').textContent = 'Jumlah Pembayaran';
+            document.getElementById('previewDpAmount').placeholder = 'Jumlah (Rp)';
+
+            // Show/hide DP container based on transaction type (will be updated when user selects transaction type)
+            const previewDpContainer = document.getElementById('previewDpContainer');
+            previewDpContainer.classList.add('hidden'); // Hide initially until user selects transaction type
+
             // Populate order items
             const previewOrderItems = document.getElementById('previewOrderItems');
             previewOrderItems.innerHTML = '';
@@ -2356,11 +3641,11 @@
                                 <span>Rp ${formatNumber(subtotal)}</span>
                             </div>
                             ${discount > 0 ? `
-                                                                                                                                                    <div class="flex justify-between text-xs">
-                                                                                                                                                        <span class="text-orange-600">Potongan</span>
-                                                                                                                                                        <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                    </div>
-                                                                                                                                                    ` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <div class="flex justify-between text-xs">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <span class="text-orange-600">Potongan</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ` : ''}
                             <div class="flex justify-between text-sm font-medium">
                                 <span>Total</span>
                                 <span class="text-blue-600">Rp ${formatNumber(total)}</span>
@@ -2408,6 +3693,22 @@
 
             // Show modal
             orderPreviewModal.classList.remove('hidden');
+
+            // Initialize kas/bank logos
+            const selectedKasBank = document.querySelector('.preview-kas-bank-radio:checked');
+            if (selectedKasBank) {
+                updateKasBankLogo(selectedKasBank);
+            }
+
+            // Initialize kas/bank filter based on payment method
+            filterKasBankByPaymentMethod();
+
+            // Uncheck any selected kas/bank when modal opens
+            const selectedKasBankRadio = document.querySelector('.preview-kas-bank-radio:checked');
+            if (selectedKasBankRadio) {
+                selectedKasBankRadio.checked = false;
+                updatePreviewKasBankCards();
+            }
         }
 
         // Form validation and preview
@@ -2425,9 +3726,75 @@
                 return false;
             }
 
-            // Validate DP for kredit transactions
-            const jenisTransaksi = document.getElementById('jenisTransaksi').value;
-            if (jenisTransaksi === 'kredit') {
+
+
+            // Show preview modal instead of submitting directly
+            showOrderPreview();
+        });
+
+        // Modal form event listeners
+        const previewDpContainer = document.getElementById('previewDpContainer');
+        const previewDpAmount = document.getElementById('previewDpAmount');
+
+        // Preview transaction type radio button handling
+        const previewTransactionTypeRadios = document.querySelectorAll('.preview-transaction-type-radio');
+        const previewTransactionTypeCards = document.querySelectorAll('.preview-transaction-type-card');
+
+        // Function to update preview transaction type card styling
+        function updatePreviewTransactionTypeCards() {
+            previewTransactionTypeCards.forEach((card, index) => {
+                const radio = previewTransactionTypeRadios[index];
+                if (radio.checked) {
+                    card.classList.remove('border-gray-200', 'bg-white', 'border-red-500', 'bg-red-50',
+                        'animate-pulse');
+                    card.classList.add('border-blue-500', 'bg-blue-50');
+                } else {
+                    card.classList.remove('border-blue-500', 'bg-blue-50', 'border-red-500', 'bg-red-50',
+                        'animate-pulse');
+                    card.classList.add('border-gray-200', 'bg-white');
+                }
+            });
+        }
+
+        // Add event listeners to preview transaction type radio buttons
+        previewTransactionTypeRadios.forEach((radio, index) => {
+            radio.addEventListener('change', function() {
+                updatePreviewTransactionTypeCards();
+                handleTransactionTypeChange();
+            });
+
+            // Add click event to card for better UX
+            const card = previewTransactionTypeCards[index];
+            card.addEventListener('click', function() {
+                radio.checked = true;
+                updatePreviewTransactionTypeCards();
+                handleTransactionTypeChange();
+            });
+        });
+
+        // Initialize preview transaction type card states
+        updatePreviewTransactionTypeCards();
+
+        // Handle transaction type change in modal
+        function handleTransactionTypeChange() {
+            const selectedTransactionType = document.querySelector('.preview-transaction-type-radio:checked').value;
+            if (selectedTransactionType === 'kredit') {
+                previewDpContainer.classList.remove('hidden');
+                previewDpAmount.required = true;
+                previewDpAmount.readOnly = false;
+
+                // Reset DP amount to 0 for kredit
+                previewDpAmount.value = '0';
+                previewDpAmount.focus();
+
+                // Update labels for kredit
+                document.getElementById('paymentAmountLabel').textContent = 'Jumlah Down Payment (DP)';
+                document.getElementById('previewDpAmount').placeholder = 'Jumlah DP (Rp)';
+
+                // Show info message
+                showToast('Jumlah DP direset ke 0. Silakan isi jumlah DP yang diinginkan.', 'info');
+            } else {
+                // For tunai transactions, auto-fill with total amount
                 const subtotal = orderItems.reduce((total, item) => {
                     const itemSubtotal = item.price * item.qty;
                     const itemDiscount = item.discount || 0;
@@ -2435,27 +3802,1217 @@
                 }, 0);
                 const discount = parseFormattedNumber(document.getElementById('diskonDisplay').value);
                 const total = subtotal - discount;
-                const dpAmount = parseFormattedNumber(document.getElementById('dpAmountDisplay').value);
 
-                if (dpAmount > total) {
-                    showToast('DP tidak boleh melebihi total transaksi!', 'error');
-                    document.getElementById('dpAmountDisplay').focus();
-                    return false;
+                previewDpContainer.classList.remove('hidden');
+                previewDpAmount.required = false;
+                previewDpAmount.value = formatNumberInput(total.toString());
+                previewDpAmount.readOnly = true;
+
+                // Update labels for tunai
+                document.getElementById('paymentAmountLabel').textContent = 'Jumlah Pembayaran';
+                document.getElementById('previewDpAmount').placeholder = 'Jumlah (Rp)';
+
+                // Show info message
+                showToast('Pembayaran tunai otomatis diisi sesuai total transaksi', 'info');
+            }
+        }
+
+        // Setup number formatting for DP input in modal
+        setupNumberInput(previewDpAmount);
+
+        // Preview payment method radio button handling
+        const previewPaymentRadios = document.querySelectorAll('.preview-payment-method-radio');
+        const previewPaymentCards = document.querySelectorAll('.preview-payment-method-card');
+
+        // Function to update preview payment method card styling
+        function updatePreviewPaymentMethodCards() {
+            previewPaymentCards.forEach((card, index) => {
+                const radio = previewPaymentRadios[index];
+                if (radio.checked) {
+                    card.classList.remove('border-gray-200', 'bg-white', 'border-red-500', 'bg-red-50',
+                        'animate-pulse');
+                    card.classList.add('border-blue-500', 'bg-blue-50');
+                } else {
+                    card.classList.remove('border-blue-500', 'bg-blue-50', 'border-red-500', 'bg-red-50',
+                        'animate-pulse');
+                    card.classList.add('border-gray-200', 'bg-white');
+                }
+            });
+        }
+
+        // Add event listeners to preview radio buttons
+        previewPaymentRadios.forEach((radio, index) => {
+            radio.addEventListener('change', function() {
+                updatePreviewPaymentMethodCards();
+                filterKasBankByPaymentMethod();
+            });
+
+            // Add click event to card for better UX
+            const card = previewPaymentCards[index];
+            card.addEventListener('click', function() {
+                radio.checked = true;
+                updatePreviewPaymentMethodCards();
+                filterKasBankByPaymentMethod();
+            });
+        });
+
+        // Initialize preview card states
+        updatePreviewPaymentMethodCards();
+
+        // Card scan area functionality
+        const cardScanArea = document.getElementById('cardScanArea');
+
+        // Function to reset card scan area to initial state
+        function resetCardScanArea() {
+            const scanIcon = cardScanArea.querySelector('.ti-scan');
+            const statusText = cardScanArea.querySelector('p:last-child');
+            const cardArea = cardScanArea.querySelector('div');
+            const rfidDisplay = document.getElementById('rfidDisplay');
+            const rfidCardId = document.getElementById('rfidCardId');
+
+            // Reset to initial state
+            scanIcon.classList.remove('animate-spin');
+            scanIcon.classList.add('animate-pulse');
+            // statusText.textContent = 'Menunggu kartu terdeteksi...';
+            statusText.classList.remove('text-green-600', 'font-medium');
+            statusText.classList.add('text-gray-500');
+
+            // Reset styling
+            cardArea.classList.remove('border-green-400', 'bg-green-50');
+            cardArea.classList.add('border-blue-300');
+
+            // Hide RFID display and clear values
+            if (rfidDisplay) {
+                rfidDisplay.classList.add('hidden');
+            }
+            if (rfidCardId) {
+                rfidCardId.value = '';
+            }
+        }
+
+        // Function to ensure RFID input is focused when card scan area is visible
+        function ensureRfidInputFocused() {
+            const rfidInput = document.getElementById('rfidCardId');
+            if (rfidInput && cardScanArea && !cardScanArea.classList.contains('hidden')) {
+                // Check if input is not already focused
+                if (document.activeElement !== rfidInput) {
+                    rfidInput.focus();
+                    console.log('RFID input auto-focused');
+                }
+            }
+        }
+
+        // Function to clear RFID input (manual reset only)
+        function clearRfidInput() {
+            const rfidCardId = document.getElementById('rfidCardId');
+            const rfidDisplay = document.getElementById('rfidDisplay');
+            const readyIndicator = document.getElementById('rfidReadyIndicator');
+
+            if (rfidCardId) {
+                rfidCardId.value = '';
+            }
+
+            // Clear stored RFID ID
+            storedRfidId = '';
+            console.log('Stored RFID ID cleared');
+
+            // Reset progress bar
+            updateRfidProgress(0);
+
+            if (rfidDisplay) {
+                rfidDisplay.classList.add('hidden');
+            }
+
+            // Reset card display to default values
+            resetCardDisplay();
+
+            // Update ready indicator
+            if (readyIndicator) {
+                readyIndicator.textContent = '💳 Input RFID siap menerima data...';
+                readyIndicator.classList.remove('text-green-600', 'text-orange-600');
+                readyIndicator.classList.add('text-blue-600');
+            }
+
+            // Reset card scan area to initial state
+            resetCardScanArea();
+
+            console.log('RFID input manually cleared');
+        }
+
+        // Function to reset card display to default values
+        function resetCardDisplay() {
+            const rfidCardNumber = document.getElementById('rfidCardNumber');
+            const rfidCardId = document.getElementById('rfidCardId');
+            const rfidCardholderName = document.getElementById('rfidCardholderName');
+            const rfidExpiryDate = document.getElementById('rfidExpiryDate');
+            const rfidCardIdDisplay = document.getElementById('rfidCardIdDisplay');
+            const rfidBalanceDisplay = document.getElementById('rfidBalanceDisplay');
+
+            if (rfidCardNumber) {
+                rfidCardNumber.textContent = '-';
+            }
+            if (rfidCardId) {
+                rfidCardId.textContent = '-';
+            }
+            if (rfidCardholderName) {
+                rfidCardholderName.textContent = '-';
+            }
+            if (rfidExpiryDate) {
+                rfidExpiryDate.textContent = '-';
+            }
+            if (rfidCardIdDisplay) {
+                rfidCardIdDisplay.textContent = '-';
+            }
+            if (rfidBalanceDisplay) {
+                rfidBalanceDisplay.textContent = 'Rp 0';
+            }
+
+            // Reset saldo RFID dan status
+            saldoRfid = 0;
+            statusRfid = false;
+            storedRfidId = '';
+            console.log('🔄 Saldo RFID dan status direset:', {
+                saldoRfid,
+                statusRfid,
+                storedRfidId
+            });
+        }
+
+        // Interval to keep RFID input focused when card scan area is visible
+        let rfidFocusInterval;
+
+        function startRfidFocusMonitoring() {
+            if (rfidFocusInterval) {
+                clearInterval(rfidFocusInterval);
+            }
+            rfidFocusInterval = setInterval(ensureRfidInputFocused, 1000);
+        }
+
+        function stopRfidFocusMonitoring() {
+            if (rfidFocusInterval) {
+                clearInterval(rfidFocusInterval);
+                rfidFocusInterval = null;
+            }
+        }
+
+        // Function to handle RFID card detection
+        // This function is called when an RFID card is detected
+        // It updates the UI and stores the card ID for form submission
+        function handleRfidCardDetection(cardId) {
+            console.log('RFID Card detected:', cardId);
+
+            const scanIcon = cardScanArea.querySelector('.ti-scan');
+            const statusText = cardScanArea.querySelector('p:last-child');
+            const cardArea = cardScanArea.querySelector('div');
+            const rfidDisplay = document.getElementById('rfidDisplay');
+            const rfidCardId = document.getElementById('rfidCardId');
+
+            // Show loading state
+            scanIcon.classList.remove('animate-pulse');
+            scanIcon.classList.add('animate-spin');
+
+            if (statusText) {
+                statusText.textContent = '🔄 Mengambil data dari server...';
+                statusText.classList.remove('text-blue-600', 'text-green-600');
+                statusText.classList.add('text-orange-600');
+            }
+
+            // Update input field
+            if (rfidCardId) {
+                rfidCardId.value = cardId;
+            }
+
+            // Update progress bar
+            updateRfidProgress(10);
+
+            // Call API to get RFID data
+            fetchRfidData(cardId)
+                .then(data => {
+                    // Update scan icon and status
+                    scanIcon.classList.remove('animate-pulse', 'animate-spin');
+                    scanIcon.classList.add('animate-pulse');
+
+                    // Update status text
+                    if (statusText) {
+                        statusText.textContent = '✅ Kartu RFID berhasil dibaca!';
+                        statusText.classList.remove('text-blue-600', 'text-orange-600');
+                        statusText.classList.add('text-green-600');
+                    }
+
+                    // Add success styling to card scan area
+                    cardArea.classList.remove('border-blue-300', 'bg-blue-50');
+                    cardArea.classList.add('border-green-500', 'bg-green-50');
+
+                    // Show RFID display with animation
+                    if (rfidDisplay) {
+                        rfidDisplay.classList.remove('hidden');
+
+                        const cardElement = rfidDisplay.querySelector('.bg-gradient-to-br');
+                        if (cardElement) {
+                            cardElement.classList.add('animate-pulse');
+                            setTimeout(() => {
+                                cardElement.classList.remove('animate-pulse');
+                            }, 2000);
+                        }
+                    }
+
+                    // Update card display with API data
+                    updateCardDisplayWithApiData(data, cardId);
+
+                    // Set status RFID to true
+                    statusRfid = true;
+                    storedRfidId = cardId;
+                    console.log('✅ Status RFID set to true, stored ID:', storedRfidId);
+
+                    // Update ready indicator
+                    const readyIndicator = document.getElementById('rfidReadyIndicator');
+                    if (readyIndicator) {
+                        readyIndicator.textContent = '✅ Kartu RFID berhasil dibaca!';
+                        readyIndicator.classList.remove('text-blue-600', 'text-orange-600');
+                        readyIndicator.classList.add('text-green-600');
+                    }
+
+                    // Show success message
+                    showToast('Kartu RFID berhasil dibaca!', 'success');
+                })
+                .catch(error => {
+                    console.error('Error fetching RFID data:', error);
+
+                    // Reset to error state
+                    scanIcon.classList.remove('animate-pulse', 'animate-spin');
+                    scanIcon.classList.add('animate-pulse');
+
+                    if (statusText) {
+                        statusText.textContent = '❌ Gagal mengambil data RFID';
+                        statusText.classList.remove('text-blue-600', 'text-green-600');
+                        statusText.classList.add('text-red-600');
+                    }
+
+                    // Reset card area styling
+                    cardArea.classList.remove('border-blue-300', 'bg-blue-50', 'border-green-500', 'bg-green-50');
+                    cardArea.classList.add('border-red-500', 'bg-red-50');
+
+                    // Show error message
+                    showToast('Gagal mengambil data RFID: ' + error.message, 'error');
+                });
+        }
+
+        // Function to fetch RFID data from API
+        async function fetchRfidData(rfid) {
+            try {
+                console.log('🔍 Fetching RFID data for:', rfid);
+                const response = await fetch(`/penjualan/rfid/${rfid}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                console.log('📡 API Response status:', response.status);
+                const result = await response.json();
+                console.log('📦 API Response data:', result);
+
+                if (!response.ok) {
+                    throw new Error(result.message || 'Gagal mengambil data RFID');
                 }
 
-                if (dpAmount < 0) {
-                    showToast('DP tidak boleh kurang dari 0!', 'error');
-                    document.getElementById('dpAmountDisplay').focus();
-                    return false;
+                if (!result.success) {
+                    throw new Error(result.message || 'Data RFID tidak ditemukan');
+                }
+
+                console.log('✅ RFID data received:', result.data);
+                return result.data;
+            } catch (error) {
+                console.error('❌ Error fetching RFID data:', error);
+                throw error;
+            }
+        }
+
+        // Function to update card display with API data
+        function updateCardDisplayWithApiData(apiData, rfidId) {
+            console.log('🎯 Updating card display with API data:', apiData);
+            console.log('🆔 RFID ID:', rfidId);
+
+            // Extract the actual data from nested response structure
+            const actualData = apiData.data || apiData;
+            console.log('📊 Actual data extracted:', actualData);
+
+            const rfidCardNumber = document.getElementById('rfidCardNumber');
+            const rfidCardId = document.getElementById('rfidCardId');
+            const rfidCardholderName = document.getElementById('rfidCardholderName');
+            const rfidExpiryDate = document.getElementById('rfidExpiryDate');
+            const rfidCardIdDisplay = document.getElementById('rfidCardIdDisplay');
+
+            // Update card display with API data
+            if (rfidCardNumber && actualData.no_rekening) {
+                // Format account number for display (add spaces every 4 digits)
+                const formattedAccount = actualData.no_rekening.replace(/(\d{3})(\d{4})(\d{5})/, '$1 $2 $3');
+                console.log('💳 Setting card number:', formattedAccount);
+                rfidCardNumber.textContent = formattedAccount;
+            } else {
+                console.log('⚠️ Card number element or no_rekening not found:', {
+                    rfidCardNumber,
+                    no_rekening: actualData.no_rekening
+                });
+            }
+
+            if (rfidCardId && actualData.no_anggota) {
+                console.log('🆔 Setting member ID:', actualData.no_anggota);
+                rfidCardId.textContent = actualData.no_anggota;
+            } else {
+                console.log('⚠️ Member ID element or no_anggota not found:', {
+                    rfidCardId,
+                    no_anggota: actualData.no_anggota
+                });
+            }
+
+            if (rfidCardholderName && actualData.anggota && actualData.anggota.nama_lengkap) {
+                const upperName = actualData.anggota.nama_lengkap.toUpperCase();
+                console.log('👤 Setting cardholder name:', upperName);
+                rfidCardholderName.textContent = upperName;
+            } else {
+                console.log('⚠️ Cardholder name element or nama_lengkap not found:', {
+                    rfidCardholderName,
+                    anggota: actualData.anggota
+                });
+            }
+
+            if (rfidExpiryDate) {
+                // Show account type instead of expiry date
+                if (actualData.jenis_tabungan && actualData.jenis_tabungan.jenis_tabungan) {
+                    console.log('🏦 Setting account type:', actualData.jenis_tabungan.jenis_tabungan);
+                    rfidExpiryDate.textContent = actualData.jenis_tabungan.jenis_tabungan;
+                } else {
+                    console.log('🏦 Setting default account type: Tabungan');
+                    rfidExpiryDate.textContent = 'Tabungan';
+                }
+            } else {
+                console.log('⚠️ Expiry date element not found:', rfidExpiryDate);
+            }
+
+            if (rfidCardIdDisplay) {
+                console.log('📄 Setting RFID display:', rfidId);
+                rfidCardIdDisplay.textContent = rfidId;
+            } else {
+                console.log('⚠️ RFID display element not found:', rfidCardIdDisplay);
+            }
+
+            // Update bank name with account type
+            const bankNameElement = document.querySelector('#rfidDisplay .text-gray-300');
+            if (bankNameElement) {
+                if (actualData.jenis_tabungan && actualData.jenis_tabungan.jenis_tabungan) {
+                    bankNameElement.textContent = actualData.jenis_tabungan.jenis_tabungan;
+                } else {
+                    bankNameElement.textContent = 'Tabungan';
                 }
             }
 
-            // Show preview modal instead of submitting directly
-            showOrderPreview();
+            // Add balance information if available
+            if (actualData.saldo !== undefined) {
+                const balanceElement = document.getElementById('rfidBalanceDisplay');
+                if (balanceElement) {
+                    console.log('💰 Setting balance:', formatCurrency(actualData.saldo));
+                    balanceElement.textContent = `Rp ${formatCurrency(actualData.saldo)}`;
+
+                    // Simpan saldo ke variabel global
+                    saldoRfid = actualData.saldo;
+                    console.log('💾 Saldo RFID disimpan:', saldoRfid);
+                } else {
+                    console.log('⚠️ Balance display element not found:', balanceElement);
+                }
+            }
+
+            // Update card color based on account type or use default
+            const cardElement = document.querySelector('#rfidDisplay .bg-gradient-to-br');
+            if (cardElement) {
+                // Remove any existing color classes
+                cardElement.classList.remove('from-gray-800', 'to-gray-900', 'from-blue-800', 'to-blue-900', 'from-red-800',
+                    'to-red-900', 'from-green-800', 'to-green-900', 'from-yellow-800', 'to-yellow-900',
+                    'from-purple-800', 'to-purple-900', 'from-indigo-800', 'to-indigo-900', 'from-pink-800',
+                    'to-pink-900', 'from-teal-800', 'to-teal-900', 'from-orange-800', 'to-orange-900', 'from-cyan-800',
+                    'to-cyan-900', 'from-emerald-800', 'to-emerald-900', 'from-lime-800', 'to-lime-900',
+                    'from-amber-800', 'to-amber-900', 'from-violet-800', 'to-violet-900', 'from-fuchsia-800',
+                    'to-fuchsia-900', 'from-rose-800', 'to-rose-900');
+
+                // Use different colors based on account type
+                if (actualData.jenis_tabungan && actualData.jenis_tabungan.jenis_tabungan) {
+                    const accountType = actualData.jenis_tabungan.jenis_tabungan.toLowerCase();
+                    if (accountType.includes('siswa') || accountType.includes('student')) {
+                        cardElement.classList.add('from-green-600', 'to-green-800');
+                    } else if (accountType.includes('umum') || accountType.includes('general')) {
+                        cardElement.classList.add('from-blue-600', 'to-blue-800');
+                    } else if (accountType.includes('premium') || accountType.includes('vip')) {
+                        cardElement.classList.add('from-purple-600', 'to-purple-800');
+                    } else {
+                        cardElement.classList.add('from-blue-600', 'to-blue-800');
+                    }
+                } else {
+                    cardElement.classList.add('from-blue-600', 'to-blue-800');
+                }
+            }
+
+            // Store API data for form submission
+            window.rfidApiData = actualData;
+        }
+
+        // Helper function to format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('id-ID', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+
+
+        // Simulate card scan function removed - RFID should only be detected through actual hardware input
+
+        // Click event removed - RFID should only be detected through actual hardware input
+
+        // RFID Reader Integration
+        // Listen for RFID reader input (keyboard input simulation)
+        let rfidInputBuffer = '';
+        let rfidInputTimeout;
+        let storedRfidId = ''; // Variabel untuk menyimpan RFID ID 10 karakter
+        let saldoRfid = 0; // Variabel untuk menyimpan saldo RFID
+        let statusRfid = false; // Variabel untuk tracking status scan RFID
+
+        // Function untuk update progress bar RFID
+        function updateRfidProgress(currentLength) {
+            const progressText = document.getElementById('rfidProgress');
+            const progressBar = document.getElementById('rfidProgressBar');
+
+            if (progressText) {
+                progressText.textContent = `${currentLength}/10`;
+            }
+
+            if (progressBar) {
+                const percentage = (currentLength / 10) * 100;
+                progressBar.style.width = `${percentage}%`;
+
+                // Change color based on progress
+                if (currentLength === 10) {
+                    progressBar.classList.remove('bg-blue-500', 'bg-yellow-500');
+                    progressBar.classList.add('bg-green-500');
+                } else if (currentLength >= 7) {
+                    progressBar.classList.remove('bg-blue-500', 'bg-green-500');
+                    progressBar.classList.add('bg-yellow-500');
+                } else {
+                    progressBar.classList.remove('bg-yellow-500', 'bg-green-500');
+                    progressBar.classList.add('bg-blue-500');
+                }
+            }
+        }
+
+        document.addEventListener('keydown', function(event) {
+            // Only process if card scan area is visible
+            if (cardScanArea && !cardScanArea.classList.contains('hidden')) {
+                // Check if it's a printable character (not special keys)
+                if (event.key.length === 1) {
+                    rfidInputBuffer += event.key;
+
+                    // Clear buffer after 1 second of inactivity
+                    clearTimeout(rfidInputTimeout);
+                    rfidInputTimeout = setTimeout(() => {
+                        rfidInputBuffer = '';
+                    }, 1000);
+
+                    // Check if buffer mencapai 10 karakter (RFID ID length)
+                    if (rfidInputBuffer.length === 10) {
+                        event.preventDefault();
+                        const newCardId = rfidInputBuffer.trim();
+
+                        // Simpan ID ke variabel
+                        storedRfidId = newCardId;
+                        console.log('RFID ID tersimpan:', storedRfidId);
+
+                        // Trigger card detection dengan ID yang tersimpan
+                        handleRfidCardDetection(storedRfidId);
+
+                        // Reset buffer untuk input berikutnya
+                        rfidInputBuffer = '';
+
+                        // Reset input field
+                        const rfidInput = document.getElementById('rfidCardId');
+                        if (rfidInput) {
+                            rfidInput.value = '';
+                        }
+                    }
+
+                    // Update input field dengan buffer saat ini (untuk debugging)
+                    const rfidInput = document.getElementById('rfidCardId');
+                    if (rfidInput && rfidInputBuffer.length < 10) {
+                        rfidInput.value = rfidInputBuffer;
+                    }
+
+                    // Update progress bar
+                    updateRfidProgress(rfidInputBuffer.length);
+                }
+            }
         });
+
+        // Alternative: Listen for custom RFID reader events
+        // This can be used when integrating with actual RFID hardware
+        window.addEventListener('rfidCardDetected', function(event) {
+            if (cardScanArea && !cardScanArea.classList.contains('hidden')) {
+                const newCardId = event.detail.cardId;
+                handleRfidCardDetection(newCardId);
+            }
+        });
+
+        // Function to manually trigger RFID detection (for testing)
+        window.triggerRfidDetection = function(cardId) {
+            if (cardScanArea && !cardScanArea.classList.contains('hidden')) {
+                handleRfidCardDetection(cardId);
+            }
+        };
+
+        // Clear RFID input button
+        const clearRfidBtn = document.getElementById('clearRfidBtn');
+        if (clearRfidBtn) {
+            clearRfidBtn.addEventListener('click', function() {
+                clearRfidInput();
+                showToast('Input RFID telah di-clear', 'info');
+            });
+        }
+
+        // Manual input detection for testing
+        const rfidCardIdInput = document.getElementById('rfidCardId');
+        if (rfidCardIdInput) {
+            // Add focus event listener
+            rfidCardIdInput.addEventListener('focus', function() {
+                // Add visual indicator when input is focused
+                this.classList.add('ring-2', 'ring-blue-500', 'border-blue-500');
+                console.log('RFID input is now focused and ready for input');
+
+                // Update ready indicator
+                const readyIndicator = document.getElementById('rfidReadyIndicator');
+                if (readyIndicator) {
+                    readyIndicator.textContent = '✅ Input RFID aktif dan siap menerima data...';
+                    readyIndicator.classList.remove('text-blue-600');
+                    readyIndicator.classList.add('text-green-600');
+                }
+            });
+
+            // Add blur event listener
+            rfidCardIdInput.addEventListener('blur', function() {
+                // Remove visual indicator when input loses focus
+                this.classList.remove('ring-2', 'ring-blue-500', 'border-blue-500');
+
+                // Update ready indicator
+                const readyIndicator = document.getElementById('rfidReadyIndicator');
+                if (readyIndicator) {
+                    readyIndicator.textContent = '💳 Input RFID siap menerima data...';
+                    readyIndicator.classList.remove('text-green-600');
+                    readyIndicator.classList.add('text-blue-600');
+                }
+            });
+
+            rfidCardIdInput.addEventListener('input', function() {
+                const value = this.value.trim();
+
+                // Update progress bar
+                updateRfidProgress(Math.min(value.length, 10));
+
+                // Jika mencapai 10 karakter, simpan dan reset input
+                if (value.length === 10) {
+                    storedRfidId = value;
+                    console.log('RFID ID tersimpan (manual input):', storedRfidId);
+
+                    // Trigger card detection dengan ID yang tersimpan
+                    handleRfidCardDetection(storedRfidId);
+
+                    // Reset input field dan progress
+                    this.value = '';
+                    updateRfidProgress(0);
+                } else if (value.length > 10) {
+                    // Potong jika lebih dari 10 karakter
+                    this.value = value.substring(0, 10);
+                    storedRfidId = this.value;
+                    console.log('RFID ID tersimpan (manual input, dipotong):', storedRfidId);
+                    handleRfidCardDetection(storedRfidId);
+                    this.value = '';
+                    updateRfidProgress(0);
+                }
+            });
+        }
+
+        // Test RFID button
+        const testRfidBtn = document.getElementById('testRfidBtn');
+        if (testRfidBtn) {
+            testRfidBtn.addEventListener('click', function() {
+                const testCardId = 'TEST-' + Date.now().toString().slice(-6);
+                handleRfidCardDetection(testCardId);
+            });
+        }
+
+        // Simulate RFID button
+        const simulateRfidBtn = document.getElementById('simulateRfidBtn');
+        if (simulateRfidBtn) {
+            simulateRfidBtn.addEventListener('click', function() {
+                const simulatedCardId = 'RFID-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+                handleRfidCardDetection(simulatedCardId);
+            });
+        }
+
+        // Reset RFID button
+        const resetRfidBtn = document.getElementById('resetRfidBtn');
+        if (resetRfidBtn) {
+            resetRfidBtn.addEventListener('click', function() {
+                clearRfidInput();
+                showToast('Input RFID telah di-reset', 'info');
+            });
+        }
+
+        // Test function for debugging API response
+        window.testRfidApiResponse = function() {
+            console.log('🧪 Testing RFID API response with sample data...');
+            const sampleApiData = {
+                "success": true,
+                "data": {
+                    "no_rekening": "103-2408-00016",
+                    "no_anggota": "2408-00016",
+                    "kode_tabungan": "103",
+                    "saldo": 40000,
+                    "rfid": "0001355460",
+                    "created_at": "2025-07-21 09:35:43",
+                    "updated_at": "2025-09-20 22:19:30",
+                    "jenis_tabungan": {
+                        "kode_tabungan": "103",
+                        "jenis_tabungan": "Tabungan Siswa"
+                    },
+                    "anggota": {
+                        "no_anggota": "2408-00016",
+                        "nama_lengkap": "Khairi Messi Rabbani",
+                        "alamat": "MTs Persis Sindangkasih",
+                        "no_hp": "8080800324016"
+                    }
+                }
+            };
+
+            // Show RFID display first
+            const rfidDisplay = document.getElementById('rfidDisplay');
+            if (rfidDisplay) {
+                rfidDisplay.classList.remove('hidden');
+            }
+
+            // Update card display with sample data
+            updateCardDisplayWithApiData(sampleApiData, "0001355460");
+            console.log('✅ Test completed! Check the card display.');
+            console.log('Expected display:');
+            console.log('- Card Number: 103 2408 00016');
+            console.log('- Member ID: 2408-00016');
+            console.log('- Name: KHAIRI MESSI RABBANI');
+            console.log('- Account Type: Tabungan Siswa');
+            console.log('- Balance: Rp 40.000');
+            console.log('💰 RFID Balance stored:', saldoRfid);
+        };
+
+        // Console helper message
+        console.log('🔧 Debug tools available:');
+        console.log('- testRfidApiResponse() - Test card display with sample data');
+        console.log('- clearRfidInput() - Clear RFID input and reset card');
+        console.log('- triggerRfidDetection("RFIDID") - Simulate RFID scan');
+        console.log('- checkRfidBalance() - Check RFID balance and status');
+        console.log('- checkRfidStatus() - Check complete RFID status');
+        console.log('- testSaldoValidation() - Test saldo validation logic');
+        console.log('- saldoRfid - Current RFID balance variable');
+        console.log('- statusRfid - Current RFID scan status');
+
+        // Helper function to check RFID balance
+        window.checkRfidBalance = function() {
+            console.log('💰 Current RFID Balance:', saldoRfid);
+            console.log('💳 RFID Card ID:', storedRfidId);
+            console.log('✅ RFID Status:', statusRfid);
+            return saldoRfid;
+        };
+
+        // Helper function to check RFID status
+        window.checkRfidStatus = function() {
+            console.log('📊 RFID Status Check:');
+            console.log('- Status RFID:', statusRfid);
+            console.log('- Stored RFID ID:', storedRfidId);
+            console.log('- Saldo RFID:', saldoRfid);
+            console.log('- Hidden input value:', document.getElementById('rfidCardId')?.value);
+            return {
+                status: statusRfid,
+                id: storedRfidId,
+                saldo: saldoRfid,
+                inputValue: document.getElementById('rfidCardId')?.value
+            };
+        };
+
+        // Helper function to test saldo validation
+        window.testSaldoValidation = function() {
+            console.log('🧪 Testing Saldo Validation:');
+
+            // Check if payment method is CARD
+            const selectedPaymentMethod = document.querySelector('.preview-payment-method-radio:checked');
+            const isCard = selectedPaymentMethod && (
+                selectedPaymentMethod.value.toLowerCase().includes('card') ||
+                selectedPaymentMethod.value.toLowerCase().includes('rfid') ||
+                selectedPaymentMethod.value.toLowerCase().includes('kartu')
+            );
+
+            console.log('💳 Payment Method Check:');
+            console.log('- Selected Method:', selectedPaymentMethod?.value);
+            console.log('- Is CARD Method:', isCard);
+
+            if (!isCard) {
+                console.log('ℹ️ Non-CARD payment method - RFID validation will be skipped');
+                return {
+                    isCard: false,
+                    message: 'RFID validation skipped for non-CARD payment method'
+                };
+            }
+
+            // Calculate current total
+            const subtotal = orderItems.reduce((total, item) => {
+                const itemSubtotal = item.price * item.qty;
+                const itemDiscount = item.discount || 0;
+                return total + (itemSubtotal - itemDiscount);
+            }, 0);
+            const discount = parseFormattedNumber(document.getElementById('diskonDisplay').value);
+            const total = subtotal - discount;
+
+            console.log('💰 Current Order:');
+            console.log('- Subtotal:', subtotal);
+            console.log('- Discount:', discount);
+            console.log('- Total:', total);
+            console.log('- RFID Saldo:', saldoRfid);
+            console.log('- Status RFID:', statusRfid);
+
+            if (total > saldoRfid) {
+                console.log('❌ VALIDATION SHOULD FAIL - Total exceeds saldo');
+                console.log(`Total (${total}) > Saldo (${saldoRfid})`);
+            } else {
+                console.log('✅ VALIDATION SHOULD PASS - Saldo sufficient');
+                console.log(`Total (${total}) <= Saldo (${saldoRfid})`);
+            }
+
+            return {
+                isCard: true,
+                total,
+                saldo: saldoRfid,
+                shouldFail: total > saldoRfid
+            };
+        };
+
+        // Preview kas/bank radio button handling
+        const previewKasBankRadios = document.querySelectorAll('.preview-kas-bank-radio');
+        const previewKasBankCards = document.querySelectorAll('.preview-kas-bank-card');
+
+        // Function to update preview kas/bank card styling
+        function updatePreviewKasBankCards() {
+            previewKasBankCards.forEach((card, index) => {
+                const radio = previewKasBankRadios[index];
+                if (radio.checked) {
+                    card.classList.remove('border-gray-200', 'bg-white', 'border-red-500', 'bg-red-50',
+                        'animate-pulse');
+                    card.classList.add('border-blue-500', 'bg-blue-50');
+                } else {
+                    card.classList.remove('border-blue-500', 'bg-blue-50', 'border-red-500', 'bg-red-50',
+                        'animate-pulse');
+                    card.classList.add('border-gray-200', 'bg-white');
+                }
+            });
+        }
+
+        // Add event listeners to preview kas/bank radio buttons
+        previewKasBankRadios.forEach((radio, index) => {
+            radio.addEventListener('change', function() {
+                updatePreviewKasBankCards();
+                updateKasBankLogo(radio);
+            });
+
+            // Add click event to card for better UX
+            const card = previewKasBankCards[index];
+            card.addEventListener('click', function() {
+                radio.checked = true;
+                updatePreviewKasBankCards();
+                updateKasBankLogo(radio);
+            });
+        });
+
+        // Function to update kas/bank logo
+        function updateKasBankLogo(selectedRadio) {
+            const jenis = selectedRadio.getAttribute('data-jenis');
+            const image = selectedRadio.getAttribute('data-image');
+
+            // Find the icon container in the selected card
+            const card = selectedRadio.closest('.preview-kas-bank-option').querySelector('.preview-kas-bank-card');
+            const iconContainer = card.querySelector('.w-16.h-16');
+
+            if (!iconContainer) {
+                console.warn('Icon container not found for kas/bank card');
+                return;
+            }
+
+            if (jenis === 'KAS') {
+                iconContainer.innerHTML = `
+                    <div class="w-full h-full bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
+                        <i class="ti ti-cash text-green-600 text-xl"></i>
+                    </div>
+                `;
+            } else {
+                if (image) {
+                    iconContainer.innerHTML = `
+                        <img src="${image}" alt="Logo" class="w-full h-full object-contain">
+                    `;
+                } else {
+                    iconContainer.innerHTML = `
+                        <div class="w-full h-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
+                            <i class="ti ti-building-bank text-purple-600 text-xl"></i>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Initialize preview kas/bank card states
+        updatePreviewKasBankCards();
+
+        // Function to filter kas/bank based on payment method
+        function filterKasBankByPaymentMethod() {
+            const selectedPaymentMethod = document.querySelector('.preview-payment-method-radio:checked');
+            const kasBankMessage = document.getElementById('kasBankMessage');
+            const kasBankContainer = document.getElementById('previewKasBankContainer');
+            const cardScanArea = document.getElementById('cardScanArea');
+
+            if (!selectedPaymentMethod) {
+                // If no payment method selected, hide all kas/bank and show message
+                previewKasBankCards.forEach((card, index) => {
+                    card.classList.add('hidden');
+                });
+                kasBankMessage.classList.remove('hidden');
+                cardScanArea.classList.add('hidden');
+                return;
+            }
+
+            // Hide message when payment method is selected
+            kasBankMessage.classList.add('hidden');
+
+            const paymentMethodCode = selectedPaymentMethod.value;
+            //alert(paymentMethodCode);
+            const isTransfer = paymentMethodCode.toLowerCase().includes('transfer') ||
+                paymentMethodCode.toLowerCase().includes('bank') ||
+                paymentMethodCode.toLowerCase().includes('bca') ||
+                paymentMethodCode.toLowerCase().includes('mandiri') ||
+                paymentMethodCode.toLowerCase().includes('bni') ||
+                paymentMethodCode.toLowerCase().includes('bri');
+            const isCash = paymentMethodCode.toLowerCase().includes('cash') ||
+                paymentMethodCode.toLowerCase().includes('tunai') ||
+                paymentMethodCode.toLowerCase().includes('kas');
+            const isCard = paymentMethodCode.toLowerCase().includes('card') ||
+                paymentMethodCode.toLowerCase().includes('rfid') ||
+                paymentMethodCode.toLowerCase().includes('kartu');
+
+            // Handle CARD payment method
+            if (isCard) {
+                // Hide all kas/bank cards and show card scan area
+                previewKasBankCards.forEach((card, index) => {
+                    card.classList.add('hidden');
+                });
+                cardScanArea.classList.remove('hidden');
+                kasBankContainer.classList.add('hidden');
+
+                // Reset card scan area state
+                resetCardScanArea();
+
+                // Auto-focus to RFID input after a short delay
+                setTimeout(() => {
+                    const rfidInput = document.getElementById('rfidCardId');
+                    if (rfidInput) {
+                        rfidInput.focus();
+                        console.log('RFID input focused for CARD payment method');
+                    }
+                    // Start monitoring to keep input focused
+                    startRfidFocusMonitoring();
+                }, 100);
+
+                return;
+            } else {
+                // Hide card scan area for non-card methods
+                cardScanArea.classList.add('hidden');
+                kasBankContainer.classList.remove('hidden');
+
+                // Stop RFID focus monitoring for non-card methods
+                stopRfidFocusMonitoring();
+            }
+
+            let visibleCount = 0;
+
+            previewKasBankCards.forEach((card, index) => {
+                const radio = previewKasBankRadios[index];
+                const kasBankJenis = radio.getAttribute('data-jenis');
+
+                if (isTransfer && kasBankJenis === 'BANK') {
+                    // Show only BANK for transfer methods
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                } else if (isCash && kasBankJenis === 'KAS') {
+                    // Show only KAS for cash methods
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                } else if (!isTransfer && !isCash && !isCard) {
+                    // If payment method is not clearly transfer, cash, or card, show all
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    // Hide the card
+                    card.classList.add('hidden');
+                }
+            });
+
+            // Update grid columns based on visible count
+            if (visibleCount === 1) {
+                kasBankContainer.className = 'grid gap-3 grid-cols-1';
+            } else if (visibleCount === 2) {
+                kasBankContainer.className = 'grid gap-3 grid-cols-2';
+            } else if (visibleCount === 3) {
+                kasBankContainer.className = 'grid gap-3 grid-cols-3';
+            } else if (visibleCount >= 4) {
+                kasBankContainer.className = 'grid gap-3 grid-cols-4';
+            }
+
+            // Uncheck any hidden kas/bank selections
+            previewKasBankRadios.forEach((radio, index) => {
+                const card = previewKasBankCards[index];
+                if (card.classList.contains('hidden') && radio.checked) {
+                    radio.checked = false;
+                    updatePreviewKasBankCards();
+                }
+            });
+
+            // Show appropriate message
+            if (isTransfer) {
+                showToast('Menampilkan kas/bank jenis BANK untuk metode transfer', 'info');
+            } else if (isCash) {
+                showToast('Menampilkan kas/bank jenis KAS untuk metode tunai', 'info');
+            }
+        }
 
         // Confirm order save
         confirmOrderSave.addEventListener('click', function() {
+            // Validate modal form first
+            const selectedModalTransactionType = document.querySelector('.preview-transaction-type-radio:checked');
+            const selectedModalPaymentMethod = document.querySelector('.preview-payment-method-radio:checked');
+            const selectedModalKasBank = document.querySelector('.preview-kas-bank-radio:checked');
+            const modalDpAmount = parseFormattedNumber(document.getElementById('previewDpAmount').value);
+
+            // Validate transaction type
+            if (!selectedModalTransactionType) {
+                showToast('Jenis transaksi wajib dipilih!', 'error');
+
+                // Add error highlight to all transaction type cards
+                const previewTransactionTypeCards = document.querySelectorAll('.preview-transaction-type-card');
+                previewTransactionTypeCards.forEach(card => {
+                    card.classList.add('border-red-500', 'bg-red-50', 'animate-pulse');
+                    setTimeout(() => {
+                        card.classList.remove('border-red-500', 'bg-red-50', 'animate-pulse');
+                    }, 3000);
+                });
+                return;
+            }
+
+            // Validate payment method
+            if (!selectedModalPaymentMethod) {
+                showToast('Metode pembayaran wajib dipilih!', 'error');
+
+                // Add error highlight to all payment method cards
+                const previewPaymentCards = document.querySelectorAll('.preview-payment-method-card');
+                previewPaymentCards.forEach(card => {
+                    card.classList.add('border-red-500', 'bg-red-50', 'animate-pulse');
+                    setTimeout(() => {
+                        card.classList.remove('border-red-500', 'bg-red-50', 'animate-pulse');
+                    }, 3000);
+                });
+                return;
+            }
+
+            // Validate kas/bank selection (skip for CARD payment method)
+            const paymentMethodCode = selectedModalPaymentMethod.value.toLowerCase();
+            const isCard = paymentMethodCode.includes('card') ||
+                paymentMethodCode.includes('rfid') ||
+                paymentMethodCode.includes('kartu');
+
+            if (!selectedModalKasBank && !isCard) {
+                showToast('Kas/Bank wajib dipilih!', 'error');
+
+                // Add error highlight to all kas/bank cards
+                const previewKasBankCards = document.querySelectorAll('.preview-kas-bank-card');
+                previewKasBankCards.forEach(card => {
+                    card.classList.add('border-red-500', 'bg-red-50', 'animate-pulse');
+                    setTimeout(() => {
+                        card.classList.remove('border-red-500', 'bg-red-50', 'animate-pulse');
+                    }, 3000);
+                });
+                return;
+            }
+
+            // Get the actual value from the hidden input (needed for all payment methods)
+            const modalJenisTransaksiValue = modalJenisTransaksi.value;
+            console.log("Ini adalah modalJenisTransaksi value:", modalJenisTransaksiValue);
+
+            // Validate RFID card for CARD payment method
+            if (isCard) {
+                // Check status RFID first
+                if (!statusRfid || !storedRfidId) {
+                    showToast('Kartu RFID wajib di-scan terlebih dahulu!', 'error');
+
+                    // Add error highlight to card scan area
+                    const cardArea = cardScanArea.querySelector('div');
+                    cardArea.classList.add('border-red-500', 'bg-red-50', 'animate-pulse');
+                    setTimeout(() => {
+                        cardArea.classList.remove('border-red-500', 'bg-red-50', 'animate-pulse');
+                    }, 3000);
+                    return;
+                }
+
+                // Double check hidden input as backup
+                const rfidCardId = document.getElementById('rfidCardId');
+                if (!rfidCardId || !rfidCardId.value.trim()) {
+                    // Update hidden input with stored RFID ID
+                    rfidCardId.value = storedRfidId;
+                    console.log('🔄 Updated hidden input with stored RFID ID:', storedRfidId);
+                }
+
+                // Validate RFID saldo for CARD payment
+                console.log('🔍 Validating RFID saldo:', {
+                    saldoRfid,
+                    modalJenisTransaksi: modalJenisTransaksi.value,
+                    modalDpAmount
+                });
+
+                // Calculate total amount to be paid
+                const subtotal = orderItems.reduce((total, item) => {
+                    const itemSubtotal = item.price * item.qty;
+                    const itemDiscount = item.discount || 0;
+                    return total + (itemSubtotal - itemDiscount);
+                }, 0);
+                const discount = parseFormattedNumber(document.getElementById('diskonDisplay').value);
+                const total = subtotal - discount;
+
+                console.log('💰 Payment calculation:', {
+                    subtotal,
+                    discount,
+                    total,
+                    saldoRfid
+                });
+
+                // For tunai transactions, check if total exceeds saldo
+                if (modalJenisTransaksiValue === 'tunai') {
+                    // console.log(total + ' > ' + saldoRfid);
+                    // return false;
+                    if (total > saldoRfid) {
+                        console.log('❌ Saldo tidak mencukupi untuk tunai:', {
+                            total,
+                            saldoRfid
+                        });
+                        showToast(
+                            `Saldo RFID tidak mencukupi! Saldo: Rp ${formatNumber(saldoRfid)}, Total: Rp ${formatNumber(total)}`,
+                            'error');
+
+                        // Add error highlight to card scan area
+                        const cardArea = cardScanArea.querySelector('div');
+                        cardArea.classList.add('border-red-500', 'bg-red-50', 'animate-pulse');
+                        setTimeout(() => {
+                            cardArea.classList.remove('border-red-500', 'bg-red-50', 'animate-pulse');
+                        }, 3000);
+                        return;
+                    } else {
+                        console.log('✅ Saldo mencukupi untuk tunai:', {
+                            total,
+                            saldoRfid
+                        });
+                    }
+                }
+
+                // For kredit transactions, check if DP exceeds saldo
+                if (modalJenisTransaksiValue === 'kredit') {
+                    if (modalDpAmount > saldoRfid) {
+                        console.log('❌ Saldo tidak mencukupi untuk DP:', {
+                            modalDpAmount,
+                            saldoRfid
+                        });
+                        showToast(
+                            `Saldo RFID tidak mencukupi untuk DP! Saldo: Rp ${formatNumber(saldoRfid)}, DP: Rp ${formatNumber(modalDpAmount)}`,
+                            'error');
+
+                        // Add error highlight to card scan area
+                        const cardArea = cardScanArea.querySelector('div');
+                        cardArea.classList.add('border-red-500', 'bg-red-50', 'animate-pulse');
+                        setTimeout(() => {
+                            cardArea.classList.remove('border-red-500', 'bg-red-50', 'animate-pulse');
+                        }, 3000);
+                        return;
+                    } else {
+                        console.log('✅ Saldo mencukupi untuk DP:', {
+                            modalDpAmount,
+                            saldoRfid
+                        });
+                    }
+                }
+            } else {
+                // For non-CARD payment methods, skip RFID validation
+                console.log('ℹ️ Non-CARD payment method, skipping RFID validation');
+            }
+
+            // Validate DP for kredit transactions
+            if (modalJenisTransaksiValue === 'kredit') {
+                const subtotal = orderItems.reduce((total, item) => {
+                    const itemSubtotal = item.price * item.qty;
+                    const itemDiscount = item.discount || 0;
+                    return total + (itemSubtotal - itemDiscount);
+                }, 0);
+                const discount = parseFormattedNumber(document.getElementById('diskonDisplay').value);
+                const total = subtotal - discount;
+
+                if (modalDpAmount > total) {
+                    showToast('DP tidak boleh melebihi total transaksi!', 'error');
+                    document.getElementById('previewDpAmount').focus();
+                    return;
+                }
+
+                if (modalDpAmount < 0) {
+                    showToast('DP tidak boleh kurang dari 0!', 'error');
+                    document.getElementById('previewDpAmount').focus();
+                    return;
+                }
+            }
+
+            // Update hidden inputs with modal values
+            document.getElementById('modalJenisTransaksi').value = modalJenisTransaksiValue;
+            document.getElementById('modalMetodePembayaran').value = selectedModalPaymentMethod.value;
+            document.getElementById('modalKasBankId').value = selectedModalKasBank ? selectedModalKasBank.value :
+                '';
+            document.getElementById('modalDpAmount').value = modalDpAmount;
+
+            // Update controller inputs
+            document.getElementById('jenisTransaksi').value = selectedModalTransactionType.value;
+            document.getElementById('metodePembayaran').value = selectedModalPaymentMethod.value;
+            document.getElementById('dpAmount').value = modalDpAmount;
+            document.getElementById('kasBankId').value = selectedModalKasBank ? selectedModalKasBank.value : '';
+
+            // Update RFID card ID for CARD payment method
+            if (isCard) {
+                const rfidCardId = document.getElementById('rfidCardId');
+                if (rfidCardId && rfidCardId.value) {
+                    // Add RFID card ID to form data
+                    let rfidInput = document.getElementById('rfid_card_id');
+                    if (!rfidInput) {
+                        rfidInput = document.createElement('input');
+                        rfidInput.type = 'hidden';
+                        rfidInput.name = 'rfid_card_id';
+                        rfidInput.id = 'rfid_card_id';
+                        document.getElementById('salesForm').appendChild(rfidInput);
+                    }
+                    rfidInput.value = rfidCardId.value;
+                }
+            }
+
             const button = this;
             const originalText = button.innerHTML;
             const cancelButton = document.getElementById('cancelOrderPreview');

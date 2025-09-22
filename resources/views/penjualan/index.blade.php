@@ -376,7 +376,7 @@
                                 class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                 <div class="flex items-center justify-end space-x-2">
                                     <i class="ti ti-currency-dollar text-blue-600"></i>
-                                    <span>Total & Diskon</span>
+                                    <span>Total Netto</span>
                                 </div>
                             </th>
                             <th scope="col"
@@ -491,17 +491,8 @@
                                     </div>
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap text-right">
-                                    <div class="space-y-1">
-                                        <div class="text-lg font-bold text-gray-900">Rp
-                                            {{ number_format($item->total, 0, ',', '.') }}</div>
-                                        @if ($item->diskon > 0)
-                                            <div
-                                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                                                <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                Diskon: Rp {{ number_format($item->diskon, 0, ',', '.') }}
-                                            </div>
-                                        @endif
-                                    </div>
+                                    <div class="text-lg font-bold text-gray-900">Rp
+                                        {{ number_format($item->total_setelah_diskon, 0, ',', '.') }}</div>
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap text-center">
                                     <span

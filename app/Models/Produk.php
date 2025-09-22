@@ -24,8 +24,8 @@ class Produk extends Model
 
     protected $casts = [
         'harga_jual' => 'decimal:2',
-        'stok' => 'integer',
-        'stok_minimal' => 'integer',
+        'stok' => 'decimal:2',
+        'stok_minimal' => 'decimal:2',
     ];
 
     /**

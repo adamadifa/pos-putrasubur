@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PembayaranPenjualan;
 use App\Models\Penjualan;
+use App\Models\PrinterSetting;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -33,14 +34,27 @@ class PembayaranController extends Controller
     {
         // Get penjualan that need payment (not fully paid)
         $penjualan = Penjualan::with(['pelanggan', 'pembayaranPenjualan'])
-            ->where(function ($query) {
-                $query->where('status_pembayaran', '!=', 'lunas')
-                    ->orWhere('jenis_transaksi', 'kredit');
-            })
             ->orderBy('tanggal', 'desc')
+            ->get()
+            ->filter(function ($p) {
+                // Calculate total already paid
+                $sudahDibayar = $p->pembayaranPenjualan->sum('jumlah_bayar');
+                $sisaBayar = $p->total_setelah_diskon - $sudahDibayar;
+
+                // Only show transactions that still have remaining balance to pay
+                return $sisaBayar > 0;
+            })
+            ->values(); // Reset array keys
+
+        // Get active payment methods
+        $metodePembayaran = \App\Models\MetodePembayaran::where('status', true)
+            ->orderBy('nama')
             ->get();
 
-        return view('pembayaran.create', compact('penjualan'));
+        // Get kas/bank data
+        $kasBanks = \App\Models\KasBank::orderBy('nama')->get();
+
+        return view('pembayaran.create', compact('penjualan', 'metodePembayaran', 'kasBanks'));
     }
 
     /**
@@ -48,23 +62,83 @@ class PembayaranController extends Controller
      */
     public function store(Request $request)
     {
+        // Log the request data for debugging
+        Log::info('Payment creation request', [
+            'request_data' => $request->all(),
+            'headers' => $request->headers->all(),
+            'kas_bank_id_raw' => $request->input('kas_bank_id'),
+            'metode_pembayaran_raw' => $request->input('metode_pembayaran')
+        ]);
+
+        // Clean and parse jumlah input
+        $jumlahInput = $request->input('jumlah');
+        $jumlahClean = preg_replace('/[^\d]/', '', $jumlahInput);
+        $jumlahNumeric = (int) $jumlahClean;
+
         $validated = $request->validate([
             'penjualan_id' => 'required|exists:penjualan,id',
-            'jumlah' => 'required|numeric|min:0.01',
+            'jumlah' => 'required|string',
             'metode_pembayaran' => 'required|string|max:50',
+            'kas_bank_id' => 'nullable|exists:kas_bank,id',
             'tanggal' => 'required|date',
             'keterangan' => 'nullable|string|max:255',
         ], [
             'penjualan_id.required' => 'Transaksi wajib dipilih.',
             'penjualan_id.exists' => 'Transaksi tidak valid.',
             'jumlah.required' => 'Jumlah bayar wajib diisi.',
-            'jumlah.numeric' => 'Jumlah bayar harus berupa angka.',
-            'jumlah.min' => 'Jumlah bayar minimal 0.01.',
             'metode_pembayaran.required' => 'Metode pembayaran wajib dipilih.',
             'tanggal.required' => 'Tanggal pembayaran wajib diisi.',
+            'kas_bank_id.exists' => 'Kas/Bank yang dipilih tidak valid.',
             'tanggal.date' => 'Format tanggal tidak valid.',
             'keterangan.max' => 'Keterangan maksimal 255 karakter.',
         ]);
+
+        // Validate metode pembayaran exists
+        $metodePembayaran = \App\Models\MetodePembayaran::where('kode', $validated['metode_pembayaran'])
+            ->where('status', true)
+            ->first();
+
+        if (!$metodePembayaran) {
+            return back()->withInput()
+                ->with('error', 'Metode pembayaran yang dipilih tidak valid atau tidak aktif.');
+        }
+
+        // Validate kas_bank_id based on payment method
+        if (in_array(strtolower($validated['metode_pembayaran']), ['tunai', 'transfer', 'qris'])) {
+            if (empty($validated['kas_bank_id'])) {
+                return back()->withInput()
+                    ->with('error', 'Kas/Bank wajib dipilih untuk metode pembayaran ' . $metodePembayaran->nama . '.');
+            }
+
+            // Validate kas_bank exists
+            $kasBank = \App\Models\KasBank::find($validated['kas_bank_id']);
+
+            if (!$kasBank) {
+                return back()->withInput()
+                    ->with('error', 'Kas/Bank yang dipilih tidak valid.');
+            }
+        } else {
+            // For other payment methods, set kas_bank_id to null
+            $validated['kas_bank_id'] = null;
+        }
+
+        // Custom validation for jumlah
+        if ($jumlahNumeric < 1000) {
+            return back()->withInput()
+                ->with('error', 'Jumlah pembayaran minimal Rp 1.000.');
+        }
+
+        // Update validated data with clean numeric value
+        $validated['jumlah_raw'] = $jumlahNumeric;
+
+        // Convert datetime-local to proper format
+        try {
+            $tanggal = \Carbon\Carbon::parse($validated['tanggal']);
+            $validated['tanggal'] = $tanggal->format('Y-m-d H:i:s');
+        } catch (\Exception $e) {
+            return back()->withInput()
+                ->with('error', 'Format tanggal tidak valid.');
+        }
 
         DB::beginTransaction();
 
@@ -74,11 +148,11 @@ class PembayaranController extends Controller
 
             // Calculate total already paid
             $sudahDibayar = $penjualan->pembayaranPenjualan->sum('jumlah_bayar');
-            $totalTransaksi = $penjualan->total;
+            $totalTransaksi = $penjualan->total_setelah_diskon; // Gunakan total setelah diskon
             $sisaBayar = $totalTransaksi - $sudahDibayar;
 
             // Validate payment amount
-            if ($validated['jumlah'] > $sisaBayar) {
+            if ($validated['jumlah_raw'] > $sisaBayar) {
                 return back()->withInput()
                     ->with('error', 'Jumlah bayar tidak boleh melebihi sisa yang harus dibayar (Rp ' . number_format($sisaBayar) . ').');
             }
@@ -90,30 +164,32 @@ class PembayaranController extends Controller
              * LOGIKA STATUS PEMBAYARAN:
              * 
              * 1. PEMBAYARAN PERTAMA (sudahDibayar == 0):
-             *    - Jika bayar >= total transaksi → P (Pelunasan)
-             *    - Jika bayar < total transaksi → D (DP)
+             *    - Jika bayar >= total setelah diskon → P (Pelunasan)
+             *    - Jika bayar < total setelah diskon → D (DP)
              * 
              * 2. PEMBAYARAN SELANJUTNYA (sudahDibayar > 0):
-             *    - Jika (sudahDibayar + bayar) >= total transaksi → P (Pelunasan)
-             *    - Jika (sudahDibayar + bayar) < total transaksi → A (Angsuran)
+             *    - Jika (sudahDibayar + bayar) >= total setelah diskon → P (Pelunasan)
+             *    - Jika (sudahDibayar + bayar) < total setelah diskon → A (Angsuran)
              * 
              * KODE STATUS:
              * P = Pelunasan (Lunas)
              * D = DP (Down Payment)
              * A = Angsuran
+             * 
+             * CATATAN: Total transaksi menggunakan total_setelah_diskon untuk perhitungan yang benar
              */
             $statusBayar = 'D'; // Default to DP
 
             if ($sudahDibayar == 0) {
                 // First payment
-                if ($validated['jumlah'] >= $totalTransaksi) {
+                if ($validated['jumlah_raw'] >= $totalTransaksi) {
                     $statusBayar = 'P'; // Pelunasan (full payment)
                 } else {
                     $statusBayar = 'D'; // DP (partial payment)
                 }
             } else {
                 // Subsequent payments
-                $totalAfterPayment = $sudahDibayar + $validated['jumlah'];
+                $totalAfterPayment = $sudahDibayar + $validated['jumlah_raw'];
                 if ($totalAfterPayment >= $totalTransaksi) {
                     $statusBayar = 'P'; // Pelunasan (final payment)
                 } else {
@@ -126,15 +202,24 @@ class PembayaranController extends Controller
                 'penjualan_id' => $validated['penjualan_id'],
                 'no_bukti' => $noBukti,
                 'tanggal' => $validated['tanggal'],
-                'jumlah_bayar' => $validated['jumlah'],
+                'jumlah_bayar' => $validated['jumlah_raw'],
                 'metode_pembayaran' => $validated['metode_pembayaran'],
+                'kas_bank_id' => $validated['kas_bank_id'],
                 'status_bayar' => $statusBayar,
                 'keterangan' => $validated['keterangan'],
                 'user_id' => Auth::id(),
             ]);
 
+            // Debug: Log pembayaran yang baru dibuat
+            Log::info('Pembayaran created with kas_bank_id', [
+                'pembayaran_id' => $pembayaran->id,
+                'kas_bank_id' => $pembayaran->kas_bank_id,
+                'metode_pembayaran' => $pembayaran->metode_pembayaran,
+                'validated_kas_bank_id' => $validated['kas_bank_id']
+            ]);
+
             // Update penjualan payment status
-            $totalDibayar = $sudahDibayar + $validated['jumlah'];
+            $totalDibayar = $sudahDibayar + $validated['jumlah_raw'];
 
             if ($totalDibayar >= $totalTransaksi) {
                 $penjualan->update(['status_pembayaran' => 'lunas']);
@@ -144,16 +229,34 @@ class PembayaranController extends Controller
                 $penjualan->update(['status_pembayaran' => 'belum_bayar']);
             }
 
+            // Catat transaksi kas/bank jika kas_bank_id ada
+            if ($validated['kas_bank_id']) {
+                try {
+                    // Trigger database akan otomatis menangani update saldo dan pencatatan transaksi
+                    Log::info('Pembayaran dengan kas_bank_id akan diproses oleh trigger database', [
+                        'pembayaran_id' => $pembayaran->id,
+                        'kas_bank_id' => $validated['kas_bank_id'],
+                        'jumlah' => $validated['jumlah_raw']
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Error in payment processing: ' . $e->getMessage());
+                    // Don't throw error, just log it
+                }
+            }
+
             DB::commit();
 
             Log::info('Payment created successfully', [
                 'pembayaran_id' => $pembayaran->id,
                 'penjualan_id' => $penjualan->id,
-                'amount' => $validated['jumlah'],
+                'amount' => $validated['jumlah_raw'],
                 'method' => $validated['metode_pembayaran'],
+                'kas_bank_id' => $validated['kas_bank_id'],
                 'status_bayar' => $statusBayar,
                 'payment_logic' => [
                     'sudah_dibayar' => $sudahDibayar,
+                    'total_sebelum_diskon' => $penjualan->total,
+                    'total_setelah_diskon' => $penjualan->total_setelah_diskon,
                     'total_transaksi' => $totalTransaksi,
                     'is_first_payment' => $sudahDibayar == 0,
                     'total_after_payment' => $totalDibayar,
@@ -240,7 +343,7 @@ class PembayaranController extends Controller
 
             // Calculate total already paid (excluding current payment)
             $sudahDibayar = $penjualan->pembayaranPenjualan->where('id', '!=', $id)->sum('jumlah_bayar');
-            $totalTransaksi = $penjualan->total;
+            $totalTransaksi = $penjualan->total_setelah_diskon;
             $sisaBayar = $totalTransaksi - $sudahDibayar;
 
             // Validate payment amount
@@ -280,6 +383,124 @@ class PembayaranController extends Controller
 
             return back()->withInput()
                 ->with('error', 'Terjadi kesalahan saat memperbarui pembayaran: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get payment detail for modal
+     */
+    public function detail($id)
+    {
+        try {
+            $pembayaran = PembayaranPenjualan::with(['penjualan.pelanggan', 'user'])->findOrFail($id);
+
+            // Format data for JSON response
+            $formattedPembayaran = [
+                'id' => $pembayaran->id,
+                'no_bukti' => $pembayaran->no_bukti,
+                'tanggal_formatted' => $pembayaran->tanggal->format('d/m/Y H:i'),
+                'jumlah_bayar_formatted' => number_format($pembayaran->jumlah_bayar, 0, ',', '.'),
+                'metode_pembayaran' => $pembayaran->metode_pembayaran,
+                'metode_pembayaran_display' => ucfirst($pembayaran->metode_pembayaran),
+                'status_bayar' => $pembayaran->status_bayar,
+                'status_bayar_display' => $this->getStatusBayarDisplay($pembayaran->status_bayar),
+                'keterangan' => $pembayaran->keterangan,
+                'user_name' => $pembayaran->user->name,
+                'penjualan' => [
+                    'no_faktur' => $pembayaran->penjualan->no_faktur,
+                    'total_formatted' => number_format($pembayaran->penjualan->total_setelah_diskon, 0, ',', '.'),
+                    'tanggal_formatted' => $pembayaran->penjualan->tanggal->format('d/m/Y'),
+                    'pelanggan' => [
+                        'nama' => $pembayaran->penjualan->pelanggan->nama ?? 'Pelanggan Umum'
+                    ]
+                ]
+            ];
+
+            return response()->json([
+                'success' => true,
+                'pembayaran' => $formattedPembayaran
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memuat data pembayaran'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get payment data for printing
+     */
+    public function print($id)
+    {
+        try {
+            $pembayaran = PembayaranPenjualan::with(['penjualan.pelanggan', 'user'])->findOrFail($id);
+
+            // Get printer settings
+            $printerSettings = PrinterSetting::first();
+
+            // Format data for printing
+            $printData = [
+                'pembayaran' => [
+                    'no_bukti' => $pembayaran->no_bukti,
+                    'tanggal' => $pembayaran->tanggal->format('d/m/Y H:i'),
+                    'jumlah_bayar' => number_format($pembayaran->jumlah_bayar, 0, ',', '.'),
+                    'metode_pembayaran' => ucfirst($pembayaran->metode_pembayaran),
+                    'status_bayar' => $this->getStatusBayarDisplay($pembayaran->status_bayar),
+                    'keterangan' => $pembayaran->keterangan,
+                    'user_name' => $pembayaran->user->name,
+                ],
+                'penjualan' => [
+                    'no_faktur' => $pembayaran->penjualan->no_faktur,
+                    'total' => number_format($pembayaran->penjualan->total_setelah_diskon, 0, ',', '.'),
+                    'tanggal' => $pembayaran->penjualan->tanggal->format('d/m/Y'),
+                    'pelanggan' => $pembayaran->penjualan->pelanggan->nama ?? 'Pelanggan Umum',
+                ],
+                'printer' => [
+                    'name' => $printerSettings->printer_name ?? 'POS-58',
+                    'paper_size' => $printerSettings->paper_size ?? '58mm',
+                    'orientation' => $printerSettings->orientation ?? 'portrait',
+                    'margin_top' => $printerSettings->margin_top ?? 0,
+                    'margin_bottom' => $printerSettings->margin_bottom ?? 0,
+                    'margin_left' => $printerSettings->margin_left ?? 0,
+                    'margin_right' => $printerSettings->margin_right ?? 0,
+                ],
+                'company' => [
+                    'name' => $printerSettings->company_name ?? 'Nama Perusahaan',
+                    'address' => $printerSettings->company_address ?? 'Alamat Perusahaan',
+                    'phone' => $printerSettings->company_phone ?? 'Telepon',
+                    'website' => $printerSettings->company_website ?? 'Website',
+                ]
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => $printData
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memuat data untuk cetak'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get status bayar display text
+     */
+    private function getStatusBayarDisplay($status)
+    {
+        switch ($status) {
+            case 'P':
+                return 'Pelunasan';
+            case 'D':
+                return 'DP';
+            case 'A':
+                return 'Angsuran';
+            case 'B':
+                return 'Bayar Sebagian';
+            default:
+                return $status;
         }
     }
 
@@ -328,13 +549,28 @@ class PembayaranController extends Controller
             // Get the penjualan
             $penjualan = $pembayaran->penjualan;
 
+            // Hapus transaksi kas/bank jika ada
+            if ($pembayaran->kas_bank_id) {
+                try {
+                    // Trigger database akan otomatis menangani penghapusan transaksi dan update saldo
+                    Log::info('Pembayaran dengan kas_bank_id akan dihapus oleh trigger database', [
+                        'pembayaran_id' => $pembayaran->id,
+                        'kas_bank_id' => $pembayaran->kas_bank_id,
+                        'jumlah' => $pembayaran->jumlah_bayar
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Error in payment deletion: ' . $e->getMessage());
+                    // Don't throw error, just log it
+                }
+            }
+
             // Delete the payment
             $pembayaran->delete();
 
             // Recalculate penjualan payment status
             $totalDibayar = $penjualan->pembayaranPenjualan->sum('jumlah_bayar');
 
-            if ($totalDibayar >= $penjualan->total) {
+            if ($totalDibayar >= $penjualan->total_setelah_diskon) {
                 $penjualan->update(['status_pembayaran' => 'lunas']);
             } elseif ($totalDibayar > 0) {
                 $penjualan->update(['status_pembayaran' => 'dp']);
@@ -352,7 +588,7 @@ class PembayaranController extends Controller
                     'data' => [
                         'penjualan_id' => $penjualan->id,
                         'total_dibayar' => $totalDibayar,
-                        'status_pembayaran' => $totalDibayar >= $penjualan->total ? 'lunas' : ($totalDibayar > 0 ? 'dp' : 'belum_bayar')
+                        'status_pembayaran' => $totalDibayar >= $penjualan->total_setelah_diskon ? 'lunas' : ($totalDibayar > 0 ? 'dp' : 'belum_bayar')
                     ]
                 ]);
             }

@@ -17,6 +17,7 @@ class PembayaranPenjualan extends Model
         'tanggal',
         'jumlah_bayar',
         'metode_pembayaran',
+        'kas_bank_id',
         'status_bayar',
         'keterangan',
         'user_id',
@@ -41,6 +42,23 @@ class PembayaranPenjualan extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Relationship dengan KasBank
+     */
+    public function kasBank()
+    {
+        return $this->belongsTo(KasBank::class, 'kas_bank_id');
+    }
+
+    /**
+     * Relationship dengan TransaksiKasBank
+     */
+    public function transaksiKasBank()
+    {
+        return $this->hasOne(TransaksiKasBank::class, 'referensi_id')
+            ->where('referensi_tipe', 'PPJ');
     }
 
     /**

@@ -6,7 +6,26 @@ use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\PelangganController;
 use App\Http\Controllers\PenjualanController;
 use App\Http\Controllers\PembayaranController;
+use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\PembelianController;
+use App\Http\Controllers\PembayaranPembelianController;
+use App\Http\Controllers\MetodePembayaranController;
 use App\Http\Controllers\PrinterSettingController;
+use App\Http\Controllers\KasBankController;
+use App\Http\Controllers\TransaksiKasBankController;
+use App\Http\Controllers\SaldoAwalBulananController;
+use App\Http\Controllers\SaldoAwalProdukController;
+use App\Http\Controllers\LaporanKasBankController;
+use App\Http\Controllers\LaporanStokController;
+use App\Http\Controllers\LaporanPenjualanController;
+use App\Http\Controllers\LaporanPembelianController;
+use App\Http\Controllers\LaporanPembayaranController;
+use App\Http\Controllers\LaporanPiutangController;
+use App\Http\Controllers\LaporanHutangController;
+use App\Http\Controllers\PenyesuaianStokController;
+use App\Http\Controllers\PengaturanUmumController;
+use App\Http\Controllers\UserController;
+
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,9 +43,7 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -42,12 +59,18 @@ Route::middleware('auth')->group(function () {
         Route::get('/{encryptedId}/edit', [PenjualanController::class, 'edit'])->name('edit');
         Route::put('/{encryptedId}', [PenjualanController::class, 'update'])->name('update');
         Route::delete('/{encryptedId}', [PenjualanController::class, 'destroy'])->name('destroy');
+        Route::post('/{encryptedId}/export-pdf', [PenjualanController::class, 'exportPdf'])->name('export-pdf');
     });
+
+    // API Routes for Penjualan
+    Route::get('/penjualan/{id}/detail', [PenjualanController::class, 'getDetail'])->name('penjualan.detail');
+    Route::get('/pembelian/{id}/detail', [PembelianController::class, 'getDetail'])->name('pembelian.detail');
 
     // Penjualan API Routes (inside auth middleware but outside group to avoid parameter conflicts)
     Route::get('penjualan/search-products', [PenjualanController::class, 'searchProducts'])->name('penjualan.search-products');
     Route::get('penjualan/product/{id}', [PenjualanController::class, 'getProduct'])->name('penjualan.get-product');
     Route::get('penjualan/pending-receipt', [PenjualanController::class, 'getPendingReceipt'])->name('penjualan.pending-receipt');
+    Route::get('penjualan/rfid/{rfid}', [PenjualanController::class, 'getRfidData'])->name('penjualan.rfid-data');
 
     // Pembayaran Routes
     Route::prefix('pembayaran')->name('pembayaran.')->group(function () {
@@ -58,17 +81,42 @@ Route::middleware('auth')->group(function () {
         Route::get('/{id}/edit', [PembayaranController::class, 'edit'])->name('edit');
         Route::put('/{id}', [PembayaranController::class, 'update'])->name('update');
         Route::delete('/{id}', [PembayaranController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/detail', [PembayaranController::class, 'detail'])->name('detail');
+        Route::get('/{id}/print', [PembayaranController::class, 'print'])->name('print');
     });
 
     // Master Data Produk Routes
     Route::resource('produk', ProdukController::class);
 
+    // User Management Routes (Admin only)
+    Route::prefix('users')->name('users.')->middleware('role:admin')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('index');
+        Route::get('/create', [UserController::class, 'create'])->name('create');
+        Route::post('/', [UserController::class, 'store'])->name('store');
+        Route::get('/{encryptedId}', [UserController::class, 'show'])->name('show');
+        Route::get('/{encryptedId}/edit', [UserController::class, 'edit'])->name('edit');
+        Route::put('/{encryptedId}', [UserController::class, 'update'])->name('update');
+        Route::delete('/{encryptedId}', [UserController::class, 'destroy'])->name('destroy');
+    });
 
-    // Kategori Produk Routes
-    Route::resource('kategori', \App\Http\Controllers\KategoriController::class)->except(['show']);
 
-    // Satuan Routes
-    Route::resource('satuan', \App\Http\Controllers\SatuanController::class)->except(['show']);
+    // Kategori Produk Routes (Admin & Kasir only)
+    Route::resource('kategori', \App\Http\Controllers\KategoriController::class)->except(['show'])->middleware('role:admin,kasir');
+
+    // Satuan Routes (Admin & Kasir only)
+    Route::resource('satuan', \App\Http\Controllers\SatuanController::class)->except(['show'])->middleware('role:admin,kasir');
+
+    // Metode Pembayaran Routes
+    Route::prefix('metode-pembayaran')->name('metode-pembayaran.')->group(function () {
+        Route::get('/', [MetodePembayaranController::class, 'index'])->name('index');
+        Route::get('/create', [MetodePembayaranController::class, 'create'])->name('create');
+        Route::post('/', [MetodePembayaranController::class, 'store'])->name('store');
+        Route::get('/{encryptedId}', [MetodePembayaranController::class, 'show'])->name('show');
+        Route::get('/{encryptedId}/edit', [MetodePembayaranController::class, 'edit'])->name('edit');
+        Route::put('/{encryptedId}', [MetodePembayaranController::class, 'update'])->name('update');
+        Route::delete('/{encryptedId}', [MetodePembayaranController::class, 'destroy'])->name('destroy');
+    });
+    Route::get('metode-pembayaran/search', [MetodePembayaranController::class, 'search'])->name('metode-pembayaran.search');
 
     // Pelanggan Routes
     Route::prefix('pelanggan')->name('pelanggan.')->group(function () {
@@ -82,8 +130,62 @@ Route::middleware('auth')->group(function () {
     });
     Route::get('pelanggan/search', [PelangganController::class, 'search'])->name('pelanggan.search');
 
-    // Laporan Routes
-    Route::prefix('laporan')->name('laporan.')->group(function () {
+    // Supplier Routes (Admin & Kasir only)
+    Route::prefix('supplier')->name('supplier.')->middleware('role:admin,kasir')->group(function () {
+        Route::get('/', [SupplierController::class, 'index'])->name('index');
+        Route::get('/create', [SupplierController::class, 'create'])->name('create');
+        Route::post('/', [SupplierController::class, 'store'])->name('store');
+        Route::get('/{encryptedId}', [SupplierController::class, 'show'])->name('show');
+        Route::get('/{encryptedId}/edit', [SupplierController::class, 'edit'])->name('edit');
+        Route::put('/{encryptedId}', [SupplierController::class, 'update'])->name('update');
+        Route::delete('/{encryptedId}', [SupplierController::class, 'destroy'])->name('destroy');
+    });
+    Route::get('supplier/search', [SupplierController::class, 'getSuppliers'])->name('supplier.search');
+
+    // Kas & Bank Routes (Admin & Kasir only)
+    Route::resource('kas-bank', KasBankController::class)->middleware('role:admin,kasir');
+
+    // Transaksi Kas & Bank Routes (Admin & Kasir only)
+    Route::resource('transaksi-kas-bank', TransaksiKasBankController::class)->middleware('role:admin,kasir');
+    Route::resource('saldo-awal-bulanan', SaldoAwalBulananController::class)->except(['show', 'edit', 'update'])->middleware('role:admin,kasir');
+    Route::resource('saldo-awal-produk', SaldoAwalProdukController::class)->except(['show', 'edit', 'update'])->middleware('role:admin,kasir');
+    Route::resource('penyesuaian-stok', PenyesuaianStokController::class)->middleware('role:admin,kasir');
+
+    // Saldo Awal Bulanan API Routes
+    Route::post('saldo-awal-bulanan/get-saldo-akhir', [SaldoAwalBulananController::class, 'getSaldoAkhirBulanSebelumnya'])->name('saldo-awal-bulanan.get-saldo-akhir');
+
+    // Saldo Awal Produk API Routes
+    Route::post('saldo-awal-produk/get-all-produk', [SaldoAwalProdukController::class, 'getAllProduk'])->name('saldo-awal-produk.get-all-produk');
+    Route::get('saldo-awal-produk/{saldoAwalProduk}/detail', [SaldoAwalProdukController::class, 'showDetail'])->name('saldo-awal-produk.detail');
+
+    // Transaksi Pembelian Routes (Admin & Kasir only)
+    Route::prefix('pembelian')->name('pembelian.')->middleware('role:admin,kasir')->group(function () {
+        Route::get('/', [PembelianController::class, 'index'])->name('index');
+        Route::get('/create', [PembelianController::class, 'create'])->name('create');
+        Route::post('/', [PembelianController::class, 'store'])->name('store');
+        Route::get('/{encryptedId}', [PembelianController::class, 'show'])->name('show');
+        Route::get('/{encryptedId}/edit', [PembelianController::class, 'edit'])->name('edit');
+        Route::put('/{encryptedId}', [PembelianController::class, 'update'])->name('update');
+        Route::delete('/{encryptedId}', [PembelianController::class, 'destroy'])->name('destroy');
+        Route::post('/{encryptedId}/export-pdf', [PembelianController::class, 'exportPdf'])->name('export-pdf');
+    });
+    Route::get('pembelian/search', [PembelianController::class, 'getPembelian'])->name('pembelian.search');
+
+    // Pembayaran Pembelian Routes (Admin & Kasir only)
+    Route::prefix('pembayaran-pembelian')->name('pembayaran-pembelian.')->middleware('role:admin,kasir')->group(function () {
+        Route::get('/', [PembayaranPembelianController::class, 'index'])->name('index');
+        Route::get('/create', [PembayaranPembelianController::class, 'create'])->name('create');
+        Route::post('/', [PembayaranPembelianController::class, 'store'])->name('store');
+        Route::get('/{id}', [PembayaranPembelianController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [PembayaranPembelianController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [PembayaranPembelianController::class, 'update'])->name('update');
+        Route::delete('/{id}', [PembayaranPembelianController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/detail', [PembayaranPembelianController::class, 'detail'])->name('detail');
+        Route::get('/{id}/print', [PembayaranPembelianController::class, 'print'])->name('print');
+    });
+
+    // Laporan Routes (Admin & Manager only)
+    Route::prefix('laporan')->name('laporan.')->middleware('role:admin,manager')->group(function () {
         Route::get('/penjualan', function () {
             return view('laporan.penjualan');
         })->name('penjualan');
@@ -93,14 +195,17 @@ Route::middleware('auth')->group(function () {
         Route::get('/pembayaran', function () {
             return view('laporan.pembayaran');
         })->name('pembayaran');
+        Route::get('/pembelian', function () {
+            return view('laporan.pembelian');
+        })->name('pembelian');
     });
 
-    // Printer Settings Routes
-    Route::prefix('printer')->name('printer.')->group(function () {
+    // Printer Settings Routes (Admin & Manager only)
+    Route::prefix('printer')->name('printer.')->middleware('role:admin,manager')->group(function () {
         Route::get('/settings', [PrinterSettingController::class, 'index'])->name('settings');
         Route::post('/test-print', [PrinterSettingController::class, 'testPrint'])->name('test-print');
-        Route::get('/get-settings', [PrinterSettingController::class, 'getPrinterSettings'])->name('get-settings');
-        
+        Route::get('/get-settings', [PrinterSettingController::class, 'getSettings'])->name('get-settings');
+
         // CRUD Routes for Printer Settings
         Route::prefix('settings')->name('settings.')->group(function () {
             Route::post('/', [PrinterSettingController::class, 'store'])->name('store');
@@ -109,6 +214,61 @@ Route::middleware('auth')->group(function () {
             Route::delete('/{printerSetting}', [PrinterSettingController::class, 'destroy'])->name('destroy');
             Route::post('/{printerSetting}/set-default', [PrinterSettingController::class, 'setDefault'])->name('set-default');
         });
+    });
+
+    // Laporan Routes (Admin, Manager & Kasir)
+    Route::prefix('laporan')->name('laporan.')->middleware('role:admin,manager,kasir')->group(function () {
+        Route::get('/', function () {
+            return view('laporan.index');
+        })->name('index');
+
+        Route::prefix('kas-bank')->name('kas-bank.')->group(function () {
+            Route::get('/', [LaporanKasBankController::class, 'index'])->name('index');
+            Route::post('/export-pdf', [LaporanKasBankController::class, 'exportPdf'])->name('export-pdf');
+        });
+
+        Route::prefix('stok')->name('stok.')->group(function () {
+            Route::get('/', [LaporanStokController::class, 'index'])->name('index');
+            Route::post('/export-pdf', [LaporanStokController::class, 'exportPdf'])->name('export-pdf');
+        });
+
+        Route::prefix('penjualan')->name('penjualan.')->group(function () {
+            Route::get('/', [LaporanPenjualanController::class, 'index'])->name('index');
+            Route::post('/export-pdf', [LaporanPenjualanController::class, 'exportPdf'])->name('export-pdf');
+        });
+
+        Route::prefix('pembelian')->name('pembelian.')->group(function () {
+            Route::get('/', [LaporanPembelianController::class, 'index'])->name('index');
+            Route::post('/export-pdf', [LaporanPembelianController::class, 'exportPdf'])->name('export-pdf');
+        });
+
+        Route::prefix('pembayaran')->name('pembayaran.')->group(function () {
+            Route::get('/', [LaporanPembayaranController::class, 'index'])->name('index');
+            Route::post('/generate', [LaporanPembayaranController::class, 'index'])->name('generate');
+            Route::post('/export-pdf', [LaporanPembayaranController::class, 'exportPdf'])->name('export-pdf');
+        });
+
+        Route::prefix('hutang')->name('hutang.')->group(function () {
+            Route::get('/', [LaporanHutangController::class, 'index'])->name('index');
+            Route::post('/export-pdf', [LaporanHutangController::class, 'exportPdf'])->name('export-pdf');
+        });
+
+        Route::prefix('piutang')->name('piutang.')->group(function () {
+            Route::get('/', [LaporanPiutangController::class, 'index'])->name('index');
+            Route::post('/export-pdf', [LaporanPiutangController::class, 'exportPdf'])->name('export-pdf');
+        });
+    });
+
+    // Pengaturan Umum (Admin & Manager only)
+    Route::prefix('pengaturan-umum')->name('pengaturan-umum.')->middleware('role:admin,manager')->group(function () {
+        Route::get('/', [PengaturanUmumController::class, 'index'])->name('index');
+        Route::get('/create', [PengaturanUmumController::class, 'create'])->name('create');
+        Route::post('/', [PengaturanUmumController::class, 'store'])->name('store');
+        Route::get('/{pengaturanUmum}', [PengaturanUmumController::class, 'show'])->name('show');
+        Route::get('/{pengaturanUmum}/edit', [PengaturanUmumController::class, 'edit'])->name('edit');
+        Route::put('/{pengaturanUmum}', [PengaturanUmumController::class, 'update'])->name('update');
+        Route::delete('/{pengaturanUmum}', [PengaturanUmumController::class, 'destroy'])->name('destroy');
+        Route::post('/{pengaturanUmum}/set-active', [PengaturanUmumController::class, 'setActive'])->name('set-active');
     });
 });
 

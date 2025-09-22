@@ -1,0 +1,1304 @@
+@extends('layouts.pos')
+
+@section('title', 'Laporan Hutang')
+@section('page-title', 'Laporan Hutang')
+
+@section('content')
+    <div class="space-y-6">
+        <!-- Header Actions -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h2 class="text-xl font-semibold text-gray-900">Laporan Hutang</h2>
+                <p class="text-sm text-gray-600">Laporan detail hutang supplier berdasarkan periode</p>
+            </div>
+        </div>
+
+        <!-- Filter Form -->
+        <div class="bg-white rounded-lg md:rounded-xl shadow-lg border border-gray-100 p-4 md:p-6">
+            <form action="{{ route('laporan.hutang.index') }}" method="GET" id="filterForm">
+                <!-- Periode Type Selection -->
+                <div class="mb-4 md:mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Jenis Periode</label>
+                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+                        <label class="flex items-center">
+                            <input type="radio" name="jenis_periode" value="semua"
+                                {{ request('jenis_periode') == 'semua' || request('jenis_periode') == '' || request('jenis_periode') == null ? 'checked' : '' }}
+                                class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                                onchange="togglePeriodeType()">
+                            <span class="ml-2 text-sm text-gray-700">Semua Waktu</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="jenis_periode" value="bulan"
+                                {{ request('jenis_periode') == 'bulan' ? 'checked' : '' }}
+                                class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                                onchange="togglePeriodeType()">
+                            <span class="ml-2 text-sm text-gray-700">Per Bulan</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="jenis_periode" value="tanggal"
+                                {{ request('jenis_periode') == 'tanggal' ? 'checked' : '' }}
+                                class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                                onchange="togglePeriodeType()">
+                            <span class="ml-2 text-sm text-gray-700">Per Tanggal</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Desktop Layout - All elements aligned with equal width -->
+                <div class="hidden lg:grid grid-cols-6 gap-4 mb-4">
+                    <!-- Supplier Filter -->
+                    <div>
+                        <label for="supplier_id" class="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
+                        <select name="supplier_id" id="supplier_id"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">Semua Supplier</option>
+                            @foreach ($suppliers ?? [] as $supplier)
+                                <option value="{{ $supplier->id }}"
+                                    {{ request('supplier_id') == $supplier->id ? 'selected' : '' }}>{{ $supplier->nama }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select name="status" id="status"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">Semua Status</option>
+                            <option value="belum_bayar" {{ request('status') == 'belum_bayar' ? 'selected' : '' }}>Belum
+                                Bayar</option>
+                            <option value="dp" {{ request('status') == 'dp' ? 'selected' : '' }}>Down Payment</option>
+                            <option value="angsuran" {{ request('status') == 'angsuran' ? 'selected' : '' }}>Angsuran
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Bulan Filter (for bulan type) -->
+                    <div id="bulanFilterDesktop"
+                        class="{{ request('jenis_periode') == 'tanggal' || request('jenis_periode') == 'semua' ? 'hidden' : '' }}">
+                        <label for="bulan" class="block text-sm font-medium text-gray-700 mb-1">Bulan</label>
+                        <select name="bulan" id="bulan"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            @foreach ($bulanList as $key => $value)
+                                <option value="{{ $key }}"
+                                    {{ request('bulan') == $key || (request('bulan') == null && $key == date('n')) ? 'selected' : '' }}>
+                                    {{ $value }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Tahun Filter (for bulan type) -->
+                    <div id="tahunFilterDesktop"
+                        class="{{ request('jenis_periode') == 'tanggal' || request('jenis_periode') == 'semua' ? 'hidden' : '' }}">
+                        <label for="tahun" class="block text-sm font-medium text-gray-700 mb-1">Tahun</label>
+                        <select name="tahun" id="tahun"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            @foreach ($tahunList as $tahun)
+                                <option value="{{ $tahun }}"
+                                    {{ request('tahun') == $tahun || (request('tahun') == null && $tahun == date('Y')) ? 'selected' : '' }}>
+                                    {{ $tahun }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Tanggal Dari (for tanggal type) -->
+                    <div id="tanggalDariFilterDesktop"
+                        class="{{ request('jenis_periode') == 'bulan' || request('jenis_periode') == 'semua' ? 'hidden' : '' }}">
+                        <label for="tanggal_dari" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Dari</label>
+                        <div class="relative">
+                            <input type="text" id="tanggal_dari" name="tanggal_dari"
+                                value="{{ request('tanggal_dari') }}"
+                                class="w-full px-3 py-2 pl-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                placeholder="Pilih tanggal dari" readonly>
+                            <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                                <i class="ti ti-calendar text-gray-400 text-sm"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tanggal Sampai (for tanggal type) -->
+                    <div id="tanggalSampaiFilterDesktop"
+                        class="{{ request('jenis_periode') == 'bulan' || request('jenis_periode') == 'semua' ? 'hidden' : '' }}">
+                        <label for="tanggal_sampai" class="block text-sm font-medium text-gray-700 mb-1">Tanggal
+                            Sampai</label>
+                        <div class="relative">
+                            <input type="text" id="tanggal_sampai" name="tanggal_sampai"
+                                value="{{ request('tanggal_sampai') }}"
+                                class="w-full px-3 py-2 pl-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                placeholder="Pilih tanggal sampai" readonly>
+                            <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                                <i class="ti ti-calendar text-gray-400 text-sm"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">&nbsp;</label>
+                        <button type="submit"
+                            class="w-full inline-flex items-center justify-center px-4 py-2 bg-primary-600 border border-transparent rounded-lg font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                            <i class="ti ti-search text-lg mr-2"></i>
+                            Generate
+                        </button>
+                    </div>
+
+                    @if (isset($laporanData))
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">&nbsp;</label>
+                            <button type="button" id="exportPdfBtn"
+                                class="w-full inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                                <i class="ti ti-file-download text-lg mr-2"></i>
+                                Export PDF
+                            </button>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Mobile/Tablet Layout - Responsive grid -->
+                <div class="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3 mb-2 md:mb-3">
+                    <!-- Supplier Filter -->
+                    <div class="sm:col-span-2">
+                        <label for="supplier_id_mobile"
+                            class="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
+                        <select name="supplier_id" id="supplier_id_mobile"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">Semua Supplier</option>
+                            @foreach ($suppliers ?? [] as $supplier)
+                                <option value="{{ $supplier->id }}"
+                                    {{ request('supplier_id') == $supplier->id ? 'selected' : '' }}>{{ $supplier->nama }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div class="sm:col-span-2">
+                        <label for="status_mobile" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select name="status" id="status_mobile"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">Semua Status</option>
+                            <option value="belum_bayar" {{ request('status') == 'belum_bayar' ? 'selected' : '' }}>Belum
+                                Bayar</option>
+                            <option value="dp" {{ request('status') == 'dp' ? 'selected' : '' }}>Down Payment</option>
+                            <option value="angsuran" {{ request('status') == 'angsuran' ? 'selected' : '' }}>Angsuran
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Bulan/Tahun Filter (for bulan type) -->
+                    <div id="bulanTahunFilterMobile"
+                        class="sm:col-span-2 {{ request('jenis_periode') == 'tanggal' || request('jenis_periode') == 'semua' ? 'hidden' : '' }}"
+                        style="display: {{ request('jenis_periode') == 'bulan' ? 'block' : 'none' }};">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Bulan Filter -->
+                            <div>
+                                <label for="bulan_mobile"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Bulan</label>
+                                <select name="bulan" id="bulan_mobile"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                    @foreach ($bulanList as $key => $value)
+                                        <option value="{{ $key }}"
+                                            {{ request('bulan') == $key || (request('bulan') == null && $key == date('n')) ? 'selected' : '' }}>
+                                            {{ $value }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Tahun Filter -->
+                            <div>
+                                <label for="tahun_mobile"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Tahun</label>
+                                <select name="tahun" id="tahun_mobile"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                    @foreach ($tahunList as $tahun)
+                                        <option value="{{ $tahun }}"
+                                            {{ request('tahun') == $tahun || (request('tahun') == null && $tahun == date('Y')) ? 'selected' : '' }}>
+                                            {{ $tahun }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tanggal Filter (for tanggal type) -->
+                    <div id="tanggalFilterMobile"
+                        class="sm:col-span-2 {{ request('jenis_periode') == 'bulan' || request('jenis_periode') == 'semua' ? 'hidden' : '' }}"
+                        style="display: {{ request('jenis_periode') == 'tanggal' ? 'block' : 'none' }};">
+                        <!-- Tanggal Dari -->
+                        <div class="mb-2">
+                            <label for="tanggal_dari_mobile" class="block text-sm font-medium text-gray-700 mb-1">Tanggal
+                                Dari</label>
+                            <div class="relative">
+                                <input type="text" id="tanggal_dari_mobile" name="tanggal_dari"
+                                    value="{{ request('tanggal_dari') }}"
+                                    class="w-full px-3 py-2 pl-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                    placeholder="Pilih tanggal dari" readonly>
+                                <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                                    <i class="ti ti-calendar text-gray-400 text-sm"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tanggal Sampai -->
+                        <div>
+                            <label for="tanggal_sampai_mobile"
+                                class="block text-sm font-medium text-gray-700 mb-1">Tanggal Sampai</label>
+                            <div class="relative">
+                                <input type="text" id="tanggal_sampai_mobile" name="tanggal_sampai"
+                                    value="{{ request('tanggal_sampai') }}"
+                                    class="w-full px-3 py-2 pl-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                    placeholder="Pilih tanggal sampai" readonly>
+                                <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                                    <i class="ti ti-calendar text-gray-400 text-sm"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile Action Buttons -->
+                <div class="lg:hidden grid grid-cols-2 gap-2">
+                    <button type="submit"
+                        class="mobile-button inline-flex items-center justify-center px-4 py-2 bg-primary-600 border border-transparent rounded-lg font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                        <i class="ti ti-search text-lg mr-2"></i>
+                        <span class="hidden sm:inline">Generate</span>
+                        <span class="sm:hidden">Cari</span>
+                    </button>
+                    @if (isset($laporanData))
+                        <button type="button" id="exportPdfBtnMobile"
+                            class="mobile-button inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                            <i class="ti ti-file-download text-lg mr-2"></i>
+                            <span class="hidden sm:inline">Export PDF</span>
+                            <span class="sm:hidden">PDF</span>
+                        </button>
+                    @endif
+                </div>
+            </form>
+        </div>
+
+
+        <!-- Summary Cards -->
+        @if (isset($laporanData))
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
+                <div class="bg-white rounded-lg md:rounded-xl shadow-md p-4 md:p-6">
+                    <div class="flex items-center">
+                        <div class="p-2 md:p-3 rounded-full bg-blue-100 text-blue-600">
+                            <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1">
+                                </path>
+                            </svg>
+                        </div>
+                        <div class="ml-3 md:ml-4">
+                            <p class="text-xs md:text-sm font-medium text-gray-600">Total Hutang</p>
+                            <p class="text-lg md:text-2xl font-semibold text-gray-900">
+                                Rp {{ number_format($laporanData['summary']['total_hutang'], 0, ',', '.') }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg md:rounded-xl shadow-md p-4 md:p-6">
+                    <div class="flex items-center">
+                        <div class="p-2 md:p-3 rounded-full bg-green-100 text-green-600">
+                            <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-3 md:ml-4">
+                            <p class="text-xs md:text-sm font-medium text-gray-600">Total Terbayar</p>
+                            <p class="text-lg md:text-2xl font-semibold text-gray-900">
+                                Rp {{ number_format($laporanData['summary']['total_terbayar'], 0, ',', '.') }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg md:rounded-xl shadow-md p-4 md:p-6">
+                    <div class="flex items-center">
+                        <div class="p-2 md:p-3 rounded-full bg-yellow-100 text-yellow-600">
+                            <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z">
+                                </path>
+                            </svg>
+                        </div>
+                        <div class="ml-3 md:ml-4">
+                            <p class="text-xs md:text-sm font-medium text-gray-600">Sisa Hutang</p>
+                            <p class="text-lg md:text-2xl font-semibold text-gray-900">
+                                Rp {{ number_format($laporanData['summary']['total_sisa'], 0, ',', '.') }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg md:rounded-xl shadow-md p-4 md:p-6">
+                    <div class="flex items-center">
+                        <div class="p-2 md:p-3 rounded-full bg-purple-100 text-purple-600">
+                            <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z">
+                                </path>
+                            </svg>
+                        </div>
+                        <div class="ml-3 md:ml-4">
+                            <p class="text-xs md:text-sm font-medium text-gray-600">Belum Bayar</p>
+                            <p class="text-lg md:text-2xl font-semibold text-gray-900">
+                                Rp {{ number_format($laporanData['summary']['belum_bayar'], 0, ',', '.') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail Table -->
+            <div class="bg-white rounded-lg md:rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                <!-- Table Header -->
+                <div class="px-4 md:px-6 py-4 md:py-5 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <h3 class="text-lg md:text-xl font-semibold text-gray-900 flex items-center">
+                                <svg class="w-5 h-5 md:w-6 md:h-6 text-blue-600 mr-2 md:mr-3" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                    </path>
+                                </svg>
+                                Detail Hutang
+                            </h3>
+                            @if (isset($laporanData['periode']))
+                                <p class="text-xs md:text-sm text-gray-600 mt-1 md:mt-2 flex items-center">
+                                    <svg class="w-3 h-3 md:w-4 md:h-4 text-gray-400 mr-1 md:mr-2" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                        </path>
+                                    </svg>
+                                    Periode:
+                                    @if ($laporanData['periode']['jenis'] == 'semua')
+                                        {{ $laporanData['periode']['deskripsi'] }}
+                                    @elseif ($laporanData['periode']['jenis'] == 'bulan')
+                                        {{ $laporanData['periode']['bulan_nama'] }} {{ $laporanData['periode']['tahun'] }}
+                                    @else
+                                        {{ \Carbon\Carbon::parse($laporanData['periode']['tanggal_dari'])->format('d M Y') }}
+                                        -
+                                        {{ \Carbon\Carbon::parse($laporanData['periode']['tanggal_sampai'])->format('d M Y') }}
+                                    @endif
+                                </p>
+                            @endif
+                        </div>
+                        <div class="flex items-center space-x-2 mt-2 md:mt-0">
+                            <span
+                                class="inline-flex items-center px-2 md:px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                                {{ isset($laporanData['hutangs']) ? $laporanData['hutangs']->count() : 0 }} Transaksi
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile Card View -->
+                <div class="block md:hidden p-4 space-y-3">
+                    @forelse($laporanData['hutangs'] ?? [] as $hutang)
+                        <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <div class="text-sm font-semibold text-gray-900 mb-1">{{ $hutang['no_faktur'] }}</div>
+                                    <div class="text-xs text-gray-600">
+                                        {{ \Carbon\Carbon::parse($hutang['tanggal'])->format('d M Y') }}</div>
+                                </div>
+                                <div>
+                                    @if ($hutang['status'] == 'lunas')
+                                        <span
+                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                            Lunas
+                                        </span>
+                                    @elseif($hutang['status'] == 'dp')
+                                        <span
+                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                            DP
+                                        </span>
+                                    @elseif($hutang['status'] == 'angsuran')
+                                        <span
+                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                            Angsuran
+                                        </span>
+                                    @else
+                                        <span
+                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                            Belum Bayar
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-xs text-gray-600">Supplier:</span>
+                                    <span class="text-sm font-medium text-gray-900">{{ $hutang['supplier'] }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-xs text-gray-600">Total:</span>
+                                    <span class="text-sm font-semibold text-gray-900">Rp
+                                        {{ number_format($hutang['total'], 0, ',', '.') }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-xs text-gray-600">Terbayar:</span>
+                                    <span class="text-sm font-medium text-green-600">Rp
+                                        {{ number_format($hutang['terbayar'], 0, ',', '.') }}</span>
+                                </div>
+                                <div class="flex justify-between border-t border-gray-200 pt-2">
+                                    <span class="text-xs font-semibold text-gray-800">Sisa:</span>
+                                    <span class="text-sm font-bold text-red-600">Rp
+                                        {{ number_format($hutang['sisa'], 0, ',', '.') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="bg-white rounded-lg border border-gray-200 p-8 text-center">
+                            <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="ti ti-file-report text-xl text-gray-400"></i>
+                            </div>
+                            <p class="text-sm text-gray-500">Tidak ada data hutang pada periode ini</p>
+                        </div>
+                    @endforelse
+                </div>
+
+                <!-- Desktop Table View -->
+                <div class="hidden md:block overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                            </path>
+                                        </svg>
+                                        No. Faktur
+                                    </div>
+                                </th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                            </path>
+                                        </svg>
+                                        Tanggal
+                                    </div>
+                                </th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    <div class="flex items-center">
+                                        <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
+                                            </path>
+                                        </svg>
+                                        Supplier
+                                    </div>
+                                </th>
+                                <th
+                                    class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    <div class="flex items-center justify-end">
+                                        <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1">
+                                            </path>
+                                        </svg>
+                                        Total
+                                    </div>
+                                </th>
+                                <th
+                                    class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    <div class="flex items-center justify-end">
+                                        <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        Terbayar
+                                    </div>
+                                </th>
+                                <th
+                                    class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    <div class="flex items-center justify-end">
+                                        <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z">
+                                            </path>
+                                        </svg>
+                                        Sisa
+                                    </div>
+                                </th>
+                                <th
+                                    class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    <div class="flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        Status
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-100">
+                            @forelse($laporanData['hutangs'] ?? [] as $hutang)
+                                <tr class="hover:bg-blue-50 transition-colors duration-200 group">
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                <div
+                                                    class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                                                    <svg class="h-5 w-5 text-blue-600" fill="none"
+                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                                        </path>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-semibold text-gray-900">
+                                                    {{ $hutang['no_faktur'] }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900 font-medium">
+                                            {{ \Carbon\Carbon::parse($hutang['tanggal'])->format('d M Y') }}</div>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">{{ $hutang['supplier'] }}</div>
+                                    </td>
+                                    <td class="px-6 py-5 whitespace-nowrap text-right">
+                                        <div class="text-sm font-semibold text-gray-900">Rp
+                                            {{ number_format($hutang['total'], 0, ',', '.') }}</div>
+                                    </td>
+                                    <td class="px-6 py-5 whitespace-nowrap text-right">
+                                        <div class="text-sm font-medium text-green-600">Rp
+                                            {{ number_format($hutang['terbayar'], 0, ',', '.') }}</div>
+                                    </td>
+                                    <td class="px-6 py-5 whitespace-nowrap text-right">
+                                        <div class="text-sm font-bold text-red-600">Rp
+                                            {{ number_format($hutang['sisa'], 0, ',', '.') }}</div>
+                                    </td>
+                                    <td class="px-6 py-5 whitespace-nowrap text-center">
+                                        @if ($hutang['status'] == 'lunas')
+                                            <span
+                                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd"
+                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                        clip-rule="evenodd"></path>
+                                                </svg>
+                                                Lunas
+                                            </span>
+                                        @elseif($hutang['status'] == 'dp')
+                                            <span
+                                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd"
+                                                        d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"
+                                                        clip-rule="evenodd"></path>
+                                                </svg>
+                                                DP
+                                            </span>
+                                        @elseif($hutang['status'] == 'angsuran')
+                                            <span
+                                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd"
+                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                                        clip-rule="evenodd"></path>
+                                                </svg>
+                                                Angsuran
+                                            </span>
+                                        @else
+                                            <span
+                                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd"
+                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                                        clip-rule="evenodd"></path>
+                                                </svg>
+                                                Belum Bayar
+                                            </span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="px-4 py-8 text-center">
+                                        <div class="flex flex-col items-center">
+                                            <svg class="w-16 h-16 text-gray-300 mb-4" fill="none"
+                                                stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                                </path>
+                                            </svg>
+                                            <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada data hutang</h3>
+                                            <p class="text-sm text-gray-500">Tidak ada data hutang untuk periode yang
+                                                dipilih</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                        @if (isset($laporanData['hutangs']) && $laporanData['hutangs']->count() > 0)
+                            <tfoot class="bg-gradient-to-r from-gray-50 to-blue-50 border-t-2 border-gray-200">
+                                <tr>
+                                    <td colspan="3" class="px-4 py-3 text-right font-bold text-gray-900">
+                                        <div class="flex items-center justify-end">
+                                            <svg class="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                                                </path>
+                                            </svg>
+                                            <span class="text-lg">TOTAL:</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-right">
+                                        <div class="text-lg font-bold text-gray-900">Rp
+                                            {{ number_format($laporanData['hutangs']->sum('total'), 0, ',', '.') }}</div>
+                                    </td>
+                                    <td class="px-4 py-3 text-right">
+                                        <div class="text-lg font-bold text-green-600">Rp
+                                            {{ number_format($laporanData['hutangs']->sum('terbayar'), 0, ',', '.') }}
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-right">
+                                        <div class="text-lg font-bold text-red-600">Rp
+                                            {{ number_format($laporanData['hutangs']->sum('sisa'), 0, ',', '.') }}</div>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <span
+                                            class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-bold bg-red-100 text-red-800">
+                                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                            {{ $laporanData['hutangs']->count() }} Transaksi
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        @endif
+                    </table>
+                </div>
+            </div>
+
+            <!-- Spacing between tables -->
+            <div class="mt-8"></div>
+
+            <!-- Tabel Rekap Supplier -->
+            @if (isset($laporanData['rekap_supplier']) && $laporanData['rekap_supplier']->count() > 0)
+                <div class="bg-white rounded-lg md:rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                    <div class="bg-gradient-to-r from-red-600 to-red-700 px-4 md:px-6 py-3 md:py-4">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 md:w-6 md:h-6 text-white mr-2 md:mr-3" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                                </path>
+                            </svg>
+                            <h3 class="text-base md:text-lg font-semibold text-white">Rekap Berdasarkan Supplier</h3>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Card View -->
+                    <div class="block md:hidden p-4 space-y-3">
+                        @foreach ($laporanData['rekap_supplier'] as $rekap)
+                            <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                                <div class="flex justify-between items-start mb-3">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-8 w-8">
+                                            <div
+                                                class="h-8 w-8 rounded-full bg-gradient-to-r from-red-500 to-red-600 flex items-center justify-center">
+                                                <span
+                                                    class="text-white font-semibold text-xs">{{ substr($rekap['supplier'], 0, 2) }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="ml-3">
+                                            <div class="text-sm font-medium text-gray-900">{{ $rekap['supplier'] }}</div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        @if ($rekap['sisa_hutang'] <= 0)
+                                            <span
+                                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd"
+                                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                        clip-rule="evenodd"></path>
+                                                </svg>
+                                                Lunas
+                                            </span>
+                                        @elseif ($rekap['total_terbayar'] > 0)
+                                            <span
+                                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd"
+                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                        clip-rule="evenodd"></path>
+                                                </svg>
+                                                Angsuran
+                                            </span>
+                                        @else
+                                            <span
+                                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd"
+                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                                        clip-rule="evenodd"></path>
+                                                </svg>
+                                                Belum Bayar
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-xs text-gray-600">Transaksi:</span>
+                                        <span class="text-sm font-medium text-gray-900">{{ $rekap['total_transaksi'] }}
+                                            Transaksi</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-xs text-gray-600">Total Hutang:</span>
+                                        <span class="text-sm font-semibold text-gray-900">Rp
+                                            {{ number_format($rekap['total_hutang'], 0, ',', '.') }}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-xs text-gray-600">Terbayar:</span>
+                                        <span class="text-sm font-medium text-green-600">Rp
+                                            {{ number_format($rekap['total_terbayar'], 0, ',', '.') }}</span>
+                                    </div>
+                                    <div class="flex justify-between border-t border-gray-200 pt-2">
+                                        <span class="text-xs font-semibold text-gray-800">Sisa:</span>
+                                        <span class="text-sm font-bold text-red-600">Rp
+                                            {{ number_format($rekap['sisa_hutang'], 0, ',', '.') }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <!-- Desktop Table View -->
+                    <div class="hidden md:block overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gradient-to-r from-gray-50 to-red-50">
+                                <tr>
+                                    <th
+                                        class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        <div class="flex items-center">
+                                            <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                                                </path>
+                                            </svg>
+                                            Supplier
+                                        </div>
+                                    </th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        <div class="flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                                                </path>
+                                            </svg>
+                                            Transaksi
+                                        </div>
+                                    </th>
+                                    <th
+                                        class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        <div class="flex items-center justify-end">
+                                            <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1">
+                                                </path>
+                                            </svg>
+                                            Total Hutang
+                                        </div>
+                                    </th>
+                                    <th
+                                        class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        <div class="flex items-center justify-end">
+                                            <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            Terbayar
+                                        </div>
+                                    </th>
+                                    <th
+                                        class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        <div class="flex items-center justify-end">
+                                            <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            Sisa
+                                        </div>
+                                    </th>
+                                    <th
+                                        class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        <div class="flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            Status
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach ($laporanData['rekap_supplier'] as $rekap)
+                                    <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                        <td class="px-4 py-3 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-10 w-10">
+                                                    <div
+                                                        class="h-10 w-10 rounded-full bg-gradient-to-r from-red-500 to-red-600 flex items-center justify-center">
+                                                        <span
+                                                            class="text-white font-semibold text-sm">{{ substr($rekap['supplier'], 0, 2) }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900">
+                                                        {{ $rekap['supplier'] }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                {{ $rekap['total_transaksi'] }} Transaksi
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 text-right">
+                                            <div class="text-sm font-medium text-gray-900">Rp
+                                                {{ number_format($rekap['total_hutang'], 0, ',', '.') }}</div>
+                                        </td>
+                                        <td class="px-4 py-3 text-right">
+                                            <div class="text-sm font-medium text-green-600">Rp
+                                                {{ number_format($rekap['total_terbayar'], 0, ',', '.') }}</div>
+                                        </td>
+                                        <td class="px-4 py-3 text-right">
+                                            <div class="text-sm font-bold text-red-600">Rp
+                                                {{ number_format($rekap['sisa_hutang'], 0, ',', '.') }}</div>
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            @if ($rekap['sisa_hutang'] <= 0)
+                                                <span
+                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd"
+                                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                            clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    Lunas
+                                                </span>
+                                            @elseif ($rekap['total_terbayar'] > 0)
+                                                <span
+                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd"
+                                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                            clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    Angsuran
+                                                </span>
+                                            @else
+                                                <span
+                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd"
+                                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                                            clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    Belum Bayar
+                                                </span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                            <tfoot class="bg-gradient-to-r from-gray-50 to-red-50 border-t-2 border-gray-200">
+                                <tr>
+                                    <td colspan="2" class="px-4 py-3 text-right font-bold text-gray-900">
+                                        <div class="flex items-center justify-end">
+                                            <svg class="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                                                </path>
+                                            </svg>
+                                            TOTAL:
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-right">
+                                        <div class="text-lg font-bold text-gray-900">Rp
+                                            {{ number_format($laporanData['rekap_supplier']->sum('total_hutang'), 0, ',', '.') }}
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-right">
+                                        <div class="text-lg font-bold text-green-600">Rp
+                                            {{ number_format($laporanData['rekap_supplier']->sum('total_terbayar'), 0, ',', '.') }}
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-right">
+                                        <div class="text-lg font-bold text-red-600">Rp
+                                            {{ number_format($laporanData['rekap_supplier']->sum('sisa_hutang'), 0, ',', '.') }}
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <span
+                                            class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-bold bg-red-100 text-red-800">
+                                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                            {{ $laporanData['rekap_supplier']->count() }} Supplier
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            @endif
+        @endif
+    </div>
+
+    <script>
+        // Initialize flatpickr for date inputs
+        function initializeFlatpickr() {
+            // Initialize flatpickr for desktop tanggal_dari
+            flatpickr("#tanggal_dari", {
+                dateFormat: "Y-m-d",
+                locale: "id",
+                allowInput: false,
+                clickOpens: true
+            });
+
+            // Initialize flatpickr for desktop tanggal_sampai
+            flatpickr("#tanggal_sampai", {
+                dateFormat: "Y-m-d",
+                locale: "id",
+                allowInput: false,
+                clickOpens: true
+            });
+
+            // Initialize flatpickr for mobile tanggal_dari
+            flatpickr("#tanggal_dari_mobile", {
+                dateFormat: "Y-m-d",
+                locale: "id",
+                allowInput: false,
+                clickOpens: true
+            });
+
+            // Initialize flatpickr for mobile tanggal_sampai
+            flatpickr("#tanggal_sampai_mobile", {
+                dateFormat: "Y-m-d",
+                locale: "id",
+                allowInput: false,
+                clickOpens: true
+            });
+        }
+
+        function togglePeriodeType() {
+            const jenisPeriode = document.querySelector('input[name="jenis_periode"]:checked').value;
+
+            // Desktop elements
+            const bulanFilterDesktop = document.getElementById('bulanFilterDesktop');
+            const tahunFilterDesktop = document.getElementById('tahunFilterDesktop');
+            const tanggalDariFilterDesktop = document.getElementById('tanggalDariFilterDesktop');
+            const tanggalSampaiFilterDesktop = document.getElementById('tanggalSampaiFilterDesktop');
+
+            // Mobile elements
+            const bulanTahunFilterMobile = document.getElementById('bulanTahunFilterMobile');
+            const tanggalFilterMobile = document.getElementById('tanggalFilterMobile');
+
+            // Get form elements
+            const bulanSelect = document.getElementById('bulan');
+            const bulanSelectMobile = document.getElementById('bulan_mobile');
+            const tahunSelect = document.getElementById('tahun');
+            const tahunSelectMobile = document.getElementById('tahun_mobile');
+            const tanggalDariInput = document.getElementById('tanggal_dari');
+            const tanggalDariInputMobile = document.getElementById('tanggal_dari_mobile');
+            const tanggalSampaiInput = document.getElementById('tanggal_sampai');
+            const tanggalSampaiInputMobile = document.getElementById('tanggal_sampai_mobile');
+
+            if (jenisPeriode === 'bulan') {
+                // Show bulan/tahun filter, hide tanggal filter
+                if (bulanFilterDesktop) {
+                    bulanFilterDesktop.style.display = 'block';
+                    tahunFilterDesktop.style.display = 'block';
+                    tanggalDariFilterDesktop.style.display = 'none';
+                    tanggalSampaiFilterDesktop.style.display = 'none';
+                }
+
+                if (bulanTahunFilterMobile) {
+                    bulanTahunFilterMobile.style.display = 'block';
+                    tanggalFilterMobile.style.display = 'none';
+                }
+
+                // Clear tanggal values
+                if (tanggalDariInput) tanggalDariInput.value = '';
+                if (tanggalDariInputMobile) tanggalDariInputMobile.value = '';
+                if (tanggalSampaiInput) tanggalSampaiInput.value = '';
+                if (tanggalSampaiInputMobile) tanggalSampaiInputMobile.value = '';
+            } else if (jenisPeriode === 'tanggal') {
+                // Hide bulan/tahun filter, show tanggal filter
+                if (bulanFilterDesktop) {
+                    bulanFilterDesktop.style.display = 'none';
+                    tahunFilterDesktop.style.display = 'none';
+                    tanggalDariFilterDesktop.style.display = 'block';
+                    tanggalSampaiFilterDesktop.style.display = 'block';
+                }
+
+                if (bulanTahunFilterMobile) {
+                    bulanTahunFilterMobile.style.display = 'none';
+                    tanggalFilterMobile.style.display = 'block';
+                }
+
+                // Clear bulan/tahun values
+                if (bulanSelect) bulanSelect.value = '';
+                if (bulanSelectMobile) bulanSelectMobile.value = '';
+                if (tahunSelect) tahunSelect.value = '';
+                if (tahunSelectMobile) tahunSelectMobile.value = '';
+
+                // Re-initialize flatpickr for date inputs
+                setTimeout(() => {
+                    initializeFlatpickr();
+                }, 100);
+            } else if (jenisPeriode === 'semua') {
+                // Hide all filters
+                if (bulanFilterDesktop) {
+                    bulanFilterDesktop.style.display = 'none';
+                    tahunFilterDesktop.style.display = 'none';
+                    tanggalDariFilterDesktop.style.display = 'none';
+                    tanggalSampaiFilterDesktop.style.display = 'none';
+                }
+
+                if (bulanTahunFilterMobile) {
+                    bulanTahunFilterMobile.style.display = 'none';
+                    tanggalFilterMobile.style.display = 'none';
+                }
+
+                // Clear all values
+                if (bulanSelect) bulanSelect.value = '';
+                if (bulanSelectMobile) bulanSelectMobile.value = '';
+                if (tahunSelect) tahunSelect.value = '';
+                if (tahunSelectMobile) tahunSelectMobile.value = '';
+                if (tanggalDariInput) tanggalDariInput.value = '';
+                if (tanggalDariInputMobile) tanggalDariInputMobile.value = '';
+                if (tanggalSampaiInput) tanggalSampaiInput.value = '';
+                if (tanggalSampaiInputMobile) tanggalSampaiInputMobile.value = '';
+            }
+        }
+
+        function setupFormSynchronization() {
+            // Sync supplier_id
+            const supplierDesktop = document.getElementById('supplier_id');
+            const supplierMobile = document.getElementById('supplier_id_mobile');
+            if (supplierDesktop && supplierMobile) {
+                supplierDesktop.addEventListener('change', function() {
+                    supplierMobile.value = this.value;
+                });
+                supplierMobile.addEventListener('change', function() {
+                    supplierDesktop.value = this.value;
+                });
+            }
+
+            // Sync status
+            const statusDesktop = document.getElementById('status');
+            const statusMobile = document.getElementById('status_mobile');
+            if (statusDesktop && statusMobile) {
+                statusDesktop.addEventListener('change', function() {
+                    statusMobile.value = this.value;
+                });
+                statusMobile.addEventListener('change', function() {
+                    statusDesktop.value = this.value;
+                });
+            }
+
+            // Sync bulan
+            const bulanDesktop = document.getElementById('bulan');
+            const bulanMobile = document.getElementById('bulan_mobile');
+            if (bulanDesktop && bulanMobile) {
+                bulanDesktop.addEventListener('change', function() {
+                    bulanMobile.value = this.value;
+                });
+                bulanMobile.addEventListener('change', function() {
+                    bulanDesktop.value = this.value;
+                });
+            }
+
+            // Sync tahun
+            const tahunDesktop = document.getElementById('tahun');
+            const tahunMobile = document.getElementById('tahun_mobile');
+            if (tahunDesktop && tahunMobile) {
+                tahunDesktop.addEventListener('change', function() {
+                    tahunMobile.value = this.value;
+                });
+                tahunMobile.addEventListener('change', function() {
+                    tahunDesktop.value = this.value;
+                });
+            }
+
+            // Sync tanggal_dari
+            const tanggalDariDesktop = document.getElementById('tanggal_dari');
+            const tanggalDariMobile = document.getElementById('tanggal_dari_mobile');
+            if (tanggalDariDesktop && tanggalDariMobile) {
+                tanggalDariDesktop.addEventListener('change', function() {
+                    tanggalDariMobile.value = this.value;
+                });
+                tanggalDariMobile.addEventListener('change', function() {
+                    tanggalDariDesktop.value = this.value;
+                });
+            }
+
+            // Sync tanggal_sampai
+            const tanggalSampaiDesktop = document.getElementById('tanggal_sampai');
+            const tanggalSampaiMobile = document.getElementById('tanggal_sampai_mobile');
+            if (tanggalSampaiDesktop && tanggalSampaiMobile) {
+                tanggalSampaiDesktop.addEventListener('change', function() {
+                    tanggalSampaiMobile.value = this.value;
+                });
+                tanggalSampaiMobile.addEventListener('change', function() {
+                    tanggalSampaiDesktop.value = this.value;
+                });
+            }
+        }
+
+        // Enable/disable export button based on data availability
+        function toggleExportButton() {
+            const exportBtn = document.getElementById('exportPdfBtn');
+            const exportBtnMobile = document.getElementById('exportPdfBtnMobile');
+            const hasData = {{ isset($laporanData) ? 'true' : 'false' }};
+
+            if (exportBtn) exportBtn.disabled = !hasData;
+            if (exportBtnMobile) exportBtnMobile.disabled = !hasData;
+        }
+
+        // Export PDF functionality
+        function setupExportButtons() {
+            const exportBtn = document.getElementById('exportPdfBtn');
+            const exportBtnMobile = document.getElementById('exportPdfBtnMobile');
+
+            function handleExport() {
+                if (!document.getElementById('filterForm').checkValidity()) {
+                    document.getElementById('filterForm').reportValidity();
+                    return;
+                }
+
+                const form = document.getElementById('filterForm');
+                const formData = new FormData(form);
+
+                // Show loading
+                const btn = this;
+                const originalText = btn.innerHTML;
+                btn.innerHTML =
+                    '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Exporting...';
+                btn.disabled = true;
+
+                fetch('{{ route('laporan.hutang.export-pdf') }}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            return response.blob();
+                        }
+                        throw new Error('Export failed');
+                    })
+                    .then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'laporan_hutang.pdf';
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Terjadi kesalahan dalam export PDF');
+                    })
+                    .finally(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    });
+            }
+
+            if (exportBtn) {
+                exportBtn.addEventListener('click', handleExport);
+            }
+            if (exportBtnMobile) {
+                exportBtnMobile.addEventListener('click', handleExport);
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeFlatpickr();
+            togglePeriodeType();
+            setupFormSynchronization();
+            toggleExportButton();
+            setupExportButtons();
+        });
+    </script>
+@endsection
