@@ -31,4 +31,9 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'rfid_api' => [
+        'url' => env('API_URL'),
+        'token' => env('API_TOKEN', 'sipren-api-token-2024'),
+    ],
+
 ];

@@ -93,7 +93,7 @@
                 <!-- Products Grid -->
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" id="productsGrid">
-                        @foreach ($produk->take(10) as $product)
+                        @foreach ($produk as $product)
                             <div class="product-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 cursor-pointer group"
                                 data-id="{{ $product->id }}" data-name="{{ $product->nama_produk }}"
                                 data-code="{{ $product->kode_produk }}" data-price="{{ $product->harga_beli }}"
@@ -1562,14 +1562,14 @@
                                 </div>
                                 
                                 ${discount > 0 ? `
-                                                                                                                                        <div class="flex items-center justify-between text-sm">
-                                                                                                                                            <span class="text-orange-600 flex items-center">
-                                                                                                                                                <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                Potongan Harga
-                                                                                                                                            </span>
-                                                                                                                                            <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                        </div>
-                                                                                                                                    ` : ''}
+                                                                                                                                            <div class="flex items-center justify-between text-sm">
+                                                                                                                                                <span class="text-orange-600 flex items-center">
+                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                    Potongan Harga
+                                                                                                                                                </span>
+                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                            </div>
+                                                                                                                                        ` : ''}
                                 
                                 <!-- Total Line -->
                                 <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -2398,11 +2398,11 @@
                                 <span>Rp ${formatNumber(subtotal)}</span>
                             </div>
                             ${discount > 0 ? `
-                                                                                        <div class="flex justify-between text-xs">
-                                                                                            <span class="text-orange-600">Potongan</span>
-                                                                                            <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                        </div>
-                                                                                    ` : ''}
+                                                                                            <div class="flex justify-between text-xs">
+                                                                                                <span class="text-orange-600">Potongan</span>
+                                                                                                <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                            </div>
+                                                                                        ` : ''}
                             <div class="flex justify-between text-sm font-medium">
                                 <span>Total</span>
                                 <span class="text-blue-600">Rp ${formatNumber(total)}</span>

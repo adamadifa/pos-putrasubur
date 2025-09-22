@@ -70,6 +70,7 @@ Route::middleware('auth')->group(function () {
     Route::get('penjualan/search-products', [PenjualanController::class, 'searchProducts'])->name('penjualan.search-products');
     Route::get('penjualan/product/{id}', [PenjualanController::class, 'getProduct'])->name('penjualan.get-product');
     Route::get('penjualan/pending-receipt', [PenjualanController::class, 'getPendingReceipt'])->name('penjualan.pending-receipt');
+    Route::get('penjualan/rfid/{rfid}', [PenjualanController::class, 'getRfidData'])->name('penjualan.rfid-data');
 
     // Pembayaran Routes
     Route::prefix('pembayaran')->name('pembayaran.')->group(function () {

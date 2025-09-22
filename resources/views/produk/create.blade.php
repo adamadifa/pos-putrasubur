@@ -210,8 +210,8 @@
                                             <span
                                                 class="text-gray-500 font-medium group-hover:text-orange-500 transition-colors">Rp</span>
                                         </div>
-                                        <input type="number" name="harga_jual" id="harga_jual"
-                                            value="{{ old('harga_jual') }}" min="0" step="0.01"
+                                        <input type="text" name="harga_jual" id="harga_jual"
+                                            value="{{ old('harga_jual') }}"
                                             class="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('harga_jual') border-red-500 @enderror"
                                             placeholder="0">
                                     </div>
@@ -223,7 +223,8 @@
                                 <!-- Stok Awal -->
                                 <div class="space-y-2">
                                     <label for="stok" class="block text-sm font-semibold text-gray-700">
-                                        Stok Awal <span class="text-red-500">*</span>
+                                        Stok Awal
+                                        <span class="text-xs text-gray-500">(Akan diatur melalui Saldo Awal Stok)</span>
                                     </label>
                                     <div class="relative group">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -234,20 +235,17 @@
                                                     d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
                                             </svg>
                                         </div>
-                                        <input type="number" name="stok" id="stok" value="{{ old('stok') }}"
-                                            min="0"
-                                            class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('stok') border-red-500 @enderror"
+                                        <input type="text" name="stok" id="stok" value="0" readonly
+                                            class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
                                             placeholder="0">
                                     </div>
-                                    @error('stok')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                    @enderror
+                                    <p class="text-xs text-gray-500">Stok akan diatur melalui menu Saldo Awal Stok</p>
                                 </div>
 
                                 <!-- Stok Minimal -->
                                 <div class="space-y-2">
                                     <label for="stok_minimal" class="block text-sm font-semibold text-gray-700">
-                                        Stok Minimal <span class="text-red-500">*</span>
+                                        Stok Minimal
                                     </label>
                                     <div class="relative group">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -258,8 +256,8 @@
                                                     d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                                             </svg>
                                         </div>
-                                        <input type="number" name="stok_minimal" id="stok_minimal"
-                                            value="{{ old('stok_minimal') }}" min="0"
+                                        <input type="text" name="stok_minimal" id="stok_minimal"
+                                            value="{{ old('stok_minimal', '0') }}"
                                             class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('stok_minimal') border-red-500 @enderror"
                                             placeholder="0">
                                     </div>
@@ -400,14 +398,15 @@
                     min: 0
                 },
                 stok: {
-                    required: true,
-                    integer: true,
+                    required: false,
+                    numeric: true,
                     min: 0
                 },
                 stok_minimal: {
-                    required: true,
-                    integer: true,
-                    min: 0
+                    required: false,
+                    numeric: true,
+                    min: 0,
+                    allowEmpty: true
                 },
                 foto: {
                     required: false,
@@ -437,13 +436,11 @@
                     min: 'Harga jual tidak boleh kurang dari 0.'
                 },
                 stok: {
-                    required: 'Stok awal wajib diisi.',
-                    integer: 'Stok awal harus berupa angka bulat.',
+                    numeric: 'Stok awal harus berupa angka.',
                     min: 'Stok awal tidak boleh kurang dari 0.'
                 },
                 stok_minimal: {
-                    required: 'Stok minimal wajib diisi.',
-                    integer: 'Stok minimal harus berupa angka bulat.',
+                    numeric: 'Stok minimal harus berupa angka.',
                     min: 'Stok minimal tidak boleh kurang dari 0.'
                 },
                 foto: {
@@ -455,7 +452,7 @@
 
             // Real-time validation for form fields
             const fieldsToValidate = ['kode_produk', 'nama_produk', 'kategori_id', 'satuan_id', 'harga_jual',
-                'stok', 'stok_minimal'
+                'stok_minimal'
             ];
 
             fieldsToValidate.forEach(function(fieldName) {
@@ -503,6 +500,11 @@
                     return;
                 }
 
+                // Skip validation for empty fields that allow empty
+                if (!value && rules.allowEmpty) {
+                    return;
+                }
+
                 let isValid = true;
                 let errorMessage = '';
 
@@ -517,22 +519,13 @@
                     errorMessage = messages.maxLength;
                 }
                 // Numeric validation
-                else if (rules.numeric && value && (isNaN(value) || Number(value) < rules.min)) {
-                    if (isNaN(value)) {
+                else if (rules.numeric && value) {
+                    // Parse Indonesian format number
+                    let numericValue = parseIndonesianNumber(value);
+                    if (isNaN(numericValue)) {
                         isValid = false;
                         errorMessage = messages.numeric;
-                    } else if (Number(value) < rules.min) {
-                        isValid = false;
-                        errorMessage = messages.min;
-                    }
-                }
-                // Integer validation
-                else if (rules.integer && value && (!Number.isInteger(Number(value)) || Number(value) < rules
-                        .min)) {
-                    if (!Number.isInteger(Number(value))) {
-                        isValid = false;
-                        errorMessage = messages.integer;
-                    } else if (Number(value) < rules.min) {
+                    } else if (numericValue < rules.min) {
                         isValid = false;
                         errorMessage = messages.min;
                     }
@@ -713,24 +706,170 @@
                 }
             });
 
-            // Format currency input
-            const hargaInput = document.getElementById('harga_jual');
-            hargaInput.addEventListener('input', function() {
-                // Remove non-numeric characters except decimal point
-                let value = this.value.replace(/[^\d.]/g, '');
 
-                // Ensure only one decimal point
-                const parts = value.split('.');
-                if (parts.length > 2) {
-                    value = parts[0] + '.' + parts.slice(1).join('');
+            // Advanced format number input for stok fields (same as penyesuaian stok)
+            function formatNumberInput(input) {
+                input.addEventListener('input', function() {
+                    // Get cursor position
+                    let cursorPos = input.selectionStart;
+                    let oldValue = input.value;
+
+                    // Remove all non-numeric characters except dots and commas
+                    let cleanValue = oldValue.replace(/[^\d\.\,]/g, '');
+
+                    // Indonesian format: dots as thousand separators, comma as decimal separator
+                    // Smart detection: if there's a comma, treat everything after as decimal
+                    let commaIndex = cleanValue.lastIndexOf(',');
+                    let hasDecimal = false;
+                    let integerPart = '';
+                    let decimalPart = '';
+
+                    if (commaIndex !== -1) {
+                        // Has comma - treat as decimal separator
+                        hasDecimal = true;
+                        integerPart = cleanValue.substring(0, commaIndex).replace(/\./g,
+                            ''); // Remove dots from integer part
+                        decimalPart = cleanValue.substring(commaIndex + 1);
+
+                        // Limit decimal places to 2
+                        if (decimalPart.length > 2) {
+                            decimalPart = decimalPart.substring(0, 2);
+                        }
+                    } else {
+                        // No comma - check if last dot might be decimal
+                        let parts = cleanValue.split('.');
+                        if (parts.length > 1) {
+                            let lastPart = parts[parts.length - 1];
+                            // If last part has 1-2 digits, treat as decimal
+                            if (lastPart.length <= 2 && lastPart.length > 0) {
+                                hasDecimal = true;
+                                integerPart = parts.slice(0, -1).join('');
+                                decimalPart = lastPart;
+                            } else {
+                                // If last part has more than 2 digits, treat as thousand separator
+                                integerPart = cleanValue.replace(/\./g, '');
+                            }
+                        } else {
+                            integerPart = cleanValue.replace(/\./g, '');
+                        }
+                    }
+
+                    // Format with Indonesian format
+                    if (cleanValue !== '' && cleanValue !== '.' && cleanValue !== ',') {
+                        if (hasDecimal) {
+                            // Format integer part with thousand separators, keep decimal with comma
+                            if (integerPart !== '') {
+                                let formatted = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                                input.value = formatted + ',' + decimalPart;
+                            } else {
+                                input.value = ',' + decimalPart;
+                            }
+                        } else {
+                            // No decimal, format as integer with thousand separators
+                            if (integerPart !== '') {
+                                let formatted = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                                input.value = formatted;
+                            } else {
+                                input.value = '';
+                            }
+                        }
+                    } else {
+                        input.value = '';
+                    }
+
+                    // Adjust cursor position
+                    let newLength = input.value.length;
+                    let oldLength = oldValue.length;
+                    let lengthDiff = newLength - oldLength;
+                    input.setSelectionRange(cursorPos + lengthDiff, cursorPos + lengthDiff);
+                });
+
+                input.addEventListener('blur', function() {
+                    let value = this.value.replace(/[^\d\.\,]/g, '');
+                    if (value) {
+                        let numericValue = parseIndonesianNumber(value);
+                        if (!isNaN(numericValue) && numericValue !== 0) {
+                            // Only format if the value has changed or is different from original
+                            let formattedValue = formatNumberWithDecimals(numericValue);
+                            if (formattedValue !== this.value) {
+                                this.value = formattedValue;
+                            }
+                        }
+                    }
+                });
+
+                input.addEventListener('focus', function() {
+                    // Store the original formatted value for reference
+                    this.dataset.originalValue = this.value;
+                    // Don't change the format on focus - keep Indonesian format for editing
+                });
+            }
+
+            // Helper functions for number parsing and formatting
+            function parseIndonesianNumber(value) {
+                if (!value || value === '') return 0;
+
+                // Remove all non-numeric characters except dots and commas
+                let clean = value.replace(/[^\d\.\,]/g, '');
+
+                // Convert Indonesian format to standard format
+                // Indonesian: 1.000,50 (thousand separator: dot, decimal separator: comma)
+                // Standard: 1000.50 (decimal separator: dot)
+
+                // Split by comma to separate integer and decimal parts
+                let parts = clean.split(',');
+
+                if (parts.length === 2) {
+                    // Has decimal part
+                    let integerPart = parts[0].replace(/\./g, ''); // Remove thousand separators
+                    let decimalPart = parts[1];
+                    clean = integerPart + '.' + decimalPart;
+                } else if (parts.length === 1) {
+                    // No decimal part, just remove thousand separators
+                    clean = clean.replace(/\./g, '');
+                } else {
+                    // Multiple commas, invalid
+                    return 0;
                 }
 
-                this.value = value;
-            });
+                return parseFloat(clean) || 0;
+            }
+
+            function formatNumberWithDecimals(number) {
+                // Format number with thousand separators and decimal places
+                if (isNaN(number)) return '0';
+
+                // Convert to string and split integer and decimal parts
+                let parts = number.toString().split('.');
+                let integerPart = parts[0];
+                let decimalPart = parts.length > 1 ? parts[1] : '';
+
+                // Add thousand separators to integer part
+                integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+                // Limit decimal places to 2 and pad if necessary
+                if (decimalPart.length > 2) {
+                    decimalPart = decimalPart.substring(0, 2);
+                } else if (decimalPart.length === 1) {
+                    decimalPart = decimalPart + '0';
+                }
+
+                // Return formatted number
+                if (decimalPart) {
+                    return integerPart + ',' + decimalPart;
+                } else {
+                    return integerPart;
+                }
+            }
+
+            // Apply formatting to stok_minimal and harga fields
+            formatNumberInput(document.getElementById('stok_minimal'));
+            formatNumberInput(document.getElementById('harga_jual'));
 
             // Form submission validation
             $('form').on('submit', function(e) {
                 let hasErrors = false;
+
 
                 // Check for any visible error messages
                 if ($('.error-message').length > 0) {
@@ -740,7 +879,8 @@
                 // Check for empty required fields
                 fieldsToValidate.forEach(function(fieldName) {
                     const field = $(`#${fieldName}`);
-                    if (!field.val() && fieldName !== 'foto') {
+                    const rules = validationRules[fieldName];
+                    if (!field.val() && fieldName !== 'foto' && rules.required) {
                         hasErrors = true;
                         validateField(fieldName, field.val());
                     }

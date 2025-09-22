@@ -1000,4 +1000,74 @@ class PenjualanController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get RFID data from external API
+     */
+    public function getRfidData($rfid): JsonResponse
+    {
+        try {
+            $apiUrl = config('services.rfid_api.url');
+            $apiToken = config('services.rfid_api.token');
+
+            if (!$apiUrl) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'API URL tidak dikonfigurasi'
+                ], 500);
+            }
+
+            // Make API call to external service
+            $client = new \GuzzleHttp\Client();
+            $response = $client->get($apiUrl . '/api/public/rekening/' . $rfid, [
+                'headers' => [
+                    'X-API-Token' => $apiToken,
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json',
+                ],
+                'timeout' => 10, // 10 seconds timeout
+            ]);
+
+            $data = json_decode($response->getBody(), true);
+
+            return response()->json([
+                'success' => true,
+                'data' => $data
+            ]);
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            $statusCode = $e->getResponse()->getStatusCode();
+            $errorBody = $e->getResponse()->getBody()->getContents();
+
+            Log::error('RFID API Client Error: ' . $e->getMessage(), [
+                'rfid' => $rfid,
+                'status_code' => $statusCode,
+                'error_body' => $errorBody
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'RFID tidak ditemukan atau tidak valid',
+                'error_code' => $statusCode
+            ], 404);
+        } catch (\GuzzleHttp\Exception\ServerException $e) {
+            Log::error('RFID API Server Error: ' . $e->getMessage(), [
+                'rfid' => $rfid
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Server API sedang bermasalah, silakan coba lagi nanti'
+            ], 500);
+        } catch (\Exception $e) {
+            Log::error('RFID API Error: ' . $e->getMessage(), [
+                'rfid' => $rfid,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data RFID'
+            ], 500);
+        }
+    }
 }

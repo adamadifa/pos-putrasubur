@@ -48,10 +48,20 @@ class LaporanKasBankController extends Controller
 
         // Generate laporan if parameters are provided
         if ($selectedKasBank) {
-            if ($jenisPeriode === 'tanggal' && $tanggalDari && $tanggalSampai) {
-                $laporanData = $this->generateLaporanByDateRange($selectedKasBank, $tanggalDari, $tanggalSampai);
-            } elseif ($jenisPeriode === 'bulan' && $selectedBulan && $selectedTahun) {
-                $laporanData = $this->generateLaporan($selectedKasBank, $selectedBulan, $selectedTahun);
+            if ($selectedKasBank === 'semua') {
+                // Generate laporan untuk semua kas/bank
+                if ($jenisPeriode === 'tanggal' && $tanggalDari && $tanggalSampai) {
+                    $laporanData = $this->generateLaporanSemuaByDateRange($tanggalDari, $tanggalSampai);
+                } elseif ($jenisPeriode === 'bulan' && $selectedBulan && $selectedTahun) {
+                    $laporanData = $this->generateLaporanSemua($selectedBulan, $selectedTahun);
+                }
+            } else {
+                // Generate laporan untuk kas/bank tertentu
+                if ($jenisPeriode === 'tanggal' && $tanggalDari && $tanggalSampai) {
+                    $laporanData = $this->generateLaporanByDateRange($selectedKasBank, $tanggalDari, $tanggalSampai);
+                } elseif ($jenisPeriode === 'bulan' && $selectedBulan && $selectedTahun) {
+                    $laporanData = $this->generateLaporan($selectedKasBank, $selectedBulan, $selectedTahun);
+                }
             }
         }
 
@@ -365,15 +375,318 @@ class LaporanKasBankController extends Controller
     }
 
     /**
+     * Generate laporan data for all kas/bank
+     */
+    private function generateLaporanSemua($bulan, $tahun)
+    {
+        $allKasBank = KasBank::orderBy('nama')->get();
+        $totalSaldoAwal = 0;
+        $totalDebet = 0;
+        $totalKredit = 0;
+        $allTransaksi = collect();
+
+        foreach ($allKasBank as $kasBank) {
+            // Get saldo awal bulan untuk kas/bank ini
+            $saldoAwalBulan = SaldoAwalBulanan::getSaldoAwal($kasBank->id, $bulan, $tahun);
+
+            // Jika saldo awal bulan tidak ada, cari saldo awal terakhir terdekat
+            $saldoAwalTerakhir = null;
+            if ($saldoAwalBulan === 0) {
+                $currentDate = Carbon::create($tahun, $bulan, 1);
+                for ($i = 0; $i < 12; $i++) {
+                    $currentDate->subMonth();
+                    $bulanCari = $currentDate->month;
+                    $tahunCari = $currentDate->year;
+                    $saldoAwalCari = SaldoAwalBulanan::getSaldoAwal($kasBank->id, $bulanCari, $tahunCari);
+                    if ($saldoAwalCari > 0) {
+                        $saldoAwalTerakhir = $saldoAwalCari;
+                        break;
+                    }
+                }
+            }
+
+            // Calculate saldo awal periode
+            $tanggalAwalBulanFilter = Carbon::create($tahun, $bulan, 1);
+            $transaksiSebelumPeriode = collect();
+
+            if ($saldoAwalTerakhir) {
+                $tanggalMulaiHitung = Carbon::create($currentDate->year, $currentDate->month, 1);
+                $transaksiSebelumPeriode = TransaksiKasBank::where('kas_bank_id', $kasBank->id)
+                    ->whereDate('tanggal', '>=', $tanggalMulaiHitung)
+                    ->whereDate('tanggal', '<', $tanggalAwalBulanFilter)
+                    ->orderBy('tanggal', 'asc')
+                    ->orderBy('created_at', 'asc')
+                    ->get();
+            }
+
+            $saldoAwal = $saldoAwalTerakhir ?: $saldoAwalBulan;
+            foreach ($transaksiSebelumPeriode as $transaksi) {
+                if ($transaksi->jenis_transaksi == 'D') {
+                    $saldoAwal += $transaksi->jumlah;
+                } else {
+                    $saldoAwal -= $transaksi->jumlah;
+                }
+            }
+
+            // Get transaksi bulan ini
+            $transaksi = TransaksiKasBank::where('kas_bank_id', $kasBank->id)
+                ->whereYear('tanggal', $tahun)
+                ->whereMonth('tanggal', $bulan)
+                ->orderBy('tanggal', 'asc')
+                ->orderBy('created_at', 'asc')
+                ->get();
+
+            // Add kas/bank info to each transaction
+            $transaksiWithKasBank = $transaksi->map(function ($item) use ($kasBank) {
+                $item->kas_bank_nama = $kasBank->nama;
+                $item->kas_bank_jenis = $kasBank->jenis;
+                return $item;
+            });
+
+            $allTransaksi = $allTransaksi->merge($transaksiWithKasBank);
+            $totalSaldoAwal += $saldoAwal;
+            $totalDebet += $transaksi->where('jenis_transaksi', 'D')->sum('jumlah');
+            $totalKredit += $transaksi->where('jenis_transaksi', 'K')->sum('jumlah');
+        }
+
+        // Sort all transactions by date
+        $allTransaksi = $allTransaksi->sortBy(function ($item) {
+            return $item->tanggal . ' ' . $item->created_at;
+        });
+
+        // Calculate running balance for all transactions
+        $runningBalance = $totalSaldoAwal;
+        $transaksiWithBalance = $allTransaksi->map(function ($item) use (&$runningBalance) {
+            if ($item->jenis_transaksi == 'D') {
+                $runningBalance += $item->jumlah;
+            } else {
+                $runningBalance -= $item->jumlah;
+            }
+
+            $item->saldo_akhir = $runningBalance;
+
+            // Add detailed description
+            $keteranganDetail = $item->keterangan;
+            if ($item->referensi_tipe == 'PPJ' && $item->referensi_id) {
+                $pembayaranPenjualan = \App\Models\PembayaranPenjualan::with(['penjualan.pelanggan'])->find($item->referensi_id);
+                if ($pembayaranPenjualan && $pembayaranPenjualan->penjualan) {
+                    $penjualan = $pembayaranPenjualan->penjualan;
+                    $keteranganDetail = "Pembayaran Penjualan No. Faktur: " . $penjualan->no_faktur;
+                    if ($penjualan->pelanggan) {
+                        $keteranganDetail .= " - Atas Nama: " . $penjualan->pelanggan->nama;
+                    }
+                }
+            } elseif ($item->referensi_tipe == 'PPB' && $item->referensi_id) {
+                $pembayaranPembelian = \App\Models\PembayaranPembelian::with(['pembelian.supplier'])->find($item->referensi_id);
+                if ($pembayaranPembelian && $pembayaranPembelian->pembelian) {
+                    $pembelian = $pembayaranPembelian->pembelian;
+                    $keteranganDetail = "Pembayaran Pembelian No. Faktur: " . $pembelian->no_faktur;
+                    if ($pembelian->supplier) {
+                        $keteranganDetail .= " - Atas Nama: " . $pembelian->supplier->nama;
+                    }
+                }
+            }
+
+            $item->keterangan_detail = $keteranganDetail;
+            return $item;
+        });
+
+        $saldoAkhir = $totalSaldoAwal + $totalDebet - $totalKredit;
+
+        return [
+            'kas_bank' => (object) ['nama' => 'Semua Kas/Bank', 'jenis' => 'Gabungan'],
+            'periode' => [
+                'jenis' => 'bulan',
+                'bulan' => $bulan,
+                'tahun' => $tahun,
+                'bulan_nama' => $this->getBulanNama($bulan),
+                'tanggal_awal' => Carbon::create($tahun, $bulan, 1)->format('d/m/Y'),
+                'tanggal_akhir' => Carbon::create($tahun, $bulan, 1)->endOfMonth()->format('d/m/Y'),
+            ],
+            'saldo_awal' => $totalSaldoAwal,
+            'transaksi' => $transaksiWithBalance,
+            'summary' => [
+                'total_debet' => $totalDebet,
+                'total_kredit' => $totalKredit,
+                'saldo_akhir' => $saldoAkhir,
+            ],
+            'statistics' => [
+                'jumlah_transaksi' => $allTransaksi->count(),
+                'transaksi_debet' => $allTransaksi->where('jenis_transaksi', 'D')->count(),
+                'transaksi_kredit' => $allTransaksi->where('jenis_transaksi', 'K')->count(),
+                'rata_rata_transaksi' => $allTransaksi->count() > 0 ? ($totalDebet + $totalKredit) / $allTransaksi->count() : 0,
+            ],
+            'is_semua' => true
+        ];
+    }
+
+    /**
+     * Generate laporan data for all kas/bank by date range
+     */
+    private function generateLaporanSemuaByDateRange($tanggalDari, $tanggalSampai)
+    {
+        $allKasBank = KasBank::orderBy('nama')->get();
+        $totalSaldoAwal = 0;
+        $totalDebet = 0;
+        $totalKredit = 0;
+        $allTransaksi = collect();
+
+        // Parse dates
+        $tanggalDari = Carbon::parse($tanggalDari);
+        $tanggalSampai = Carbon::parse($tanggalSampai);
+
+        foreach ($allKasBank as $kasBank) {
+            // Get saldo awal bulan dari tanggal "dari"
+            $bulanDari = $tanggalDari->month;
+            $tahunDari = $tanggalDari->year;
+            $saldoAwalBulan = SaldoAwalBulanan::getSaldoAwal($kasBank->id, $bulanDari, $tahunDari);
+
+            // Jika saldo awal bulan tidak ada, cari saldo awal terakhir terdekat
+            $saldoAwalTerakhir = null;
+            if ($saldoAwalBulan === 0) {
+                $currentDate = Carbon::create($tahunDari, $bulanDari, 1);
+                for ($i = 0; $i < 12; $i++) {
+                    $currentDate->subMonth();
+                    $bulanCari = $currentDate->month;
+                    $tahunCari = $currentDate->year;
+                    $saldoAwalCari = SaldoAwalBulanan::getSaldoAwal($kasBank->id, $bulanCari, $tahunCari);
+                    if ($saldoAwalCari > 0) {
+                        $saldoAwalTerakhir = $saldoAwalCari;
+                        break;
+                    }
+                }
+            }
+
+            // Get transaksi dari awal bulan saldo awal terakhir sampai sebelum tanggal "dari"
+            $tanggalMulaiHitung = $saldoAwalTerakhir ?
+                Carbon::create($currentDate->year, $currentDate->month, 1) :
+                Carbon::create($tahunDari, $bulanDari, 1);
+
+            $transaksiSebelumPeriode = TransaksiKasBank::where('kas_bank_id', $kasBank->id)
+                ->whereDate('tanggal', '>=', $tanggalMulaiHitung)
+                ->whereDate('tanggal', '<', $tanggalDari)
+                ->orderBy('tanggal', 'asc')
+                ->orderBy('created_at', 'asc')
+                ->get();
+
+            // Calculate saldo awal periode
+            $saldoAwalPeriode = $saldoAwalTerakhir ?: $saldoAwalBulan;
+            foreach ($transaksiSebelumPeriode as $transaksi) {
+                if ($transaksi->jenis_transaksi == 'D') {
+                    $saldoAwalPeriode += $transaksi->jumlah;
+                } else {
+                    $saldoAwalPeriode -= $transaksi->jumlah;
+                }
+            }
+
+            // Get transaksi dalam periode yang dipilih
+            $transaksi = TransaksiKasBank::where('kas_bank_id', $kasBank->id)
+                ->whereBetween('tanggal', [$tanggalDari, $tanggalSampai])
+                ->orderBy('tanggal', 'asc')
+                ->orderBy('created_at', 'asc')
+                ->get();
+
+            // Add kas/bank info to each transaction
+            $transaksiWithKasBank = $transaksi->map(function ($item) use ($kasBank) {
+                $item->kas_bank_nama = $kasBank->nama;
+                $item->kas_bank_jenis = $kasBank->jenis;
+                return $item;
+            });
+
+            $allTransaksi = $allTransaksi->merge($transaksiWithKasBank);
+            $totalSaldoAwal += $saldoAwalPeriode;
+            $totalDebet += $transaksi->where('jenis_transaksi', 'D')->sum('jumlah');
+            $totalKredit += $transaksi->where('jenis_transaksi', 'K')->sum('jumlah');
+        }
+
+        // Sort all transactions by date
+        $allTransaksi = $allTransaksi->sortBy(function ($item) {
+            return $item->tanggal . ' ' . $item->created_at;
+        });
+
+        // Calculate running balance for all transactions
+        $runningBalance = $totalSaldoAwal;
+        $transaksiWithBalance = $allTransaksi->map(function ($item) use (&$runningBalance) {
+            if ($item->jenis_transaksi == 'D') {
+                $runningBalance += $item->jumlah;
+            } else {
+                $runningBalance -= $item->jumlah;
+            }
+
+            $item->saldo_akhir = $runningBalance;
+
+            // Add detailed description
+            $keteranganDetail = $item->keterangan;
+            if ($item->referensi_tipe == 'PPJ' && $item->referensi_id) {
+                $pembayaranPenjualan = \App\Models\PembayaranPenjualan::with(['penjualan.pelanggan'])->find($item->referensi_id);
+                if ($pembayaranPenjualan && $pembayaranPenjualan->penjualan) {
+                    $penjualan = $pembayaranPenjualan->penjualan;
+                    $keteranganDetail = "Pembayaran Penjualan No. Faktur: " . $penjualan->no_faktur;
+                    if ($penjualan->pelanggan) {
+                        $keteranganDetail .= " - Atas Nama: " . $penjualan->pelanggan->nama;
+                    }
+                }
+            } elseif ($item->referensi_tipe == 'PPB' && $item->referensi_id) {
+                $pembayaranPembelian = \App\Models\PembayaranPembelian::with(['pembelian.supplier'])->find($item->referensi_id);
+                if ($pembayaranPembelian && $pembayaranPembelian->pembelian) {
+                    $pembelian = $pembayaranPembelian->pembelian;
+                    $keteranganDetail = "Pembayaran Pembelian No. Faktur: " . $pembelian->no_faktur;
+                    if ($pembelian->supplier) {
+                        $keteranganDetail .= " - Atas Nama: " . $pembelian->supplier->nama;
+                    }
+                }
+            }
+
+            $item->keterangan_detail = $keteranganDetail;
+            return $item;
+        });
+
+        $saldoAkhir = $totalSaldoAwal + $totalDebet - $totalKredit;
+
+        return [
+            'kas_bank' => (object) ['nama' => 'Semua Kas/Bank', 'jenis' => 'Gabungan'],
+            'periode' => [
+                'jenis' => 'tanggal',
+                'tanggal_dari' => $tanggalDari->format('d/m/Y'),
+                'tanggal_sampai' => $tanggalSampai->format('d/m/Y'),
+                'bulan_nama' => $this->getBulanNama($tanggalDari->month),
+                'tahun' => $tanggalDari->year,
+            ],
+            'saldo_awal' => $totalSaldoAwal,
+            'transaksi' => $transaksiWithBalance,
+            'summary' => [
+                'total_debet' => $totalDebet,
+                'total_kredit' => $totalKredit,
+                'saldo_akhir' => $saldoAkhir,
+            ],
+            'statistics' => [
+                'jumlah_transaksi' => $allTransaksi->count(),
+                'transaksi_debet' => $allTransaksi->where('jenis_transaksi', 'D')->count(),
+                'transaksi_kredit' => $allTransaksi->where('jenis_transaksi', 'K')->count(),
+                'rata_rata_transaksi' => $allTransaksi->count() > 0 ? ($totalDebet + $totalKredit) / $allTransaksi->count() : 0,
+                'jumlah_hari' => $tanggalDari->diffInDays($tanggalSampai) + 1,
+            ],
+            'is_semua' => true
+        ];
+    }
+
+    /**
      * Export laporan to PDF
      */
     public function exportPdf(Request $request)
     {
         try {
             $request->validate([
-                'kas_bank_id' => 'required|exists:kas_bank,id',
+                'kas_bank_id' => 'required',
                 'jenis_periode' => 'required|in:bulan,tanggal',
             ]);
+
+            // Validate kas_bank_id if not 'semua'
+            if ($request->kas_bank_id !== 'semua') {
+                $request->validate([
+                    'kas_bank_id' => 'exists:kas_bank,id',
+                ]);
+            }
 
             $laporanData = null;
 
@@ -383,22 +696,36 @@ class LaporanKasBankController extends Controller
                     'tanggal_sampai' => 'required|date|after_or_equal:tanggal_dari',
                 ]);
 
-                $laporanData = $this->generateLaporanByDateRange(
-                    $request->kas_bank_id,
-                    $request->tanggal_dari,
-                    $request->tanggal_sampai
-                );
+                if ($request->kas_bank_id === 'semua') {
+                    $laporanData = $this->generateLaporanSemuaByDateRange(
+                        $request->tanggal_dari,
+                        $request->tanggal_sampai
+                    );
+                } else {
+                    $laporanData = $this->generateLaporanByDateRange(
+                        $request->kas_bank_id,
+                        $request->tanggal_dari,
+                        $request->tanggal_sampai
+                    );
+                }
             } else {
                 $request->validate([
                     'bulan' => 'required|integer|between:1,12',
                     'tahun' => 'required|integer|min:2020',
                 ]);
 
-                $laporanData = $this->generateLaporan(
-                    $request->kas_bank_id,
-                    $request->bulan,
-                    $request->tahun
-                );
+                if ($request->kas_bank_id === 'semua') {
+                    $laporanData = $this->generateLaporanSemua(
+                        $request->bulan,
+                        $request->tahun
+                    );
+                } else {
+                    $laporanData = $this->generateLaporan(
+                        $request->kas_bank_id,
+                        $request->bulan,
+                        $request->tahun
+                    );
+                }
             }
 
             // Generate PDF using DomPDF

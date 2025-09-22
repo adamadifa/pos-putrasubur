@@ -83,6 +83,13 @@ class ProdukController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        // Convert Indonesian number format to standard format before validation
+        $request->merge([
+            'stok' => $request->stok ? $this->convertIndonesianNumber($request->stok) : 0,
+            'stok_minimal' => $request->stok_minimal ? $this->convertIndonesianNumber($request->stok_minimal) : 0,
+            'harga_jual' => $this->convertIndonesianNumber($request->harga_jual),
+        ]);
+
         $validated = $request->validate(
             $this->getValidationRules(),
             $this->getValidationMessages()
@@ -124,6 +131,13 @@ class ProdukController extends Controller
      */
     public function update(Request $request, Produk $produk): RedirectResponse
     {
+        // Convert Indonesian number format to standard format before validation
+        $request->merge([
+            'stok' => $request->stok ? $this->convertIndonesianNumber($request->stok) : 0,
+            'stok_minimal' => $request->stok_minimal ? $this->convertIndonesianNumber($request->stok_minimal) : 0,
+            'harga_jual' => $this->convertIndonesianNumber($request->harga_jual),
+        ]);
+
         $validated = $request->validate(
             $this->getValidationRules($produk->id),
             $this->getValidationMessages()
@@ -174,8 +188,8 @@ class ProdukController extends Controller
             'kategori_id' => 'required|exists:kategori_produk,id',
             'satuan_id' => 'required|exists:satuan,id',
             'harga_jual' => 'required|numeric|min:0',
-            'stok' => 'required|integer|min:0',
-            'stok_minimal' => 'required|integer|min:0',
+            'stok' => 'nullable|numeric|min:0',
+            'stok_minimal' => 'nullable|numeric|min:0',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ];
     }
@@ -206,16 +220,35 @@ class ProdukController extends Controller
             'harga_jual.min' => 'Harga jual tidak boleh kurang dari 0.',
 
             'stok.required' => 'Stok awal wajib diisi.',
-            'stok.integer' => 'Stok awal harus berupa angka bulat.',
+            'stok.numeric' => 'Stok awal harus berupa angka.',
             'stok.min' => 'Stok awal tidak boleh kurang dari 0.',
 
-            'stok_minimal.required' => 'Stok minimal wajib diisi.',
-            'stok_minimal.integer' => 'Stok minimal harus berupa angka bulat.',
+            'stok_minimal.numeric' => 'Stok minimal harus berupa angka.',
             'stok_minimal.min' => 'Stok minimal tidak boleh kurang dari 0.',
 
             'foto.image' => 'File harus berupa gambar.',
             'foto.mimes' => 'Format gambar harus JPEG, PNG, atau JPG.',
             'foto.max' => 'Ukuran gambar maksimal 2MB.',
         ];
+    }
+
+    /**
+     * Convert Indonesian number format to standard format
+     * Example: "1.000.000,50" -> "1000000.50"
+     */
+    private function convertIndonesianNumber($value)
+    {
+        if (empty($value)) {
+            return $value;
+        }
+
+        // Convert to string and trim
+        $value = trim((string) $value);
+
+        // Remove thousand separators (dots) and replace decimal comma with dot
+        $value = str_replace('.', '', $value); // Remove thousand separators
+        $value = str_replace(',', '.', $value); // Replace decimal comma with dot
+
+        return $value;
     }
 }

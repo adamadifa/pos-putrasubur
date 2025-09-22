@@ -47,6 +47,10 @@
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                             required>
                             <option value="">Pilih Kas/Bank</option>
+                            <option value="semua" {{ $selectedKasBank == 'semua' ? 'selected' : '' }}
+                                class="font-semibold text-primary-600">
+                                📊 Semua Kas/Bank (Gabungan)
+                            </option>
                             @foreach ($kasBankList as $kasBank)
                                 <option value="{{ $kasBank->id }}"
                                     {{ $selectedKasBank == $kasBank->id ? 'selected' : '' }}>
@@ -59,27 +63,27 @@
                     <!-- Bulan Filter (for bulan type) -->
                     <div id="bulanFilterDesktop" class="{{ $jenisPeriode == 'tanggal' ? 'hidden' : '' }}">
                         <label for="bulan" class="block text-sm font-medium text-gray-700 mb-1">Bulan</label>
-                            <select name="bulan" id="bulan"
+                        <select name="bulan" id="bulan"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
-                                @foreach ($bulanList as $key => $bulan)
-                                    <option value="{{ $key }}" {{ $selectedBulan == $key ? 'selected' : '' }}>
-                                        {{ $bulan }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                            @foreach ($bulanList as $key => $bulan)
+                                <option value="{{ $key }}" {{ $selectedBulan == $key ? 'selected' : '' }}>
+                                    {{ $bulan }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
                     <!-- Tahun Filter (for bulan type) -->
                     <div id="tahunFilterDesktop" class="{{ $jenisPeriode == 'tanggal' ? 'hidden' : '' }}">
                         <label for="tahun" class="block text-sm font-medium text-gray-700 mb-1">Tahun</label>
-                            <select name="tahun" id="tahun"
+                        <select name="tahun" id="tahun"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
-                                @foreach ($tahunList as $tahun)
-                                    <option value="{{ $tahun }}" {{ $selectedTahun == $tahun ? 'selected' : '' }}>
-                                        {{ $tahun }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            @foreach ($tahunList as $tahun)
+                                <option value="{{ $tahun }}" {{ $selectedTahun == $tahun ? 'selected' : '' }}>
+                                    {{ $tahun }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
 
                     <!-- Tanggal Dari (for tanggal type) -->
@@ -141,6 +145,10 @@
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                             required>
                             <option value="">Pilih Kas/Bank</option>
+                            <option value="semua" {{ $selectedKasBank == 'semua' ? 'selected' : '' }}
+                                class="font-semibold text-primary-600">
+                                📊 Semua Kas/Bank (Gabungan)
+                            </option>
                             @foreach ($kasBankList as $kasBank)
                                 <option value="{{ $kasBank->id }}"
                                     {{ $selectedKasBank == $kasBank->id ? 'selected' : '' }}>
@@ -151,7 +159,8 @@
                     </div>
 
                     <!-- Bulan/Tahun Filter (for bulan type) -->
-                    <div id="bulanTahunFilterMobile" class="sm:col-span-2 {{ $jenisPeriode == 'tanggal' ? 'hidden' : '' }}"
+                    <div id="bulanTahunFilterMobile"
+                        class="sm:col-span-2 {{ $jenisPeriode == 'tanggal' ? 'hidden' : '' }}"
                         style="display: {{ $jenisPeriode == 'tanggal' ? 'none' : 'block' }};">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <!-- Bulan Filter -->
@@ -217,27 +226,27 @@
                                 <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
                                     <i class="ti ti-calendar text-gray-400 text-sm"></i>
                                 </div>
-                                </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
                 <!-- Mobile Action Buttons -->
                 <div class="lg:hidden grid grid-cols-2 gap-2">
-                        <button type="submit"
+                    <button type="submit"
                         class="mobile-button inline-flex items-center justify-center px-4 py-2 bg-primary-600 border border-transparent rounded-lg font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
-                            <i class="ti ti-search text-lg mr-2"></i>
+                        <i class="ti ti-search text-lg mr-2"></i>
                         <span class="hidden sm:inline">Tampilkan</span>
                         <span class="sm:hidden">Cari</span>
-                        </button>
-                        @if ($laporanData)
-                            <button type="button" onclick="exportToPdf()"
+                    </button>
+                    @if ($laporanData)
+                        <button type="button" onclick="exportToPdf()"
                             class="mobile-button inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
-                                <i class="ti ti-file-download text-lg mr-2"></i>
+                            <i class="ti ti-file-download text-lg mr-2"></i>
                             <span class="hidden sm:inline">Export PDF</span>
                             <span class="sm:hidden">PDF</span>
-                            </button>
-                        @endif
+                        </button>
+                    @endif
                 </div>
             </form>
         </div>
@@ -569,6 +578,12 @@
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Tanggal
                                 </th>
+                                @if (isset($laporanData['is_semua']) && $laporanData['is_semua'])
+                                    <th
+                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Kas/Bank
+                                    </th>
+                                @endif
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Keterangan
                                 </th>
@@ -600,6 +615,14 @@
                                         {{ $laporanData['periode']['tanggal_awal'] }}
                                     @endif
                                 </td>
+                                @if (isset($laporanData['is_semua']) && $laporanData['is_semua'])
+                                    <td class="px-4 py-4 text-sm text-gray-900">
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                            Semua Kas/Bank
+                                        </span>
+                                    </td>
+                                @endif
                                 <td class="px-4 py-4 text-sm text-gray-900">
                                     <span
                                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -630,6 +653,16 @@
                                     <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {{ $transaksi->tanggal->format('d/m/Y') }}
                                     </td>
+                                    @if (isset($laporanData['is_semua']) && $laporanData['is_semua'])
+                                        <td class="px-4 py-4 text-sm text-gray-900">
+                                            <div class="flex flex-col">
+                                                <span
+                                                    class="font-medium text-gray-900">{{ $transaksi->kas_bank_nama ?? '-' }}</span>
+                                                <span
+                                                    class="text-xs text-gray-500">{{ $transaksi->kas_bank_jenis ?? '-' }}</span>
+                                            </div>
+                                        </td>
+                                    @endif
                                     <td class="px-4 py-4 text-sm text-gray-900">
                                         {{ $transaksi->keterangan_detail ?? $transaksi->keterangan ?: '-' }}
                                     </td>
@@ -666,7 +699,8 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-4 py-8 text-center text-sm text-gray-500">
+                                    <td colspan="{{ isset($laporanData['is_semua']) && $laporanData['is_semua'] ? '7' : '6' }}"
+                                        class="px-4 py-8 text-center text-sm text-gray-500">
                                         Tidak ada transaksi pada periode ini
                                     </td>
                                 </tr>
@@ -681,6 +715,14 @@
                                         {{ $laporanData['periode']['tanggal_akhir'] }}
                                     @endif
                                 </td>
+                                @if (isset($laporanData['is_semua']) && $laporanData['is_semua'])
+                                    <td class="px-4 py-4 text-sm text-gray-900">
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                            Semua Kas/Bank
+                                        </span>
+                                    </td>
+                                @endif
                                 <td class="px-4 py-4 text-sm font-bold text-gray-900">
                                     <span
                                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">

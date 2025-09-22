@@ -93,7 +93,7 @@
                 <!-- Products Grid -->
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" id="productsGrid">
-                        @foreach ($produk->take(10) as $product)
+                        @foreach ($produk as $product)
                             <div class="product-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 cursor-pointer group"
                                 data-id="{{ $product->id }}" data-name="{{ $product->nama_produk }}"
                                 data-code="{{ $product->kode_produk }}" data-price="{{ $product->harga_jual }}"
@@ -874,7 +874,7 @@
                                                         <div class="text-white text-xl font-bold card-emboss card-name"
                                                             id="rfidCardholderName"
                                                             style="text-shadow: 2px 2px 4px rgba(0,0,0,0.8); background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 4px; display: inline-block;">
-                                                            DAVID LEE
+                                                            -
                                                         </div>
                                                     </div>
 
@@ -886,12 +886,17 @@
                                                         <div class="card-security"></div>
                                                     </div> --}}
 
-                                                    <!-- Valid Thru -->
+                                                    <!-- Valid Thru and Balance -->
                                                     <div class="px-5 pb-5 flex justify-between items-end relative z-10">
                                                         <div class="text-white text-sm card-emboss">
-                                                            <div class="text-xs text-gray-300">VALID THRU</div>
-                                                            <div class="font-mono text-lg card-expiry"
-                                                                id="rfidExpiryDate">01/80</div>
+                                                            <!-- Saldo -->
+                                                            <div class="mt-2">
+                                                                <div class="text-xs text-gray-300">SALDO</div>
+                                                                <div class="font-mono text-sm font-bold"
+                                                                    id="rfidBalanceDisplay">
+                                                                    Rp 0
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                         <div class="text-white text-right card-emboss">
                                                             <div class="text-xs text-gray-300">RFID ID</div>
@@ -3106,14 +3111,14 @@
                         </div>
                         
                         ${discount > 0 ? `
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span class="text-orange-600 flex items-center">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            Potongan Harga
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    Potongan Harga
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ` : ''}
                         
                         <!-- Total Line -->
                         <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -3179,14 +3184,14 @@
                 </div>
                 
                 ${discount > 0 ? `
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <span class="text-orange-600 flex items-center">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    Potongan Harga
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            Potongan Harga
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ` : ''}
                 
                 <!-- Total Line -->
                 <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -3636,11 +3641,11 @@
                                 <span>Rp ${formatNumber(subtotal)}</span>
                             </div>
                             ${discount > 0 ? `
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="flex justify-between text-xs">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span class="text-orange-600">Potongan</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <div class="flex justify-between text-xs">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <span class="text-orange-600">Potongan</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ` : ''}
                             <div class="flex justify-between text-sm font-medium">
                                 <span>Total</span>
                                 <span class="text-blue-600">Rp ${formatNumber(total)}</span>
@@ -3941,22 +3946,36 @@
             const rfidCardholderName = document.getElementById('rfidCardholderName');
             const rfidExpiryDate = document.getElementById('rfidExpiryDate');
             const rfidCardIdDisplay = document.getElementById('rfidCardIdDisplay');
+            const rfidBalanceDisplay = document.getElementById('rfidBalanceDisplay');
 
             if (rfidCardNumber) {
-                rfidCardNumber.textContent = '1234 5678 9012 3456';
+                rfidCardNumber.textContent = '-';
             }
             if (rfidCardId) {
-                rfidCardId.textContent = '0123';
+                rfidCardId.textContent = '-';
             }
             if (rfidCardholderName) {
-                rfidCardholderName.textContent = 'DAVID LEE';
+                rfidCardholderName.textContent = '-';
             }
             if (rfidExpiryDate) {
-                rfidExpiryDate.textContent = '01/80';
+                rfidExpiryDate.textContent = '-';
             }
             if (rfidCardIdDisplay) {
                 rfidCardIdDisplay.textContent = '-';
             }
+            if (rfidBalanceDisplay) {
+                rfidBalanceDisplay.textContent = 'Rp 0';
+            }
+
+            // Reset saldo RFID dan status
+            saldoRfid = 0;
+            statusRfid = false;
+            storedRfidId = '';
+            console.log('🔄 Saldo RFID dan status direset:', {
+                saldoRfid,
+                statusRfid,
+                storedRfidId
+            });
         }
 
         // Interval to keep RFID input focused when card scan area is visible
@@ -3988,374 +4007,224 @@
             const rfidDisplay = document.getElementById('rfidDisplay');
             const rfidCardId = document.getElementById('rfidCardId');
 
-            // Generate realistic card data based on RFID ID
-            const cardData = generateCardData(cardId);
+            // Show loading state
+            scanIcon.classList.remove('animate-pulse');
+            scanIcon.classList.add('animate-spin');
 
-            // Update input value with new card ID
+            if (statusText) {
+                statusText.textContent = '🔄 Mengambil data dari server...';
+                statusText.classList.remove('text-blue-600', 'text-green-600');
+                statusText.classList.add('text-orange-600');
+            }
+
+            // Update input field
             if (rfidCardId) {
                 rfidCardId.value = cardId;
             }
 
-            // Update card display with generated data
-            updateCardDisplay(cardData, cardId);
+            // Update progress bar
+            updateRfidProgress(10);
 
-            // Change to success state
-            scanIcon.classList.remove('animate-pulse', 'animate-spin');
-            scanIcon.classList.add('animate-pulse');
-            statusText.classList.remove('text-gray-500');
-            statusText.classList.add('text-green-600', 'font-medium');
+            // Call API to get RFID data
+            fetchRfidData(cardId)
+                .then(data => {
+                    // Update scan icon and status
+                    scanIcon.classList.remove('animate-pulse', 'animate-spin');
+                    scanIcon.classList.add('animate-pulse');
 
-            // Add success styling to card scan area
-            cardArea.classList.remove('border-blue-300');
-            cardArea.classList.add('border-green-400', 'bg-green-50');
+                    // Update status text
+                    if (statusText) {
+                        statusText.textContent = '✅ Kartu RFID berhasil dibaca!';
+                        statusText.classList.remove('text-blue-600', 'text-orange-600');
+                        statusText.classList.add('text-green-600');
+                    }
 
-            // Show RFID display with animation
-            if (rfidDisplay) {
-                rfidDisplay.classList.remove('hidden');
-                // Add glow effect to the card
-                const cardElement = rfidDisplay.querySelector('.bg-gradient-to-br');
-                if (cardElement) {
-                    // Add success animation
-                    cardElement.classList.add('card-success');
+                    // Add success styling to card scan area
+                    cardArea.classList.remove('border-blue-300', 'bg-blue-50');
+                    cardArea.classList.add('border-green-500', 'bg-green-50');
 
-                    // Add flip animation after success
-                    setTimeout(() => {
-                        cardElement.classList.add('card-flip');
-                    }, 600);
+                    // Show RFID display with animation
+                    if (rfidDisplay) {
+                        rfidDisplay.classList.remove('hidden');
 
-                    // Add bounce animation after flip
-                    setTimeout(() => {
-                        cardElement.classList.add('card-bounce');
-                    }, 1400);
+                        const cardElement = rfidDisplay.querySelector('.bg-gradient-to-br');
+                        if (cardElement) {
+                            cardElement.classList.add('animate-pulse');
+                            setTimeout(() => {
+                                cardElement.classList.remove('animate-pulse');
+                            }, 2000);
+                        }
+                    }
 
-                    // Add shake animation after bounce
-                    setTimeout(() => {
-                        cardElement.classList.add('card-shake');
-                    }, 1900);
+                    // Update card display with API data
+                    updateCardDisplayWithApiData(data, cardId);
 
-                    // Add rotate animation after shake
-                    setTimeout(() => {
-                        cardElement.classList.add('card-rotate');
-                    }, 2400);
+                    // Set status RFID to true
+                    statusRfid = true;
+                    storedRfidId = cardId;
+                    console.log('✅ Status RFID set to true, stored ID:', storedRfidId);
 
-                    // Add final animation after rotate
-                    setTimeout(() => {
-                        cardElement.classList.add('card-final');
-                    }, 3400);
+                    // Update ready indicator
+                    const readyIndicator = document.getElementById('rfidReadyIndicator');
+                    if (readyIndicator) {
+                        readyIndicator.textContent = '✅ Kartu RFID berhasil dibaca!';
+                        readyIndicator.classList.remove('text-blue-600', 'text-orange-600');
+                        readyIndicator.classList.add('text-green-600');
+                    }
 
-                    // Add complete animation after final
-                    setTimeout(() => {
-                        cardElement.classList.add('card-complete');
-                    }, 3900);
+                    // Show success message
+                    showToast('Kartu RFID berhasil dibaca!', 'success');
+                })
+                .catch(error => {
+                    console.error('Error fetching RFID data:', error);
 
-                    // Add stable state after complete
-                    setTimeout(() => {
-                        cardElement.classList.add('card-stable');
-                    }, 4200);
+                    // Reset to error state
+                    scanIcon.classList.remove('animate-pulse', 'animate-spin');
+                    scanIcon.classList.add('animate-pulse');
 
-                    // Add ready animation after stable
-                    setTimeout(() => {
-                        cardElement.classList.add('card-ready');
-                    }, 4500);
+                    if (statusText) {
+                        statusText.textContent = '❌ Gagal mengambil data RFID';
+                        statusText.classList.remove('text-blue-600', 'text-green-600');
+                        statusText.classList.add('text-red-600');
+                    }
 
-                    // Add perfect animation after ready
-                    setTimeout(() => {
-                        cardElement.classList.add('card-perfect');
-                    }, 4700);
+                    // Reset card area styling
+                    cardArea.classList.remove('border-blue-300', 'bg-blue-50', 'border-green-500', 'bg-green-50');
+                    cardArea.classList.add('border-red-500', 'bg-red-50');
 
-                    // Add ultimate animation after perfect
-                    setTimeout(() => {
-                        cardElement.classList.add('card-ultimate');
-                    }, 4800);
-
-                    // Add final state after ultimate
-                    setTimeout(() => {
-                        cardElement.classList.add('card-final-state');
-                    }, 4850);
-
-                    // Add masterpiece animation after final state
-                    setTimeout(() => {
-                        cardElement.classList.add('card-masterpiece');
-                    }, 4870);
-
-                    // Add legendary animation after masterpiece
-                    setTimeout(() => {
-                        cardElement.classList.add('card-legendary');
-                    }, 4890);
-
-                    // Add epic animation after legendary
-                    setTimeout(() => {
-                        cardElement.classList.add('card-epic');
-                    }, 4900);
-
-                    // Add mythical animation after epic
-                    setTimeout(() => {
-                        cardElement.classList.add('card-mythical');
-                    }, 4905);
-
-                    // Add divine animation after mythical
-                    setTimeout(() => {
-                        cardElement.classList.add('card-divine');
-                    }, 4906);
-
-                    // Add transcendent animation after divine
-                    setTimeout(() => {
-                        cardElement.classList.add('card-transcendent');
-                    }, 4907);
-
-                    // Add omnipotent animation after transcendent
-                    setTimeout(() => {
-                        cardElement.classList.add('card-omnipotent');
-                    }, 4908);
-
-                    // Add infinite animation after omnipotent
-                    setTimeout(() => {
-                        cardElement.classList.add('card-infinite');
-                    }, 4909);
-
-                    // Add absolute animation after infinite
-                    setTimeout(() => {
-                        cardElement.classList.add('card-absolute');
-                    }, 4910);
-
-                    // Add ultimate final animation after absolute
-                    setTimeout(() => {
-                        cardElement.classList.add('card-ultimate-final');
-                    }, 4911);
-
-                    // Add perfect final animation after ultimate final
-                    setTimeout(() => {
-                        cardElement.classList.add('card-perfect-final');
-                    }, 4912);
-
-                    // Add immortal animation after perfect final
-                    setTimeout(() => {
-                        cardElement.classList.add('card-immortal');
-                    }, 4913);
-
-                    // Add eternal animation after immortal
-                    setTimeout(() => {
-                        cardElement.classList.add('card-eternal');
-                    }, 4914);
-
-                    // Add ultimate absolute animation after eternal
-                    setTimeout(() => {
-                        cardElement.classList.add('card-ultimate-absolute');
-                    }, 4915);
-
-                    // Add perfect ultimate animation after ultimate absolute
-                    setTimeout(() => {
-                        cardElement.classList.add('card-perfect-ultimate');
-                    }, 4916);
-
-                    // Add absolute perfect animation after perfect ultimate
-                    setTimeout(() => {
-                        cardElement.classList.add('card-absolute-perfect');
-                    }, 4917);
-
-                    // Add ultimate perfect animation after absolute perfect
-                    setTimeout(() => {
-                        cardElement.classList.add('card-ultimate-perfect');
-                    }, 4918);
-
-                    // Add absolute ultimate animation after ultimate perfect
-                    setTimeout(() => {
-                        cardElement.classList.add('card-absolute-ultimate');
-                    }, 4919);
-
-                    // Add perfect absolute animation after absolute ultimate
-                    setTimeout(() => {
-                        cardElement.classList.add('card-perfect-absolute');
-                    }, 4920);
-
-                    // Add ultimate absolute perfect animation after perfect absolute
-                    setTimeout(() => {
-                        cardElement.classList.add('card-ultimate-absolute-perfect');
-                    }, 4921);
-
-                    // Add absolute perfect ultimate animation after ultimate absolute perfect
-                    setTimeout(() => {
-                        cardElement.classList.add('card-absolute-perfect-ultimate');
-                    }, 4922);
-
-                    // Add glow effect
-                    cardElement.classList.add('card-glow');
-                    // Remove glow after 3 seconds
-                    setTimeout(() => {
-                        cardElement.classList.remove('card-glow');
-                    }, 3000);
-
-                    // Add hover effect
-                    cardElement.addEventListener('mouseenter', function() {
-                        this.classList.add('card-hover');
-                    });
-
-                    cardElement.addEventListener('mouseleave', function() {
-                        this.classList.remove('card-hover');
-                    });
-                }
-            }
-
-            // Update ready indicator
-            const readyIndicator = document.getElementById('rfidReadyIndicator');
-            if (readyIndicator) {
-                readyIndicator.textContent = '✅ Kartu RFID berhasil dibaca!';
-                readyIndicator.classList.remove('text-blue-600', 'text-orange-600');
-                readyIndicator.classList.add('text-green-600');
-            }
-
-            // Show success message
-            showToast('Kartu RFID berhasil dibaca!', 'success');
+                    // Show error message
+                    showToast('Gagal mengambil data RFID: ' + error.message, 'error');
+                });
         }
 
-        // Function to generate realistic card data based on RFID ID
-        function generateCardData(rfidId) {
-            // Generate card number based on RFID ID
-            const cardNumber = generateCardNumber(rfidId);
+        // Function to fetch RFID data from API
+        async function fetchRfidData(rfid) {
+            try {
+                console.log('🔍 Fetching RFID data for:', rfid);
+                const response = await fetch(`/penjualan/rfid/${rfid}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
 
-            // Generate cardholder name - using dummy name
-            const cardholderName = 'DAVID LEE';
+                console.log('📡 API Response status:', response.status);
+                const result = await response.json();
+                console.log('📦 API Response data:', result);
 
-            // Generate expiry date
-            const currentYear = new Date().getFullYear();
-            const expiryYear = currentYear + Math.floor(Math.random() * 5) + 1;
-            const expiryMonth = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
-            const expiryDate = `${expiryMonth}/${expiryYear.toString().slice(-2)}`;
-
-            // Generate additional card ID
-            const additionalId = String(Math.floor(Math.random() * 9000) + 1000);
-
-            // Generate bank name and color
-            const banks = [{
-                    name: 'Bank Central Asia',
-                    color: 'from-blue-800 to-blue-900'
-                },
-                {
-                    name: 'Bank Mandiri',
-                    color: 'from-red-800 to-red-900'
-                },
-                {
-                    name: 'Bank Rakyat Indonesia',
-                    color: 'from-green-800 to-green-900'
-                },
-                {
-                    name: 'Bank Negara Indonesia',
-                    color: 'from-purple-800 to-purple-900'
-                },
-                {
-                    name: 'Bank CIMB Niaga',
-                    color: 'from-orange-800 to-orange-900'
-                },
-                {
-                    name: 'Bank Danamon',
-                    color: 'from-indigo-800 to-indigo-900'
-                },
-                {
-                    name: 'Bank Permata',
-                    color: 'from-pink-800 to-pink-900'
-                },
-                {
-                    name: 'Bank Maybank Indonesia',
-                    color: 'from-yellow-800 to-yellow-900'
-                },
-                {
-                    name: 'Bank OCBC NISP',
-                    color: 'from-teal-800 to-teal-900'
-                },
-                {
-                    name: 'Bank UOB Indonesia',
-                    color: 'from-cyan-800 to-cyan-900'
-                },
-                {
-                    name: 'Bank HSBC Indonesia',
-                    color: 'from-emerald-800 to-emerald-900'
-                },
-                {
-                    name: 'Bank Standard Chartered',
-                    color: 'from-rose-800 to-rose-900'
-                }
-            ];
-            const bankIndex = Math.abs(rfidId.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % banks.length;
-            const bankName = banks[bankIndex].name;
-            const bankColor = banks[bankIndex].color;
-
-            return {
-                cardNumber: cardNumber,
-                cardholderName: cardholderName,
-                expiryDate: expiryDate,
-                additionalId: additionalId,
-                bankName: bankName,
-                bankColor: bankColor
-            };
-        }
-
-        // Function to generate card number based on RFID ID
-        function generateCardNumber(rfidId) {
-            // Use RFID ID to generate consistent card number
-            // Start with fixed prefix like in the image: 3960
-            let cardNumber = '3960';
-
-            // Convert RFID ID to numbers and use for the remaining 12 digits
-            const rfidNumeric = rfidId.toString().replace(/\D/g, ''); // Remove non-digits
-
-            if (rfidNumeric.length >= 4) {
-                // Use RFID digits directly if available, pad or truncate to 12 digits
-                const remainingDigits = rfidNumeric.padEnd(12, '0').substring(0, 12);
-                cardNumber += remainingDigits;
-            } else {
-                // Use RFID ID to generate seed for consistent numbers
-                const seed = rfidId.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
-
-                // Simple seeded random function
-                function seededRandom(seed) {
-                    const x = Math.sin(seed) * 10000;
-                    return x - Math.floor(x);
+                if (!response.ok) {
+                    throw new Error(result.message || 'Gagal mengambil data RFID');
                 }
 
-                let currentSeed = seed;
-                for (let i = 0; i < 12; i++) {
-                    const random = seededRandom(currentSeed);
-                    cardNumber += Math.floor(random * 10);
-                    currentSeed = (currentSeed * 9301 + 49297) % 233280;
+                if (!result.success) {
+                    throw new Error(result.message || 'Data RFID tidak ditemukan');
                 }
+
+                console.log('✅ RFID data received:', result.data);
+                return result.data;
+            } catch (error) {
+                console.error('❌ Error fetching RFID data:', error);
+                throw error;
             }
-
-            // Format as XXXX XXXX XXXX XXXX
-            return cardNumber.replace(/(\d{4})(?=\d)/g, '$1 ');
         }
 
-        // Function to update card display
-        function updateCardDisplay(cardData, rfidId) {
+        // Function to update card display with API data
+        function updateCardDisplayWithApiData(apiData, rfidId) {
+            console.log('🎯 Updating card display with API data:', apiData);
+            console.log('🆔 RFID ID:', rfidId);
+
+            // Extract the actual data from nested response structure
+            const actualData = apiData.data || apiData;
+            console.log('📊 Actual data extracted:', actualData);
+
             const rfidCardNumber = document.getElementById('rfidCardNumber');
             const rfidCardId = document.getElementById('rfidCardId');
             const rfidCardholderName = document.getElementById('rfidCardholderName');
             const rfidExpiryDate = document.getElementById('rfidExpiryDate');
             const rfidCardIdDisplay = document.getElementById('rfidCardIdDisplay');
 
-            if (rfidCardNumber) {
-                rfidCardNumber.textContent = cardData.cardNumber;
+            // Update card display with API data
+            if (rfidCardNumber && actualData.no_rekening) {
+                // Format account number for display (add spaces every 4 digits)
+                const formattedAccount = actualData.no_rekening.replace(/(\d{3})(\d{4})(\d{5})/, '$1 $2 $3');
+                console.log('💳 Setting card number:', formattedAccount);
+                rfidCardNumber.textContent = formattedAccount;
+            } else {
+                console.log('⚠️ Card number element or no_rekening not found:', {
+                    rfidCardNumber,
+                    no_rekening: actualData.no_rekening
+                });
             }
-            if (rfidCardId) {
-                rfidCardId.textContent = cardData.additionalId;
+
+            if (rfidCardId && actualData.no_anggota) {
+                console.log('🆔 Setting member ID:', actualData.no_anggota);
+                rfidCardId.textContent = actualData.no_anggota;
+            } else {
+                console.log('⚠️ Member ID element or no_anggota not found:', {
+                    rfidCardId,
+                    no_anggota: actualData.no_anggota
+                });
             }
-            if (rfidCardholderName) {
-                rfidCardholderName.textContent = cardData.cardholderName;
+
+            if (rfidCardholderName && actualData.anggota && actualData.anggota.nama_lengkap) {
+                const upperName = actualData.anggota.nama_lengkap.toUpperCase();
+                console.log('👤 Setting cardholder name:', upperName);
+                rfidCardholderName.textContent = upperName;
+            } else {
+                console.log('⚠️ Cardholder name element or nama_lengkap not found:', {
+                    rfidCardholderName,
+                    anggota: actualData.anggota
+                });
             }
+
             if (rfidExpiryDate) {
-                rfidExpiryDate.textContent = cardData.expiryDate;
+                // Show account type instead of expiry date
+                if (actualData.jenis_tabungan && actualData.jenis_tabungan.jenis_tabungan) {
+                    console.log('🏦 Setting account type:', actualData.jenis_tabungan.jenis_tabungan);
+                    rfidExpiryDate.textContent = actualData.jenis_tabungan.jenis_tabungan;
+                } else {
+                    console.log('🏦 Setting default account type: Tabungan');
+                    rfidExpiryDate.textContent = 'Tabungan';
+                }
+            } else {
+                console.log('⚠️ Expiry date element not found:', rfidExpiryDate);
             }
+
             if (rfidCardIdDisplay) {
-                // Gunakan storedRfidId jika tersedia, jika tidak gunakan rfidId
-                rfidCardIdDisplay.textContent = storedRfidId || rfidId;
+                console.log('📄 Setting RFID display:', rfidId);
+                rfidCardIdDisplay.textContent = rfidId;
+            } else {
+                console.log('⚠️ RFID display element not found:', rfidCardIdDisplay);
             }
 
-            // Update bank name
+            // Update bank name with account type
             const bankNameElement = document.querySelector('#rfidDisplay .text-gray-300');
-            // if (bankNameElement && cardData.bankName) {
-            //     bankNameElement.textContent = cardData.bankName;
-            // }
+            if (bankNameElement) {
+                if (actualData.jenis_tabungan && actualData.jenis_tabungan.jenis_tabungan) {
+                    bankNameElement.textContent = actualData.jenis_tabungan.jenis_tabungan;
+                } else {
+                    bankNameElement.textContent = 'Tabungan';
+                }
+            }
 
-            // Update card color - Force blue gradient
+            // Add balance information if available
+            if (actualData.saldo !== undefined) {
+                const balanceElement = document.getElementById('rfidBalanceDisplay');
+                if (balanceElement) {
+                    console.log('💰 Setting balance:', formatCurrency(actualData.saldo));
+                    balanceElement.textContent = `Rp ${formatCurrency(actualData.saldo)}`;
+
+                    // Simpan saldo ke variabel global
+                    saldoRfid = actualData.saldo;
+                    console.log('💾 Saldo RFID disimpan:', saldoRfid);
+                } else {
+                    console.log('⚠️ Balance display element not found:', balanceElement);
+                }
+            }
+
+            // Update card color based on account type or use default
             const cardElement = document.querySelector('#rfidDisplay .bg-gradient-to-br');
             if (cardElement) {
                 // Remove any existing color classes
@@ -4366,10 +4235,37 @@
                     'to-cyan-900', 'from-emerald-800', 'to-emerald-900', 'from-lime-800', 'to-lime-900',
                     'from-amber-800', 'to-amber-900', 'from-violet-800', 'to-violet-900', 'from-fuchsia-800',
                     'to-fuchsia-900', 'from-rose-800', 'to-rose-900');
-                // Always use blue gradient
-                cardElement.classList.add('from-blue-600', 'to-blue-800');
+
+                // Use different colors based on account type
+                if (actualData.jenis_tabungan && actualData.jenis_tabungan.jenis_tabungan) {
+                    const accountType = actualData.jenis_tabungan.jenis_tabungan.toLowerCase();
+                    if (accountType.includes('siswa') || accountType.includes('student')) {
+                        cardElement.classList.add('from-green-600', 'to-green-800');
+                    } else if (accountType.includes('umum') || accountType.includes('general')) {
+                        cardElement.classList.add('from-blue-600', 'to-blue-800');
+                    } else if (accountType.includes('premium') || accountType.includes('vip')) {
+                        cardElement.classList.add('from-purple-600', 'to-purple-800');
+                    } else {
+                        cardElement.classList.add('from-blue-600', 'to-blue-800');
+                    }
+                } else {
+                    cardElement.classList.add('from-blue-600', 'to-blue-800');
+                }
             }
+
+            // Store API data for form submission
+            window.rfidApiData = actualData;
         }
+
+        // Helper function to format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('id-ID', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+
 
         // Simulate card scan function removed - RFID should only be detected through actual hardware input
 
@@ -4380,6 +4276,8 @@
         let rfidInputBuffer = '';
         let rfidInputTimeout;
         let storedRfidId = ''; // Variabel untuk menyimpan RFID ID 10 karakter
+        let saldoRfid = 0; // Variabel untuk menyimpan saldo RFID
+        let statusRfid = false; // Variabel untuk tracking status scan RFID
 
         // Function untuk update progress bar RFID
         function updateRfidProgress(currentLength) {
@@ -4567,6 +4465,140 @@
                 showToast('Input RFID telah di-reset', 'info');
             });
         }
+
+        // Test function for debugging API response
+        window.testRfidApiResponse = function() {
+            console.log('🧪 Testing RFID API response with sample data...');
+            const sampleApiData = {
+                "success": true,
+                "data": {
+                    "no_rekening": "103-2408-00016",
+                    "no_anggota": "2408-00016",
+                    "kode_tabungan": "103",
+                    "saldo": 40000,
+                    "rfid": "0001355460",
+                    "created_at": "2025-07-21 09:35:43",
+                    "updated_at": "2025-09-20 22:19:30",
+                    "jenis_tabungan": {
+                        "kode_tabungan": "103",
+                        "jenis_tabungan": "Tabungan Siswa"
+                    },
+                    "anggota": {
+                        "no_anggota": "2408-00016",
+                        "nama_lengkap": "Khairi Messi Rabbani",
+                        "alamat": "MTs Persis Sindangkasih",
+                        "no_hp": "8080800324016"
+                    }
+                }
+            };
+
+            // Show RFID display first
+            const rfidDisplay = document.getElementById('rfidDisplay');
+            if (rfidDisplay) {
+                rfidDisplay.classList.remove('hidden');
+            }
+
+            // Update card display with sample data
+            updateCardDisplayWithApiData(sampleApiData, "0001355460");
+            console.log('✅ Test completed! Check the card display.');
+            console.log('Expected display:');
+            console.log('- Card Number: 103 2408 00016');
+            console.log('- Member ID: 2408-00016');
+            console.log('- Name: KHAIRI MESSI RABBANI');
+            console.log('- Account Type: Tabungan Siswa');
+            console.log('- Balance: Rp 40.000');
+            console.log('💰 RFID Balance stored:', saldoRfid);
+        };
+
+        // Console helper message
+        console.log('🔧 Debug tools available:');
+        console.log('- testRfidApiResponse() - Test card display with sample data');
+        console.log('- clearRfidInput() - Clear RFID input and reset card');
+        console.log('- triggerRfidDetection("RFIDID") - Simulate RFID scan');
+        console.log('- checkRfidBalance() - Check RFID balance and status');
+        console.log('- checkRfidStatus() - Check complete RFID status');
+        console.log('- testSaldoValidation() - Test saldo validation logic');
+        console.log('- saldoRfid - Current RFID balance variable');
+        console.log('- statusRfid - Current RFID scan status');
+
+        // Helper function to check RFID balance
+        window.checkRfidBalance = function() {
+            console.log('💰 Current RFID Balance:', saldoRfid);
+            console.log('💳 RFID Card ID:', storedRfidId);
+            console.log('✅ RFID Status:', statusRfid);
+            return saldoRfid;
+        };
+
+        // Helper function to check RFID status
+        window.checkRfidStatus = function() {
+            console.log('📊 RFID Status Check:');
+            console.log('- Status RFID:', statusRfid);
+            console.log('- Stored RFID ID:', storedRfidId);
+            console.log('- Saldo RFID:', saldoRfid);
+            console.log('- Hidden input value:', document.getElementById('rfidCardId')?.value);
+            return {
+                status: statusRfid,
+                id: storedRfidId,
+                saldo: saldoRfid,
+                inputValue: document.getElementById('rfidCardId')?.value
+            };
+        };
+
+        // Helper function to test saldo validation
+        window.testSaldoValidation = function() {
+            console.log('🧪 Testing Saldo Validation:');
+
+            // Check if payment method is CARD
+            const selectedPaymentMethod = document.querySelector('.preview-payment-method-radio:checked');
+            const isCard = selectedPaymentMethod && (
+                selectedPaymentMethod.value.toLowerCase().includes('card') ||
+                selectedPaymentMethod.value.toLowerCase().includes('rfid') ||
+                selectedPaymentMethod.value.toLowerCase().includes('kartu')
+            );
+
+            console.log('💳 Payment Method Check:');
+            console.log('- Selected Method:', selectedPaymentMethod?.value);
+            console.log('- Is CARD Method:', isCard);
+
+            if (!isCard) {
+                console.log('ℹ️ Non-CARD payment method - RFID validation will be skipped');
+                return {
+                    isCard: false,
+                    message: 'RFID validation skipped for non-CARD payment method'
+                };
+            }
+
+            // Calculate current total
+            const subtotal = orderItems.reduce((total, item) => {
+                const itemSubtotal = item.price * item.qty;
+                const itemDiscount = item.discount || 0;
+                return total + (itemSubtotal - itemDiscount);
+            }, 0);
+            const discount = parseFormattedNumber(document.getElementById('diskonDisplay').value);
+            const total = subtotal - discount;
+
+            console.log('💰 Current Order:');
+            console.log('- Subtotal:', subtotal);
+            console.log('- Discount:', discount);
+            console.log('- Total:', total);
+            console.log('- RFID Saldo:', saldoRfid);
+            console.log('- Status RFID:', statusRfid);
+
+            if (total > saldoRfid) {
+                console.log('❌ VALIDATION SHOULD FAIL - Total exceeds saldo');
+                console.log(`Total (${total}) > Saldo (${saldoRfid})`);
+            } else {
+                console.log('✅ VALIDATION SHOULD PASS - Saldo sufficient');
+                console.log(`Total (${total}) <= Saldo (${saldoRfid})`);
+            }
+
+            return {
+                isCard: true,
+                total,
+                saldo: saldoRfid,
+                shouldFail: total > saldoRfid
+            };
+        };
 
         // Preview kas/bank radio button handling
         const previewKasBankRadios = document.querySelectorAll('.preview-kas-bank-radio');
@@ -4820,10 +4852,14 @@
                 return;
             }
 
+            // Get the actual value from the hidden input (needed for all payment methods)
+            const modalJenisTransaksiValue = modalJenisTransaksi.value;
+            console.log("Ini adalah modalJenisTransaksi value:", modalJenisTransaksiValue);
+
             // Validate RFID card for CARD payment method
             if (isCard) {
-                const rfidCardId = document.getElementById('rfidCardId');
-                if (!rfidCardId || !rfidCardId.value.trim()) {
+                // Check status RFID first
+                if (!statusRfid || !storedRfidId) {
                     showToast('Kartu RFID wajib di-scan terlebih dahulu!', 'error');
 
                     // Add error highlight to card scan area
@@ -4834,10 +4870,98 @@
                     }, 3000);
                     return;
                 }
+
+                // Double check hidden input as backup
+                const rfidCardId = document.getElementById('rfidCardId');
+                if (!rfidCardId || !rfidCardId.value.trim()) {
+                    // Update hidden input with stored RFID ID
+                    rfidCardId.value = storedRfidId;
+                    console.log('🔄 Updated hidden input with stored RFID ID:', storedRfidId);
+                }
+
+                // Validate RFID saldo for CARD payment
+                console.log('🔍 Validating RFID saldo:', {
+                    saldoRfid,
+                    modalJenisTransaksi: modalJenisTransaksi.value,
+                    modalDpAmount
+                });
+
+                // Calculate total amount to be paid
+                const subtotal = orderItems.reduce((total, item) => {
+                    const itemSubtotal = item.price * item.qty;
+                    const itemDiscount = item.discount || 0;
+                    return total + (itemSubtotal - itemDiscount);
+                }, 0);
+                const discount = parseFormattedNumber(document.getElementById('diskonDisplay').value);
+                const total = subtotal - discount;
+
+                console.log('💰 Payment calculation:', {
+                    subtotal,
+                    discount,
+                    total,
+                    saldoRfid
+                });
+
+                // For tunai transactions, check if total exceeds saldo
+                if (modalJenisTransaksiValue === 'tunai') {
+                    // console.log(total + ' > ' + saldoRfid);
+                    // return false;
+                    if (total > saldoRfid) {
+                        console.log('❌ Saldo tidak mencukupi untuk tunai:', {
+                            total,
+                            saldoRfid
+                        });
+                        showToast(
+                            `Saldo RFID tidak mencukupi! Saldo: Rp ${formatNumber(saldoRfid)}, Total: Rp ${formatNumber(total)}`,
+                            'error');
+
+                        // Add error highlight to card scan area
+                        const cardArea = cardScanArea.querySelector('div');
+                        cardArea.classList.add('border-red-500', 'bg-red-50', 'animate-pulse');
+                        setTimeout(() => {
+                            cardArea.classList.remove('border-red-500', 'bg-red-50', 'animate-pulse');
+                        }, 3000);
+                        return;
+                    } else {
+                        console.log('✅ Saldo mencukupi untuk tunai:', {
+                            total,
+                            saldoRfid
+                        });
+                    }
+                }
+
+                // For kredit transactions, check if DP exceeds saldo
+                if (modalJenisTransaksiValue === 'kredit') {
+                    if (modalDpAmount > saldoRfid) {
+                        console.log('❌ Saldo tidak mencukupi untuk DP:', {
+                            modalDpAmount,
+                            saldoRfid
+                        });
+                        showToast(
+                            `Saldo RFID tidak mencukupi untuk DP! Saldo: Rp ${formatNumber(saldoRfid)}, DP: Rp ${formatNumber(modalDpAmount)}`,
+                            'error');
+
+                        // Add error highlight to card scan area
+                        const cardArea = cardScanArea.querySelector('div');
+                        cardArea.classList.add('border-red-500', 'bg-red-50', 'animate-pulse');
+                        setTimeout(() => {
+                            cardArea.classList.remove('border-red-500', 'bg-red-50', 'animate-pulse');
+                        }, 3000);
+                        return;
+                    } else {
+                        console.log('✅ Saldo mencukupi untuk DP:', {
+                            modalDpAmount,
+                            saldoRfid
+                        });
+                    }
+                }
+            } else {
+                // For non-CARD payment methods, skip RFID validation
+                console.log('ℹ️ Non-CARD payment method, skipping RFID validation');
             }
 
             // Validate DP for kredit transactions
-            if (modalJenisTransaksi === 'kredit') {
+            if (modalJenisTransaksiValue === 'kredit') {
                 const subtotal = orderItems.reduce((total, item) => {
                     const itemSubtotal = item.price * item.qty;
                     const itemDiscount = item.discount || 0;
@@ -4860,7 +4984,7 @@
             }
 
             // Update hidden inputs with modal values
-            document.getElementById('modalJenisTransaksi').value = modalJenisTransaksi;
+            document.getElementById('modalJenisTransaksi').value = modalJenisTransaksiValue;
             document.getElementById('modalMetodePembayaran').value = selectedModalPaymentMethod.value;
             document.getElementById('modalKasBankId').value = selectedModalKasBank ? selectedModalKasBank.value :
                 '';
