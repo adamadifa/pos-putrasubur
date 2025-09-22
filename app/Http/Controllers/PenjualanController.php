@@ -523,7 +523,7 @@ class PenjualanController extends Controller
                     $berita // berita
                 );
 
-                dd($transferResult);
+                //dd($transferResult);
                 if (!$transferResult['success']) {
                     throw new \Exception('Transfer gagal: ' . $transferResult['message']);
                 }
