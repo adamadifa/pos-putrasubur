@@ -355,7 +355,7 @@ class PembelianController extends Controller
     {
         try {
             $pembelian = Pembelian::findByEncryptedId($encryptedId);
-            $pembelian->load(['supplier', 'detailPembelian.produk', 'pembayaranPembelian', 'user']);
+            $pembelian->load(['supplier', 'detailPembelian.produk.satuan', 'pembayaranPembelian', 'user']);
 
             // Calculate sisa pembayaran
             $sisaPembayaran = $pembelian->sisa_pembayaran;

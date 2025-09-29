@@ -1696,7 +1696,7 @@
             @foreach ($pembelian->detailPembelian as $detail)
                 invoiceLines.push("{{ substr($detail->produk->nama_produk, 0, 20) }}\n");
                 invoiceLines.push(
-                    "  {{ number_format($detail->qty, 2) }} {{ $detail->produk->satuan->nama ?? 'pcs' }} x {{ number_format($detail->harga, 0) }} = {{ number_format($detail->subtotal, 0) }}\n"
+                    "  {{ number_format($detail->qty, 2) }} {{ $detail->produk->satuan->nama ?? 'pcs' }} x {{ number_format($detail->harga_beli, 0) }} = {{ number_format($detail->subtotal, 0) }}\n"
                 );
                 @if ($detail->discount > 0)
                     invoiceLines.push("  Diskon: -{{ number_format($detail->discount, 0) }}\n");
