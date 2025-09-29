@@ -15,210 +15,232 @@ class ProdukSeeder extends Seeder
     public function run(): void
     {
         $produks = [
-            // Rempah-Rempah (Kategori ID: 1)
+            // Makanan
             [
-                'kode_produk' => 'RMP001',
-                'nama_produk' => 'Cengkeh Kering Grade A',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 145000,
-                'stok' => 450,
-                'stok_minimal' => 50,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode_produk' => 'RMP002',
-                'nama_produk' => 'Pala Utuh Premium',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 220000,
-                'stok' => 175,
-                'stok_minimal' => 25,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode_produk' => 'RMP003',
-                'nama_produk' => 'Kapol (Bunga Pala)',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 105000,
-                'stok' => 120,
+                'kode_produk' => 'MIN001',
+                'nama_produk' => 'Nasi Goreng Instan',
+                'kategori_id' => 1, // Makanan
+                'satuan_id' => 3, // Pcs
+                'harga_jual' => 3500,
+                'stok' => 150,
                 'stok_minimal' => 20,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'kode_produk' => 'RMP004',
-                'nama_produk' => 'Lada Hitam Lampung',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 115000,
-                'stok' => 280,
+                'kode_produk' => 'MIN002',
+                'nama_produk' => 'Mie Instan Indomie',
+                'kategori_id' => 1, // Makanan
+                'satuan_id' => 3, // Pcs
+                'harga_jual' => 2500,
+                'stok' => 200,
                 'stok_minimal' => 30,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'kode_produk' => 'RMP005',
-                'nama_produk' => 'Lada Putih Bangka',
-                'kategori_id' => 1,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 135000,
-                'stok' => 160,
-                'stok_minimal' => 25,
+                'kode_produk' => 'MIN003',
+                'nama_produk' => 'Roti Tawar',
+                'kategori_id' => 1, // Makanan
+                'satuan_id' => 4, // Bungkus
+                'harga_jual' => 12000,
+                'stok' => 25,
+                'stok_minimal' => 5,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'kode_produk' => 'RMP006',
-                'nama_produk' => 'Kayu Manis Cassia',
-                'kategori_id' => 1,
+                'kode_produk' => 'MIN004',
+                'nama_produk' => 'Telur Ayam',
+                'kategori_id' => 1, // Makanan
+                'satuan_id' => 3, // Pcs
+                'harga_jual' => 2000,
+                'stok' => 100,
+                'stok_minimal' => 20,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'kode_produk' => 'MIN005',
+                'nama_produk' => 'Beras Premium',
+                'kategori_id' => 1, // Makanan
                 'satuan_id' => 1, // Kg
-                'harga_jual' => 58000,
-                'stok' => 8, // Stok menipis
+                'harga_jual' => 15000,
+                'stok' => 50,
                 'stok_minimal' => 10,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
 
-            // Hasil Perkebunan (Kategori ID: 2)
+            // Minuman
             [
-                'kode_produk' => 'PKB001',
-                'nama_produk' => 'Kopi Arabika Gayo',
-                'kategori_id' => 2,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 95000,
-                'stok' => 350,
-                'stok_minimal' => 40,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode_produk' => 'PKB002',
-                'nama_produk' => 'Kopi Robusta Lampung',
-                'kategori_id' => 2,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 60000,
-                'stok' => 520,
-                'stok_minimal' => 50,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode_produk' => 'PKB003',
-                'nama_produk' => 'Kakao Fermentasi',
-                'kategori_id' => 2,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 45000,
-                'stok' => 720,
-                'stok_minimal' => 80,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode_produk' => 'PKB004',
-                'nama_produk' => 'Vanili Planifolia',
-                'kategori_id' => 2,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 3200000,
-                'stok' => 20,
-                'stok_minimal' => 3,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode_produk' => 'PKB005',
-                'nama_produk' => 'Kopi Luwak Premium',
-                'kategori_id' => 2,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 1200000,
-                'stok' => 0, // Stok habis
-                'stok_minimal' => 2,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-
-            // Biji-Bijian (Kategori ID: 3)
-            [
-                'kode_produk' => 'BJI001',
-                'nama_produk' => 'Kemiri Kupas',
-                'kategori_id' => 3,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 32000,
-                'stok' => 210,
-                'stok_minimal' => 30,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode_produk' => 'BJI002',
-                'nama_produk' => 'Kacang Tanah Kupas',
-                'kategori_id' => 3,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 24000,
-                'stok' => 420,
-                'stok_minimal' => 50,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-
-            // Umbi-Umbian (Kategori ID: 4)
-            [
-                'kode_produk' => 'UMB001',
-                'nama_produk' => 'Jahe Gajah Kering',
-                'kategori_id' => 4,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 35000,
-                'stok' => 180,
-                'stok_minimal' => 25,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode_produk' => 'UMB002',
-                'nama_produk' => 'Kunyit Bubuk',
-                'kategori_id' => 4,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 28000,
-                'stok' => 125,
+                'kode_produk' => 'MIN006',
+                'nama_produk' => 'Aqua Botol 600ml',
+                'kategori_id' => 2, // Minuman
+                'satuan_id' => 5, // Botol
+                'harga_jual' => 3000,
+                'stok' => 100,
                 'stok_minimal' => 20,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'kode_produk' => 'UMB003',
-                'nama_produk' => 'Lengkuas Kering',
-                'kategori_id' => 4,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 20000,
-                'stok' => 85,
+                'kode_produk' => 'MIN007',
+                'nama_produk' => 'Coca Cola 330ml',
+                'kategori_id' => 2, // Minuman
+                'satuan_id' => 5, // Botol
+                'harga_jual' => 5000,
+                'stok' => 80,
                 'stok_minimal' => 15,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-
-            // Buah Kering (Kategori ID: 5)
             [
-                'kode_produk' => 'BKR001',
-                'nama_produk' => 'Kelapa Parut Kering',
-                'kategori_id' => 5,
-                'satuan_id' => 1, // Kg
-                'harga_jual' => 16000,
-                'stok' => 250,
-                'stok_minimal' => 35,
+                'kode_produk' => 'MIN008',
+                'nama_produk' => 'Teh Botol Sosro',
+                'kategori_id' => 2, // Minuman
+                'satuan_id' => 5, // Botol
+                'harga_jual' => 4000,
+                'stok' => 60,
+                'stok_minimal' => 12,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'kode_produk' => 'BKR002',
-                'nama_produk' => 'Asam Jawa Kering',
-                'kategori_id' => 5,
-                'satuan_id' => 1, // Kg
+                'kode_produk' => 'MIN009',
+                'nama_produk' => 'Susu Ultra 1L',
+                'kategori_id' => 2, // Minuman
+                'satuan_id' => 5, // Botol
                 'harga_jual' => 12000,
-                'stok' => 150,
-                'stok_minimal' => 20,
+                'stok' => 30,
+                'stok_minimal' => 8,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'kode_produk' => 'MIN010',
+                'nama_produk' => 'Kopi Kapal Api',
+                'kategori_id' => 2, // Minuman
+                'satuan_id' => 4, // Bungkus
+                'harga_jual' => 8000,
+                'stok' => 40,
+                'stok_minimal' => 10,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+
+            // Snack
+            [
+                'kode_produk' => 'MIN011',
+                'nama_produk' => 'Keripik Singkong',
+                'kategori_id' => 3, // Snack
+                'satuan_id' => 4, // Bungkus
+                'harga_jual' => 6000,
+                'stok' => 50,
+                'stok_minimal' => 10,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'kode_produk' => 'MIN012',
+                'nama_produk' => 'Biskuit Oreo',
+                'kategori_id' => 3, // Snack
+                'satuan_id' => 4, // Bungkus
+                'harga_jual' => 8000,
+                'stok' => 35,
+                'stok_minimal' => 8,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'kode_produk' => 'MIN013',
+                'nama_produk' => 'Permen Mentos',
+                'kategori_id' => 3, // Snack
+                'satuan_id' => 3, // Pcs
+                'harga_jual' => 2000,
+                'stok' => 80,
+                'stok_minimal' => 15,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'kode_produk' => 'MIN014',
+                'nama_produk' => 'Coklat Silver Queen',
+                'kategori_id' => 3, // Snack
+                'satuan_id' => 3, // Pcs
+                'harga_jual' => 3000,
+                'stok' => 60,
+                'stok_minimal' => 12,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'kode_produk' => 'MIN015',
+                'nama_produk' => 'Kacang Garuda',
+                'kategori_id' => 3, // Snack
+                'satuan_id' => 4, // Bungkus
+                'harga_jual' => 5000,
+                'stok' => 45,
+                'stok_minimal' => 10,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+
+            // Rokok
+            [
+                'kode_produk' => 'MIN016',
+                'nama_produk' => 'Rokok Sampoerna Mild',
+                'kategori_id' => 4, // Rokok
+                'satuan_id' => 3, // Pcs
+                'harga_jual' => 25000,
+                'stok' => 20,
+                'stok_minimal' => 5,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'kode_produk' => 'MIN017',
+                'nama_produk' => 'Rokok Djarum Super',
+                'kategori_id' => 4, // Rokok
+                'satuan_id' => 3, // Pcs
+                'harga_jual' => 22000,
+                'stok' => 25,
+                'stok_minimal' => 5,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+
+            // Kebutuhan Rumah Tangga
+            [
+                'kode_produk' => 'MIN018',
+                'nama_produk' => 'Sabun Mandi Lifebuoy',
+                'kategori_id' => 6, // Kebutuhan Rumah Tangga
+                'satuan_id' => 3, // Pcs
+                'harga_jual' => 4000,
+                'stok' => 40,
+                'stok_minimal' => 8,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'kode_produk' => 'MIN019',
+                'nama_produk' => 'Shampoo Pantene',
+                'kategori_id' => 6, // Kebutuhan Rumah Tangga
+                'satuan_id' => 5, // Botol
+                'harga_jual' => 15000,
+                'stok' => 20,
+                'stok_minimal' => 5,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'kode_produk' => 'MIN020',
+                'nama_produk' => 'Pasta Gigi Pepsodent',
+                'kategori_id' => 6, // Kebutuhan Rumah Tangga
+                'satuan_id' => 3, // Pcs
+                'harga_jual' => 8000,
+                'stok' => 30,
+                'stok_minimal' => 6,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

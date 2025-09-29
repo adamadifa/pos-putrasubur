@@ -63,6 +63,14 @@ class KasBankController extends Controller
         try {
             $data = $request->all();
 
+            // Handle status_card_payment checkbox
+            $data['status_card_payment'] = $request->has('status_card_payment') ? 1 : 0;
+
+            // If this bank is being set as active for card payment, deactivate others
+            if ($data['status_card_payment'] == 1) {
+                KasBank::where('status_card_payment', 1)->update(['status_card_payment' => 0]);
+            }
+
             // Handle image upload
             if ($request->hasFile('image')) {
                 $image = $request->file('image');
@@ -115,6 +123,16 @@ class KasBankController extends Controller
 
         try {
             $data = $request->all();
+
+            // Handle status_card_payment checkbox
+            $data['status_card_payment'] = $request->has('status_card_payment') ? 1 : 0;
+
+            // If this bank is being set as active for card payment, deactivate others
+            if ($data['status_card_payment'] == 1) {
+                KasBank::where('status_card_payment', 1)
+                    ->where('id', '!=', $kasBank->id)
+                    ->update(['status_card_payment' => 0]);
+            }
 
             // Handle image upload
             if ($request->hasFile('image')) {

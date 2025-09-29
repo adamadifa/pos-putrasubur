@@ -45,6 +45,15 @@ class PengaturanUmumHelper
     }
 
     /**
+     * Get nomor rekening koperasi
+     */
+    public static function getNoRekeningKoperasi()
+    {
+        $pengaturan = self::getActive();
+        return $pengaturan ? $pengaturan->no_rekening_koperasi : null;
+    }
+
+    /**
      * Get email toko
      */
     public static function getEmail()
@@ -100,6 +109,7 @@ class PengaturanUmumHelper
                 'nama_toko' => 'Toko Saya',
                 'alamat' => null,
                 'no_telepon' => null,
+                'no_rekening_koperasi' => null,
                 'email' => null,
                 'deskripsi' => null,
                 'logo' => null,
@@ -111,6 +121,7 @@ class PengaturanUmumHelper
             'nama_toko' => $pengaturan->nama_toko,
             'alamat' => $pengaturan->alamat,
             'no_telepon' => $pengaturan->no_telepon,
+            'no_rekening_koperasi' => $pengaturan->no_rekening_koperasi,
             'email' => $pengaturan->email,
             'deskripsi' => $pengaturan->deskripsi,
             'logo' => $pengaturan->logo,

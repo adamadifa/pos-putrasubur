@@ -11,30 +11,29 @@
                     <div class="flex items-center space-x-4">
                         <a href="{{ route('kas-bank.index') }}"
                             class="group p-2 text-gray-500 hover:text-white hover:bg-gradient-to-r hover:from-blue-500 hover:to-indigo-600 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                                stroke="currentColor" class="w-6 h-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                                class="w-6 h-6">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                             </svg>
                         </a>
                         <div class="flex items-center space-x-4">
                             <div class="p-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-white">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                    class="w-6 h-6 text-white">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
                                 </svg>
                             </div>
                             <div>
-                                <h1
-                                    class="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                                <h1 class="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
                                     Tambah Kas & Bank Baru</h1>
                                 <p class="text-gray-500 mt-1">Buat data kas atau bank baru untuk sistem POS</p>
                             </div>
                         </div>
                     </div>
                     <div class="hidden sm:flex items-center space-x-2 text-sm text-gray-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-4 h-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                            class="w-4 h-4">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
                         </svg>
@@ -48,10 +47,9 @@
                 <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-6 shadow-sm">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-5 h-5 text-green-400">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                class="w-5 h-5 text-green-400">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
                         <div class="ml-3">
@@ -65,8 +63,8 @@
                                     class="inline-flex bg-green-50 rounded-lg p-1.5 text-green-500 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-green-50"
                                     onclick="this.parentElement.parentElement.parentElement.parentElement.remove()">
                                     <span class="sr-only">Dismiss</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                        class="w-5 h-5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </button>
@@ -81,8 +79,8 @@
                 <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 shadow-sm">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-5 h-5 text-red-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                class="w-5 h-5 text-red-400">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                             </svg>
@@ -105,8 +103,8 @@
                                     class="inline-flex bg-red-50 rounded-lg p-1.5 text-red-500 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 focus:ring-offset-red-50"
                                     onclick="this.parentElement.parentElement.parentElement.parentElement.remove()">
                                     <span class="sr-only">Dismiss</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                        class="w-5 h-5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </button>
@@ -127,8 +125,7 @@
                     </div>
                 </div>
 
-                <form action="{{ route('kas-bank.store') }}" method="POST" enctype="multipart/form-data" class="p-8"
-                    id="createKasBankForm">
+                <form action="{{ route('kas-bank.store') }}" method="POST" enctype="multipart/form-data" class="p-8" id="createKasBankForm">
                     @csrf
 
                     <div class="space-y-8">
@@ -139,8 +136,7 @@
                             </label>
                             <div class="relative group">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i
-                                        class="ti ti-tag text-gray-400 group-hover:text-blue-500 transition-colors text-lg"></i>
+                                    <i class="ti ti-tag text-gray-400 group-hover:text-blue-500 transition-colors text-lg"></i>
                                 </div>
                                 <input type="text" name="kode" id="kode" value="{{ old('kode') }}"
                                     class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('kode') border-red-500 @enderror"
@@ -162,8 +158,7 @@
                             </label>
                             <div class="relative group">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i
-                                        class="ti ti-user text-gray-400 group-hover:text-blue-500 transition-colors text-lg"></i>
+                                    <i class="ti ti-user text-gray-400 group-hover:text-blue-500 transition-colors text-lg"></i>
                                 </div>
                                 <input type="text" name="nama" id="nama" value="{{ old('nama') }}"
                                     class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('nama') border-red-500 @enderror"
@@ -184,20 +179,16 @@
                                 Jenis <span class="text-red-500">*</span>
                             </label>
                             <div class="grid grid-cols-2 gap-3">
-                                <label
-                                    class="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                                    <input type="radio" name="jenis" value="KAS"
-                                        {{ old('jenis', 'KAS') === 'KAS' ? 'checked' : '' }}
+                                <label class="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                    <input type="radio" name="jenis" value="KAS" {{ old('jenis', 'KAS') === 'KAS' ? 'checked' : '' }}
                                         class="mr-3 text-blue-600 focus:ring-blue-500" required>
                                     <div class="flex items-center">
                                         <i class="ti ti-cash text-lg text-green-600 mr-2"></i>
                                         <span class="text-sm font-medium">KAS</span>
                                     </div>
                                 </label>
-                                <label
-                                    class="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                                    <input type="radio" name="jenis" value="BANK"
-                                        {{ old('jenis') === 'BANK' ? 'checked' : '' }}
+                                <label class="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                    <input type="radio" name="jenis" value="BANK" {{ old('jenis') === 'BANK' ? 'checked' : '' }}
                                         class="mr-3 text-blue-600 focus:ring-blue-500" required>
                                     <div class="flex items-center">
                                         <i class="ti ti-building-bank text-lg text-blue-600 mr-2"></i>
@@ -221,11 +212,9 @@
                             </label>
                             <div class="relative group">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i
-                                        class="ti ti-credit-card text-gray-400 group-hover:text-blue-500 transition-colors text-lg"></i>
+                                    <i class="ti ti-credit-card text-gray-400 group-hover:text-blue-500 transition-colors text-lg"></i>
                                 </div>
-                                <input type="text" name="no_rekening" id="no_rekening"
-                                    value="{{ old('no_rekening') }}"
+                                <input type="text" name="no_rekening" id="no_rekening" value="{{ old('no_rekening') }}"
                                     class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('no_rekening') border-red-500 @enderror"
                                     placeholder="Contoh: 1234567890 (opsional)" maxlength="50">
                             </div>
@@ -234,6 +223,33 @@
                                 Nomor rekening bank (kosongkan jika kas tunai)
                             </p>
                             @error('no_rekening')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Status Card Payment -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Status Card Payment
+                            </label>
+                            <div class="flex items-center space-x-4">
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" name="status_card_payment" value="1" {{ old('status_card_payment') ? 'checked' : '' }}
+                                        class="sr-only" id="status_card_payment">
+                                    <div class="relative">
+                                        <div class="w-12 h-6 bg-gray-200 rounded-full shadow-inner transition-colors duration-200 ease-in-out"
+                                            id="toggle-bg"></div>
+                                        <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ease-in-out"
+                                            id="toggle-dot"></div>
+                                    </div>
+                                    <span class="ml-3 text-sm font-medium text-gray-700" id="toggle-label">Nonaktif</span>
+                                </label>
+                            </div>
+                            <p class="text-xs text-gray-500 flex items-center">
+                                <i class="ti ti-info-circle text-gray-400 mr-1"></i>
+                                Hanya satu bank yang dapat diaktifkan untuk card payment. Mengaktifkan bank ini akan menonaktifkan bank lain.
+                            </p>
+                            @error('status_card_payment')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
@@ -256,8 +272,7 @@
                                     </p>
                                 </div>
                                 <div id="imagePreview" class="hidden">
-                                    <img id="previewImg" src="" alt="Preview"
-                                        class="w-16 h-16 object-cover rounded-lg border">
+                                    <img id="previewImg" src="" alt="Preview" class="w-16 h-16 object-cover rounded-lg border">
                                 </div>
                             </div>
                         </div>
@@ -266,8 +281,7 @@
                         <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
                             <h4 class="text-sm font-semibold text-gray-700 mb-4">Preview Kas & Bank</h4>
                             <div class="flex items-center">
-                                <div
-                                    class="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center mr-4">
+                                <div class="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center mr-4">
                                     <i class="ti ti-credit-card text-blue-600 text-xl"></i>
                                 </div>
                                 <div>
@@ -615,6 +629,38 @@
                     preview.classList.add('hidden');
                 }
             });
+
+            // Toggle switch functionality for status card payment
+            const toggleCheckbox = document.getElementById('status_card_payment');
+            const toggleBg = document.getElementById('toggle-bg');
+            const toggleDot = document.getElementById('toggle-dot');
+            const toggleLabel = document.getElementById('toggle-label');
+
+            function updateToggle() {
+                if (toggleCheckbox.checked) {
+                    toggleBg.classList.remove('bg-gray-200');
+                    toggleBg.classList.add('bg-blue-600');
+                    toggleDot.classList.remove('left-1');
+                    toggleDot.classList.add('left-7');
+                    toggleLabel.textContent = 'Aktif';
+                    toggleLabel.classList.remove('text-gray-700');
+                    toggleLabel.classList.add('text-blue-600');
+                } else {
+                    toggleBg.classList.remove('bg-blue-600');
+                    toggleBg.classList.add('bg-gray-200');
+                    toggleDot.classList.remove('left-7');
+                    toggleDot.classList.add('left-1');
+                    toggleLabel.textContent = 'Nonaktif';
+                    toggleLabel.classList.remove('text-blue-600');
+                    toggleLabel.classList.add('text-gray-700');
+                }
+            }
+
+            // Initialize toggle state
+            updateToggle();
+
+            // Add event listener
+            toggleCheckbox.addEventListener('change', updateToggle);
         });
     </script>
 @endsection

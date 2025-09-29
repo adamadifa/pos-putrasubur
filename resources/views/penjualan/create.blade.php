@@ -7,8 +7,7 @@
     <div class="min-h-screen">
         <!-- Back Button -->
         <div class="px-6 pt-6 pb-2">
-            <a href="{{ route('penjualan.index') }}"
-                class="inline-flex items-center text-gray-600 hover:text-blue-600 transition-colors">
+            <a href="{{ route('penjualan.index') }}" class="inline-flex items-center text-gray-600 hover:text-blue-600 transition-colors">
                 <i class="ti ti-arrow-left text-lg mr-2"></i>
                 Kembali ke Daftar Penjualan
             </a>
@@ -59,8 +58,7 @@
                                     class="w-full pl-11 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
                                 <button type="button" id="scanButton"
                                     class="absolute inset-y-0 right-0 pr-3 flex items-center text-green-600 hover:text-green-700">
-                                    <div
-                                        class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center hover:bg-green-200 transition-colors">
+                                    <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center hover:bg-green-200 transition-colors">
                                         <i class="ti ti-qrcode text-lg"></i>
                                     </div>
                                 </button>
@@ -95,17 +93,15 @@
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" id="productsGrid">
                         @foreach ($produk as $product)
                             <div class="product-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 cursor-pointer group"
-                                data-id="{{ $product->id }}" data-name="{{ $product->nama_produk }}"
-                                data-code="{{ $product->kode_produk }}" data-price="{{ $product->harga_jual }}"
-                                data-stock="{{ $product->stok }}" data-unit="{{ $product->satuan->nama ?? '' }}"
+                                data-id="{{ $product->id }}" data-name="{{ $product->nama_produk }}" data-code="{{ $product->kode_produk }}"
+                                data-price="{{ $product->harga_jual }}" data-stock="{{ $product->stok }}" data-unit="{{ $product->satuan->nama ?? '' }}"
                                 data-category="{{ $product->kategori->nama ?? '' }}">
 
                                 <!-- Product Image Placeholder -->
                                 <div
                                     class="w-full h-24 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg mb-3 flex items-center justify-center group-hover:from-blue-200 group-hover:to-blue-300 transition-all duration-200">
                                     @if ($product->foto)
-                                        <img src="{{ asset('storage/' . $product->foto) }}"
-                                            alt="{{ $product->nama_produk }}"
+                                        <img src="{{ asset('storage/' . $product->foto) }}" alt="{{ $product->nama_produk }}"
                                             class="w-full h-full object-cover rounded-lg">
                                     @else
                                         <i class="ti ti-package text-2xl text-blue-600"></i>
@@ -154,15 +150,14 @@
                         <!-- Invoice Number -->
                         <div class="mb-2">
                             <input type="text" name="no_faktur" value="{{ old('no_faktur', $invoiceNumber) }}"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
-                                placeholder="Nomor Faktur" readonly>
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500" placeholder="Nomor Faktur" readonly>
                         </div>
 
                         <!-- Date -->
                         <div class="mb-2">
                             <div class="date-input-wrapper">
-                                <input type="text" id="tanggal" value="{{ old('tanggal', date('d/m/Y')) }}"
-                                    class="flatpickr-input w-full" placeholder="Pilih tanggal" required readonly>
+                                <input type="text" id="tanggal" value="{{ old('tanggal', date('d/m/Y')) }}" class="flatpickr-input w-full"
+                                    placeholder="Pilih tanggal" required readonly>
                                 <i class="ti ti-calendar"></i>
                             </div>
                             <input type="hidden" name="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}">
@@ -185,8 +180,10 @@
                                     <i class="ti ti-search text-lg"></i>
                                 </button>
                             </div>
-                            <input type="hidden" name="pelanggan_id" id="pelangganId"
-                                value="{{ old('pelanggan_id') }}" required>
+                            <input type="hidden" name="pelanggan_id" id="pelangganId" value="{{ old('pelanggan_id') }}" required>
+
+                            <!-- Hidden input for no_rekening from RFID scan (used as API parameter for CARD payment method) -->
+                            <input type="text" name="no_rekening" id="noRekening" value="">
                         </div>
 
                         <!-- Payment Configuration Info -->
@@ -202,20 +199,14 @@
                         </div>
 
                         <!-- Hidden inputs for modal data -->
-                        <input type="hidden" name="modal_jenis_transaksi" id="modalJenisTransaksi"
-                            value="{{ old('jenis_transaksi', 'tunai') }}">
-                        <input type="hidden" name="modal_metode_pembayaran" id="modalMetodePembayaran"
-                            value="{{ old('metode_pembayaran') }}">
-                        <input type="hidden" name="modal_kas_bank_id" id="modalKasBankId"
-                            value="{{ old('kas_bank_id') }}">
-                        <input type="hidden" name="modal_dp_amount" id="modalDpAmount"
-                            value="{{ old('dp_amount', 0) }}">
+                        <input type="hidden" name="modal_jenis_transaksi" id="modalJenisTransaksi" value="{{ old('jenis_transaksi', 'tunai') }}">
+                        <input type="hidden" name="modal_metode_pembayaran" id="modalMetodePembayaran" value="{{ old('metode_pembayaran') }}">
+                        <input type="hidden" name="modal_kas_bank_id" id="modalKasBankId" value="{{ old('kas_bank_id') }}">
+                        <input type="hidden" name="modal_dp_amount" id="modalDpAmount" value="{{ old('dp_amount', 0) }}">
 
                         <!-- Hidden inputs for controller -->
-                        <input type="hidden" name="jenis_transaksi" id="jenisTransaksi"
-                            value="{{ old('jenis_transaksi', 'tunai') }}">
-                        <input type="hidden" name="metode_pembayaran" id="metodePembayaran"
-                            value="{{ old('metode_pembayaran') }}">
+                        <input type="hidden" name="jenis_transaksi" id="jenisTransaksi" value="{{ old('jenis_transaksi', 'tunai') }}">
+                        <input type="hidden" name="metode_pembayaran" id="metodePembayaran" value="{{ old('metode_pembayaran') }}">
                         <input type="hidden" name="dp_amount" id="dpAmount" value="{{ old('dp_amount', 0) }}">
                         <input type="hidden" name="kas_bank_id" id="kasBankId" value="{{ old('kas_bank_id') }}">
 
@@ -285,8 +276,7 @@
 
     <!-- Quantity Input Modal -->
     <div id="quantityModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div
-            class="relative top-1/2 transform -translate-y-1/2 mx-auto p-5 border w-11/12 md:w-96 shadow-lg rounded-xl bg-white">
+        <div class="relative top-1/2 transform -translate-y-1/2 mx-auto p-5 border w-11/12 md:w-96 shadow-lg rounded-xl bg-white">
             <div class="mt-3">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-gray-900">Masukkan Quantity</h3>
@@ -298,8 +288,7 @@
                 <!-- Product Info -->
                 <div id="modalProductInfo" class="mb-4 p-3 bg-gray-50 rounded-lg">
                     <div class="flex items-center space-x-3">
-                        <div
-                            class="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
                             <i class="ti ti-package text-xl text-blue-600"></i>
                         </div>
                         <div class="flex-1">
@@ -329,8 +318,7 @@
                                 class="w-full pl-4 pr-16 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-lg font-semibold"
                                 value="1" placeholder="0">
                             <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                <span id="modalProductUnitInInput"
-                                    class="text-sm font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded"></span>
+                                <span id="modalProductUnitInInput" class="text-sm font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded"></span>
                             </div>
                         </div>
                         <button type="button" id="increaseQty"
@@ -354,8 +342,7 @@
                             class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-right text-lg font-semibold"
                             placeholder="0">
                     </div>
-                    <p class="text-xs text-gray-500 mt-1">Harga default: <span id="modalDefaultPrice"
-                            class="font-medium text-blue-600"></span></p>
+                    <p class="text-xs text-gray-500 mt-1">Harga default: <span id="modalDefaultPrice" class="font-medium text-blue-600"></span></p>
                 </div>
 
                 <!-- Discount Input -->
@@ -381,8 +368,7 @@
                             <span class="text-gray-600">Subtotal:</span>
                             <span id="modalSubtotalPrice" class="font-medium text-gray-800">Rp 0</span>
                         </div>
-                        <div class="flex justify-between items-center text-sm" id="modalDiscountRow"
-                            style="display: none;">
+                        <div class="flex justify-between items-center text-sm" id="modalDiscountRow" style="display: none;">
                             <span class="text-orange-600">Potongan:</span>
                             <span id="modalDiscountPrice" class="font-medium text-orange-600">Rp 0</span>
                         </div>
@@ -435,10 +421,8 @@
                 <div id="customerList" class="max-h-96 overflow-y-auto space-y-2">
                     @foreach ($pelanggan as $customer)
                         <div class="customer-item p-4 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-all duration-200"
-                            data-id="{{ $customer->id }}" data-name="{{ $customer->nama }}"
-                            data-code="{{ $customer->kode_pelanggan }}"
-                            data-phone="{{ $customer->nomor_telepon ?? '' }}"
-                            data-address="{{ $customer->alamat ?? '' }}">
+                            data-id="{{ $customer->id }}" data-name="{{ $customer->nama }}" data-code="{{ $customer->kode_pelanggan }}"
+                            data-phone="{{ $customer->nomor_telepon ?? '' }}" data-address="{{ $customer->alamat ?? '' }}">
                             <div class="flex items-center justify-between">
                                 <div class="flex-1">
                                     <div class="flex items-center space-x-3">
@@ -467,8 +451,7 @@
                                             Aktif
                                         </span>
                                     @else
-                                        <span
-                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                             <i class="ti ti-x-circle text-xs mr-1"></i>
                                             Nonaktif
                                         </span>
@@ -514,8 +497,7 @@
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="ti ti-barcode text-lg text-gray-400"></i>
                             </div>
-                            <input type="text" name="kode_pelanggan" id="new_kode_pelanggan"
-                                value="{{ $kodePelanggan }}"
+                            <input type="text" name="kode_pelanggan" id="new_kode_pelanggan" value="{{ $kodePelanggan }}"
                                 class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white"
                                 placeholder="Contoh: PEL2509001" maxlength="20" readonly>
                             <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -681,8 +663,7 @@
                                     <div
                                         class="p-3 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 preview-transaction-type-card">
                                         <div class="flex flex-col items-center text-center">
-                                            <div
-                                                class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mb-2">
+                                            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mb-2">
                                                 <i class="ti ti-cash text-green-600 text-sm"></i>
                                             </div>
                                             <span class="text-sm font-medium text-gray-900">Tunai</span>
@@ -696,8 +677,7 @@
                                     <div
                                         class="p-3 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 preview-transaction-type-card">
                                         <div class="flex flex-col items-center text-center">
-                                            <div
-                                                class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mb-2">
+                                            <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mb-2">
                                                 <i class="ti ti-credit-card text-orange-600 text-sm"></i>
                                             </div>
                                             <span class="text-sm font-medium text-gray-900">Kredit</span>
@@ -713,13 +693,12 @@
                             <div class="grid grid-cols-1 gap-3" id="previewPaymentMethodContainer">
                                 @foreach ($metodePembayaran as $metode)
                                     <label class="relative cursor-pointer preview-payment-method-option">
-                                        <input type="radio" name="preview_metode_pembayaran"
-                                            value="{{ $metode->kode }}" class="sr-only preview-payment-method-radio">
+                                        <input type="radio" name="preview_metode_pembayaran" value="{{ $metode->kode }}"
+                                            class="sr-only preview-payment-method-radio">
                                         <div
                                             class="p-3 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 preview-payment-method-card">
                                             <div class="flex items-center">
-                                                <div
-                                                    class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
                                                     <i class="ti {{ $metode->icon_display }} text-blue-600 text-sm"></i>
                                                 </div>
                                                 <span class="text-sm font-medium text-gray-900">{{ $metode->nama }}</span>
@@ -744,15 +723,13 @@
                                 <div
                                     class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-dashed border-blue-300 rounded-xl p-8 text-center">
                                     <div class="flex flex-col items-center">
-                                        <div
-                                            class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                                        <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-4">
                                             <i class="ti ti-credit-card text-blue-600 text-3xl"></i>
                                         </div>
                                         <h3 class="text-lg font-semibold text-gray-900 mb-2">Tempelkan Kartu RFID</h3>
                                         <p class="text-sm text-gray-600 mb-4">Tempelkan kartu RFID Anda pada area scanner
                                             untuk melanjutkan pembayaran</p>
-                                        <div
-                                            class="w-full max-w-xs h-16 bg-white border-2 border-blue-200 rounded-lg flex items-center justify-center">
+                                        <div class="w-full max-w-xs h-16 bg-white border-2 border-blue-200 rounded-lg flex items-center justify-center">
                                             <i class="ti ti-scan text-blue-400 text-2xl animate-pulse"></i>
                                         </div>
                                         <p class="text-xs text-gray-500 mt-3">Menunggu kartu terdeteksi...</p>
@@ -785,8 +762,8 @@
                                                     <span class="text-xs text-gray-600" id="rfidProgress">0/10</span>
                                                 </div>
                                                 <div class="w-full bg-gray-200 rounded-full h-2">
-                                                    <div class="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                                                        id="rfidProgressBar" style="width: 0%"></div>
+                                                    <div class="bg-blue-500 h-2 rounded-full transition-all duration-300" id="rfidProgressBar"
+                                                        style="width: 0%"></div>
                                                 </div>
                                             </div>
                                             <div class="mt-2 flex gap-2">
@@ -828,14 +805,12 @@
                                                     <div class="flex justify-between items-start p-5 relative z-10">
                                                         <div class="text-white card-emboss">
                                                             <h3 class="text-lg font-semibold">Kartu Siswa</h3>
-                                                            <p class="text-sm text-gray-300"
-                                                                style="color:white !important;">Koperasi Tsarwah</p>
+                                                            <p class="text-sm text-gray-300" style="color:white !important;">Koperasi Tsarwah</p>
                                                         </div>
                                                         <div class="text-right text-white">
                                                             <div
                                                                 class="w-8 h-6 card-logo card-hologram rounded-sm flex items-center justify-center shadow-lg">
-                                                                <div
-                                                                    class="w-6 h-4 bg-yellow-300 rounded-sm flex items-center justify-center">
+                                                                <div class="w-6 h-4 bg-yellow-300 rounded-sm flex items-center justify-center">
                                                                     <div class="w-4 h-3 bg-yellow-200 rounded-sm"></div>
                                                                 </div>
                                                             </div>
@@ -848,10 +823,8 @@
                                                         <div class="flex-shrink-0">
                                                             <div
                                                                 class="w-12 h-8 card-chip card-chip-hologram rounded-sm flex items-center justify-center shadow-lg">
-                                                                <div
-                                                                    class="w-10 h-6 bg-yellow-300 rounded-sm flex items-center justify-center">
-                                                                    <div
-                                                                        class="w-8 h-4 bg-yellow-200 rounded-sm flex items-center justify-center">
+                                                                <div class="w-10 h-6 bg-yellow-300 rounded-sm flex items-center justify-center">
+                                                                    <div class="w-8 h-4 bg-yellow-200 rounded-sm flex items-center justify-center">
                                                                         <div class="w-6 h-3 bg-yellow-100 rounded-sm">
                                                                         </div>
                                                                     </div>
@@ -871,8 +844,7 @@
 
                                                     <!-- Nama Pemegang -->
                                                     <div class="px-5 pb-2 relative z-30">
-                                                        <div class="text-white text-xl font-bold card-emboss card-name"
-                                                            id="rfidCardholderName"
+                                                        <div class="text-white text-xl font-bold card-emboss card-name" id="rfidCardholderName"
                                                             style="text-shadow: 2px 2px 4px rgba(0,0,0,0.8); background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 4px; display: inline-block;">
                                                             -
                                                         </div>
@@ -892,8 +864,7 @@
                                                             <!-- Saldo -->
                                                             <div class="mt-2">
                                                                 <div class="text-xs text-gray-300">SALDO</div>
-                                                                <div class="font-mono text-sm font-bold"
-                                                                    id="rfidBalanceDisplay">
+                                                                <div class="font-mono text-sm font-bold" id="rfidBalanceDisplay">
                                                                     Rp 0
                                                                 </div>
                                                             </div>
@@ -915,9 +886,8 @@
                             <div class="grid gap-3" id="previewKasBankContainer">
                                 @foreach ($kasBank ?? [] as $kas)
                                     <label class="relative cursor-pointer preview-kas-bank-option">
-                                        <input type="radio" name="preview_kas_bank" value="{{ $kas->id }}"
-                                            data-jenis="{{ $kas->jenis }}" data-image="{{ $kas->image_url ?? '' }}"
-                                            class="sr-only preview-kas-bank-radio">
+                                        <input type="radio" name="preview_kas_bank" value="{{ $kas->id }}" data-jenis="{{ $kas->jenis }}"
+                                            data-image="{{ $kas->image_url ?? '' }}" class="sr-only preview-kas-bank-radio">
                                         <div
                                             class="p-4 border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 transition-all duration-300 preview-kas-bank-card flex items-center justify-between shadow-sm hover:shadow-md">
                                             <div class="flex items-center flex-1">
@@ -930,8 +900,7 @@
                                                         </div>
                                                     @else
                                                         @if ($kas->image)
-                                                            <img src="{{ asset('storage/' . $kas->image) }}"
-                                                                alt="Logo {{ $kas->nama }}"
+                                                            <img src="{{ asset('storage/' . $kas->image) }}" alt="Logo {{ $kas->nama }}"
                                                                 class="w-full h-full object-contain">
                                                         @else
                                                             <div
@@ -3102,31 +3071,31 @@
                         </button>
                     </div>
                     </div>
-                    
+
                     <!-- Price Breakdown -->
                     <div class="space-y-2">
                         <div class="flex items-center justify-between text-sm">
                             <span class="text-gray-600">Subtotal (${formatDecimalInput(item.qty)} × Rp ${formatNumber(item.price)})</span>
                             <span class="font-medium text-gray-800">Rp ${formatNumber(subtotal)}</span>
                         </div>
-                        
+
                         ${discount > 0 ? `
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <span class="text-orange-600 flex items-center">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    Potongan Harga
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ` : ''}
-                        
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            Potongan Harga
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ` : ''}
+
                         <!-- Total Line -->
                         <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
                             <span class="font-semibold text-gray-900">Total</span>
                             <span class="font-bold text-lg ${discount > 0 ? 'text-green-600' : 'text-blue-600'}">Rp ${formatNumber(total)}</span>
                         </div>
                     </div>
-                    
+
                     <!-- Edit Hint -->
                     <div class="mt-3 pt-2 border-t border-gray-100">
                         <p class="text-xs text-gray-400 text-center">
@@ -3134,7 +3103,7 @@
                             Klik untuk edit quantity atau potongan
                         </p>
                     </div>
-                    
+
                     <input type="hidden" name="items[${item.index}][produk_id]" value="${item.id}">
                     <input type="hidden" name="items[${item.index}][qty]" value="${item.qty}" class="qty-input">
                     <input type="hidden" name="items[${item.index}][harga]" value="${item.price}">
@@ -3182,17 +3151,17 @@
                     <span class="text-gray-600">Subtotal (${formatDecimalInput(item.qty)} × Rp ${formatNumber(item.price)})</span>
                     <span class="font-medium text-gray-800">Rp ${formatNumber(subtotal)}</span>
                 </div>
-                
+
                 ${discount > 0 ? `
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span class="text-orange-600 flex items-center">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            Potongan Harga
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ` : ''}
-                
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    Potongan Harga
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ` : ''}
+
                 <!-- Total Line -->
                 <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
                     <span class="font-semibold text-gray-900">Total</span>
@@ -3641,11 +3610,11 @@
                                 <span>Rp ${formatNumber(subtotal)}</span>
                             </div>
                             ${discount > 0 ? `
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <div class="flex justify-between text-xs">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <span class="text-orange-600">Potongan</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="flex justify-between text-xs">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span class="text-orange-600">Potongan</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ` : ''}
                             <div class="flex justify-between text-sm font-medium">
                                 <span>Total</span>
                                 <span class="text-blue-600">Rp ${formatNumber(total)}</span>
@@ -3888,6 +3857,13 @@
             if (rfidCardId) {
                 rfidCardId.value = '';
             }
+
+            // Clear hidden no_rekening input
+            const noRekeningInput = document.getElementById('noRekening');
+            if (noRekeningInput) {
+                noRekeningInput.value = '';
+                console.log('💾 Cleared hidden no_rekening input in resetCardScanArea');
+            }
         }
 
         // Function to ensure RFID input is focused when card scan area is visible
@@ -3907,9 +3883,16 @@
             const rfidCardId = document.getElementById('rfidCardId');
             const rfidDisplay = document.getElementById('rfidDisplay');
             const readyIndicator = document.getElementById('rfidReadyIndicator');
+            const noRekeningInput = document.getElementById('noRekening');
 
             if (rfidCardId) {
                 rfidCardId.value = '';
+            }
+
+            // Clear hidden no_rekening input
+            if (noRekeningInput) {
+                noRekeningInput.value = '';
+                console.log('💾 Cleared hidden no_rekening input');
             }
 
             // Clear stored RFID ID
@@ -4151,6 +4134,13 @@
                 const formattedAccount = actualData.no_rekening.replace(/(\d{3})(\d{4})(\d{5})/, '$1 $2 $3');
                 console.log('💳 Setting card number:', formattedAccount);
                 rfidCardNumber.textContent = formattedAccount;
+
+                // Update hidden input with no_rekening
+                const noRekeningInput = document.getElementById('noRekening');
+                if (noRekeningInput) {
+                    noRekeningInput.value = actualData.no_rekening;
+                    console.log('💾 Updated hidden no_rekening input:', actualData.no_rekening);
+                }
             } else {
                 console.log('⚠️ Card number element or no_rekening not found:', {
                     rfidCardNumber,
@@ -5035,7 +5025,7 @@
                     </div>
                     <p class="text-lg font-semibold text-gray-800" id="loadingText">Memvalidasi data...</p>
                     <p class="text-sm text-gray-500 mt-1">Mohon tunggu sebentar</p>
-                    
+
                     <!-- Progress Bar -->
                     <div class="w-64 bg-gray-200 rounded-full h-2 mt-4 mx-auto">
                         <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>

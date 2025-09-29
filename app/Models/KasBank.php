@@ -19,7 +19,8 @@ class KasBank extends Model
         'image',
         'no_rekening',
         'saldo_awal',
-        'saldo_terkini'
+        'saldo_terkini',
+        'status_card_payment'
     ];
 
     protected $casts = [
@@ -27,6 +28,7 @@ class KasBank extends Model
         'updated_at' => 'datetime',
         'saldo_awal' => 'decimal:2',
         'saldo_terkini' => 'decimal:2',
+        'status_card_payment' => 'boolean',
     ];
 
     // Validation rules
@@ -50,6 +52,18 @@ class KasBank extends Model
     public function scopeActive($query)
     {
         return $query;
+    }
+
+    // Scope untuk bank dengan card payment aktif
+    public function scopeCardPaymentActive($query)
+    {
+        return $query->where('status_card_payment', 1);
+    }
+
+    // Method untuk mendapatkan bank aktif untuk card payment
+    public static function getActiveCardPaymentBank()
+    {
+        return self::cardPaymentActive()->first();
     }
 
     // Accessor untuk format kode

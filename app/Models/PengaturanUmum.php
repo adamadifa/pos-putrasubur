@@ -15,6 +15,7 @@ class PengaturanUmum extends Model
         'nama_toko',
         'alamat',
         'no_telepon',
+        'no_rekening_koperasi',
         'logo',
         'foto_toko',
         'email',
