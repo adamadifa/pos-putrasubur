@@ -960,7 +960,7 @@
                         <p style="margin: 2px 0; font-weight: bold;">{{ $detail->produk->nama_produk }}</p>
                         <p style="margin: 2px 0; font-size: 11px;">
                             {{ number_format($detail->qty, 2) }} {{ $detail->produk->satuan->nama ?? 'pcs' }} x
-                            {{ number_format($detail->harga, 0) }} = {{ number_format($detail->subtotal, 0) }}
+                            {{ number_format($detail->harga_beli, 0) }} = {{ number_format($detail->subtotal, 0) }}
                         </p>
                     </div>
                 @endforeach
@@ -1607,7 +1607,7 @@
             @foreach ($pembelian->detailPembelian as $detail)
                 content += '{{ substr($detail->produk->nama_produk, 0, 30) }}\n';
                 content +=
-                    '  {{ number_format($detail->qty, 2) }} {{ $detail->produk->satuan->nama ?? 'pcs' }} x {{ number_format($detail->harga, 0) }} = {{ number_format($detail->subtotal, 0) }}\n';
+                    '  {{ number_format($detail->qty, 2) }} {{ $detail->produk->satuan->nama ?? 'pcs' }} x {{ number_format($detail->harga_beli, 0) }} = {{ number_format($detail->subtotal, 0) }}\n';
                 @if ($detail->discount > 0)
                     content += '  Diskon: -{{ number_format($detail->discount, 0) }}\n';
                 @endif
