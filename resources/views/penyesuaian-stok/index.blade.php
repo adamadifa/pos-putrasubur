@@ -251,32 +251,32 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right">
                                     <div class="text-sm font-medium text-gray-900">
-                                        {{ number_format($item->stok_sebelum, 0, ',', '.') }}</div>
+                                        {{ number_format($item->stok_sebelum, 2, ',', '.') }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     @if ($item->jumlah_penyesuaian > 0)
                                         <span
                                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                             <i class="ti ti-trending-up mr-1"></i>
-                                            +{{ number_format($item->jumlah_penyesuaian, 0, ',', '.') }}
+                                            +{{ number_format($item->jumlah_penyesuaian, 2, ',', '.') }}
                                         </span>
                                     @elseif($item->jumlah_penyesuaian < 0)
                                         <span
                                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                             <i class="ti ti-trending-down mr-1"></i>
-                                            {{ number_format($item->jumlah_penyesuaian, 0, ',', '.') }}
+                                            {{ number_format($item->jumlah_penyesuaian, 2, ',', '.') }}
                                         </span>
                                     @else
                                         <span
                                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                             <i class="ti ti-minus mr-1"></i>
-                                            {{ number_format($item->jumlah_penyesuaian, 0, ',', '.') }}
+                                            {{ number_format($item->jumlah_penyesuaian, 2, ',', '.') }}
                                         </span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right">
                                     <div class="text-sm font-medium text-gray-900">
-                                        {{ number_format($item->stok_sesudah, 0, ',', '.') }}</div>
+                                        {{ number_format($item->stok_sesudah, 2, ',', '.') }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">

@@ -26,6 +26,9 @@ class PenyesuaianStok extends Model
 
     protected $casts = [
         'tanggal_penyesuaian' => 'date',
+        'stok_sebelum' => 'decimal:2',
+        'jumlah_penyesuaian' => 'decimal:2',
+        'stok_sesudah' => 'decimal:2',
     ];
 
     /**
