@@ -949,7 +949,7 @@
                 <p style="margin: 2px 0;"><strong>No. Faktur:</strong> {{ $pembelian->no_faktur }}</p>
                 <p style="margin: 2px 0;"><strong>Tanggal:</strong> {{ $pembelian->tanggal->format('d/m/Y H:i') }}</p>
                 <p style="margin: 2px 0;"><strong>Supplier:</strong> {{ $pembelian->supplier->nama ?? 'N/A' }}</p>
-                <p style="margin: 2px 0;"><strong>Kasir:</strong> {{ $pembelian->kasir->name ?? 'N/A' }}</p>
+                <p style="margin: 2px 0;"><strong>Kasir:</strong> {{ $pembelian->user->name ?? 'N/A' }}</p>
                 <hr style="border: none; border-top: 1px solid #000; margin: 10px 0;">
             </div>
 
@@ -1600,7 +1600,7 @@
             content += 'No. Faktur: {{ $pembelian->no_faktur }}\n';
             content += 'Tanggal: {{ $pembelian->created_at->format('d/m/Y H:i') }}\n';
             content += 'Supplier: {{ $pembelian->supplier->nama ?? 'N/A' }}\n';
-            content += 'Kasir: {{ $pembelian->kasir->name ?? 'N/A' }}\n';
+            content += 'Kasir: {{ $pembelian->user->name ?? 'N/A' }}\n';
             content += '================================\n\n';
 
             // Items
@@ -1689,7 +1689,7 @@
             invoiceLines.push("No. Faktur: {{ $pembelian->no_faktur }}\n");
             invoiceLines.push("Tanggal: {{ $pembelian->created_at->format('d/m/Y H:i') }}\n");
             invoiceLines.push("Supplier: {{ $pembelian->supplier->nama ?? 'N/A' }}\n");
-            invoiceLines.push("Kasir: {{ $pembelian->kasir->name ?? 'N/A' }}\n");
+            invoiceLines.push("Kasir: {{ $pembelian->user->name ?? 'N/A' }}\n");
             invoiceLines.push("================================\n");
 
             // Items

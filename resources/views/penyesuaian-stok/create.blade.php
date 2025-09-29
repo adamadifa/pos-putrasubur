@@ -119,7 +119,8 @@
                                             onchange="updateStokSistem()">
                                             <option value="">Pilih Produk</option>
                                             @foreach ($produks as $produk)
-                                                <option value="{{ $produk->id }}" data-stok="{{ $produk->stok }}"
+                                                <option value="{{ $produk->id }}"
+                                                    data-stok="{{ number_format($produk->stok, 2, '.', '') }}"
                                                     data-satuan="{{ $produk->satuan->nama }}"
                                                     {{ old('produk_id') == $produk->id ? 'selected' : '' }}>
                                                     {{ $produk->nama_produk }} ({{ $produk->satuan->nama }})
@@ -283,7 +284,8 @@
 
                 if (selectedOption && selectedOption.value) {
                     const stok = parseFloat(selectedOption.dataset.stok) || 0;
-                    stokSaatIniInput.value = formatNumberWithDecimals(stok);
+                    // Use simple format for current stock display
+                    stokSaatIniInput.value = stok.toFixed(2);
                     calculateStokSesudah();
                 } else {
                     stokSaatIniInput.value = '';
@@ -387,9 +389,9 @@
 
             function calculateStokSesudah() {
                 try {
-                    // Parse stok saat ini - convert from Indonesian format to standard format
+                    // Parse stok saat ini - simple format (no thousand separators)
                     const stokSaatIniRaw = document.getElementById('stok_saat_ini').value;
-                    const stokSaatIni = parseIndonesianNumber(stokSaatIniRaw);
+                    const stokSaatIni = parseFloat(stokSaatIniRaw) || 0;
 
                     // Parse jumlah penyesuaian - convert from Indonesian format to standard format
                     const jumlahPenyesuaianRaw = document.getElementById('jumlah_penyesuaian').value;
