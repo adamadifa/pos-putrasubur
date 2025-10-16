@@ -647,8 +647,12 @@
 
                 <!-- Dashboard -->
                 @if (isset($menus['dashboard']))
+                    @php
+                        $isDashboardActive =
+                            request()->routeIs($menus['dashboard']['route']) || request()->routeIs('dashboard.*');
+                    @endphp
                     <a href="{{ route($menus['dashboard']['route']) }}"
-                        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs($menus['dashboard']['route']) ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-700 hover:bg-gray-50' }}">
+                        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ $isDashboardActive ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-700 hover:bg-gray-50' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" class="w-5 h-5 mr-3">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -665,8 +669,18 @@
                                 {{ $section['name'] }}</h3>
                             <div class="mt-2 space-y-1">
                                 @foreach ($section['items'] as $itemKey => $item)
+                                    @php
+                                        // Extract base route name for better matching
+                                        $baseRoute = str_replace('.index', '', $item['route']);
+                                        $isActive =
+                                            request()->routeIs($item['route']) ||
+                                            request()->routeIs($baseRoute . '.*') ||
+                                            request()->routeIs($baseRoute . '.create') ||
+                                            request()->routeIs($baseRoute . '.edit') ||
+                                            request()->routeIs($baseRoute . '.show');
+                                    @endphp
                                     <a href="{{ route($item['route']) }}"
-                                        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs($item['route'] . '*') ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-700 hover:bg-gray-50' }}">
+                                        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ $isActive ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-700 hover:bg-gray-50' }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
                                             <path stroke-linecap="round" stroke-linejoin="round"

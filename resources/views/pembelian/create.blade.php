@@ -506,7 +506,7 @@
     <!-- Quantity Input Modal -->
     <div id="quantityModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
         <div
-            class="relative top-1/2 transform -translate-y-1/2 mx-auto p-5 border w-11/12 md:w-96 shadow-lg rounded-xl bg-white">
+            class="relative top-1/2 transform -translate-y-1/2 mx-auto p-6 border w-11/12 md:w-4/5 lg:w-3/4 xl:w-2/3 max-w-4xl shadow-lg rounded-xl bg-white">
             <div class="mt-3">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-gray-900">Masukkan Quantity</h3>
@@ -534,69 +534,133 @@
                     </div>
                 </div>
 
-                <!-- Quantity Input -->
-                <div class="mb-4">
-                    <label for="quantityInput" class="block text-sm font-medium text-gray-700 mb-2">
-                        Quantity
-                    </label>
-                    <div class="flex items-center space-x-2">
-                        <button type="button" id="decreaseQty"
-                            class="w-12 h-12 bg-red-500 hover:bg-red-600 rounded-xl text-white flex items-center justify-center font-bold text-xl transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg">
-                            <i class="ti ti-minus"></i>
-                        </button>
-                        <div class="flex-1 relative">
-                            <input type="text" id="quantityInput"
-                                class="w-full pl-4 pr-16 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-center text-lg font-semibold"
-                                value="1" placeholder="0">
-                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                <span id="modalProductUnitInInput"
-                                    class="text-sm font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded"></span>
+                <!-- Input Fields Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <!-- Left Column -->
+                    <div class="space-y-4">
+                        <!-- Quantity Input -->
+                        <div>
+                            <label for="quantityInput" class="block text-sm font-medium text-gray-700 mb-2">
+                                Quantity
+                            </label>
+                            <div class="flex items-center space-x-2">
+                                <button type="button" id="decreaseQty"
+                                    class="w-10 h-10 bg-red-500 hover:bg-red-600 rounded-lg text-white flex items-center justify-center font-bold text-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg">
+                                    <i class="ti ti-minus"></i>
+                                </button>
+                                <div class="flex-1 relative">
+                                    <input type="text" id="quantityInput"
+                                        class="w-full pl-4 pr-16 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-center text-lg font-semibold"
+                                        value="1" placeholder="0">
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <span id="modalProductUnitInInput"
+                                            class="text-sm font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded"></span>
+                                    </div>
+                                </div>
+                                <button type="button" id="increaseQty"
+                                    class="w-10 h-10 bg-orange-600 hover:bg-orange-700 rounded-lg text-white flex items-center justify-center font-bold text-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg">
+                                    <i class="ti ti-plus"></i>
+                                </button>
                             </div>
+                            <p class="text-xs text-gray-500 mt-1">Masukkan jumlah yang diinginkan</p>
                         </div>
-                        <button type="button" id="increaseQty"
-                            class="w-12 h-12 bg-orange-600 hover:bg-orange-700 rounded-xl text-white flex items-center justify-center font-bold text-xl transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg">
-                            <i class="ti ti-plus"></i>
-                        </button>
+
+                        <!-- Quantity Discount Input -->
+                        <div>
+                            <label for="quantityDiscountInput" class="block text-sm font-medium text-gray-700 mb-2">
+                                Potongan Quantity (Opsional)
+                            </label>
+                            <div class="flex items-center space-x-2">
+                                <button type="button" id="decreaseQtyDiscount"
+                                    class="w-10 h-10 bg-red-500 hover:bg-red-600 rounded-lg text-white flex items-center justify-center font-bold text-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg">
+                                    <i class="ti ti-minus"></i>
+                                </button>
+                                <div class="flex-1 relative">
+                                    <input type="text" id="quantityDiscountInput"
+                                        class="w-full pl-4 pr-16 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-center text-lg font-semibold"
+                                        value="0" placeholder="0">
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <span id="modalProductUnitInDiscountInput"
+                                            class="text-sm font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded"></span>
+                                    </div>
+                                </div>
+                                <button type="button" id="increaseQtyDiscount"
+                                    class="w-10 h-10 bg-green-500 hover:bg-green-600 rounded-lg text-white flex items-center justify-center font-bold text-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg">
+                                    <i class="ti ti-plus"></i>
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Masukkan potongan quantity untuk produk ini (akan
+                                mengurangi
+                                quantity yang dibeli)</p>
+                        </div>
                     </div>
-                    <p class="text-xs text-gray-500 mt-1">Masukkan jumlah yang diinginkan</p>
+
+                    <!-- Right Column -->
+                    <div class="space-y-4">
+                        <!-- Price Input -->
+                        <div>
+                            <label for="modalPriceInput" class="block text-sm font-medium text-gray-700 mb-2">
+                                Harga Beli Satuan
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 text-sm font-medium">Rp</span>
+                                </div>
+                                <input type="text" id="modalPriceInput"
+                                    class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-right text-lg font-semibold"
+                                    placeholder="0">
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Harga default: <span id="modalDefaultPrice"
+                                    class="font-medium text-orange-600"></span></p>
+                        </div>
+
+                        <!-- Discount Input -->
+                        <div>
+                            <label for="discountInput" class="block text-sm font-medium text-gray-700 mb-2">
+                                Potongan Harga (Opsional)
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 text-sm font-medium">Rp</span>
+                                </div>
+                                <input type="text" id="discountInput"
+                                    class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-right text-lg font-semibold"
+                                    value="0" placeholder="0">
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Masukkan potongan harga untuk produk ini (dalam Rupiah)
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Price Input -->
-                <div class="mb-4">
-                    <label for="modalPriceInput" class="block text-sm font-medium text-gray-700 mb-2">
-                        Harga Beli Satuan
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span class="text-gray-500 text-sm font-medium">Rp</span>
-                        </div>
-                        <input type="text" id="modalPriceInput"
-                            class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-right text-lg font-semibold"
-                            placeholder="0">
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1">Harga default: <span id="modalDefaultPrice"
-                            class="font-medium text-orange-600"></span></p>
-                </div>
-
-                <!-- Discount Input -->
+                <!-- Keterangan Input - Full Width -->
                 <div class="mb-6">
-                    <label for="discountInput" class="block text-sm font-medium text-gray-700 mb-2">
-                        Potongan Harga (Opsional)
+                    <label for="keteranganInput" class="block text-sm font-medium text-gray-700 mb-2">
+                        Keterangan (Opsional)
                     </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span class="text-gray-500 text-sm font-medium">Rp</span>
-                        </div>
-                        <input type="text" id="discountInput"
-                            class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-right text-lg font-semibold"
-                            value="0" placeholder="0">
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1">Masukkan potongan harga untuk produk ini (dalam Rupiah)</p>
+                    <textarea id="keteranganInput" rows="2"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm resize-none"
+                        placeholder="Masukkan keterangan untuk item ini..."></textarea>
+                    <p class="text-xs text-gray-500 mt-1">Tambahkan catatan atau keterangan khusus untuk item ini</p>
                 </div>
 
                 <!-- Total Price Preview -->
                 <div class="mb-6 p-3 bg-orange-50 rounded-lg">
                     <div class="space-y-2">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-600">Quantity:</span>
+                            <span id="modalQuantityDisplay" class="font-medium text-gray-800">0</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm" id="modalQuantityDiscountRow"
+                            style="display: none;">
+                            <span class="text-blue-600">Potongan Qty:</span>
+                            <span id="modalQuantityDiscountDisplay" class="font-medium text-blue-600">0</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm" id="modalEffectiveQuantityRow"
+                            style="display: none;">
+                            <span class="text-green-600">Qty Efektif:</span>
+                            <span id="modalEffectiveQuantityDisplay" class="font-medium text-green-600">0</span>
+                        </div>
                         <div class="flex justify-between items-center text-sm">
                             <span class="text-gray-600">Subtotal:</span>
                             <span id="modalSubtotalPrice" class="font-medium text-gray-800">Rp 0</span>
@@ -1266,14 +1330,24 @@
             const quantityInput = document.getElementById('quantityInput');
             const priceInput = document.getElementById('modalPriceInput');
             const discountInput = document.getElementById('discountInput');
+            const quantityDiscountInput = document.getElementById('quantityDiscountInput');
+            const keteranganInput = document.getElementById('keteranganInput');
             const decreaseQty = document.getElementById('decreaseQty');
             const increaseQty = document.getElementById('increaseQty');
+            const decreaseQtyDiscount = document.getElementById('decreaseQtyDiscount');
+            const increaseQtyDiscount = document.getElementById('increaseQtyDiscount');
 
             // Close modal handlers
             function closeQuantityModalHandler() {
                 quantityModal.classList.add('hidden');
                 selectedProduct = null;
                 editingItemIndex = null;
+                // Reset form inputs
+                document.getElementById('quantityInput').value = '1';
+                document.getElementById('modalPriceInput').value = '0';
+                document.getElementById('discountInput').value = '0';
+                document.getElementById('quantityDiscountInput').value = '0';
+                document.getElementById('keteranganInput').value = '';
             }
 
             closeQuantityModal.addEventListener('click', closeQuantityModalHandler);
@@ -1297,6 +1371,7 @@
             setupDecimalInput(quantityInput);
             setupNumberInput(priceInput);
             setupNumberInput(discountInput);
+            setupDecimalInput(quantityDiscountInput);
 
             // Quantity controls
             decreaseQty.addEventListener('click', () => {
@@ -1321,6 +1396,29 @@
                 updateModalTotal();
             });
 
+            // Quantity discount controls
+            decreaseQtyDiscount.addEventListener('click', () => {
+                let value = parseFormattedDecimal(quantityDiscountInput.value) || 0;
+                if (value > 0) {
+                    let newValue = value >= 1 ? value - 1 : Math.max(0, Math.round((value - 0.1) * 10) / 10);
+                    quantityDiscountInput.value = formatDecimalInput(newValue);
+                    quantityDiscountInput.dispatchEvent(new Event('input', {
+                        bubbles: true
+                    }));
+                    updateModalTotal();
+                }
+            });
+
+            increaseQtyDiscount.addEventListener('click', () => {
+                let value = parseFormattedDecimal(quantityDiscountInput.value) || 0;
+                let newValue = value % 1 === 0 ? value + 1 : Math.round((value + 0.1) * 10) / 10;
+                quantityDiscountInput.value = formatDecimalInput(newValue);
+                quantityDiscountInput.dispatchEvent(new Event('input', {
+                    bubbles: true
+                }));
+                updateModalTotal();
+            });
+
             // Input events with real-time validation
             quantityInput.addEventListener('input', function() {
                 updateModalTotal();
@@ -1335,6 +1433,11 @@
             discountInput.addEventListener('input', function() {
                 updateModalTotal();
                 validateDiscountInput();
+            });
+
+            quantityDiscountInput.addEventListener('input', function() {
+                updateModalTotal();
+                validateQuantityDiscountInput();
             });
 
             // Confirm quantity
@@ -1376,6 +1479,7 @@
             document.getElementById('modalProductPrice').textContent = `Rp ${formatNumber(selectedProduct.price)}`;
             document.getElementById('modalProductUnit').textContent = selectedProduct.unit;
             document.getElementById('modalProductUnitInInput').textContent = selectedProduct.unit;
+            document.getElementById('modalProductUnitInDiscountInput').textContent = selectedProduct.unit;
             document.getElementById('modalDefaultPrice').textContent = `Rp ${formatNumber(selectedProduct.price)}`;
 
             // Set default values for new items
@@ -1383,6 +1487,8 @@
                 document.getElementById('quantityInput').value = '1';
                 document.getElementById('modalPriceInput').value = formatNumber(selectedProduct.price);
                 document.getElementById('discountInput').value = '0';
+                document.getElementById('quantityDiscountInput').value = '0';
+                document.getElementById('keteranganInput').value = '';
             }
 
             // Reset validation styles
@@ -1395,16 +1501,43 @@
         // Update modal total
         function updateModalTotal() {
             const qty = parseFormattedDecimal(document.getElementById('quantityInput').value) || 0;
+            const qtyDiscount = parseFormattedDecimal(document.getElementById('quantityDiscountInput').value) || 0;
             const price = parseFormattedNumber(document.getElementById('modalPriceInput').value) || 0;
             const discount = parseFormattedNumber(document.getElementById('discountInput').value) || 0;
 
-            const subtotal = qty * price;
+            // Calculate effective quantity (qty - qtyDiscount)
+            const effectiveQty = Math.max(0, qty - qtyDiscount);
+            const subtotal = effectiveQty * price;
             const total = subtotal - discount;
 
+            // Update quantity displays
+            document.getElementById('modalQuantityDisplay').textContent =
+                `${formatDecimalInput(qty)} ${document.getElementById('modalProductUnitInInput').textContent}`;
             document.getElementById('modalSubtotalPrice').textContent = `Rp ${formatNumber(subtotal)}`;
             document.getElementById('modalDiscountPrice').textContent = `Rp ${formatNumber(discount)}`;
             document.getElementById('modalTotalPrice').textContent = `Rp ${formatNumber(Math.max(0, total))}`;
 
+            // Show/hide quantity discount row
+            const quantityDiscountRow = document.getElementById('modalQuantityDiscountRow');
+            if (qtyDiscount > 0) {
+                quantityDiscountRow.style.display = 'flex';
+                document.getElementById('modalQuantityDiscountDisplay').textContent =
+                    `${formatDecimalInput(qtyDiscount)} ${document.getElementById('modalProductUnitInDiscountInput').textContent}`;
+            } else {
+                quantityDiscountRow.style.display = 'none';
+            }
+
+            // Show/hide effective quantity row
+            const effectiveQuantityRow = document.getElementById('modalEffectiveQuantityRow');
+            if (qtyDiscount > 0) {
+                effectiveQuantityRow.style.display = 'flex';
+                document.getElementById('modalEffectiveQuantityDisplay').textContent =
+                    `${formatDecimalInput(effectiveQty)} ${document.getElementById('modalProductUnitInInput').textContent}`;
+            } else {
+                effectiveQuantityRow.style.display = 'none';
+            }
+
+            // Show/hide discount row
             const discountRow = document.getElementById('modalDiscountRow');
             if (discount > 0) {
                 discountRow.style.display = 'flex';
@@ -1429,6 +1562,8 @@
             const qtyInput = document.getElementById('quantityInput');
             const priceInput = document.getElementById('modalPriceInput');
             const discountInput = document.getElementById('discountInput');
+            const quantityDiscountInput = document.getElementById('quantityDiscountInput');
+            const keteranganInput = document.getElementById('keteranganInput');
 
             // Check if inputs are empty first
             if (!qtyInput.value.trim()) {
@@ -1444,8 +1579,10 @@
             }
 
             const qty = parseFormattedDecimal(qtyInput.value) || 0;
+            const qtyDiscount = parseFormattedDecimal(quantityDiscountInput.value) || 0;
             const price = parseFormattedNumber(priceInput.value) || 0;
             const discount = parseFormattedNumber(discountInput.value) || 0;
+            const keterangan = keteranganInput.value.trim();
 
             if (qty <= 0) {
                 showToast('Quantity harus lebih dari 0!', 'error');
@@ -1459,8 +1596,16 @@
                 return;
             }
 
+            // Validate quantity discount
+            if (qtyDiscount >= qty) {
+                showToast('Potongan quantity tidak boleh melebihi atau sama dengan quantity!', 'error');
+                quantityDiscountInput.focus();
+                return;
+            }
+
             // Validate discount
-            const subtotal = price * qty;
+            const effectiveQty = Math.max(0, qty - qtyDiscount);
+            const subtotal = price * effectiveQty;
             if (discount > subtotal) {
                 showToast('Potongan tidak boleh melebihi subtotal!', 'error');
                 discountInput.focus();
@@ -1472,37 +1617,30 @@
                 cart[editingItemIndex] = {
                     ...cart[editingItemIndex],
                     qty: qty,
+                    qtyDiscount: qtyDiscount,
                     price: price,
-                    discount: discount
+                    discount: discount,
+                    keterangan: keterangan
                 };
                 showToast(`${selectedProduct.name} berhasil diperbarui`, 'success');
                 editingItemIndex = null;
             } else {
-                const existingIndex = cart.findIndex(item => item.id === selectedProduct.id);
-
-                if (existingIndex >= 0) {
-                    // Update existing item
-                    cart[existingIndex] = {
-                        ...cart[existingIndex],
-                        qty: qty,
-                        price: price,
-                        discount: discount
-                    };
-                    showToast(`${selectedProduct.name} diperbarui dalam pesanan`, 'success');
-                } else {
-                    // Add new item
-                    cart.push({
-                        id: selectedProduct.id,
-                        name: selectedProduct.name,
-                        code: selectedProduct.code,
-                        qty: qty,
-                        price: price,
-                        unit: selectedProduct.unit,
-                        discount: discount,
-                        index: productIndex++
-                    });
-                    showToast(`${selectedProduct.name} ditambahkan ke pesanan (${qty} ${selectedProduct.unit})`, 'success');
-                }
+                // Always add new item (no merging with existing items)
+                cart.push({
+                    id: selectedProduct.id,
+                    name: selectedProduct.name,
+                    code: selectedProduct.code,
+                    qty: qty,
+                    qtyDiscount: qtyDiscount,
+                    price: price,
+                    unit: selectedProduct.unit,
+                    discount: discount,
+                    keterangan: keterangan,
+                    index: productIndex++,
+                    uniqueId: Date.now() + '_' + Math.random().toString(36).substr(2,
+                        9) // Unique identifier for each cart item
+                });
+                showToast(`${selectedProduct.name} ditambahkan ke pesanan (${qty} ${selectedProduct.unit})`, 'success');
             }
 
             updateOrderSummary();
@@ -1524,17 +1662,27 @@
                 orderCount.textContent = `${cart.length} item${cart.length > 1 ? 's' : ''}`;
 
                 orderItems.innerHTML = cart.map((item, index) => {
-                    const subtotal = item.price * item.qty;
+                    const qtyDiscount = item.qtyDiscount || 0;
+                    const effectiveQty = Math.max(0, item.qty - qtyDiscount);
+                    const subtotal = item.price * effectiveQty;
                     const discount = item.discount || 0;
                     const total = subtotal - discount;
+
+                    // Count how many times this product appears in cart
+                    const sameProductCount = cart.filter(cartItem => cartItem.id === item.id).length;
+                    const sameProductIndex = cart.filter(cartItem => cartItem.id === item.id).indexOf(item) + 1;
 
                     return `
                         <div class="order-item bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 cursor-pointer" data-index="${index}" onclick="editOrderItem(${index})">
                             <!-- Product Header -->
                             <div class="flex items-start justify-between mb-3">
                                 <div class="flex-1">
-                                    <h4 class="font-semibold text-gray-900 text-sm">${item.name}</h4>
+                                    <h4 class="font-semibold text-gray-900 text-sm">
+                                        ${item.name}
+                                        ${sameProductCount > 1 ? `<span class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">#${sameProductIndex}</span>` : ''}
+                                    </h4>
                                     <p class="text-xs text-gray-500 mt-1">${item.code}</p>
+                                    ${item.keterangan ? `<p class="text-xs text-gray-600 mt-1 italic">"${item.keterangan}"</p>` : ''}
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <div class="text-center">
@@ -1556,20 +1704,27 @@
                                     <span class="font-medium text-gray-800">Rp ${formatNumber(item.price)}</span>
                                 </div>
                                 
+                                ${qtyDiscount > 0 ? `
+                                                        <div class="flex items-center justify-between text-sm">
+                                                            <span class="text-blue-600">Potongan Qty: ${formatDecimalInput(qtyDiscount)} ${item.unit}</span>
+                                                            <span class="font-medium text-blue-600">-${formatDecimalInput(qtyDiscount)} ${item.unit}</span>
+                                                        </div>
+                                                        ` : ''}
+                                
                                 <div class="flex items-center justify-between text-sm">
-                                    <span class="text-gray-600">Subtotal (${formatDecimalInput(item.qty)} × Rp ${formatNumber(item.price)})</span>
+                                    <span class="text-gray-600">Subtotal (${formatDecimalInput(effectiveQty)} × Rp ${formatNumber(item.price)})</span>
                                     <span class="font-medium text-gray-800">Rp ${formatNumber(subtotal)}</span>
                                 </div>
                                 
                                 ${discount > 0 ? `
-                                                                                                                                            <div class="flex items-center justify-between text-sm">
-                                                                                                                                                <span class="text-orange-600 flex items-center">
-                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                    Potongan Harga
-                                                                                                                                                </span>
-                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                            </div>
-                                                                                                                                        ` : ''}
+                                                                                                                                                                    <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                        <span class="text-orange-600 flex items-center">
+                                                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                            Potongan Harga
+                                                                                                                                                                        </span>
+                                                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                    </div>
+                                                                                                                                                                ` : ''}
                                 
                                 <!-- Total Line -->
                                 <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -1628,12 +1783,15 @@
             document.getElementById('modalProductPrice').textContent = `Rp ${formatNumber(item.price)}`;
             document.getElementById('modalProductUnit').textContent = item.unit;
             document.getElementById('modalProductUnitInInput').textContent = item.unit;
+            document.getElementById('modalProductUnitInDiscountInput').textContent = item.unit;
             document.getElementById('modalDefaultPrice').textContent = `Rp ${formatNumber(item.price)}`;
 
             // Set current values
             document.getElementById('quantityInput').value = formatDecimalInput(item.qty);
             document.getElementById('modalPriceInput').value = formatNumber(item.price);
             document.getElementById('discountInput').value = formatNumber(item.discount);
+            document.getElementById('quantityDiscountInput').value = formatDecimalInput(item.qtyDiscount || 0);
+            document.getElementById('keteranganInput').value = item.keterangan || '';
 
             updateModalTotal();
             modal.classList.remove('hidden');
@@ -1654,7 +1812,9 @@
             let subtotal = 0;
 
             cart.forEach(item => {
-                subtotal += (item.qty * item.price) - item.discount;
+                const qtyDiscount = item.qtyDiscount || 0;
+                const effectiveQty = Math.max(0, item.qty - qtyDiscount);
+                subtotal += (effectiveQty * item.price) - (item.discount || 0);
             });
 
             totalAmount = Math.max(0, subtotal - discountAmount);
@@ -1857,6 +2017,12 @@
                     qtyInput.value = item.qty;
                     form.appendChild(qtyInput);
 
+                    const qtyDiscountInput = document.createElement('input');
+                    qtyDiscountInput.type = 'hidden';
+                    qtyDiscountInput.name = `items[${index}][qty_discount]`;
+                    qtyDiscountInput.value = item.qtyDiscount || 0;
+                    form.appendChild(qtyDiscountInput);
+
                     const priceInput = document.createElement('input');
                     priceInput.type = 'hidden';
                     priceInput.name = `items[${index}][harga_beli]`;
@@ -1868,6 +2034,12 @@
                     discountInput.name = `items[${index}][discount]`;
                     discountInput.value = item.discount;
                     form.appendChild(discountInput);
+
+                    const keteranganInput = document.createElement('input');
+                    keteranganInput.type = 'hidden';
+                    keteranganInput.name = `items[${index}][keterangan]`;
+                    keteranganInput.value = item.keterangan || '';
+                    form.appendChild(keteranganInput);
                 });
 
                 // Show loading state
@@ -2217,11 +2389,39 @@
             return true;
         }
 
+        function validateQuantityDiscountInput() {
+            const quantityDiscountInput = document.getElementById('quantityDiscountInput');
+            const qtyInput = document.getElementById('quantityInput');
+
+            const value = quantityDiscountInput.value.trim();
+            const qty = parseFormattedDecimal(qtyInput.value) || 0;
+            const qtyDiscount = parseFormattedDecimal(value) || 0;
+
+            if (value && qtyDiscount > 0) {
+                if (qtyDiscount >= qty && qty > 0) {
+                    quantityDiscountInput.style.borderColor = '#ef4444';
+                    quantityDiscountInput.style.backgroundColor = '#fef2f2';
+                    return false;
+                }
+            }
+
+            if (value && qtyDiscount >= 0) {
+                quantityDiscountInput.style.borderColor = '#10b981';
+                quantityDiscountInput.style.backgroundColor = '#f0fdf4';
+            } else {
+                quantityDiscountInput.style.borderColor = '#d1d5db';
+                quantityDiscountInput.style.backgroundColor = '#ffffff';
+            }
+
+            return true;
+        }
+
         // Reset validation styles
         function resetValidationStyles() {
             const qtyInput = document.getElementById('quantityInput');
             const priceInput = document.getElementById('modalPriceInput');
             const discountInput = document.getElementById('discountInput');
+            const quantityDiscountInput = document.getElementById('quantityDiscountInput');
 
             // Reset to default styles
             qtyInput.style.borderColor = '#d1d5db';
@@ -2230,6 +2430,8 @@
             priceInput.style.backgroundColor = '#ffffff';
             discountInput.style.borderColor = '#d1d5db';
             discountInput.style.backgroundColor = '#ffffff';
+            quantityDiscountInput.style.borderColor = '#d1d5db';
+            quantityDiscountInput.style.backgroundColor = '#ffffff';
         }
 
         // Barcode search
@@ -2375,21 +2577,32 @@
             const previewOrderItems = document.getElementById('previewOrderItems');
             previewOrderItems.innerHTML = '';
 
-            cart.forEach(item => {
-                const subtotal = item.price * item.qty;
+            cart.forEach((item, index) => {
+                const qtyDiscount = item.qtyDiscount || 0;
+                const effectiveQty = Math.max(0, item.qty - qtyDiscount);
+                const subtotal = item.price * effectiveQty;
                 const discount = item.discount || 0;
                 const total = subtotal - discount;
+
+                // Count how many times this product appears in cart
+                const sameProductCount = cart.filter(cartItem => cartItem.id === item.id).length;
+                const sameProductIndex = cart.filter(cartItem => cartItem.id === item.id).indexOf(item) + 1;
 
                 const itemHtml = `
                     <div class="bg-white border border-gray-200 rounded-lg p-3 mb-2">
                         <div class="flex justify-between items-start">
                             <div class="flex-1">
-                                <h5 class="font-medium text-gray-900 text-sm">${item.name}</h5>
+                                <h5 class="font-medium text-gray-900 text-sm">
+                                    ${item.name}
+                                    ${sameProductCount > 1 ? `<span class="ml-1 px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">#${sameProductIndex}</span>` : ''}
+                                </h5>
                                 <p class="text-xs text-gray-500">${item.code}</p>
+                                ${item.keterangan ? `<p class="text-xs text-gray-600 italic">"${item.keterangan}"</p>` : ''}
                             </div>
                             <div class="text-right">
-                                <p class="text-sm font-medium text-gray-900">${formatDecimalInput(item.qty)} ${item.unit}</p>
+                                <p class="text-sm font-medium text-gray-900">${formatDecimalInput(effectiveQty)} ${item.unit}</p>
                                 <p class="text-xs text-gray-500">@ Rp ${formatNumber(item.price)}</p>
+                                ${qtyDiscount > 0 ? `<p class="text-xs text-blue-600">Potongan: ${formatDecimalInput(qtyDiscount)} ${item.unit}</p>` : ''}
                             </div>
                         </div>
                         <div class="mt-2 pt-2 border-t border-gray-100 space-y-1">
@@ -2398,11 +2611,11 @@
                                 <span>Rp ${formatNumber(subtotal)}</span>
                             </div>
                             ${discount > 0 ? `
-                                                                                            <div class="flex justify-between text-xs">
-                                                                                                <span class="text-orange-600">Potongan</span>
-                                                                                                <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                            </div>
-                                                                                        ` : ''}
+                                                                                                                    <div class="flex justify-between text-xs">
+                                                                                                                        <span class="text-orange-600">Potongan</span>
+                                                                                                                        <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                    </div>
+                                                                                                                ` : ''}
                             <div class="flex justify-between text-sm font-medium">
                                 <span>Total</span>
                                 <span class="text-blue-600">Rp ${formatNumber(total)}</span>
@@ -2415,7 +2628,9 @@
 
             // Calculate totals
             const subtotalItems = cart.reduce((total, item) => {
-                const itemSubtotal = item.price * item.qty;
+                const qtyDiscount = item.qtyDiscount || 0;
+                const effectiveQty = Math.max(0, item.qty - qtyDiscount);
+                const itemSubtotal = item.price * effectiveQty;
                 const itemDiscount = item.discount || 0;
                 return total + (itemSubtotal - itemDiscount);
             }, 0);
@@ -2764,6 +2979,12 @@
                 qtyInput.value = item.qty;
                 form.appendChild(qtyInput);
 
+                const qtyDiscountInput = document.createElement('input');
+                qtyDiscountInput.type = 'hidden';
+                qtyDiscountInput.name = `items[${index}][qty_discount]`;
+                qtyDiscountInput.value = item.qtyDiscount || 0;
+                form.appendChild(qtyDiscountInput);
+
                 const priceInput = document.createElement('input');
                 priceInput.type = 'hidden';
                 priceInput.name = `items[${index}][harga_beli]`;
@@ -2775,6 +2996,12 @@
                 discountInput.name = `items[${index}][discount]`;
                 discountInput.value = item.discount || 0;
                 form.appendChild(discountInput);
+
+                const keteranganInput = document.createElement('input');
+                keteranganInput.type = 'hidden';
+                keteranganInput.name = `items[${index}][keterangan]`;
+                keteranganInput.value = item.keterangan || '';
+                form.appendChild(keteranganInput);
             });
 
             // Log form data for debugging

@@ -88,6 +88,7 @@ class ProdukController extends Controller
             'stok' => $request->stok ? $this->convertIndonesianNumber($request->stok) : 0,
             'stok_minimal' => $request->stok_minimal ? $this->convertIndonesianNumber($request->stok_minimal) : 0,
             'harga_jual' => $this->convertIndonesianNumber($request->harga_jual),
+            'harga_beli' => $this->convertIndonesianNumber($request->harga_beli),
         ]);
 
         $validated = $request->validate(
@@ -136,6 +137,7 @@ class ProdukController extends Controller
             'stok' => $request->stok ? $this->convertIndonesianNumber($request->stok) : 0,
             'stok_minimal' => $request->stok_minimal ? $this->convertIndonesianNumber($request->stok_minimal) : 0,
             'harga_jual' => $this->convertIndonesianNumber($request->harga_jual),
+            'harga_beli' => $this->convertIndonesianNumber($request->harga_beli),
         ]);
 
         $validated = $request->validate(
@@ -188,6 +190,7 @@ class ProdukController extends Controller
             'kategori_id' => 'required|exists:kategori_produk,id',
             'satuan_id' => 'required|exists:satuan,id',
             'harga_jual' => 'required|numeric|min:0',
+            'harga_beli' => 'required|numeric|min:0',
             'stok' => 'nullable|numeric|min:0',
             'stok_minimal' => 'nullable|numeric|min:0',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -218,6 +221,10 @@ class ProdukController extends Controller
             'harga_jual.required' => 'Harga jual wajib diisi.',
             'harga_jual.numeric' => 'Harga jual harus berupa angka.',
             'harga_jual.min' => 'Harga jual tidak boleh kurang dari 0.',
+
+            'harga_beli.required' => 'Harga beli wajib diisi.',
+            'harga_beli.numeric' => 'Harga beli harus berupa angka.',
+            'harga_beli.min' => 'Harga beli tidak boleh kurang dari 0.',
 
             'stok.required' => 'Stok awal wajib diisi.',
             'stok.numeric' => 'Stok awal harus berupa angka.',

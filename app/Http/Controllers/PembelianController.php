@@ -144,8 +144,10 @@ class PembelianController extends Controller
             'items' => 'required|array|min:1',
             'items.*.produk_id' => 'required|exists:produk,id',
             'items.*.qty' => 'required|numeric|min:0.01',
+            'items.*.qty_discount' => 'nullable|numeric|min:0',
             'items.*.harga_beli' => 'required|numeric|min:0',
             'items.*.discount' => 'nullable|numeric|min:0',
+            'items.*.keterangan' => 'nullable|string|max:500',
         ], [
             'no_faktur.required' => 'Nomor faktur wajib diisi.',
             'no_faktur.unique' => 'Nomor faktur sudah digunakan.',
@@ -165,9 +167,11 @@ class PembelianController extends Controller
             'items.*.produk_id.exists' => 'Produk tidak valid.',
             'items.*.qty.required' => 'Quantity wajib diisi.',
             'items.*.qty.min' => 'Quantity minimal 0.01.',
+            'items.*.qty_discount.min' => 'Potongan quantity tidak boleh negatif.',
             'items.*.harga_beli.required' => 'Harga wajib diisi.',
             'items.*.harga_beli.min' => 'Harga tidak boleh negatif.',
             'items.*.discount.min' => 'Diskon tidak boleh negatif.',
+            'items.*.keterangan.max' => 'Keterangan maksimal 500 karakter.',
         ]);
 
         // Additional validation for metode_pembayaran to ensure it's active
@@ -179,6 +183,15 @@ class PembelianController extends Controller
             if (!$metodeExists) {
                 return back()->withInput()
                     ->withErrors(['metode_pembayaran' => 'Metode pembayaran yang dipilih tidak aktif.']);
+            }
+        }
+
+        // Validate quantity discount
+        foreach ($validated['items'] as $index => $item) {
+            $qtyDiscount = $item['qty_discount'] ?? 0;
+            if ($qtyDiscount >= $item['qty']) {
+                return back()->withInput()
+                    ->withErrors(["items.{$index}.qty_discount" => 'Potongan quantity tidak boleh melebihi atau sama dengan quantity.']);
             }
         }
 
@@ -194,7 +207,9 @@ class PembelianController extends Controller
             // Calculate totals with item discounts
             $subtotal = 0;
             foreach ($validated['items'] as $item) {
-                $itemSubtotal = $item['qty'] * $item['harga_beli'];
+                $qtyDiscount = $item['qty_discount'] ?? 0;
+                $effectiveQty = max(0, $item['qty'] - $qtyDiscount);
+                $itemSubtotal = $effectiveQty * $item['harga_beli'];
                 $itemDiscount = $item['discount'] ?? 0;
                 $subtotal += ($itemSubtotal - $itemDiscount);
             }
@@ -231,7 +246,9 @@ class PembelianController extends Controller
 
             // Create detail pembelian
             foreach ($validated['items'] as $item) {
-                $itemSubtotal = $item['qty'] * $item['harga_beli'];
+                $qtyDiscount = $item['qty_discount'] ?? 0;
+                $effectiveQty = max(0, $item['qty'] - $qtyDiscount);
+                $itemSubtotal = $effectiveQty * $item['harga_beli'];
                 $itemDiscount = $item['discount'] ?? 0;
                 $itemTotal = $itemSubtotal - $itemDiscount;
 
@@ -239,9 +256,11 @@ class PembelianController extends Controller
                     'pembelian_id' => $pembelian->id,
                     'produk_id' => $item['produk_id'],
                     'qty' => $item['qty'],
+                    'qty_discount' => $qtyDiscount,
                     'harga_beli' => $item['harga_beli'],
                     'subtotal' => $itemTotal, // Store final amount after item discount
                     'discount' => $itemDiscount,
+                    'keterangan' => $item['keterangan'] ?? null,
                 ]);
 
                 // Update stock
@@ -691,9 +710,11 @@ class PembelianController extends Controller
                         return [
                             'produk' => $detail->produk,
                             'qty' => $detail->qty,
+                            'qty_discount' => $detail->qty_discount ?? 0,
                             'harga_beli' => $detail->harga_beli,
                             'diskon' => $detail->discount ?? 0,
-                            'subtotal' => $detail->subtotal
+                            'subtotal' => $detail->subtotal,
+                            'keterangan' => $detail->keterangan ?? ''
                         ];
                     })
                 ]

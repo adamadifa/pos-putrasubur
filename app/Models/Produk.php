@@ -17,6 +17,7 @@ class Produk extends Model
         'kategori_id',
         'satuan_id',
         'harga_jual',
+        'harga_beli',
         'stok',
         'stok_minimal',
         'foto',
@@ -24,6 +25,7 @@ class Produk extends Model
 
     protected $casts = [
         'harga_jual' => 'decimal:2',
+        'harga_beli' => 'decimal:2',
         'stok' => 'decimal:2',
         'stok_minimal' => 'decimal:2',
     ];
@@ -59,11 +61,19 @@ class Produk extends Model
     }
 
     /**
-     * Accessor untuk format harga
+     * Accessor untuk format harga jual
      */
     public function getHargaFormatAttribute()
     {
         return 'Rp ' . number_format($this->harga_jual, 0, ',', '.');
+    }
+
+    /**
+     * Accessor untuk format harga beli
+     */
+    public function getHargaBeliFormatAttribute()
+    {
+        return 'Rp ' . number_format($this->harga_beli, 0, ',', '.');
     }
 
     /**

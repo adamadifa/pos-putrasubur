@@ -15,13 +15,16 @@ class DetailPembelian extends Model
         'pembelian_id',
         'produk_id',
         'qty',
+        'qty_discount',
         'harga_beli',
         'subtotal',
         'discount',
+        'keterangan',
     ];
 
     protected $casts = [
         'qty' => 'decimal:2',
+        'qty_discount' => 'decimal:2',
         'harga_beli' => 'decimal:2',
         'subtotal' => 'decimal:2',
         'discount' => 'decimal:2',
@@ -38,4 +41,3 @@ class DetailPembelian extends Model
         return $this->belongsTo(Produk::class);
     }
 }
-

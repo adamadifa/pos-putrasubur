@@ -220,6 +220,26 @@
                                     @enderror
                                 </div>
 
+                                <!-- Harga Beli -->
+                                <div class="space-y-2">
+                                    <label for="harga_beli" class="block text-sm font-semibold text-gray-700">
+                                        Harga Beli <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative group">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <span
+                                                class="text-gray-500 font-medium group-hover:text-blue-500 transition-colors">Rp</span>
+                                        </div>
+                                        <input type="text" name="harga_beli" id="harga_beli"
+                                            value="{{ old('harga_beli') }}"
+                                            class="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('harga_beli') border-red-500 @enderror"
+                                            placeholder="0">
+                                    </div>
+                                    @error('harga_beli')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
                                 <!-- Stok Awal -->
                                 <div class="space-y-2">
                                     <label for="stok" class="block text-sm font-semibold text-gray-700">
@@ -397,6 +417,11 @@
                     numeric: true,
                     min: 0
                 },
+                harga_beli: {
+                    required: true,
+                    numeric: true,
+                    min: 0
+                },
                 stok: {
                     required: false,
                     numeric: true,
@@ -435,6 +460,11 @@
                     numeric: 'Harga jual harus berupa angka.',
                     min: 'Harga jual tidak boleh kurang dari 0.'
                 },
+                harga_beli: {
+                    required: 'Harga beli wajib diisi.',
+                    numeric: 'Harga beli harus berupa angka.',
+                    min: 'Harga beli tidak boleh kurang dari 0.'
+                },
                 stok: {
                     numeric: 'Stok awal harus berupa angka.',
                     min: 'Stok awal tidak boleh kurang dari 0.'
@@ -452,6 +482,7 @@
 
             // Real-time validation for form fields
             const fieldsToValidate = ['kode_produk', 'nama_produk', 'kategori_id', 'satuan_id', 'harga_jual',
+                'harga_beli',
                 'stok_minimal'
             ];
 
@@ -865,6 +896,7 @@
             // Apply formatting to stok_minimal and harga fields
             formatNumberInput(document.getElementById('stok_minimal'));
             formatNumberInput(document.getElementById('harga_jual'));
+            formatNumberInput(document.getElementById('harga_beli'));
 
             // Form submission validation
             $('form').on('submit', function(e) {

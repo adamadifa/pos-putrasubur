@@ -262,9 +262,23 @@
                                         <div class="flex items-center space-x-4 text-sm text-gray-600">
                                             <div class="flex items-center">
                                                 <i class="ti ti-package text-orange-500 mr-1"></i>
-                                                <span class="font-medium">{{ number_format($detail->qty, 2) }}
+                                                <span class="font-medium">{{ number_format($detail->qty, 2, ',', '.') }}
                                                     {{ $detail->produk->satuan->nama ?? 'pcs' }}</span>
                                             </div>
+                                            @if ($detail->qty_discount > 0)
+                                                <div class="flex items-center">
+                                                    <i class="ti ti-minus text-blue-500 mr-1"></i>
+                                                    <span
+                                                        class="text-blue-600 font-medium">-{{ number_format($detail->qty_discount, 2, ',', '.') }}
+                                                        {{ $detail->produk->satuan->nama ?? 'pcs' }}</span>
+                                                </div>
+                                                <div class="flex items-center">
+                                                    <i class="ti ti-equals text-green-500 mr-1"></i>
+                                                    <span
+                                                        class="text-green-600 font-semibold">{{ number_format($detail->qty - $detail->qty_discount, 2, ',', '.') }}
+                                                        {{ $detail->produk->satuan->nama ?? 'pcs' }}</span>
+                                                </div>
+                                            @endif
                                             <div class="flex items-center">
                                                 <i class="ti ti-currency-dollar text-green-500 mr-1"></i>
                                                 <span>@ Rp {{ number_format($detail->harga_beli, 0, ',', '.') }}</span>
@@ -276,6 +290,15 @@
                                                 <i class="ti ti-discount text-red-500 mr-1"></i>
                                                 <span class="text-xs text-red-600 font-medium">
                                                     Potongan: Rp {{ number_format($detail->discount, 0, ',', '.') }}
+                                                </span>
+                                            </div>
+                                        @endif
+
+                                        @if ($detail->keterangan)
+                                            <div class="flex items-start mt-2">
+                                                <i class="ti ti-note text-gray-500 mr-1 mt-0.5"></i>
+                                                <span class="text-xs text-gray-600 italic">
+                                                    "{{ $detail->keterangan }}"
                                                 </span>
                                             </div>
                                         @endif
@@ -959,9 +982,21 @@
                     <div style="margin-bottom: 8px;">
                         <p style="margin: 2px 0; font-weight: bold;">{{ $detail->produk->nama_produk }}</p>
                         <p style="margin: 2px 0; font-size: 11px;">
-                            {{ number_format($detail->qty, 2) }} {{ $detail->produk->satuan->nama ?? 'pcs' }} x
-                            {{ number_format($detail->harga_beli, 0) }} = {{ number_format($detail->subtotal, 0) }}
+                            {{ number_format($detail->qty, 2, ',', '.') }} {{ $detail->produk->satuan->nama ?? 'pcs' }}
+                            @if ($detail->qty_discount > 0)
+                                - {{ number_format($detail->qty_discount, 2, ',', '.') }}
+                                {{ $detail->produk->satuan->nama ?? 'pcs' }}
+                                = {{ number_format($detail->qty - $detail->qty_discount, 2, ',', '.') }}
+                                {{ $detail->produk->satuan->nama ?? 'pcs' }}
+                            @endif
+                            x {{ number_format($detail->harga_beli, 0, ',', '.') }} =
+                            {{ number_format($detail->subtotal, 0, ',', '.') }}
                         </p>
+                        @if ($detail->keterangan)
+                            <p style="margin: 2px 0; font-size: 10px; font-style: italic; color: #666;">
+                                Note: {{ $detail->keterangan }}
+                            </p>
+                        @endif
                     </div>
                 @endforeach
                 <hr style="border: none; border-top: 1px solid #000; margin: 10px 0;">
@@ -1607,9 +1642,20 @@
             @foreach ($pembelian->detailPembelian as $detail)
                 content += '{{ substr($detail->produk->nama_produk, 0, 30) }}\n';
                 content +=
-                    '  {{ number_format($detail->qty, 2) }} {{ $detail->produk->satuan->nama ?? 'pcs' }} x {{ number_format($detail->harga_beli, 0) }} = {{ number_format($detail->subtotal, 0) }}\n';
+                    '  {{ number_format($detail->qty, 2, ',', '.') }} {{ $detail->produk->satuan->nama ?? 'pcs' }}';
+                @if ($detail->qty_discount > 0)
+                    content +=
+                        ' - {{ number_format($detail->qty_discount, 2, ',', '.') }} {{ $detail->produk->satuan->nama ?? 'pcs' }}';
+                    content +=
+                        ' = {{ number_format($detail->qty - $detail->qty_discount, 2, ',', '.') }} {{ $detail->produk->satuan->nama ?? 'pcs' }}';
+                @endif
+                content +=
+                    ' x {{ number_format($detail->harga_beli, 0, ',', '.') }} = {{ number_format($detail->subtotal, 0, ',', '.') }}\n';
                 @if ($detail->discount > 0)
                     content += '  Diskon: -{{ number_format($detail->discount, 0) }}\n';
+                @endif
+                @if ($detail->keterangan)
+                    content += '  Note: {{ $detail->keterangan }}\n';
                 @endif
                 content += '\n';
             @endforeach
@@ -1695,11 +1741,21 @@
             // Items
             @foreach ($pembelian->detailPembelian as $detail)
                 invoiceLines.push("{{ substr($detail->produk->nama_produk, 0, 20) }}\n");
+                @php
+                    $qtyText = number_format($detail->qty, 2, ',', '.') . ' ' . ($detail->produk->satuan->nama ?? 'pcs');
+                    if ($detail->qty_discount > 0) {
+                        $qtyText .= ' - ' . number_format($detail->qty_discount, 2, ',', '.') . ' ' . ($detail->produk->satuan->nama ?? 'pcs');
+                        $qtyText .= ' = ' . number_format($detail->qty - $detail->qty_discount, 2, ',', '.') . ' ' . ($detail->produk->satuan->nama ?? 'pcs');
+                    }
+                @endphp
                 invoiceLines.push(
-                    "  {{ number_format($detail->qty, 2) }} {{ $detail->produk->satuan->nama ?? 'pcs' }} x {{ number_format($detail->harga_beli, 0) }} = {{ number_format($detail->subtotal, 0) }}\n"
+                    "  {{ $qtyText }} x {{ number_format($detail->harga_beli, 0, ',', '.') }} = {{ number_format($detail->subtotal, 0, ',', '.') }}\n"
                 );
                 @if ($detail->discount > 0)
                     invoiceLines.push("  Diskon: -{{ number_format($detail->discount, 0) }}\n");
+                @endif
+                @if ($detail->keterangan)
+                    invoiceLines.push("  Note: {{ $detail->keterangan }}\n");
                 @endif
             @endforeach
 

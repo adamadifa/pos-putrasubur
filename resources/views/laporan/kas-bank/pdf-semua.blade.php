@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Kas & Bank</title>
+    <title>Laporan Semua Kas & Bank</title>
     <style>
         body {
             font-family: 'DejaVu Sans', sans-serif;
@@ -131,10 +131,6 @@
             text-align: right !important;
         }
 
-        .summary-table .text-right {
-            text-align: right !important;
-        }
-
         .text-center {
             text-align: center;
         }
@@ -197,14 +193,19 @@
             background-color: #dbeafe;
             color: #1e40af;
         }
+
+        .badge-warning {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
     </style>
 </head>
 
 <body>
     <!-- Header -->
     <div class="header">
-        <h1>Laporan Kas & Bank</h1>
-        <h2>{{ $laporanData['kas_bank']->nama }}</h2>
+        <h1>Laporan Semua Kas & Bank</h1>
+        <h2>Gabungan Semua Kas/Bank</h2>
         <p>
             @if ($laporanData['periode']['jenis'] == 'tanggal')
                 Periode: {{ $laporanData['periode']['tanggal_dari'] }} s/d
@@ -220,48 +221,42 @@
     <div class="info-section">
         <div class="info-grid">
             <div class="info-item">
-                <div class="info-label">Jenis</div>
-                <div class="info-value">{{ $laporanData['kas_bank']->jenis }}</div>
+                <div class="info-label">Jenis Laporan</div>
+                <div class="info-value">Gabungan</div>
             </div>
             <div class="info-item">
-                <div class="info-label">Bank</div>
-                <div class="info-value">
-                    {{ isset($laporanData['kas_bank']->bank) ? $laporanData['kas_bank']->bank : '-' }}</div>
+                <div class="info-label">Jumlah Kas/Bank</div>
+                <div class="info-value">{{ \App\Models\KasBank::count() }}</div>
             </div>
             <div class="info-item">
-                <div class="info-label">No. Rekening</div>
+                <div class="info-label">Total Transaksi</div>
+                <div class="info-value">{{ $laporanData['statistics']['jumlah_transaksi'] }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Periode</div>
                 <div class="info-value">
-                    {{ isset($laporanData['kas_bank']->no_rekening) ? $laporanData['kas_bank']->no_rekening : '-' }}
+                    @if ($laporanData['periode']['jenis'] == 'tanggal')
+                        {{ $laporanData['statistics']['jumlah_hari'] ?? 'N/A' }} hari
+                    @else
+                        1 bulan
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Saldo Awal Info -->
-    @if ($laporanData['saldo_awal_terakhir'])
-        <div class="saldo-info">
-            <p class="saldo-awal">Saldo Awal: Rp {{ number_format($laporanData['saldo_awal'], 0, ',', '.') }}</p>
-            @if ($laporanData['saldo_awal_terakhir'])
-                <p><strong>Saldo awal terakhir
-                        ({{ $laporanData['saldo_awal_terakhir']['periode_saldo_awal'] }}):</strong>
-                    Rp {{ number_format($laporanData['saldo_awal_terakhir']['saldo'], 0, ',', '.') }}</p>
-                <p><strong>Dihitung dari:</strong> {{ $laporanData['saldo_awal_terakhir']['tanggal_mulai_hitung'] }}
-                    s/d
-                    @if ($laporanData['periode']['jenis'] == 'tanggal')
-                        {{ $laporanData['periode']['tanggal_dari'] }}
-                    @else
-                        {{ $laporanData['periode']['tanggal_awal'] }}
-                    @endif
-                </p>
-            @endif
-        </div>
-    @endif
+    <div class="saldo-info">
+        <p class="saldo-awal">Total Saldo Awal: Rp {{ number_format($laporanData['saldo_awal'], 0, ',', '.') }}</p>
+        <p><strong>Catatan:</strong> Saldo awal merupakan gabungan dari semua kas/bank yang aktif</p>
+    </div>
 
     <!-- Transactions Table -->
     <table class="transactions-table">
         <thead>
             <tr>
                 <th>Tanggal</th>
+                <th>Kas/Bank</th>
                 <th>Keterangan</th>
                 <th>Kategori</th>
                 <th>No. Transaksi</th>
@@ -280,7 +275,10 @@
                         {{ $laporanData['periode']['tanggal_awal'] }}
                     @endif
                 </td>
-                <td>Saldo Awal</td>
+                <td>
+                    <span class="badge badge-warning">Semua Kas/Bank</span>
+                </td>
+                <td>Total Saldo Awal</td>
                 <td class="text-center">
                     <span class="badge badge-info">Saldo Awal</span>
                 </td>
@@ -295,6 +293,13 @@
             @foreach ($laporanData['transaksi'] as $transaksi)
                 <tr>
                     <td>{{ \Carbon\Carbon::parse($transaksi->tanggal)->format('d/m/Y') }}</td>
+                    <td>
+                        <div>
+                            <strong>{{ $transaksi->kas_bank_nama ?? 'N/A' }}</strong>
+                            <br>
+                            <small class="text-muted">{{ $transaksi->kas_bank_jenis ?? 'N/A' }}</small>
+                        </div>
+                    </td>
                     <td>{{ $transaksi->keterangan_detail ?? $transaksi->keterangan }}</td>
                     <td class="text-center">
                         @if ($transaksi->jenis_transaksi == 'D')
@@ -335,7 +340,7 @@
         </thead>
         <tbody>
             <tr class="summary-row">
-                <td>Saldo Awal</td>
+                <td>Total Saldo Awal</td>
                 <td class="text-right">Rp {{ number_format($laporanData['saldo_awal'], 0, ',', '.') }}</td>
             </tr>
             <tr class="summary-row">
@@ -348,16 +353,41 @@
                 </td>
             </tr>
             <tr class="total-row">
-                <td><strong>Saldo Akhir</strong></td>
+                <td><strong>Total Saldo Akhir</strong></td>
                 <td class="text-right"><strong>Rp
                         {{ number_format($laporanData['summary']['saldo_akhir'], 0, ',', '.') }}</strong></td>
             </tr>
         </tbody>
     </table>
 
+    <!-- Statistics -->
+    <div class="info-section">
+        <h3 style="color: #2563eb; margin-bottom: 15px;">Statistik Transaksi</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Total Transaksi</div>
+                <div class="info-value">{{ $laporanData['statistics']['jumlah_transaksi'] }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Transaksi Debet</div>
+                <div class="info-value">{{ $laporanData['statistics']['transaksi_debet'] }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Transaksi Kredit</div>
+                <div class="info-value">{{ $laporanData['statistics']['transaksi_kredit'] }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Rata-rata/Transaksi</div>
+                <div class="info-value">Rp
+                    {{ number_format($laporanData['statistics']['rata_rata_transaksi'], 0, ',', '.') }}</div>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <div class="footer">
         <p>Laporan ini dibuat secara otomatis oleh sistem POS pada {{ now()->format('d F Y H:i:s') }}</p>
+        <p><strong>Catatan:</strong> Laporan ini merupakan gabungan dari semua kas/bank yang aktif dalam sistem</p>
     </div>
 </body>
 

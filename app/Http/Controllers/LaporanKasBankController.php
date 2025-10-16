@@ -728,8 +728,14 @@ class LaporanKasBankController extends Controller
                 }
             }
 
+            // Choose appropriate PDF template based on kas_bank selection
+            $template = 'laporan.kas-bank.pdf';
+            if ($request->kas_bank_id === 'semua' || isset($laporanData['is_semua'])) {
+                $template = 'laporan.kas-bank.pdf-semua';
+            }
+
             // Generate PDF using DomPDF
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan.kas-bank.pdf', compact('laporanData'));
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView($template, compact('laporanData'));
 
             // Set paper size and orientation
             $pdf->setPaper('A4', 'landscape');
