@@ -386,13 +386,13 @@ class SaldoAwalProdukController extends Controller
             $detail = $saldoAwalSebelumnya->details()->where('produk_id', $produkId)->first();
             $saldoAwal = $detail ? $detail->saldo_awal : 0;
 
-            // Hitung total pembelian bulan sebelumnya
-            $totalPembelian = \App\Models\DetailPembelian::whereHas('pembelian', function ($query) use ($bulanSebelumnya, $tahunSebelumnya) {
-                $query->whereMonth('tanggal', $bulanSebelumnya)
-                    ->whereYear('tanggal', $tahunSebelumnya);
-            })
-                ->where('produk_id', $produkId)
-                ->sum('qty');
+            // Hitung total pembelian bulan sebelumnya (qty - qty_discount)
+            $totalPembelian = DB::table('detail_pembelian')
+                ->join('pembelian', 'detail_pembelian.pembelian_id', '=', 'pembelian.id')
+                ->where('detail_pembelian.produk_id', $produkId)
+                ->whereMonth('pembelian.tanggal', $bulanSebelumnya)
+                ->whereYear('pembelian.tanggal', $tahunSebelumnya)
+                ->sum(DB::raw('detail_pembelian.qty - COALESCE(detail_pembelian.qty_discount, 0)'));
 
             // Hitung total penjualan bulan sebelumnya
             $totalPenjualan = \App\Models\DetailPenjualan::whereHas('penjualan', function ($query) use ($bulanSebelumnya, $tahunSebelumnya) {

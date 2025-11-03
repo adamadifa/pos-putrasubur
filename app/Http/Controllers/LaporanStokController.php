@@ -337,7 +337,7 @@ class LaporanStokController extends Controller
             SELECT 
                 'pembelian' as jenis,
                 pb.tanggal,
-                dpb.qty as jumlah,
+                (dpb.qty - COALESCE(dpb.qty_discount, 0)) as jumlah,
                 CONCAT('Pembelian dari ', COALESCE(s.nama, 'Supplier')) COLLATE utf8mb4_unicode_ci as keterangan,
                 pb.no_faktur COLLATE utf8mb4_unicode_ci as no_transaksi
             FROM detail_pembelian dpb
