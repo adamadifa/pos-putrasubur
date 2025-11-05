@@ -1,22 +1,23 @@
 @extends('layouts.pos')
 
 @section('title', 'Pembelian Baru')
-@section('page-title', 'Buat Transaksi Pembelian')
+@section('page-title', 'Pembelian')
 
 @section('content')
     <div class="min-h-screen">
         <!-- Back Button -->
-        <div class="px-6 pt-6 pb-2">
+        <div class="px-2 md:px-6 pt-4 md:pt-6 pb-2">
             <a href="{{ route('pembelian.index') }}"
-                class="inline-flex items-center text-gray-600 hover:text-orange-600 transition-colors">
+                class="inline-flex items-center text-gray-600 hover:text-orange-600 transition-colors text-sm md:text-base">
                 <i class="ti ti-arrow-left text-lg mr-2"></i>
-                Kembali ke Daftar Pembelian
+                <span class="hidden md:inline">Kembali ke Daftar Pembelian</span>
+                <span class="md:hidden">Kembali</span>
             </a>
         </div>
 
         <!-- Error Alert -->
         @if ($errors->any())
-            <div class="mx-6 mb-6 bg-red-50 border border-red-200 rounded-xl p-4 shadow-sm">
+            <div class="mx-2 md:mx-6 mb-4 md:mb-6 bg-red-50 border border-red-200 rounded-xl p-3 md:p-4 shadow-sm">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
                         <i class="ti ti-alert-circle text-lg text-red-400"></i>
@@ -37,26 +38,70 @@
             </div>
         @endif
 
-        <div class="flex gap-6 px-6">
+        <!-- Mobile Wizard Stepper -->
+        <div class="block lg:hidden mb-4 px-2">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-2">
+                        <div id="stepIndicator1"
+                            class="w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center text-sm font-semibold transition-all">
+                            1
+                        </div>
+                        <div class="h-1 w-12 md:w-16 bg-gray-200 rounded">
+                            <div id="progressBar1" class="h-full bg-orange-600 rounded transition-all" style="width: 0%">
+                            </div>
+                        </div>
+                        <div id="stepIndicator2"
+                            class="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-sm font-semibold transition-all">
+                            2
+                        </div>
+                        <div class="h-1 w-12 md:w-16 bg-gray-200 rounded">
+                            <div id="progressBar2" class="h-full bg-orange-600 rounded transition-all" style="width: 0%">
+                            </div>
+                        </div>
+                        <div id="stepIndicator3"
+                            class="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-sm font-semibold transition-all">
+                            3
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <h3 id="stepTitle" class="text-sm font-semibold text-gray-900">Langkah 1: Informasi Transaksi</h3>
+                    <p id="stepDescription" class="text-xs text-gray-500 mt-1">Isi informasi supplier dan tanggal</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-4 md:gap-6 px-2 md:px-6">
             <!-- Left Side - Products Menu -->
-            <div class="flex-1">
+            <div class="flex-1 order-2 lg:order-1 mobile-step mobile-step-2 hidden lg:block">
+                <!-- Mobile: Proceed to Review Button (shown when cart has items) -->
+                <div id="proceedToReviewBtnContainer" class="lg:hidden mb-4 hidden">
+                    <button type="button" id="proceedToReviewBtn"
+                        class="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg font-medium hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg">
+                        <i class="ti ti-check text-lg mr-2"></i>
+                        Lanjut ke Review Pesanan
+                        <span id="cartItemCount" class="ml-2 px-2 py-0.5 bg-white/20 rounded-full text-sm">0 item</span>
+                    </button>
+                </div>
+
                 <!-- Category Tabs -->
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
-                    <div class="p-4 border-b border-gray-200">
-                        <div class="flex gap-3 mb-4">
+                    <div class="p-3 md:p-4 border-b border-gray-200">
+                        <div class="flex flex-col md:flex-row gap-3 mb-3 md:mb-4">
                             <div class="relative flex-1">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <i class="ti ti-search text-lg text-gray-400"></i>
                                 </div>
-                                <input type="text" id="productSearch" placeholder="Cari nama atau SKU produk..."
-                                    class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+                                <input type="text" id="productSearch" placeholder="Cari produk..."
+                                    class="w-full pl-11 pr-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-sm md:text-base">
                             </div>
                             <div class="relative flex-1">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <i class="ti ti-scan text-lg text-gray-400"></i>
                                 </div>
                                 <input type="text" id="barcodeSearch" placeholder="Scan barcode..."
-                                    class="w-full pl-11 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
+                                    class="w-full pl-11 pr-12 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-sm md:text-base">
                                 <button type="button" id="scanButton"
                                     class="absolute inset-y-0 right-0 pr-3 flex items-center text-green-600 hover:text-green-700">
                                     <div
@@ -69,8 +114,8 @@
                     </div>
 
                     <!-- Category Filter -->
-                    <div class="p-4 border-b border-gray-200">
-                        <div class="flex space-x-2 overflow-x-auto">
+                    <div class="p-3 md:p-4 border-b border-gray-200">
+                        <div class="flex space-x-2 overflow-x-auto pb-2 -mb-2">
                             <button
                                 class="category-filter active px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium whitespace-nowrap transition-colors"
                                 data-category="all">
@@ -91,10 +136,11 @@
                 </div>
 
                 <!-- Products Grid -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" id="productsGrid">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 md:p-6">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4"
+                        id="productsGrid">
                         @foreach ($produk as $product)
-                            <div class="product-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 cursor-pointer group"
+                            <div class="product-card bg-white border border-gray-200 rounded-lg p-2 md:p-4 hover:shadow-md transition-all duration-200 cursor-pointer group"
                                 data-id="{{ $product->id }}" data-name="{{ $product->nama_produk }}"
                                 data-code="{{ $product->kode_produk }}" data-price="{{ $product->harga_beli }}"
                                 data-unit="{{ $product->satuan->nama ?? '' }}"
@@ -102,7 +148,7 @@
 
                                 <!-- Product Image Placeholder -->
                                 <div
-                                    class="w-full h-24 bg-gradient-to-br from-orange-100 to-orange-200 rounded-lg mb-3 flex items-center justify-center group-hover:from-orange-200 group-hover:to-orange-300 transition-all duration-200">
+                                    class="w-full h-20 md:h-24 bg-gradient-to-br from-orange-100 to-orange-200 rounded-lg mb-2 md:mb-3 flex items-center justify-center group-hover:from-orange-200 group-hover:to-orange-300 transition-all duration-200">
                                     @if ($product->foto)
                                         <img src="{{ asset('storage/' . $product->foto) }}"
                                             alt="{{ $product->nama_produk }}"
@@ -114,24 +160,26 @@
 
                                 <!-- Product Info -->
                                 <div class="text-center">
-                                    <h3 class="font-semibold text-sm text-gray-900 mb-2 line-clamp-2">
+                                    <h3 class="font-semibold text-xs md:text-sm text-gray-900 mb-1 md:mb-2 line-clamp-2">
                                         {{ $product->nama_produk }}</h3>
-                                    <p class="text-xs text-gray-500 mb-2">{{ $product->kode_produk }}</p>
+                                    <p class="text-xs text-gray-500 mb-1 md:mb-2 hidden md:block">
+                                        {{ $product->kode_produk }}</p>
 
                                     <!-- Category Badge -->
-                                    <div class="flex items-center justify-center">
+                                    <div class="flex items-center justify-center mb-1 md:mb-0">
                                         <div
-                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border bg-orange-100 text-orange-800 border-orange-200">
-                                            <i class="ti ti-tag text-xs mr-1"></i>
-                                            <span>{{ $product->kategori->nama ?? 'Uncategorized' }}</span>
+                                            class="inline-flex items-center px-1.5 md:px-2 py-0.5 md:py-1 rounded-full text-xs font-medium border bg-orange-100 text-orange-800 border-orange-200">
+                                            <i class="ti ti-tag text-xs mr-0.5 md:mr-1"></i>
+                                            <span
+                                                class="truncate max-w-[80px] md:max-w-none">{{ $product->kategori->nama ?? 'Uncategorized' }}</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Add Button -->
                                 <button
-                                    class="add-product-btn w-full mt-3 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors opacity-0 group-hover:opacity-100">
-                                    <i class="ti ti-plus text-sm mr-1"></i>
+                                    class="add-product-btn w-full mt-2 md:mt-3 py-1.5 md:py-2 bg-orange-600 text-white rounded-lg text-xs md:text-sm font-medium hover:bg-orange-700 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100">
+                                    <i class="ti ti-plus text-xs md:text-sm mr-1"></i>
                                     Tambah
                                 </button>
                             </div>
@@ -141,27 +189,37 @@
             </div>
 
             <!-- Right Side - Order Summary -->
-            <div class="w-96">
+            <div class="w-full lg:w-96 order-1 lg:order-2">
                 <form action="{{ route('pembelian.store') }}" method="POST" id="purchaseForm">
                     @csrf
 
-                    <!-- Supplier & Invoice Info -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Informasi Transaksi</h3>
+                    <!-- Mobile Step 1: Supplier & Invoice Info -->
+                    <div
+                        class="mobile-step mobile-step-1 lg:hidden bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900">Informasi Transaksi</h3>
+                            <button type="button" id="nextToStep2"
+                                class="lg:hidden px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors">
+                                Lanjut <i class="ti ti-arrow-right ml-1"></i>
+                            </button>
+                        </div>
 
                         <!-- Invoice Number -->
                         <div class="mb-2">
+                            <label class="block text-xs md:text-sm text-gray-700 mb-1">No. Faktur</label>
                             <input type="text" name="no_faktur" id="noFaktur"
                                 value="{{ old('no_faktur', $invoiceNumber) }}"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 text-sm md:text-base"
                                 placeholder="Nomor Faktur" readonly>
                         </div>
 
                         <!-- Date -->
                         <div class="mb-2">
+                            <label class="block text-xs md:text-sm text-gray-700 mb-1">Tanggal</label>
                             <div class="date-input-wrapper">
                                 <input type="text" id="tanggal" value="{{ old('tanggal', date('d/m/Y')) }}"
-                                    class="flatpickr-input w-full" placeholder="Pilih tanggal" required readonly>
+                                    class="flatpickr-input w-full text-sm md:text-base" placeholder="Pilih tanggal"
+                                    required readonly>
                                 <i class="ti ti-calendar"></i>
                             </div>
                             <input type="hidden" name="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}">
@@ -169,10 +227,12 @@
 
                         <!-- Supplier -->
                         <div class="mb-2">
+                            <label class="block text-xs md:text-sm text-gray-700 mb-1">Supplier <span
+                                    class="text-red-500">*</span></label>
                             <div class="flex space-x-2">
                                 <div class="relative flex-1">
                                     <input type="text" id="supplierDisplay"
-                                        class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+                                        class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 text-sm md:text-base"
                                         placeholder="Pilih Supplier" readonly>
                                     <button type="button" id="clearSupplierBtn"
                                         class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors hidden">
@@ -180,8 +240,8 @@
                                     </button>
                                 </div>
                                 <button type="button" id="searchSupplierBtn"
-                                    class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
-                                    <i class="ti ti-search text-lg"></i>
+                                    class="px-3 md:px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
+                                    <i class="ti ti-search text-base md:text-lg"></i>
                                 </button>
                             </div>
                             <input type="hidden" name="supplier_id" id="supplierId" value="{{ old('supplier_id') }}"
@@ -189,11 +249,11 @@
                         </div>
 
                         <!-- Info Box -->
-                        <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                            <div class="flex items-center">
-                                <i class="ti ti-info-circle text-blue-600 mr-2"></i>
-                                <span class="text-sm text-blue-800">Konfigurasi pembayaran akan diatur pada preview
-                                    pesanan</span>
+                        <div class="mb-3 md:mb-4 p-2 md:p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div class="flex items-start">
+                                <i class="ti ti-info-circle text-blue-600 mr-2 mt-0.5"></i>
+                                <span class="text-xs md:text-sm text-blue-800">Konfigurasi pembayaran akan diatur pada
+                                    preview pesanan</span>
                             </div>
                         </div>
 
@@ -208,59 +268,199 @@
 
                     </div>
 
-                    <!-- Order Summary -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
+                    <!-- Desktop: Supplier & Invoice Info (always visible) -->
+                    <div class="hidden lg:block bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Informasi Transaksi</h3>
+                        <!-- Invoice Number -->
+                        <div class="mb-2">
+                            <input type="text" name="no_faktur" id="noFakturDesktop"
+                                value="{{ old('no_faktur', $invoiceNumber) }}"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                                placeholder="Nomor Faktur" readonly>
+                        </div>
+                        <!-- Date -->
+                        <div class="mb-2">
+                            <div class="date-input-wrapper">
+                                <input type="text" id="tanggalDesktop" value="{{ old('tanggal', date('d/m/Y')) }}"
+                                    class="flatpickr-input w-full" placeholder="Pilih tanggal" required readonly>
+                                <i class="ti ti-calendar"></i>
+                            </div>
+                            <input type="hidden" name="tanggal_desktop" value="{{ old('tanggal', date('Y-m-d')) }}">
+                        </div>
+                        <!-- Supplier -->
+                        <div class="mb-2">
+                            <div class="flex space-x-2">
+                                <div class="relative flex-1">
+                                    <input type="text" id="supplierDisplayDesktop"
+                                        class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+                                        placeholder="Pilih Supplier" readonly>
+                                    <button type="button" id="clearSupplierBtnDesktop"
+                                        class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors hidden">
+                                        <i class="ti ti-x text-lg"></i>
+                                    </button>
+                                </div>
+                                <button type="button" id="searchSupplierBtnDesktop"
+                                    class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
+                                    <i class="ti ti-search text-lg"></i>
+                                </button>
+                            </div>
+                            <input type="hidden" name="supplier_id_desktop" id="supplierIdDesktop"
+                                value="{{ old('supplier_id') }}">
+                        </div>
+                        <!-- Info Box -->
+                        <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div class="flex items-start">
+                                <i class="ti ti-info-circle text-blue-600 mr-2 mt-0.5"></i>
+                                <span class="text-sm text-blue-800">Konfigurasi pembayaran akan diatur pada preview
+                                    pesanan</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Step 3: Order Summary & Review -->
+                    <div
+                        class="mobile-step mobile-step-3 hidden lg:hidden bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-semibold text-gray-900">Ringkasan Pesanan</h3>
-                            <span class="text-sm text-gray-500" id="orderCount">0 item</span>
+                            <h3 class="text-lg font-semibold text-gray-900">Review Pesanan</h3>
+                            <button type="button" id="backToStep2"
+                                class="lg:hidden px-3 py-1.5 text-orange-600 hover:text-orange-700 transition-colors">
+                                <i class="ti ti-arrow-left mr-1"></i> Kembali
+                            </button>
                         </div>
 
-                        <!-- Order Items -->
-                        <div id="orderItems" class="space-y-3 mb-4 max-h-64 overflow-y-auto">
-                            <!-- Items will be added here dynamically -->
+                        <!-- Order Items Review -->
+                        <div id="orderItemsReview" class="space-y-3 mb-4 max-h-64 overflow-y-auto">
+                            <!-- Items will be populated here -->
                         </div>
 
                         <!-- Empty State -->
-                        <div id="emptyState" class="text-center py-8 text-gray-500">
+                        <div id="emptyStateReview" class="text-center py-8 text-gray-500">
                             <i class="ti ti-shopping-cart-off text-3xl mb-2"></i>
                             <p class="text-sm">Belum ada produk dipilih</p>
                         </div>
 
                         <!-- Discount -->
-                        <div class="border-t border-gray-200 pt-4">
-                            <input type="text" id="diskonDisplay" value="{{ old('diskon', 0) }}"
+                        <div class="border-t border-gray-200 pt-4 mb-4">
+                            <label class="block text-sm text-gray-700 mb-1">Diskon</label>
+                            <input type="text" id="diskonDisplayReview" value="{{ old('diskon', 0) }}"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-right"
+                                placeholder="Diskon (Rp)">
+                            <input type="hidden" name="diskon_review" id="diskonReview"
+                                value="{{ old('diskon', 0) }}">
+                        </div>
+
+                        <!-- Summary -->
+                        <div class="space-y-2 mb-4 pb-4 border-b border-gray-200">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Subtotal</span>
+                                <span class="font-medium" id="subtotalDisplayReview">Rp 0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Diskon</span>
+                                <span class="font-medium text-red-600" id="discountDisplayReview">Rp 0</span>
+                            </div>
+                            <div class="flex justify-between text-lg font-bold border-t border-gray-200 pt-2">
+                                <span>Total</span>
+                                <span id="totalDisplayReview">Rp 0</span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="space-y-2">
+                            <button type="button" id="showOrderPreviewMobile"
+                                class="w-full py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors">
+                                <i class="ti ti-eye text-lg mr-2"></i>
+                                Preview Pesanan
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Desktop: Order Summary -->
+                    <div class="hidden lg:block bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
+                        <div class="flex items-center justify-between mb-3 md:mb-4">
+                            <h3 class="text-base md:text-lg font-semibold text-gray-900">Ringkasan Pesanan</h3>
+                            <span class="text-xs md:text-sm text-gray-500" id="orderCount">0 item</span>
+                        </div>
+
+                        <!-- Order Items -->
+                        <div id="orderItems"
+                            class="space-y-2 md:space-y-3 mb-3 md:mb-4 max-h-48 md:max-h-64 overflow-y-auto">
+                            <!-- Items will be added here dynamically -->
+                        </div>
+
+                        <!-- Empty State -->
+                        <div id="emptyState" class="text-center py-6 md:py-8 text-gray-500">
+                            <i class="ti ti-shopping-cart-off text-2xl md:text-3xl mb-2"></i>
+                            <p class="text-xs md:text-sm">Belum ada produk dipilih</p>
+                        </div>
+
+                        <!-- Discount -->
+                        <div class="border-t border-gray-200 pt-3 md:pt-4">
+                            <label class="block text-xs md:text-sm text-gray-700 mb-1">Diskon</label>
+                            <input type="text" id="diskonDisplay" value="{{ old('diskon', 0) }}"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-right text-sm md:text-base"
                                 placeholder="Diskon (Rp)">
                             <input type="hidden" name="diskon" id="diskon" value="{{ old('diskon', 0) }}">
                         </div>
                     </div>
 
-                    <!-- Total & Actions -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                        <!-- Summary -->
+                    <!-- Desktop: Total Summary -->
+                    <div class="hidden lg:block bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
                         <div class="space-y-2 mb-4">
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600">Subtotal</span>
-                                <span class="font-medium" id="subtotalDisplay">Rp 0</span>
+                                <span class="font-medium" id="subtotalDisplayDesktop">Rp 0</span>
                             </div>
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600">Diskon</span>
-                                <span class="font-medium text-red-600" id="discountDisplay">Rp 0</span>
+                                <span class="font-medium text-red-600" id="discountDisplayDesktop">Rp 0</span>
                             </div>
                             <div class="flex justify-between text-lg font-bold border-t border-gray-200 pt-2">
+                                <span>Total</span>
+                                <span id="totalDisplayDesktop">Rp 0</span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="space-y-2">
+                            <button type="button" id="showOrderPreviewDesktop"
+                                class="w-full py-2.5 md:py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors text-sm md:text-base">
+                                <i class="ti ti-eye text-base md:text-lg mr-2"></i>
+                                Preview Pesanan
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Mobile: Total & Actions (sticky bottom, only visible when not in step 3) -->
+                    <div
+                        class="lg:hidden bg-white rounded-lg shadow-sm border border-gray-200 p-3 md:p-4 sticky bottom-0 z-10 mobile-total-actions">
+                        <!-- Summary -->
+                        <div class="space-y-2 mb-3 md:mb-4">
+                            <div class="flex justify-between text-xs md:text-sm">
+                                <span class="text-gray-600">Subtotal</span>
+                                <span class="font-medium text-sm md:text-base" id="subtotalDisplay">Rp 0</span>
+                            </div>
+                            <div class="flex justify-between text-xs md:text-sm">
+                                <span class="text-gray-600">Diskon</span>
+                                <span class="font-medium text-red-600 text-sm md:text-base" id="discountDisplay">Rp
+                                    0</span>
+                            </div>
+                            <div class="flex justify-between text-base md:text-lg font-bold border-t border-gray-200 pt-2">
                                 <span>Total</span>
                                 <span id="totalDisplay">Rp 0</span>
                             </div>
 
                             <!-- DP & Remaining Payment (for kredit) -->
                             <div id="paymentBreakdown" class="hidden border-t border-gray-200 pt-2 space-y-2">
-                                <div class="flex justify-between text-sm">
+                                <div class="flex justify-between text-xs md:text-sm">
                                     <span class="text-green-600">DP Dibayar</span>
-                                    <span class="font-medium text-green-600" id="dpDisplay">Rp 0</span>
+                                    <span class="font-medium text-green-600 text-sm md:text-base" id="dpDisplay">Rp
+                                        0</span>
                                 </div>
-                                <div class="flex justify-between text-sm">
+                                <div class="flex justify-between text-xs md:text-sm">
                                     <span class="text-orange-600">Sisa Pembayaran</span>
-                                    <span class="font-medium text-orange-600" id="remainingDisplay">Rp 0</span>
+                                    <span class="font-medium text-orange-600 text-sm md:text-base"
+                                        id="remainingDisplay">Rp 0</span>
                                 </div>
                             </div>
                         </div>
@@ -268,8 +468,8 @@
                         <!-- Action Buttons -->
                         <div class="space-y-2">
                             <button type="button" id="showOrderPreview"
-                                class="w-full py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors">
-                                <i class="ti ti-eye text-lg mr-2"></i>
+                                class="w-full py-2.5 md:py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors text-sm md:text-base">
+                                <i class="ti ti-eye text-base md:text-lg mr-2"></i>
                                 Preview Pesanan
                             </button>
                         </div>
@@ -281,72 +481,79 @@
 
     <!-- Order Preview Modal -->
     <div id="orderPreviewModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 xl:w-1/2 shadow-lg rounded-xl bg-white">
-            <div class="mt-3">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-xl font-bold text-gray-900">Preview Pesanan Pembelian</h3>
+        <div
+            class="relative top-0 md:top-20 mx-auto p-0 md:p-5 border-0 md:border w-full md:w-11/12 lg:w-1/2 xl:w-2/5 shadow-lg rounded-t-2xl md:rounded-xl bg-white min-h-screen md:min-h-0 flex flex-col">
+            <div class="flex-1 overflow-y-auto p-3 md:p-0 md:mt-3">
+                <!-- Mobile: Close button at top -->
+                <div
+                    class="flex items-center justify-between mb-3 md:mb-6 pb-3 md:pb-0 border-b md:border-b-0 border-gray-200">
+                    <h3 class="text-base md:text-xl font-bold text-gray-900">Preview Pesanan</h3>
                     <button type="button" id="closeOrderPreviewModal" class="text-gray-400 hover:text-gray-600">
-                        <i class="ti ti-x text-2xl"></i>
+                        <i class="ti ti-x text-xl md:text-2xl"></i>
                     </button>
                 </div>
 
                 <!-- Supplier Info -->
-                <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-orange-600 rounded-full flex items-center justify-center">
-                            <i class="ti ti-building text-white"></i>
+                <div class="bg-orange-50 border border-orange-200 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
+                    <div class="flex items-center space-x-2 md:space-x-3">
+                        <div
+                            class="w-8 h-8 md:w-10 md:h-10 bg-orange-600 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="ti ti-building text-white text-sm md:text-base"></i>
                         </div>
-                        <div>
-                            <h4 class="font-semibold text-gray-900" id="previewSupplierName">-</h4>
-                            <p class="text-sm text-gray-600" id="previewSupplierCode">-</p>
+                        <div class="min-w-0 flex-1">
+                            <h4 class="font-semibold text-gray-900 text-sm md:text-base truncate"
+                                id="previewSupplierName">-</h4>
+                            <p class="text-xs md:text-sm text-gray-600 truncate" id="previewSupplierCode">-</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Transaction Info -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div class="bg-gray-50 rounded-lg p-3">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 mb-4 md:mb-6">
+                    <div class="bg-gray-50 rounded-lg p-2 md:p-3">
                         <p class="text-xs text-gray-500 mb-1">No. Faktur</p>
-                        <p class="font-semibold text-gray-900" id="previewInvoiceNumber">-</p>
+                        <p class="font-semibold text-gray-900 text-sm md:text-base truncate" id="previewInvoiceNumber">-
+                        </p>
                     </div>
-                    <div class="bg-gray-50 rounded-lg p-3">
+                    <div class="bg-gray-50 rounded-lg p-2 md:p-3">
                         <p class="text-xs text-gray-500 mb-1">Tanggal</p>
-                        <p class="font-semibold text-gray-900" id="previewDate">-</p>
+                        <p class="font-semibold text-gray-900 text-sm md:text-base" id="previewDate">-</p>
                     </div>
-                    <div class="bg-gray-50 rounded-lg p-3">
+                    <div class="bg-gray-50 rounded-lg p-2 md:p-3">
                         <p class="text-xs text-gray-500 mb-1">Jenis Transaksi</p>
-                        <p class="font-semibold text-gray-900" id="previewTransactionType">-</p>
+                        <p class="font-semibold text-gray-900 text-sm md:text-base" id="previewTransactionType">-</p>
                     </div>
                 </div>
 
                 <!-- Order Items -->
-                <div class="mb-6">
-                    <h4 class="font-semibold text-gray-900 mb-3">Detail Pesanan</h4>
-                    <div class="max-h-64 overflow-y-auto" id="previewOrderItems">
+                <div class="mb-4 md:mb-6">
+                    <h4 class="font-semibold text-gray-900 mb-2 md:mb-3 text-sm md:text-base">Detail Pesanan</h4>
+                    <div class="max-h-48 md:max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-2 md:p-0 md:border-0"
+                        id="previewOrderItems">
                         <!-- Items will be populated here -->
                     </div>
                 </div>
 
                 <!-- Payment Configuration -->
-                <div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-                    <h4 class="font-semibold text-gray-900 mb-3">Konfigurasi Pembayaran</h4>
+                <div class="bg-white border border-gray-200 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
+                    <h4 class="font-semibold text-gray-900 mb-2 md:mb-3 text-sm md:text-base">Konfigurasi Pembayaran</h4>
 
-                    <div class="space-y-4">
+                    <div class="space-y-3 md:space-y-4">
                         <!-- Jenis Transaksi -->
                         <div>
-                            <div class="grid grid-cols-2 gap-3" id="previewTransactionTypeContainer">
+                            <div class="grid grid-cols-2 gap-2 md:gap-3" id="previewTransactionTypeContainer">
                                 <label class="relative cursor-pointer preview-transaction-type-option">
                                     <input type="radio" name="preview_jenis_transaksi" value="tunai"
                                         class="sr-only preview-transaction-type-radio">
                                     <div
-                                        class="p-3 border-2 border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 preview-transaction-type-card">
+                                        class="p-2 md:p-3 border-2 border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 preview-transaction-type-card">
                                         <div class="flex flex-col items-center text-center">
                                             <div
-                                                class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mb-2">
-                                                <i class="ti ti-cash text-green-600 text-sm"></i>
+                                                class="w-7 h-7 md:w-8 md:h-8 bg-green-100 rounded-lg flex items-center justify-center mb-1 md:mb-2">
+                                                <i class="ti ti-cash text-green-600 text-xs md:text-sm"></i>
                                             </div>
-                                            <span class="text-sm font-medium text-gray-900">Tunai</span>
-                                            <span class="text-xs text-gray-500">Bayar Langsung</span>
+                                            <span class="text-xs md:text-sm font-medium text-gray-900">Tunai</span>
+                                            <span class="text-xs text-gray-500 hidden md:block">Bayar Langsung</span>
                                         </div>
                                     </div>
                                 </label>
@@ -354,14 +561,14 @@
                                     <input type="radio" name="preview_jenis_transaksi" value="kredit"
                                         class="sr-only preview-transaction-type-radio">
                                     <div
-                                        class="p-3 border-2 border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 preview-transaction-type-card">
+                                        class="p-2 md:p-3 border-2 border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 preview-transaction-type-card">
                                         <div class="flex flex-col items-center text-center">
                                             <div
-                                                class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mb-2">
-                                                <i class="ti ti-credit-card text-orange-600 text-sm"></i>
+                                                class="w-7 h-7 md:w-8 md:h-8 bg-orange-100 rounded-lg flex items-center justify-center mb-1 md:mb-2">
+                                                <i class="ti ti-credit-card text-orange-600 text-xs md:text-sm"></i>
                                             </div>
-                                            <span class="text-sm font-medium text-gray-900">Kredit</span>
-                                            <span class="text-xs text-gray-500">Bayar Nanti</span>
+                                            <span class="text-xs md:text-sm font-medium text-gray-900">Kredit</span>
+                                            <span class="text-xs text-gray-500 hidden md:block">Bayar Nanti</span>
                                         </div>
                                     </div>
                                 </label>
@@ -370,19 +577,22 @@
 
                         <!-- Metode Pembayaran -->
                         <div>
-                            <div class="grid grid-cols-1 gap-3" id="previewPaymentMethodContainer">
+                            <div class="grid grid-cols-2 md:grid-cols-{{ min(count($metodePembayaran), 4) }} gap-2 md:gap-3"
+                                id="previewPaymentMethodContainer">
                                 @foreach ($metodePembayaran as $metode)
                                     <label class="relative cursor-pointer preview-payment-method-option">
                                         <input type="radio" name="preview_metode_pembayaran"
                                             value="{{ $metode->kode }}" class="sr-only preview-payment-method-radio">
                                         <div
-                                            class="p-3 border-2 border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 preview-payment-method-card">
+                                            class="p-2 md:p-3 border-2 border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 preview-payment-method-card">
                                             <div class="flex items-center">
                                                 <div
-                                                    class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
-                                                    <i class="ti {{ $metode->icon_display }} text-orange-600 text-sm"></i>
+                                                    class="w-6 h-6 md:w-8 md:h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-2 md:mr-3 flex-shrink-0">
+                                                    <i
+                                                        class="ti {{ $metode->icon_display }} text-orange-600 text-xs md:text-sm"></i>
                                                 </div>
-                                                <span class="text-sm font-medium text-gray-900">{{ $metode->nama }}</span>
+                                                <span
+                                                    class="text-xs md:text-sm font-medium text-gray-900 truncate">{{ $metode->nama }}</span>
                                             </div>
                                         </div>
                                     </label>
@@ -393,27 +603,27 @@
                         <!-- Kas/Bank Selection -->
                         <div>
                             <!-- Message when no payment method selected -->
-                            <div id="kasBankMessage" class="text-center py-8 text-gray-500">
-                                <i class="ti ti-arrow-up text-2xl mb-2"></i>
-                                <p class="text-sm">Pilih metode pembayaran terlebih dahulu untuk melihat pilihan kas/bank
-                                </p>
+                            <div id="kasBankMessage" class="text-center py-6 md:py-8 text-gray-500">
+                                <i class="ti ti-arrow-up text-xl md:text-2xl mb-2"></i>
+                                <p class="text-xs md:text-sm">Pilih metode pembayaran terlebih dahulu untuk melihat pilihan
+                                    kas/bank</p>
                             </div>
 
-                            <div class="grid gap-3" id="previewKasBankContainer">
+                            <div class="grid gap-2 md:gap-3" id="previewKasBankContainer">
                                 @foreach ($kasBank ?? [] as $kas)
                                     <label class="relative cursor-pointer preview-kas-bank-option">
                                         <input type="radio" name="preview_kas_bank_id" value="{{ $kas->id }}"
                                             data-jenis="{{ $kas->jenis }}" data-image="{{ $kas->image_url ?? '' }}"
                                             class="sr-only preview-kas-bank-radio">
                                         <div
-                                            class="p-4 border-2 border-gray-200 rounded-xl hover:border-orange-400 hover:bg-gradient-to-br hover:from-orange-50 hover:to-red-50 transition-all duration-300 preview-kas-bank-card flex items-center justify-between shadow-sm hover:shadow-md">
-                                            <div class="flex items-center flex-1">
+                                            class="p-3 md:p-4 border-2 border-gray-200 rounded-xl hover:border-orange-400 hover:bg-gradient-to-br hover:from-orange-50 hover:to-red-50 transition-all duration-300 preview-kas-bank-card flex items-center justify-between shadow-sm hover:shadow-md">
+                                            <div class="flex items-center flex-1 min-w-0">
                                                 <div
-                                                    class="w-16 h-16 rounded-xl flex items-center justify-center mr-4 overflow-hidden shadow-sm flex-shrink-0">
+                                                    class="w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center mr-2 md:mr-4 overflow-hidden shadow-sm flex-shrink-0">
                                                     @if ($kas->jenis === 'KAS')
                                                         <div
                                                             class="w-full h-full bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
-                                                            <i class="ti ti-cash text-green-600 text-xl"></i>
+                                                            <i class="ti ti-cash text-green-600 text-base md:text-xl"></i>
                                                         </div>
                                                     @else
                                                         @if ($kas->image)
@@ -423,17 +633,19 @@
                                                         @else
                                                             <div
                                                                 class="w-full h-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
-                                                                <i class="ti ti-building-bank text-purple-600 text-xl"></i>
+                                                                <i
+                                                                    class="ti ti-building-bank text-purple-600 text-base md:text-xl"></i>
                                                             </div>
                                                         @endif
                                                     @endif
                                                 </div>
-                                                <div class="flex-1 flex flex-col justify-center">
-                                                    <div class="text-base font-bold text-gray-900 leading-tight">
+                                                <div class="flex-1 flex flex-col justify-center min-w-0">
+                                                    <div
+                                                        class="text-sm md:text-base font-bold text-gray-900 leading-tight truncate">
                                                         {{ $kas->nama }}
                                                     </div>
                                                     @if ($kas->no_rekening)
-                                                        <div class="text-sm text-gray-500 font-medium">
+                                                        <div class="text-xs md:text-sm text-gray-500 font-medium truncate">
                                                             {{ $kas->no_rekening }}
                                                         </div>
                                                     @endif
@@ -447,55 +659,86 @@
 
                         <!-- DP Amount (shown only for kredit) -->
                         <div id="previewDpContainer" class="hidden">
-                            <label for="previewDpAmount" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="previewDpAmount" id="previewDpLabel"
+                                class="block text-sm font-medium text-gray-700 mb-2">
                                 Jumlah Down Payment (DP)
                             </label>
                             <input type="text" id="previewDpAmount"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-right"
                                 placeholder="Jumlah DP (Rp)">
                         </div>
+
+                        <!-- Uang Muka Supplier -->
+                        <div id="previewUangMukaContainer" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Gunakan Uang Muka (Opsional)
+                            </label>
+                            <div id="uangMukaList"
+                                class="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50">
+                                <p class="text-sm text-gray-500 text-center py-4" id="uangMukaEmptyMessage">
+                                    Pilih supplier terlebih dahulu untuk melihat uang muka yang tersedia
+                                </p>
+                            </div>
+                            <div class="mt-2 text-xs text-gray-500">
+                                <i class="ti ti-info-circle mr-1"></i>
+                                Pilih uang muka yang akan digunakan dan masukkan jumlahnya
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Order Summary -->
-                <div class="bg-gray-50 rounded-lg p-4 mb-6">
-                    <h4 class="font-semibold text-gray-900 mb-3">Ringkasan Pesanan</h4>
+                <div class="bg-gray-50 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
+                    <h4 class="font-semibold text-gray-900 mb-2 md:mb-3 text-sm md:text-base">Ringkasan Pesanan</h4>
                     <div class="space-y-2">
-                        <div class="flex justify-between text-sm">
+                        <div class="flex justify-between text-xs md:text-sm">
                             <span class="text-gray-600">Subtotal</span>
-                            <span class="font-medium" id="previewSubtotal">Rp 0</span>
+                            <span class="font-medium text-sm md:text-base" id="previewSubtotal">Rp 0</span>
                         </div>
-                        <div class="flex justify-between text-sm" id="previewDiscountRow" style="display: none;">
+                        <div class="flex justify-between text-xs md:text-sm" id="previewDiscountRow"
+                            style="display: none;">
                             <span class="text-gray-600">Diskon</span>
-                            <span class="font-medium text-red-600" id="previewDiscount">Rp 0</span>
+                            <span class="font-medium text-red-600 text-sm md:text-base" id="previewDiscount">Rp 0</span>
                         </div>
-                        <div class="flex justify-between text-lg font-bold border-t border-gray-200 pt-2">
+                        <div class="flex justify-between text-base md:text-lg font-bold border-t border-gray-200 pt-2">
                             <span>Total</span>
                             <span id="previewTotal">Rp 0</span>
                         </div>
                         <div id="previewPaymentBreakdown" class="hidden border-t border-gray-200 pt-2 space-y-2">
-                            <div class="flex justify-between text-sm">
-                                <span class="text-green-600">DP Dibayar</span>
-                                <span class="font-medium text-green-600" id="previewDpDisplay">Rp 0</span>
+                            <div class="flex justify-between text-xs md:text-sm" id="previewUangMukaRow"
+                                style="display: none;">
+                                <span class="text-blue-600">Uang Muka Digunakan</span>
+                                <span class="font-medium text-blue-600 text-sm md:text-base"
+                                    id="previewUangMukaDisplay">Rp 0</span>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-xs md:text-sm">
+                                <span class="text-green-600" id="previewDpLabelText">DP Dibayar</span>
+                                <span class="font-medium text-green-600 text-sm md:text-base" id="previewDpDisplay">Rp
+                                    0</span>
+                            </div>
+                            <div class="flex justify-between text-xs md:text-sm">
                                 <span class="text-orange-600">Sisa Pembayaran</span>
-                                <span class="font-medium text-orange-600" id="previewRemainingDisplay">Rp 0</span>
+                                <span class="font-medium text-orange-600 text-sm md:text-base"
+                                    id="previewRemainingDisplay">Rp 0</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="flex space-x-3">
+            </div>
+
+            <!-- Action Buttons - Sticky Bottom for Mobile -->
+            <div
+                class="sticky bottom-0 bg-white border-t border-gray-200 md:border-t-0 p-3 md:p-0 md:relative md:bg-transparent md:mt-3 md:px-0 shadow-lg md:shadow-none z-10">
+                <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-3">
                     <button type="button" id="closePreviewModal"
-                        class="flex-1 py-3 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600 transition-colors">
-                        <i class="ti ti-x text-lg mr-2"></i>
+                        class="w-full md:flex-1 py-2.5 md:py-3 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600 transition-colors text-sm md:text-base">
+                        <i class="ti ti-x text-base md:text-lg mr-2"></i>
                         Batal
                     </button>
                     <button type="button" id="confirmOrderSave"
-                        class="flex-1 py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors">
-                        <i class="ti ti-device-floppy text-lg mr-2"></i>
+                        class="w-full md:flex-1 py-2.5 md:py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors text-sm md:text-base">
+                        <i class="ti ti-device-floppy text-base md:text-lg mr-2"></i>
                         Simpan Pembelian
                     </button>
                 </div>
@@ -506,108 +749,112 @@
     <!-- Quantity Input Modal -->
     <div id="quantityModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
         <div
-            class="relative top-1/2 transform -translate-y-1/2 mx-auto p-6 border w-11/12 md:w-4/5 lg:w-3/4 xl:w-2/3 max-w-4xl shadow-lg rounded-xl bg-white">
-            <div class="mt-3">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Masukkan Quantity</h3>
+            class="relative w-full md:w-4/5 lg:w-3/4 xl:w-2/3 max-w-4xl mx-auto p-0 md:p-6 border-0 md:border shadow-lg rounded-t-2xl md:rounded-xl bg-white md:top-1/2 md:transform md:-translate-y-1/2 min-h-screen md:min-h-0 flex flex-col">
+            <div class="flex-1 overflow-y-auto p-3 md:p-0 md:mt-3">
+                <div
+                    class="flex items-center justify-between mb-3 md:mb-4 pb-3 md:pb-0 border-b md:border-b-0 border-gray-200">
+                    <h3 class="text-base md:text-lg font-semibold text-gray-900">Masukkan Quantity</h3>
                     <button type="button" id="closeQuantityModal" class="text-gray-400 hover:text-gray-600">
                         <i class="ti ti-x text-xl"></i>
                     </button>
                 </div>
 
                 <!-- Product Info -->
-                <div id="modalProductInfo" class="mb-4 p-3 bg-gray-50 rounded-lg">
-                    <div class="flex items-center space-x-3">
+                <div id="modalProductInfo" class="mb-3 md:mb-4 p-2 md:p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center space-x-2 md:space-x-3">
                         <div
-                            class="w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-lg flex items-center justify-center">
-                            <i class="ti ti-package text-xl text-orange-600"></i>
+                            class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-lg flex items-center justify-center">
+                            <i class="ti ti-package text-lg md:text-xl text-orange-600"></i>
                         </div>
-                        <div class="flex-1">
-                            <h4 id="modalProductName" class="font-semibold text-gray-900"></h4>
-                            <p id="modalProductCode" class="text-sm text-gray-500"></p>
-                            <p id="modalProductPrice" class="text-sm font-medium text-orange-600"></p>
+                        <div class="flex-1 min-w-0">
+                            <h4 id="modalProductName" class="font-semibold text-sm md:text-base text-gray-900 truncate">
+                            </h4>
+                            <p id="modalProductCode" class="text-xs md:text-sm text-gray-500 truncate"></p>
+                            <p id="modalProductPrice" class="text-xs md:text-sm font-medium text-orange-600"></p>
                         </div>
                     </div>
-                    <div class="mt-2 text-sm text-gray-600">
+                    <div class="mt-2 text-xs md:text-sm text-gray-600">
                         <span>Satuan: </span>
                         <span id="modalProductUnit" class="font-medium text-orange-600"></span>
                     </div>
                 </div>
 
                 <!-- Input Fields Grid -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-4 md:mb-6">
                     <!-- Left Column -->
-                    <div class="space-y-4">
+                    <div class="space-y-3 md:space-y-4">
                         <!-- Quantity Input -->
                         <div>
-                            <label for="quantityInput" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="quantityInput" class="block text-xs md:text-sm font-medium text-gray-700 mb-2">
                                 Quantity
                             </label>
                             <div class="flex items-center space-x-2">
                                 <button type="button" id="decreaseQty"
-                                    class="w-10 h-10 bg-red-500 hover:bg-red-600 rounded-lg text-white flex items-center justify-center font-bold text-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg">
+                                    class="w-10 h-10 md:w-10 md:h-10 bg-red-500 hover:bg-red-600 rounded-lg text-white flex items-center justify-center font-bold text-base md:text-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg">
                                     <i class="ti ti-minus"></i>
                                 </button>
                                 <div class="flex-1 relative">
                                     <input type="text" id="quantityInput"
-                                        class="w-full pl-4 pr-16 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-center text-lg font-semibold"
+                                        class="w-full pl-3 md:pl-4 pr-12 md:pr-16 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-center text-base md:text-lg font-semibold"
                                         value="1" placeholder="0">
-                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <div
+                                        class="absolute inset-y-0 right-0 flex items-center pr-2 md:pr-3 pointer-events-none">
                                         <span id="modalProductUnitInInput"
-                                            class="text-sm font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded"></span>
+                                            class="text-xs md:text-sm font-medium text-gray-500 bg-gray-100 px-1.5 md:px-2 py-1 rounded"></span>
                                     </div>
                                 </div>
                                 <button type="button" id="increaseQty"
-                                    class="w-10 h-10 bg-orange-600 hover:bg-orange-700 rounded-lg text-white flex items-center justify-center font-bold text-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg">
+                                    class="w-10 h-10 md:w-10 md:h-10 bg-orange-600 hover:bg-orange-700 rounded-lg text-white flex items-center justify-center font-bold text-base md:text-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg">
                                     <i class="ti ti-plus"></i>
                                 </button>
                             </div>
-                            <p class="text-xs text-gray-500 mt-1">Masukkan jumlah yang diinginkan</p>
+                            <p class="text-xs text-gray-500 mt-1 hidden md:block">Masukkan jumlah yang diinginkan</p>
                         </div>
 
                         <!-- Quantity Discount Input -->
                         <div>
-                            <label for="quantityDiscountInput" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="quantityDiscountInput"
+                                class="block text-xs md:text-sm font-medium text-gray-700 mb-2">
                                 Potongan Quantity (Opsional)
                             </label>
                             <div class="flex items-center space-x-2">
                                 <button type="button" id="decreaseQtyDiscount"
-                                    class="w-10 h-10 bg-red-500 hover:bg-red-600 rounded-lg text-white flex items-center justify-center font-bold text-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg">
+                                    class="w-10 h-10 md:w-10 md:h-10 bg-red-500 hover:bg-red-600 rounded-lg text-white flex items-center justify-center font-bold text-base md:text-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg">
                                     <i class="ti ti-minus"></i>
                                 </button>
                                 <div class="flex-1 relative">
                                     <input type="text" id="quantityDiscountInput"
-                                        class="w-full pl-4 pr-16 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-center text-lg font-semibold"
+                                        class="w-full pl-3 md:pl-4 pr-12 md:pr-16 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-center text-base md:text-lg font-semibold"
                                         value="0" placeholder="0">
-                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <div
+                                        class="absolute inset-y-0 right-0 flex items-center pr-2 md:pr-3 pointer-events-none">
                                         <span id="modalProductUnitInDiscountInput"
-                                            class="text-sm font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded"></span>
+                                            class="text-xs md:text-sm font-medium text-gray-500 bg-gray-100 px-1.5 md:px-2 py-1 rounded"></span>
                                     </div>
                                 </div>
                                 <button type="button" id="increaseQtyDiscount"
-                                    class="w-10 h-10 bg-green-500 hover:bg-green-600 rounded-lg text-white flex items-center justify-center font-bold text-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg">
+                                    class="w-10 h-10 md:w-10 md:h-10 bg-green-500 hover:bg-green-600 rounded-lg text-white flex items-center justify-center font-bold text-base md:text-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg">
                                     <i class="ti ti-plus"></i>
                                 </button>
                             </div>
-                            <p class="text-xs text-gray-500 mt-1">Masukkan potongan quantity untuk produk ini (akan
-                                mengurangi
-                                quantity yang dibeli)</p>
+                            <p class="text-xs text-gray-500 mt-1 hidden md:block">Masukkan potongan quantity untuk produk
+                                ini (akan mengurangi quantity yang dibeli)</p>
                         </div>
                     </div>
 
                     <!-- Right Column -->
-                    <div class="space-y-4">
+                    <div class="space-y-3 md:space-y-4">
                         <!-- Price Input -->
                         <div>
-                            <label for="modalPriceInput" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="modalPriceInput" class="block text-xs md:text-sm font-medium text-gray-700 mb-2">
                                 Harga Beli Satuan
                             </label>
                             <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-500 text-sm font-medium">Rp</span>
+                                <div class="absolute inset-y-0 left-0 pl-2 md:pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 text-xs md:text-sm font-medium">Rp</span>
                                 </div>
                                 <input type="text" id="modalPriceInput"
-                                    class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-right text-lg font-semibold"
+                                    class="w-full pl-10 md:pl-12 pr-3 md:pr-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-right text-base md:text-lg font-semibold"
                                     placeholder="0">
                             </div>
                             <p class="text-xs text-gray-500 mt-1">Harga default: <span id="modalDefaultPrice"
@@ -616,36 +863,38 @@
 
                         <!-- Discount Input -->
                         <div>
-                            <label for="discountInput" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="discountInput" class="block text-xs md:text-sm font-medium text-gray-700 mb-2">
                                 Potongan Harga (Opsional)
                             </label>
                             <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-500 text-sm font-medium">Rp</span>
+                                <div class="absolute inset-y-0 left-0 pl-2 md:pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 text-xs md:text-sm font-medium">Rp</span>
                                 </div>
                                 <input type="text" id="discountInput"
-                                    class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-right text-lg font-semibold"
+                                    class="w-full pl-10 md:pl-12 pr-3 md:pr-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-right text-base md:text-lg font-semibold"
                                     value="0" placeholder="0">
                             </div>
-                            <p class="text-xs text-gray-500 mt-1">Masukkan potongan harga untuk produk ini (dalam Rupiah)
+                            <p class="text-xs text-gray-500 mt-1 hidden md:block">Masukkan potongan harga untuk produk ini
+                                (dalam Rupiah)
                             </p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Keterangan Input - Full Width -->
-                <div class="mb-6">
-                    <label for="keteranganInput" class="block text-sm font-medium text-gray-700 mb-2">
+                <div class="mb-4 md:mb-6">
+                    <label for="keteranganInput" class="block text-xs md:text-sm font-medium text-gray-700 mb-2">
                         Keterangan (Opsional)
                     </label>
                     <textarea id="keteranganInput" rows="2"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm resize-none"
+                        class="w-full px-3 md:px-4 py-2 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-xs md:text-sm resize-none"
                         placeholder="Masukkan keterangan untuk item ini..."></textarea>
-                    <p class="text-xs text-gray-500 mt-1">Tambahkan catatan atau keterangan khusus untuk item ini</p>
+                    <p class="text-xs text-gray-500 mt-1 hidden md:block">Tambahkan catatan atau keterangan khusus untuk
+                        item ini</p>
                 </div>
 
                 <!-- Total Price Preview -->
-                <div class="mb-6 p-3 bg-orange-50 rounded-lg">
+                <div class="mb-4 md:mb-6 p-2 md:p-3 bg-orange-50 rounded-lg">
                     <div class="space-y-2">
                         <div class="flex justify-between items-center text-sm">
                             <span class="text-gray-600">Quantity:</span>
@@ -677,15 +926,19 @@
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="flex space-x-3">
+            </div>
+
+            <!-- Action Buttons - Sticky Bottom for Mobile -->
+            <div
+                class="sticky bottom-0 bg-white border-t border-gray-200 md:border-t-0 p-3 md:p-0 md:relative md:bg-transparent md:mt-3 md:px-0 shadow-lg md:shadow-none z-10">
+                <div class="flex space-x-2 md:space-x-3">
                     <button type="button" id="cancelQuantity"
-                        class="w-24 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                        class="w-20 md:w-24 py-2.5 md:py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors text-sm md:text-base">
                         Batal
                     </button>
                     <button type="button" id="confirmQuantity"
-                        class="flex-1 py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors whitespace-nowrap">
-                        <i class="ti ti-plus text-sm mr-1"></i>
+                        class="flex-1 py-2.5 md:py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors whitespace-nowrap text-sm md:text-base">
+                        <i class="ti ti-plus text-xs md:text-sm mr-1"></i>
                         Tambah ke Keranjang
                     </button>
                 </div>
@@ -695,65 +948,69 @@
 
     <!-- Supplier Selection Modal -->
     <div id="supplierModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-xl bg-white">
-            <div class="mt-3">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Pilih Supplier</h3>
+        <div
+            class="relative top-0 md:top-20 mx-auto p-0 md:p-5 border-0 md:border w-full md:w-3/4 lg:w-1/2 shadow-lg rounded-t-2xl md:rounded-xl bg-white min-h-screen md:min-h-0 flex flex-col">
+            <div class="flex-1 overflow-y-auto p-3 md:p-0 md:mt-3">
+                <div
+                    class="flex items-center justify-between mb-3 md:mb-4 pb-3 md:pb-0 border-b md:border-b-0 border-gray-200">
+                    <h3 class="text-base md:text-lg font-semibold text-gray-900">Pilih Supplier</h3>
                     <button type="button" id="closeSupplierModal" class="text-gray-400 hover:text-gray-600">
                         <i class="ti ti-x text-xl"></i>
                     </button>
                 </div>
 
                 <!-- Search Supplier -->
-                <div class="mb-4">
+                <div class="mb-3 md:mb-4">
                     <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="ti ti-search text-lg text-gray-400"></i>
+                        <div class="absolute inset-y-0 left-0 pl-2 md:pl-3 flex items-center pointer-events-none">
+                            <i class="ti ti-search text-base md:text-lg text-gray-400"></i>
                         </div>
                         <input type="text" id="supplierSearch" placeholder="Cari nama atau kode supplier..."
-                            class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+                            class="w-full pl-9 md:pl-11 pr-3 md:pr-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm md:text-base">
                     </div>
                 </div>
 
                 <!-- Supplier List -->
-                <div id="supplierList" class="max-h-96 overflow-y-auto space-y-2">
+                <div id="supplierList" class="max-h-[calc(100vh-280px)] md:max-h-96 overflow-y-auto space-y-2">
                     @foreach ($suppliers as $supplier)
-                        <div class="supplier-item p-4 border border-gray-200 rounded-lg hover:bg-orange-50 hover:border-orange-300 cursor-pointer transition-all duration-200"
+                        <div class="supplier-item p-3 md:p-4 border border-gray-200 rounded-lg hover:bg-orange-50 hover:border-orange-300 cursor-pointer transition-all duration-200"
                             data-id="{{ $supplier->id }}" data-name="{{ $supplier->nama }}"
                             data-code="{{ $supplier->kode_supplier }}" data-phone="{{ $supplier->telepon ?? '' }}"
                             data-address="{{ $supplier->alamat ?? '' }}">
                             <div class="flex items-center justify-between">
-                                <div class="flex-1">
-                                    <div class="flex items-center space-x-3">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center space-x-2 md:space-x-3">
                                         <div
-                                            class="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center">
-                                            <i class="ti ti-building-store text-white"></i>
+                                            class="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <i class="ti ti-building-store text-white text-sm md:text-base"></i>
                                         </div>
-                                        <div>
-                                            <h4 class="font-semibold text-gray-900">{{ $supplier->nama }}</h4>
-                                            <p class="text-sm text-gray-500">{{ $supplier->kode_supplier }}</p>
+                                        <div class="min-w-0 flex-1">
+                                            <h4 class="font-semibold text-sm md:text-base text-gray-900 truncate">
+                                                {{ $supplier->nama }}</h4>
+                                            <p class="text-xs md:text-sm text-gray-500 truncate">
+                                                {{ $supplier->kode_supplier }}</p>
                                             @if ($supplier->telepon)
-                                                <p class="text-xs text-gray-400">{{ $supplier->telepon }}</p>
+                                                <p class="text-xs text-gray-400 truncate">{{ $supplier->telepon }}</p>
                                             @endif
                                         </div>
                                     </div>
                                     @if ($supplier->alamat)
-                                        <p class="text-xs text-gray-500 mt-2 ml-13">
+                                        <p class="text-xs text-gray-500 mt-2 ml-0 md:ml-13 truncate">
                                             {{ Str::limit($supplier->alamat, 50) }}</p>
                                     @endif
                                 </div>
-                                <div class="text-right">
+                                <div class="text-right flex-shrink-0 ml-2">
                                     @if ($supplier->status)
                                         <span
-                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            class="inline-flex items-center px-2 md:px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                             <i class="ti ti-check-circle text-xs mr-1"></i>
-                                            Aktif
+                                            <span class="hidden md:inline">Aktif</span>
                                         </span>
                                     @else
                                         <span
-                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            class="inline-flex items-center px-2 md:px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                             <i class="ti ti-x-circle text-xs mr-1"></i>
-                                            Nonaktif
+                                            <span class="hidden md:inline">Nonaktif</span>
                                         </span>
                                     @endif
                                 </div>
@@ -761,15 +1018,16 @@
                         </div>
                     @endforeach
                 </div>
+            </div>
 
-                <!-- Add New Supplier Button -->
-                <div class="mt-4 pt-4 border-t border-gray-200">
-                    <a href="{{ route('supplier.create') }}" target="_blank"
-                        class="w-full flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                        <i class="ti ti-plus text-lg mr-2"></i>
-                        Tambah Supplier Baru
-                    </a>
-                </div>
+            <!-- Add New Supplier Button - Sticky Bottom for Mobile -->
+            <div
+                class="sticky bottom-0 bg-white border-t border-gray-200 md:border-t-0 p-3 md:p-0 md:relative md:bg-transparent md:mt-4 md:pt-4 md:px-0 shadow-lg md:shadow-none z-10">
+                <a href="{{ route('supplier.create') }}" target="_blank"
+                    class="w-full flex items-center justify-center px-4 py-2.5 md:py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm md:text-base">
+                    <i class="ti ti-plus text-base md:text-lg mr-2"></i>
+                    Tambah Supplier Baru
+                </a>
             </div>
         </div>
     </div>
@@ -892,6 +1150,42 @@
             to {
                 opacity: 1;
                 transform: translateY(0);
+            }
+        }
+
+        /* Order Preview Modal Mobile Styles */
+        @media (max-width: 768px) {
+            #orderPreviewModal {
+                display: flex;
+                align-items: flex-end;
+            }
+
+            #orderPreviewModal.hidden {
+                display: none;
+            }
+
+            #orderPreviewModal>div {
+                animation: slideUpPreview 0.3s ease-out;
+                width: 100%;
+                margin-top: auto;
+                max-height: 95vh;
+            }
+
+            #orderPreviewModal>div>div:first-child {
+                padding-bottom: 20px;
+                /* Space for sticky button */
+            }
+
+            @keyframes slideUpPreview {
+                from {
+                    opacity: 0;
+                    transform: translateY(100%);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
             }
         }
 
@@ -1059,6 +1353,68 @@
             backdrop-filter: blur(8px);
         }
 
+        /* Supplier Modal Mobile Styles */
+        @media (max-width: 768px) {
+            #supplierModal {
+                display: flex;
+                align-items: flex-end;
+            }
+
+            #supplierModal.hidden {
+                display: none;
+            }
+
+            #supplierModal>div {
+                animation: slideUp 0.3s ease-out;
+                width: 100%;
+                margin-top: auto;
+                max-height: 100vh;
+                height: 100vh;
+            }
+
+            #supplierModal>div>div:first-child {
+                padding-bottom: 20px;
+                /* Space for sticky button */
+            }
+        }
+
+        /* Quantity Modal Mobile Styles */
+        @media (max-width: 768px) {
+            #quantityModal {
+                display: flex;
+                align-items: flex-end;
+            }
+
+            #quantityModal.hidden {
+                display: none;
+            }
+
+            #quantityModal>div {
+                animation: slideUp 0.3s ease-out;
+                width: 100%;
+                margin-top: auto;
+                max-height: 100vh;
+                height: 100vh;
+            }
+
+            #quantityModal>div>div:first-child {
+                padding-bottom: 20px;
+                /* Space for sticky button */
+            }
+
+            @keyframes slideUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(100%);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        }
+
         /* Flatpickr Customization for Purchase Theme */
         .flatpickr-months {
             background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%) !important;
@@ -1103,6 +1459,197 @@
 @endpush
 
 @push('scripts')
+    <script>
+        // Mobile Step Navigation
+        let currentStep = 1;
+        const totalSteps = 3;
+
+        function showStep(step) {
+            // Hide all mobile steps
+            document.querySelectorAll('.mobile-step').forEach(el => {
+                el.classList.add('hidden');
+            });
+
+            // Show selected step
+            const stepElement = document.querySelector(`.mobile-step-${step}`);
+            if (stepElement) {
+                stepElement.classList.remove('hidden');
+            }
+
+            // Show/hide mobile total actions based on step
+            const mobileTotalActions = document.querySelector('.mobile-total-actions');
+            if (mobileTotalActions) {
+                // Hide sticky bottom actions when in step 1 (transaction info) or step 3 (review)
+                if (step === 1 || step === 3) {
+                    mobileTotalActions.classList.add('hidden');
+                } else {
+                    mobileTotalActions.classList.remove('hidden');
+                }
+            }
+
+            // Update stepper indicators
+            updateStepper(step);
+
+            // Scroll to top
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        function updateStepper(step) {
+            currentStep = step;
+
+            // Update step indicators
+            for (let i = 1; i <= totalSteps; i++) {
+                const indicator = document.getElementById(`stepIndicator${i}`);
+                const progressBar = document.getElementById(`progressBar${i}`);
+
+                if (i < step) {
+                    // Completed step
+                    indicator.classList.remove('bg-gray-200', 'text-gray-600');
+                    indicator.classList.add('bg-green-500', 'text-white');
+                    if (progressBar) progressBar.style.width = '100%';
+                } else if (i === step) {
+                    // Current step
+                    indicator.classList.remove('bg-gray-200', 'text-gray-600', 'bg-green-500');
+                    indicator.classList.add('bg-orange-600', 'text-white');
+                    if (progressBar) progressBar.style.width = '50%';
+                } else {
+                    // Future step
+                    indicator.classList.remove('bg-orange-600', 'text-white', 'bg-green-500');
+                    indicator.classList.add('bg-gray-200', 'text-gray-600');
+                    if (progressBar) progressBar.style.width = '0%';
+                }
+            }
+
+            // Update step title and description
+            const stepTitle = document.getElementById('stepTitle');
+            const stepDescription = document.getElementById('stepDescription');
+
+            const stepConfig = {
+                1: {
+                    title: 'Langkah 1: Informasi Transaksi',
+                    description: 'Isi informasi supplier dan tanggal'
+                },
+                2: {
+                    title: 'Langkah 2: Pilih Produk',
+                    description: 'Pilih produk yang akan dibeli'
+                },
+                3: {
+                    title: 'Langkah 3: Review Pesanan',
+                    description: 'Periksa dan konfirmasi pesanan'
+                }
+            };
+
+            if (stepTitle && stepDescription && stepConfig[step]) {
+                stepTitle.textContent = stepConfig[step].title;
+                stepDescription.textContent = stepConfig[step].description;
+            }
+        }
+
+        function validateStep(step) {
+            if (step === 1) {
+                const supplierId = document.getElementById('supplierId').value;
+                if (!supplierId) {
+                    showToast('Pilih supplier terlebih dahulu!', 'error');
+                    return false;
+                }
+                return true;
+            } else if (step === 2) {
+                // Check if cart has items
+                if (cart.length === 0) {
+                    showToast('Pilih minimal 1 produk terlebih dahulu!', 'error');
+                    return false;
+                }
+                return true;
+            }
+            return true;
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Only show step navigation on mobile
+            if (window.innerWidth < 1024) {
+                showStep(1);
+            } else {
+                // Desktop: hide all mobile steps (they should use desktop version)
+                document.querySelectorAll('.mobile-step').forEach(el => {
+                    el.classList.add('hidden');
+                });
+            }
+
+            // Next to Step 2 button
+            const nextToStep2Btn = document.getElementById('nextToStep2');
+            if (nextToStep2Btn) {
+                nextToStep2Btn.addEventListener('click', function() {
+                    if (validateStep(1)) {
+                        showStep(2);
+                    }
+                });
+            }
+
+            // Back to Step 2 button (from Step 3)
+            const backToStep2Btn = document.getElementById('backToStep2');
+            if (backToStep2Btn) {
+                backToStep2Btn.addEventListener('click', function() {
+                    showStep(2);
+                });
+            }
+
+            // Proceed to Review button (from Step 2)
+            const proceedToReviewBtn = document.getElementById('proceedToReviewBtn');
+            if (proceedToReviewBtn) {
+                proceedToReviewBtn.addEventListener('click', function() {
+                    if (validateStep(2)) {
+                        showStep(3);
+                        // Update review with current cart
+                        updateOrderSummary();
+                        calculateTotals();
+                    }
+                });
+            }
+
+            // Add button to proceed to step 3 from step 2 (mobile only)
+            // This will be added dynamically in step 2
+
+            // Sync supplier between mobile and desktop
+            const supplierIdInput = document.getElementById('supplierId');
+            const supplierDisplayInput = document.getElementById('supplierDisplay');
+
+            if (supplierIdInput && supplierDisplayInput) {
+                // Sync when supplier changes
+                const observer = new MutationObserver(function(mutations) {
+                    const supplierIdDesktop = document.getElementById('supplierIdDesktop');
+                    const supplierDisplayDesktop = document.getElementById('supplierDisplayDesktop');
+
+                    if (supplierIdDesktop && supplierDisplayDesktop) {
+                        supplierIdDesktop.value = supplierIdInput.value;
+                        supplierDisplayDesktop.value = supplierDisplayInput.value;
+                    }
+                });
+
+                observer.observe(supplierIdInput, {
+                    attributes: true,
+                    attributeFilter: ['value']
+                });
+            }
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 1024) {
+                    // Desktop: hide all mobile steps
+                    document.querySelectorAll('.mobile-step').forEach(el => {
+                        el.classList.add('hidden');
+                    });
+                } else {
+                    // Mobile: show current step
+                    showStep(currentStep);
+                }
+            });
+        });
+    </script>
+
     <!-- Flatpickr JS -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
@@ -1264,41 +1811,78 @@
         // Supplier modal functionality
         function initializeSupplierModal() {
             const searchSupplierBtn = document.getElementById('searchSupplierBtn');
+            const searchSupplierBtnDesktop = document.getElementById('searchSupplierBtnDesktop');
             const supplierModal = document.getElementById('supplierModal');
             const closeSupplierModal = document.getElementById('closeSupplierModal');
             const supplierSearch = document.getElementById('supplierSearch');
             const clearSupplierBtn = document.getElementById('clearSupplierBtn');
+            const clearSupplierBtnDesktop = document.getElementById('clearSupplierBtnDesktop');
 
-            searchSupplierBtn.addEventListener('click', () => {
-                supplierModal.classList.remove('hidden');
-            });
+            // Mobile button
+            if (searchSupplierBtn) {
+                searchSupplierBtn.addEventListener('click', () => {
+                    supplierModal.classList.remove('hidden');
+                });
+            }
+
+            // Desktop button
+            if (searchSupplierBtnDesktop) {
+                searchSupplierBtnDesktop.addEventListener('click', () => {
+                    supplierModal.classList.remove('hidden');
+                });
+            }
 
             closeSupplierModal.addEventListener('click', () => {
                 supplierModal.classList.add('hidden');
             });
 
-            // Clear supplier selection
-            clearSupplierBtn.addEventListener('click', () => {
-                document.getElementById('supplierDisplay').value = '';
-                document.getElementById('supplierId').value = '';
-                clearSupplierBtn.classList.add('hidden');
-            });
+            // Clear supplier selection (Mobile)
+            if (clearSupplierBtn) {
+                clearSupplierBtn.addEventListener('click', () => {
+                    document.getElementById('supplierDisplay').value = '';
+                    document.getElementById('supplierId').value = '';
+                    clearSupplierBtn.classList.add('hidden');
+                    supplierModal.classList.add('hidden');
+                });
+            }
+
+            // Clear supplier selection (Desktop)
+            if (clearSupplierBtnDesktop) {
+                clearSupplierBtnDesktop.addEventListener('click', () => {
+                    document.getElementById('supplierDisplayDesktop').value = '';
+                    document.getElementById('supplierIdDesktop').value = '';
+                    clearSupplierBtnDesktop.classList.add('hidden');
+                    supplierModal.classList.add('hidden');
+                });
+            }
 
             // Supplier search
-            supplierSearch.addEventListener('input', function() {
-                filterSuppliers(this.value);
-            });
+            if (supplierSearch) {
+                supplierSearch.addEventListener('input', function() {
+                    filterSuppliers(this.value);
+                });
+            }
 
-            // Supplier selection
+            // Supplier selection - update both mobile and desktop
             document.querySelectorAll('.supplier-item').forEach(item => {
                 item.addEventListener('click', function() {
+                    const supplierName = `${this.dataset.name} (${this.dataset.code})`;
+                    const supplierId = this.dataset.id;
+
+                    // Update mobile fields
                     const supplierDisplay = document.getElementById('supplierDisplay');
-                    const supplierId = document.getElementById('supplierId');
+                    const supplierIdInput = document.getElementById('supplierId');
+                    if (supplierDisplay) supplierDisplay.value = supplierName;
+                    if (supplierIdInput) supplierIdInput.value = supplierId;
+                    if (clearSupplierBtn) clearSupplierBtn.classList.remove('hidden');
 
-                    supplierDisplay.value = `${this.dataset.name} (${this.dataset.code})`;
-                    supplierId.value = this.dataset.id;
+                    // Update desktop fields
+                    const supplierDisplayDesktop = document.getElementById('supplierDisplayDesktop');
+                    const supplierIdDesktop = document.getElementById('supplierIdDesktop');
+                    if (supplierDisplayDesktop) supplierDisplayDesktop.value = supplierName;
+                    if (supplierIdDesktop) supplierIdDesktop.value = supplierId;
+                    if (clearSupplierBtnDesktop) clearSupplierBtnDesktop.classList.remove('hidden');
 
-                    clearSupplierBtn.classList.remove('hidden');
                     supplierModal.classList.add('hidden');
                 });
             });
@@ -1653,15 +2237,33 @@
             const emptyState = document.getElementById('emptyState');
             const orderCount = document.getElementById('orderCount');
 
+            // Mobile Step 3 Review
+            const orderItemsReview = document.getElementById('orderItemsReview');
+            const emptyStateReview = document.getElementById('emptyStateReview');
+
             if (cart.length === 0) {
                 orderItems.innerHTML = '';
                 emptyState.style.display = 'block';
                 orderCount.textContent = '0 item';
+
+                // Mobile review
+                if (orderItemsReview) {
+                    orderItemsReview.innerHTML = '';
+                }
+                if (emptyStateReview) {
+                    emptyStateReview.style.display = 'block';
+                }
             } else {
                 emptyState.style.display = 'none';
                 orderCount.textContent = `${cart.length} item${cart.length > 1 ? 's' : ''}`;
 
-                orderItems.innerHTML = cart.map((item, index) => {
+                // Mobile review
+                if (emptyStateReview) {
+                    emptyStateReview.style.display = 'none';
+                }
+
+                // Generate order items HTML
+                const orderItemsHTML = cart.map((item, index) => {
                     const qtyDiscount = item.qtyDiscount || 0;
                     const effectiveQty = Math.max(0, item.qty - qtyDiscount);
                     const subtotal = item.price * effectiveQty;
@@ -1705,11 +2307,11 @@
                                 </div>
                                 
                                 ${qtyDiscount > 0 ? `
-                                                        <div class="flex items-center justify-between text-sm">
-                                                            <span class="text-blue-600">Potongan Qty: ${formatDecimalInput(qtyDiscount)} ${item.unit}</span>
-                                                            <span class="font-medium text-blue-600">-${formatDecimalInput(qtyDiscount)} ${item.unit}</span>
-                                                        </div>
-                                                        ` : ''}
+                                                                                                    <div class="flex items-center justify-between text-sm">
+                                                                                                        <span class="text-blue-600">Potongan Qty: ${formatDecimalInput(qtyDiscount)} ${item.unit}</span>
+                                                                                                        <span class="font-medium text-blue-600">-${formatDecimalInput(qtyDiscount)} ${item.unit}</span>
+                                                                                                    </div>
+                                                                                                    ` : ''}
                                 
                                 <div class="flex items-center justify-between text-sm">
                                     <span class="text-gray-600">Subtotal (${formatDecimalInput(effectiveQty)} × Rp ${formatNumber(item.price)})</span>
@@ -1717,14 +2319,14 @@
                                 </div>
                                 
                                 ${discount > 0 ? `
-                                                                                                                                                                    <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                        <span class="text-orange-600 flex items-center">
-                                                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                            Potongan Harga
-                                                                                                                                                                        </span>
-                                                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                    </div>
-                                                                                                                                                                ` : ''}
+                                                                                                                                                                                                                <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                    <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                        <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                        Potongan Harga
+                                                                                                                                                                                                                    </span>
+                                                                                                                                                                                                                    <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                </div>
+                                                                                                                                                                                                            ` : ''}
                                 
                                 <!-- Total Line -->
                                 <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -1743,6 +2345,18 @@
                         </div>
                     `;
                 }).join('');
+
+                orderItems.innerHTML = orderItemsHTML;
+
+                // Update mobile review (step 3)
+                if (orderItemsReview) {
+                    orderItemsReview.innerHTML = orderItemsHTML;
+                }
+
+                // Show proceed to review button on mobile step 2
+                if (window.innerWidth < 1024 && currentStep === 2) {
+                    showProceedToReviewButton();
+                }
 
                 // Add highlight animation to newly added items
                 setTimeout(() => {
@@ -1807,6 +2421,18 @@
             showToast(`${item.name} dihapus dari pesanan`, 'success');
         }
 
+        // Show proceed to review button
+        function showProceedToReviewButton() {
+            const proceedBtnContainer = document.getElementById('proceedToReviewBtnContainer');
+            const cartItemCount = document.getElementById('cartItemCount');
+            if (proceedBtnContainer && window.innerWidth < 1024 && currentStep === 2) {
+                proceedBtnContainer.classList.remove('hidden');
+                if (cartItemCount) {
+                    cartItemCount.textContent = `${cart.length} item${cart.length > 1 ? 's' : ''}`;
+                }
+            }
+        }
+
         // Calculate totals
         function calculateTotals() {
             let subtotal = 0;
@@ -1819,9 +2445,32 @@
 
             totalAmount = Math.max(0, subtotal - discountAmount);
 
-            document.getElementById('subtotalDisplay').textContent = `Rp ${formatNumber(subtotal)}`;
-            document.getElementById('discountDisplay').textContent = `Rp ${formatNumber(discountAmount)}`;
-            document.getElementById('totalDisplay').textContent = `Rp ${formatNumber(totalAmount)}`;
+            // Desktop displays
+            const subtotalDisplay = document.getElementById('subtotalDisplay');
+            const discountDisplay = document.getElementById('discountDisplay');
+            const totalDisplay = document.getElementById('totalDisplay');
+
+            if (subtotalDisplay) subtotalDisplay.textContent = `Rp ${formatNumber(subtotal)}`;
+            if (discountDisplay) discountDisplay.textContent = `Rp ${formatNumber(discountAmount)}`;
+            if (totalDisplay) totalDisplay.textContent = `Rp ${formatNumber(totalAmount)}`;
+
+            // Mobile review displays
+            const subtotalDisplayReview = document.getElementById('subtotalDisplayReview');
+            const discountDisplayReview = document.getElementById('discountDisplayReview');
+            const totalDisplayReview = document.getElementById('totalDisplayReview');
+
+            if (subtotalDisplayReview) subtotalDisplayReview.textContent = `Rp ${formatNumber(subtotal)}`;
+            if (discountDisplayReview) discountDisplayReview.textContent = `Rp ${formatNumber(discountAmount)}`;
+            if (totalDisplayReview) totalDisplayReview.textContent = `Rp ${formatNumber(totalAmount)}`;
+
+            // Desktop summary displays
+            const subtotalDisplayDesktop = document.getElementById('subtotalDisplayDesktop');
+            const discountDisplayDesktop = document.getElementById('discountDisplayDesktop');
+            const totalDisplayDesktop = document.getElementById('totalDisplayDesktop');
+
+            if (subtotalDisplayDesktop) subtotalDisplayDesktop.textContent = `Rp ${formatNumber(subtotal)}`;
+            if (discountDisplayDesktop) discountDisplayDesktop.textContent = `Rp ${formatNumber(discountAmount)}`;
+            if (totalDisplayDesktop) totalDisplayDesktop.textContent = `Rp ${formatNumber(totalAmount)}`;
 
             // Handle DP and payment breakdown
             const jenisTransaksi = document.getElementById('jenisTransaksi').value;
@@ -1848,12 +2497,22 @@
         // Initialize discount input
         function initializeDiscountInput() {
             const discountInput = document.getElementById('diskonDisplay');
+            const discountReviewInput = document.getElementById('diskonDisplayReview');
 
             setupNumberInput(discountInput);
+            if (discountReviewInput) {
+                setupNumberInput(discountReviewInput);
+            }
 
             discountInput.addEventListener('input', function() {
                 discountAmount = parseFormattedNumber(this.value);
                 document.getElementById('diskon').value = discountAmount;
+
+                // Sync to review
+                if (discountReviewInput) {
+                    discountReviewInput.value = this.value;
+                    document.getElementById('diskonReview').value = discountAmount;
+                }
                 calculateTotals();
             });
         }
@@ -1865,16 +2524,35 @@
             const dpAmountDisplay = document.getElementById('dpAmountDisplay');
             const dpAmount = document.getElementById('dpAmount');
 
+            // Check if dpAmountDisplay exists (it might not exist if DP input was removed)
+            if (!dpAmountDisplay) {
+                // If dpAmountDisplay doesn't exist, just handle transaction type change without DP input
+                jenisTransaksi.addEventListener('change', function() {
+                    calculateTotals();
+                });
+                return;
+            }
+
             // Handle transaction type change
             jenisTransaksi.addEventListener('change', function() {
                 if (this.value === 'kredit') {
-                    dpContainer.classList.remove('hidden');
-                    dpAmountDisplay.required = true;
+                    if (dpContainer) {
+                        dpContainer.classList.remove('hidden');
+                    }
+                    if (dpAmountDisplay) {
+                        dpAmountDisplay.required = true;
+                    }
                 } else {
-                    dpContainer.classList.add('hidden');
-                    dpAmountDisplay.required = false;
-                    dpAmountDisplay.value = '0';
-                    dpAmount.value = 0;
+                    if (dpContainer) {
+                        dpContainer.classList.add('hidden');
+                    }
+                    if (dpAmountDisplay) {
+                        dpAmountDisplay.required = false;
+                        dpAmountDisplay.value = '0';
+                    }
+                    if (dpAmount) {
+                        dpAmount.value = 0;
+                    }
 
                     // Auto-fill payment for tunai (cash) transactions
                     if (this.value === 'tunai') {
@@ -1890,10 +2568,12 @@
                 const totalText = document.getElementById('totalDisplay').textContent;
                 const totalAmount = parseFormattedNumber(totalText.replace('Rp ', ''));
 
-                if (totalAmount > 0) {
+                if (totalAmount > 0 && dpAmountDisplay) {
                     // Set DP amount to equal the total for cash transactions
                     dpAmountDisplay.value = formatNumber(totalAmount);
-                    dpAmount.value = totalAmount;
+                    if (dpAmount) {
+                        dpAmount.value = totalAmount;
+                    }
 
                     // Update the summary to reflect the payment
                     calculateTotals();
@@ -1905,8 +2585,12 @@
 
             // Set initial DP visibility based on old value
             @if (old('jenis_transaksi') == 'kredit')
-                dpContainer.classList.remove('hidden');
-                dpAmountDisplay.required = true;
+                if (dpContainer) {
+                    dpContainer.classList.remove('hidden');
+                }
+                if (dpAmountDisplay) {
+                    dpAmountDisplay.required = true;
+                }
             @else
                 // Auto-fill payment for initial cash transactions
                 if (jenisTransaksi.value === 'tunai') {
@@ -1918,17 +2602,21 @@
             @endif
 
             // Update DP when amount changes
-            dpAmountDisplay.addEventListener('input', function() {
-                dpAmount.value = parseFormattedNumber(this.value);
-                calculateTotals();
-            });
+            if (dpAmountDisplay) {
+                dpAmountDisplay.addEventListener('input', function() {
+                    if (dpAmount) {
+                        dpAmount.value = parseFormattedNumber(this.value);
+                    }
+                    calculateTotals();
+                });
 
-            // Setup number formatting for DP input
-            setupNumberInput(dpAmountDisplay);
+                // Setup number formatting for DP input
+                setupNumberInput(dpAmountDisplay);
 
-            // Format initial DP value
-            if (dpAmountDisplay.value && dpAmountDisplay.value !== '0') {
-                dpAmountDisplay.value = formatNumber(dpAmountDisplay.value);
+                // Format initial DP value
+                if (dpAmountDisplay.value && dpAmountDisplay.value !== '0') {
+                    dpAmountDisplay.value = formatNumber(dpAmountDisplay.value);
+                }
             }
         }
 
@@ -2490,6 +3178,8 @@
         const closeOrderPreviewModal = document.getElementById('closeOrderPreviewModal');
         const closePreviewModalBtn = document.getElementById('closePreviewModal');
         const showOrderPreviewBtn = document.getElementById('showOrderPreview');
+        const showOrderPreviewMobileBtn = document.getElementById('showOrderPreviewMobile');
+        const showOrderPreviewDesktopBtn = document.getElementById('showOrderPreviewDesktop');
         const confirmOrderSaveBtn = document.getElementById('confirmOrderSave');
 
         function closePreviewModal() {
@@ -2514,27 +3204,38 @@
         });
 
         // Show order preview
-        showOrderPreviewBtn.addEventListener('click', function() {
-            if (cart.length === 0) {
-                showToast('Pilih produk terlebih dahulu', 'error');
-                return;
-            }
+        // Desktop preview button
+        if (showOrderPreviewDesktopBtn) {
+            showOrderPreviewDesktopBtn.addEventListener('click', function() {
+                if (cart.length === 0) {
+                    showToast('Pilih produk terlebih dahulu', 'error');
+                    return;
+                }
+                showOrderPreview();
+            });
+        }
 
-            const supplierId = document.getElementById('supplierId');
-            const supplierDisplay = document.getElementById('supplierDisplay');
+        // Mobile preview button (sticky bottom)
+        if (showOrderPreviewBtn) {
+            showOrderPreviewBtn.addEventListener('click', function() {
+                if (cart.length === 0) {
+                    showToast('Pilih produk terlebih dahulu', 'error');
+                    return;
+                }
+                showOrderPreview();
+            });
+        }
 
-            if (!supplierId || !supplierId.value) {
-                showToast('Pilih supplier terlebih dahulu', 'error');
-                return;
-            }
-
-            if (!supplierDisplay || !supplierDisplay.value) {
-                showToast('Supplier belum dipilih dengan benar', 'error');
-                return;
-            }
-
-            showOrderPreview();
-        });
+        // Mobile preview button (review section)
+        if (showOrderPreviewMobileBtn) {
+            showOrderPreviewMobileBtn.addEventListener('click', function() {
+                if (cart.length === 0) {
+                    showToast('Pilih produk terlebih dahulu', 'error');
+                    return;
+                }
+                showOrderPreview();
+            });
+        }
 
         function showOrderPreview() {
             // Get supplier info
@@ -2565,9 +3266,12 @@
             updatePreviewTransactionTypeCards();
 
             // Set DP amount based on transaction type (will be updated when user selects transaction type)
-            document.getElementById('previewDpAmount').value = '';
-            document.getElementById('previewDpAmount').readOnly = false;
-            document.getElementById('previewDpAmount').placeholder = 'Jumlah DP (Rp)';
+            const previewDpAmount = document.getElementById('previewDpAmount');
+            previewDpAmount.value = '';
+            previewDpAmount.readOnly = false;
+            previewDpAmount.classList.remove('bg-gray-100', 'cursor-not-allowed');
+            previewDpAmount.classList.add('focus:ring-2', 'focus:ring-orange-500');
+            previewDpAmount.placeholder = 'Jumlah DP (Rp)';
 
             // Show/hide DP container based on transaction type (will be updated when user selects transaction type)
             const previewDpContainer = document.getElementById('previewDpContainer');
@@ -2611,11 +3315,11 @@
                                 <span>Rp ${formatNumber(subtotal)}</span>
                             </div>
                             ${discount > 0 ? `
-                                                                                                                    <div class="flex justify-between text-xs">
-                                                                                                                        <span class="text-orange-600">Potongan</span>
-                                                                                                                        <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                    </div>
-                                                                                                                ` : ''}
+                                                                                                                                                                <div class="flex justify-between text-xs">
+                                                                                                                                                                    <span class="text-orange-600">Potongan</span>
+                                                                                                                                                                    <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                </div>
+                                                                                                                                                            ` : ''}
                             <div class="flex justify-between text-sm font-medium">
                                 <span>Total</span>
                                 <span class="text-blue-600">Rp ${formatNumber(total)}</span>
@@ -2653,18 +3357,47 @@
             // Show/hide payment breakdown for kredit
             const previewPaymentBreakdown = document.getElementById('previewPaymentBreakdown');
             if (jenisTransaksi === 'kredit') {
-                const dpAmount = parseFormattedNumber(document.getElementById('dpAmount').value);
-                const remaining = Math.max(0, total - dpAmount);
-
-                previewPaymentBreakdown.classList.remove('hidden');
-                document.getElementById('previewDpDisplay').textContent = `Rp ${formatNumber(dpAmount)}`;
-                document.getElementById('previewRemainingDisplay').textContent = `Rp ${formatNumber(remaining)}`;
+                updatePaymentCalculation(); // This will handle uang muka + DP calculation
             } else {
                 previewPaymentBreakdown.classList.add('hidden');
             }
 
+            // Load uang muka jika supplier sudah dipilih
+            // Reset container terlebih dahulu
+            const uangMukaContainer = document.getElementById('previewUangMukaContainer');
+            const uangMukaList = document.getElementById('uangMukaList');
+            if (uangMukaList) {
+                // Clear existing items
+                const existingItems = uangMukaList.querySelectorAll('.bg-white.border');
+                existingItems.forEach(item => item.remove());
+                // Show loading message
+                const emptyMessage = document.getElementById('uangMukaEmptyMessage');
+                if (emptyMessage) {
+                    emptyMessage.style.display = 'block';
+                    emptyMessage.textContent = 'Memuat uang muka yang tersedia...';
+                }
+            }
+
+            const supplierId = document.getElementById('supplierId').value;
+            if (supplierId) {
+                loadUangMukaSupplier(supplierId);
+            } else {
+                if (uangMukaContainer) {
+                    uangMukaContainer.classList.add('hidden');
+                }
+            }
+
             // Show modal
             orderPreviewModal.classList.remove('hidden');
+
+            // Initialize payment method grid columns
+            const paymentMethodContainer = document.getElementById('previewPaymentMethodContainer');
+            if (paymentMethodContainer) {
+                const paymentMethodCount = {{ count($metodePembayaran) }};
+                const maxCols = 4;
+                const cols = Math.min(paymentMethodCount, maxCols);
+                paymentMethodContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            }
 
             // Initialize kas/bank filter based on payment method
             filterKasBankByPaymentMethod();
@@ -2707,25 +3440,108 @@
             const selectedType = document.querySelector('input[name="preview_jenis_transaksi"]:checked');
             const dpContainer = document.getElementById('previewDpContainer');
             const dpAmount = document.getElementById('previewDpAmount');
+            const uangMukaContainer = document.getElementById('previewUangMukaContainer');
+            const supplierId = document.getElementById('supplierId').value;
             const total = parseFormattedNumber(document.getElementById('previewTotal').textContent.replace('Rp ', '')
                 .replace(/\./g, ''));
+
+            const dpLabel = document.getElementById('previewDpLabel');
 
             if (selectedType && selectedType.value === 'tunai') {
                 dpContainer.classList.remove('hidden');
                 dpAmount.required = false;
-                dpAmount.value = formatNumberInput(total.toString());
-                dpAmount.readOnly = true;
+                dpAmount.readOnly = true; // Readonly untuk tunai
+                dpAmount.classList.add('bg-gray-100', 'cursor-not-allowed');
+                dpAmount.classList.remove('focus:ring-2', 'focus:ring-orange-500');
                 dpAmount.placeholder = 'Jumlah (Rp)';
+
+                // Ubah label untuk tunai
+                if (dpLabel) {
+                    dpLabel.textContent = 'Jumlah Bayar';
+                }
+
+                // Ubah label di ringkasan pembayaran untuk tunai
+                const dpLabelText = document.getElementById('previewDpLabelText');
+                if (dpLabelText) {
+                    dpLabelText.textContent = 'Jumlah Bayar';
+                }
+
+                // Uang muka tetap bisa digunakan untuk tunai
+                if (supplierId && uangMukaContainer) {
+                    // Jika container hidden, load uang muka
+                    if (uangMukaContainer.classList.contains('hidden')) {
+                        loadUangMukaSupplier(supplierId);
+                    } else {
+                        uangMukaContainer.classList.remove('hidden');
+                    }
+                }
+
+                // Auto-fill DP amount dengan total setelah dikurangi uang muka
+                updatePaymentCalculationForTunai();
+                document.getElementById('previewPaymentBreakdown').classList.remove('hidden');
             } else if (selectedType && selectedType.value === 'kredit') {
                 dpContainer.classList.remove('hidden');
+                // Uang muka tetap visible untuk kredit
+                if (supplierId && uangMukaContainer) {
+                    if (uangMukaContainer.classList.contains('hidden')) {
+                        loadUangMukaSupplier(supplierId);
+                    } else {
+                        uangMukaContainer.classList.remove('hidden');
+                    }
+                }
                 dpAmount.required = true;
                 dpAmount.value = '';
                 dpAmount.readOnly = false;
+                dpAmount.classList.remove('bg-gray-100', 'cursor-not-allowed');
+                dpAmount.classList.add('focus:ring-2', 'focus:ring-orange-500');
                 dpAmount.placeholder = 'Jumlah DP (Rp)';
+
+                // Ubah label untuk kredit
+                if (dpLabel) {
+                    dpLabel.textContent = 'Jumlah Down Payment (DP)';
+                }
+
+                // Ubah label di ringkasan pembayaran untuk kredit
+                const dpLabelText = document.getElementById('previewDpLabelText');
+                if (dpLabelText) {
+                    dpLabelText.textContent = 'DP Dibayar';
+                }
+
                 dpAmount.focus();
+                updatePaymentCalculation(); // Update calculation untuk include uang muka
+                document.getElementById('previewPaymentBreakdown').classList.remove('hidden');
             }
 
             updatePreviewTransactionTypeCards();
+        }
+
+        // Function untuk update payment calculation untuk tunai (dengan uang muka)
+        function updatePaymentCalculationForTunai() {
+            const total = parseFormattedNumber(document.getElementById('previewTotal').textContent.replace('Rp ', '')
+                .replace(/\./g, ''));
+            const uangMukaUsed = getTotalUangMukaUsed();
+            const sisaBayar = Math.max(0, total - uangMukaUsed);
+
+            // Auto-fill DP amount dengan sisa bayar
+            const dpAmount = document.getElementById('previewDpAmount');
+            if (dpAmount && uangMukaUsed > 0) {
+                dpAmount.value = formatNumberInput(sisaBayar.toString());
+            } else if (dpAmount && uangMukaUsed === 0) {
+                dpAmount.value = formatNumberInput(total.toString());
+            }
+
+            // Update display
+            if (uangMukaUsed > 0) {
+                document.getElementById('previewUangMukaRow').style.display = 'flex';
+                document.getElementById('previewUangMukaDisplay').textContent = `Rp ${formatNumber(uangMukaUsed)}`;
+            } else {
+                document.getElementById('previewUangMukaRow').style.display = 'none';
+            }
+
+            const dpAmountValue = parseFormattedNumber(dpAmount.value);
+            document.getElementById('previewDpDisplay').textContent = `Rp ${formatNumber(dpAmountValue)}`;
+            document.getElementById('previewRemainingDisplay').textContent =
+                `Rp ${formatNumber(Math.max(0, total - uangMukaUsed - dpAmountValue))}`;
         }
 
         // Initialize payment method elements
@@ -2889,22 +3705,176 @@
         // Setup number formatting for DP amount input
         setupNumberInput(document.getElementById('previewDpAmount'));
 
-        // DP amount input handler
-        document.getElementById('previewDpAmount').addEventListener('input', function(e) {
-            // setupNumberInput already handles formatting, so we don't need to format manually
-            const dpAmount = parseFormattedNumber(e.target.value);
-            const total = parseFormattedNumber(document.getElementById('previewTotal').textContent.replace('Rp ',
-                '').replace(/\./g, ''));
-            const remaining = Math.max(0, total - dpAmount);
+        // Function to load uang muka supplier
+        function loadUangMukaSupplier(supplierId) {
+            // Reset container terlebih dahulu
+            const container = document.getElementById('uangMukaList');
+            const emptyMessage = document.getElementById('uangMukaEmptyMessage');
+            const uangMukaContainer = document.getElementById('previewUangMukaContainer');
+
+            // Clear previous data
+            if (container) {
+                const existingItems = container.querySelectorAll('.bg-white.border');
+                existingItems.forEach(item => item.remove());
+            }
+            if (uangMukaContainer) {
+                uangMukaContainer.classList.add('hidden');
+            }
+            if (emptyMessage && emptyMessage.parentNode) {
+                emptyMessage.style.display = 'block';
+            }
+
+            fetch(`/uang-muka-supplier/get-available?supplier_id=${supplierId}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Handle response format (bisa berupa object dengan success dan data, atau langsung array)
+                    const uangMukaData = data.success ? data.data : data;
+
+                    if (!uangMukaData || uangMukaData.length === 0) {
+                        if (container) {
+                            container.innerHTML =
+                                '<p class="text-sm text-gray-500 text-center py-4">Tidak ada uang muka yang tersedia untuk supplier ini</p>';
+                        }
+                        if (uangMukaContainer) {
+                            uangMukaContainer.classList.add('hidden');
+                        }
+                    } else {
+                        // Hide empty message if it exists
+                        if (emptyMessage) {
+                            emptyMessage.style.display = 'none';
+                        }
+                        container.innerHTML = uangMukaData.map(um => `
+                            <div class="bg-white border border-gray-200 rounded-lg p-3 hover:border-orange-300 transition-colors">
+                                <div class="flex items-start space-x-3">
+                                    <input type="checkbox" 
+                                        class="mt-1 uang-muka-checkbox" 
+                                        data-id="${um.id}" 
+                                        data-sisa="${um.sisa_uang_muka}"
+                                        data-max="${um.sisa_uang_muka}">
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-start mb-1">
+                                            <span class="text-sm font-medium text-gray-900">${um.no_uang_muka}</span>
+                                            <span class="text-xs text-gray-500">${um.tanggal}</span>
+                                        </div>
+                                        <div class="text-xs text-gray-600 mb-2">
+                                            <span>Sisa: <strong class="text-green-600">Rp ${formatNumber(um.sisa_uang_muka)}</strong></span>
+                                        </div>
+                                        <input type="text" 
+                                            class="uang-muka-amount w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500 text-right" 
+                                            data-id="${um.id}"
+                                            placeholder="Jumlah digunakan (Rp)"
+                                            disabled>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('');
+
+                        // Setup number formatting for uang muka inputs
+                        container.querySelectorAll('.uang-muka-amount').forEach(input => {
+                            setupNumberInput(input);
+                        });
+
+                        // Setup checkbox handlers
+                        container.querySelectorAll('.uang-muka-checkbox').forEach(checkbox => {
+                            checkbox.addEventListener('change', function() {
+                                const amountInput = container.querySelector(
+                                    `.uang-muka-amount[data-id="${this.dataset.id}"]`);
+                                if (this.checked) {
+                                    amountInput.disabled = false;
+                                    amountInput.focus();
+                                } else {
+                                    amountInput.disabled = true;
+                                    amountInput.value = '';
+                                    updatePaymentCalculation();
+                                }
+                            });
+                        });
+
+                        // Setup amount input handlers
+                        container.querySelectorAll('.uang-muka-amount').forEach(input => {
+                            input.addEventListener('input', function() {
+                                const selectedTransactionType = document.querySelector(
+                                    '.preview-transaction-type-radio:checked')?.value;
+                                if (selectedTransactionType === 'tunai') {
+                                    updatePaymentCalculationForTunai();
+                                } else {
+                                    updatePaymentCalculation();
+                                }
+                            });
+                        });
+
+                        // Setup checkbox handlers untuk auto-fill tunai
+                        container.querySelectorAll('.uang-muka-checkbox').forEach(checkbox => {
+                            checkbox.addEventListener('change', function() {
+                                const selectedTransactionType = document.querySelector(
+                                    '.preview-transaction-type-radio:checked')?.value;
+                                if (selectedTransactionType === 'tunai' && this.checked) {
+                                    setTimeout(() => {
+                                        updatePaymentCalculationForTunai();
+                                    }, 100);
+                                }
+                            });
+                        });
+
+                        document.getElementById('previewUangMukaContainer').classList.remove('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading uang muka:', error);
+                    document.getElementById('previewUangMukaContainer').classList.add('hidden');
+                });
+        }
+
+        // Function to calculate total uang muka used
+        function getTotalUangMukaUsed() {
+            let total = 0;
+            document.querySelectorAll('.uang-muka-checkbox:checked').forEach(checkbox => {
+                const amountInput = document.querySelector(`.uang-muka-amount[data-id="${checkbox.dataset.id}"]`);
+                if (amountInput && amountInput.value) {
+                    const amount = parseFormattedNumber(amountInput.value);
+                    const maxAmount = parseFloat(checkbox.dataset.max);
+                    const validAmount = Math.min(amount, maxAmount);
+                    total += validAmount;
+                }
+            });
+            return total;
+        }
+
+        // Function to update payment calculation including uang muka
+        function updatePaymentCalculation() {
+            const total = parseFormattedNumber(document.getElementById('previewTotal').textContent.replace('Rp ', '')
+                .replace(/\./g, ''));
+            const uangMukaUsed = getTotalUangMukaUsed();
+            const dpAmount = parseFormattedNumber(document.getElementById('previewDpAmount').value);
+            const totalPembayaran = uangMukaUsed + dpAmount;
+            const remaining = Math.max(0, total - totalPembayaran);
+
+            // Update uang muka display
+            if (uangMukaUsed > 0) {
+                document.getElementById('previewUangMukaRow').style.display = 'flex';
+                document.getElementById('previewUangMukaDisplay').textContent = `Rp ${formatNumber(uangMukaUsed)}`;
+            } else {
+                document.getElementById('previewUangMukaRow').style.display = 'none';
+            }
 
             document.getElementById('previewDpDisplay').textContent = `Rp ${formatNumber(dpAmount)}`;
             document.getElementById('previewRemainingDisplay').textContent = `Rp ${formatNumber(remaining)}`;
 
-            if (dpAmount > 0) {
+            if (totalPembayaran > 0) {
                 document.getElementById('previewPaymentBreakdown').classList.remove('hidden');
-            } else {
+            } else if (dpAmount === 0) {
                 document.getElementById('previewPaymentBreakdown').classList.add('hidden');
             }
+        }
+
+        // DP amount input handler (only for kredit, not for tunai)
+        document.getElementById('previewDpAmount').addEventListener('input', function(e) {
+            // Skip if readonly (tunai transaction)
+            if (this.readOnly) {
+                return;
+            }
+            // setupNumberInput already handles formatting, so we don't need to format manually
+            updatePaymentCalculation();
         });
 
         // Confirm order save
@@ -2951,6 +3921,44 @@
                 return;
             }
 
+            // Validate uang muka amounts
+            let hasUangMukaError = false;
+            const totalUangMukaUsed = getTotalUangMukaUsed();
+            document.querySelectorAll('.uang-muka-checkbox:checked').forEach(checkbox => {
+                const amountInput = document.querySelector(
+                    `.uang-muka-amount[data-id="${checkbox.dataset.id}"]`);
+                if (amountInput && amountInput.value) {
+                    const jumlahDigunakan = parseFormattedNumber(amountInput.value);
+                    const sisaUangMuka = parseFloat(checkbox.dataset.sisa);
+                    const maxUangMuka = parseFloat(checkbox.dataset.max);
+
+                    if (jumlahDigunakan <= 0) {
+                        showToast('Jumlah uang muka yang digunakan harus lebih dari 0!', 'error');
+                        amountInput.focus();
+                        hasUangMukaError = true;
+                        return;
+                    }
+
+                    if (jumlahDigunakan > sisaUangMuka || jumlahDigunakan > maxUangMuka) {
+                        showToast(`Jumlah uang muka yang digunakan melebihi sisa uang muka yang tersedia!`,
+                            'error');
+                        amountInput.focus();
+                        hasUangMukaError = true;
+                        return;
+                    }
+                }
+            });
+
+            if (hasUangMukaError) {
+                return;
+            }
+
+            // Validate total uang muka tidak melebihi total pembelian
+            if (totalUangMukaUsed > total) {
+                showToast('Total uang muka yang digunakan tidak boleh melebihi total pembelian!', 'error');
+                return;
+            }
+
             // Update hidden inputs
             document.getElementById('jenisTransaksi').value = selectedTransactionType.value;
             document.getElementById('metodePembayaran').value = selectedPaymentMethod.value;
@@ -2961,6 +3969,37 @@
 
             // Add cart items to form
             const form = document.getElementById('purchaseForm');
+
+            // Remove any existing uang muka inputs
+            form.querySelectorAll('input[name^="uang_muka["]').forEach(input => input.remove());
+
+            // Add uang muka data to form
+            let uangMukaIndex = 0;
+            document.querySelectorAll('.uang-muka-checkbox:checked').forEach(checkbox => {
+                const amountInput = document.querySelector(
+                    `.uang-muka-amount[data-id="${checkbox.dataset.id}"]`);
+                if (amountInput && amountInput.value) {
+                    const amount = parseFormattedNumber(amountInput.value);
+                    const maxAmount = parseFloat(checkbox.dataset.max);
+                    const validAmount = Math.min(amount, maxAmount);
+
+                    if (validAmount > 0) {
+                        const idInput = document.createElement('input');
+                        idInput.type = 'hidden';
+                        idInput.name = `uang_muka[${uangMukaIndex}][id]`;
+                        idInput.value = checkbox.dataset.id;
+                        form.appendChild(idInput);
+
+                        const jumlahInput = document.createElement('input');
+                        jumlahInput.type = 'hidden';
+                        jumlahInput.name = `uang_muka[${uangMukaIndex}][jumlah]`;
+                        jumlahInput.value = validAmount;
+                        form.appendChild(jumlahInput);
+
+                        uangMukaIndex++;
+                    }
+                }
+            });
 
             // Remove any existing cart item inputs
             form.querySelectorAll('input[name^="items["]').forEach(input => input.remove());

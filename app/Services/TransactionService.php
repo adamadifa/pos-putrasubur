@@ -52,13 +52,41 @@ class TransactionService
             // 4. Kembalikan stok produk sebelum menghapus penjualan
             $this->restoreStockFromPenjualan($penjualan);
 
-            // 5. Hapus pembayaran terlebih dahulu untuk memastikan trigger berjalan
+            // 5. Kembalikan uang muka jika ada sebelum menghapus pembayaran
+            $penggunaanUangMukaList = \App\Models\PenggunaanUangMukaPenjualan::where('penjualan_id', $penjualan->id)->get();
+            foreach ($penggunaanUangMukaList as $penggunaan) {
+                $uangMuka = $penggunaan->uangMukaPelanggan;
+                $jumlahDigunakan = $penggunaan->jumlah_digunakan;
+
+                // Kembalikan sisa uang muka (tambah kembali jumlah yang digunakan)
+                $uangMuka->sisa_uang_muka += $jumlahDigunakan;
+
+                // Update status uang muka jika perlu
+                if ($uangMuka->sisa_uang_muka > 0 && $uangMuka->status === 'habis') {
+                    $uangMuka->status = 'aktif';
+                }
+
+                $uangMuka->save();
+
+                Log::info('Uang muka dikembalikan saat penjualan dihapus', [
+                    'penjualan_id' => $penjualan->id,
+                    'uang_muka_id' => $uangMuka->id,
+                    'jumlah_dikembalikan' => $jumlahDigunakan,
+                    'sisa_uang_muka_baru' => $uangMuka->sisa_uang_muka,
+                    'status_uang_muka' => $uangMuka->status
+                ]);
+
+                // Hapus record penggunaan uang muka
+                $penggunaan->delete();
+            }
+
+            // 6. Hapus pembayaran terlebih dahulu untuk memastikan trigger berjalan
             $pembayaranList = $penjualan->pembayaranPenjualan;
             foreach ($pembayaranList as $pembayaran) {
                 $pembayaran->delete(); // Ini akan memicu trigger after_pembayaran_penjualan_delete
             }
 
-            // 6. Hapus penjualan (trigger akan otomatis menghapus detail)
+            // 7. Hapus penjualan (trigger akan otomatis menghapus detail)
             $deleted = $penjualan->delete();
 
             // Debug: Log hasil delete
@@ -126,13 +154,41 @@ class TransactionService
             // 4. Kurangi stok produk sebelum menghapus pembelian
             $this->reduceStockFromPembelian($pembelian);
 
-            // 5. Hapus pembayaran terlebih dahulu untuk memastikan trigger berjalan
+            // 5. Kembalikan uang muka jika ada sebelum menghapus pembayaran
+            $penggunaanUangMukaList = \App\Models\PenggunaanUangMukaPembelian::where('pembelian_id', $pembelian->id)->get();
+            foreach ($penggunaanUangMukaList as $penggunaan) {
+                $uangMuka = $penggunaan->uangMukaSupplier;
+                $jumlahDigunakan = $penggunaan->jumlah_digunakan;
+
+                // Kembalikan sisa uang muka (tambah kembali jumlah yang digunakan)
+                $uangMuka->sisa_uang_muka += $jumlahDigunakan;
+
+                // Update status uang muka jika perlu
+                if ($uangMuka->sisa_uang_muka > 0 && $uangMuka->status === 'habis') {
+                    $uangMuka->status = 'aktif';
+                }
+
+                $uangMuka->save();
+
+                Log::info('Uang muka supplier dikembalikan saat pembelian dihapus', [
+                    'pembelian_id' => $pembelian->id,
+                    'uang_muka_id' => $uangMuka->id,
+                    'jumlah_dikembalikan' => $jumlahDigunakan,
+                    'sisa_uang_muka_baru' => $uangMuka->sisa_uang_muka,
+                    'status_uang_muka' => $uangMuka->status
+                ]);
+
+                // Hapus record penggunaan uang muka
+                $penggunaan->delete();
+            }
+
+            // 6. Hapus pembayaran terlebih dahulu untuk memastikan trigger berjalan
             $pembayaranList = $pembelian->pembayaranPembelian;
             foreach ($pembayaranList as $pembayaran) {
                 $pembayaran->delete(); // Ini akan memicu trigger after_pembayaran_pembelian_delete
             }
 
-            // 6. Hapus pembelian (trigger akan otomatis menghapus detail)
+            // 7. Hapus pembelian (trigger akan otomatis menghapus detail)
             $deleted = $pembelian->delete();
 
             // Debug: Log hasil delete
@@ -187,15 +243,28 @@ class TransactionService
             ];
         }
 
+        // Cek apakah ada penggunaan uang muka
+        $penggunaanUangMuka = \App\Models\PenggunaanUangMukaPenjualan::where('penjualan_id', $penjualan->id)->get();
+        $totalUangMukaDigunakan = $penggunaanUangMuka->sum('jumlah_digunakan');
+
         // Cek apakah ada pembayaran
         $totalPembayaran = $penjualan->pembayaranPenjualan->sum('jumlah_bayar');
 
-        if ($totalPembayaran > 0) {
+        if ($totalPembayaran > 0 || $totalUangMukaDigunakan > 0) {
+            $message = 'Penjualan akan dihapus beserta pembayaran sebesar Rp ' . number_format($totalPembayaran, 0, ',', '.');
+            if ($totalUangMukaDigunakan > 0) {
+                $message .= ' dan uang muka sebesar Rp ' . number_format($totalUangMukaDigunakan, 0, ',', '.') . ' akan dikembalikan ke pelanggan.';
+            } else {
+                $message .= ' dan saldo kas/bank akan disesuaikan.';
+            }
+            
             return [
                 'success' => true,
-                'message' => 'Penjualan akan dihapus beserta pembayaran sebesar Rp ' . number_format($totalPembayaran, 0, ',', '.') . ' dan saldo kas/bank akan disesuaikan.',
-                'has_payment' => true,
-                'total_payment' => $totalPembayaran
+                'message' => $message,
+                'has_payment' => $totalPembayaran > 0,
+                'has_uang_muka' => $totalUangMukaDigunakan > 0,
+                'total_payment' => $totalPembayaran,
+                'total_uang_muka' => $totalUangMukaDigunakan
             ];
         }
 
@@ -203,7 +272,9 @@ class TransactionService
             'success' => true,
             'message' => 'Penjualan akan dihapus.',
             'has_payment' => false,
-            'total_payment' => 0
+            'has_uang_muka' => false,
+            'total_payment' => 0,
+            'total_uang_muka' => 0
         ];
     }
 
@@ -223,15 +294,28 @@ class TransactionService
             ];
         }
 
+        // Cek apakah ada penggunaan uang muka
+        $penggunaanUangMuka = \App\Models\PenggunaanUangMukaPembelian::where('pembelian_id', $pembelian->id)->get();
+        $totalUangMukaDigunakan = $penggunaanUangMuka->sum('jumlah_digunakan');
+
         // Cek apakah ada pembayaran
         $totalPembayaran = $pembelian->pembayaranPembelian->sum('jumlah_bayar');
 
-        if ($totalPembayaran > 0) {
+        if ($totalPembayaran > 0 || $totalUangMukaDigunakan > 0) {
+            $message = 'Pembelian akan dihapus beserta pembayaran sebesar Rp ' . number_format($totalPembayaran, 0, ',', '.');
+            if ($totalUangMukaDigunakan > 0) {
+                $message .= ' dan uang muka sebesar Rp ' . number_format($totalUangMukaDigunakan, 0, ',', '.') . ' akan dikembalikan ke supplier.';
+            } else {
+                $message .= ' dan saldo kas/bank akan disesuaikan.';
+            }
+            
             return [
                 'success' => true,
-                'message' => 'Pembelian akan dihapus beserta pembayaran sebesar Rp ' . number_format($totalPembayaran, 0, ',', '.') . ' dan saldo kas/bank akan disesuaikan.',
-                'has_payment' => true,
-                'total_payment' => $totalPembayaran
+                'message' => $message,
+                'has_payment' => $totalPembayaran > 0,
+                'has_uang_muka' => $totalUangMukaDigunakan > 0,
+                'total_payment' => $totalPembayaran,
+                'total_uang_muka' => $totalUangMukaDigunakan
             ];
         }
 
@@ -239,7 +323,9 @@ class TransactionService
             'success' => true,
             'message' => 'Pembelian akan dihapus.',
             'has_payment' => false,
-            'total_payment' => 0
+            'has_uang_muka' => false,
+            'total_payment' => 0,
+            'total_uang_muka' => 0
         ];
     }
 

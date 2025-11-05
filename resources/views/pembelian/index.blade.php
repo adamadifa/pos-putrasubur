@@ -313,7 +313,8 @@
             </form>
         </div>
 
-        <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <!-- Desktop Table View -->
+        <div class="hidden md:block bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
@@ -517,7 +518,8 @@
                                             <i class="ti ti-eye text-sm"></i>
                                         </a>
 
-                                        @if (!$isMoreThanOneDay)
+                                        {{-- Edit button hidden --}}
+                                        {{-- @if (!$isMoreThanOneDay)
                                             <a href="{{ route('pembelian.edit', $item->encrypted_id) }}"
                                                 class="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-emerald-600 hover:to-emerald-700 transform hover:scale-105 transition-all duration-200"
                                                 title="Edit Pembelian">
@@ -529,7 +531,7 @@
                                                 title="Tidak dapat diedit setelah H+1">
                                                 <i class="ti ti-edit text-sm"></i>
                                             </button>
-                                        @endif
+                                        @endif --}}
 
                                         @if (!$isMoreThanOneDay)
                                             <button type="button"
@@ -561,6 +563,170 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <!-- Mobile Card View -->
+        <div class="block md:hidden space-y-4">
+                @forelse ($pembelian as $item)
+                    @php
+                        $statusConfig = [
+                            'lunas' => [
+                                'bg' => 'bg-gradient-to-r from-green-500 to-green-600',
+                                'text' => 'text-white',
+                                'icon' => 'ti-check-circle',
+                                'label' => 'Lunas',
+                            ],
+                            'dp' => [
+                                'bg' => 'bg-gradient-to-r from-red-500 to-red-600',
+                                'text' => 'text-white',
+                                'icon' => 'ti-x-circle',
+                                'label' => 'Belum Lunas',
+                            ],
+                            'angsuran' => [
+                                'bg' => 'bg-gradient-to-r from-red-500 to-red-600',
+                                'text' => 'text-white',
+                                'icon' => 'ti-x-circle',
+                                'label' => 'Belum Lunas',
+                            ],
+                            'belum_bayar' => [
+                                'bg' => 'bg-gradient-to-r from-red-500 to-red-600',
+                                'text' => 'text-white',
+                                'icon' => 'ti-x-circle',
+                                'label' => 'Belum Lunas',
+                            ],
+                        ];
+                        $config = $statusConfig[$item->status_pembayaran] ?? $statusConfig['belum_bayar'];
+
+                        $jenisConfig = [
+                            'tunai' => [
+                                'bg' => 'bg-gradient-to-r from-green-500 to-green-600',
+                                'text' => 'text-white',
+                                'icon' => 'ti-cash',
+                                'label' => 'Tunai',
+                            ],
+                            'kredit' => [
+                                'bg' => 'bg-gradient-to-r from-purple-500 to-purple-600',
+                                'text' => 'text-white',
+                                'icon' => 'ti-credit-card',
+                                'label' => 'Kredit',
+                            ],
+                        ];
+                        $jenisTransaksiConfig = $jenisConfig[$item->jenis_transaksi] ?? $jenisConfig['tunai'];
+
+                        $today = \Carbon\Carbon::today();
+                        $transactionDate = \Carbon\Carbon::parse($item->created_at)->startOfDay();
+                        $isMoreThanOneDay = $today->diffInDays($transactionDate) > 1;
+                    @endphp
+                    <div class="p-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:bg-gray-50 transition-all duration-200">
+                        <!-- Header Card -->
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center space-x-3 flex-1">
+                                <div class="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="ti ti-receipt text-white text-sm"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-sm font-semibold text-gray-900 truncate">{{ $item->no_faktur }}</div>
+                                    <div class="text-xs text-gray-500 mt-0.5">{{ $item->user->name ?? 'N/A' }}</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2 ml-2">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $config['bg'] }} {{ $config['text'] }} shadow-sm">
+                                    <i class="ti {{ $config['icon'] }} text-xs mr-1"></i>
+                                    {{ $config['label'] }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Supplier & Date Row -->
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2 flex-1 min-w-0">
+                                <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="ti ti-building-store text-white text-xs"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-sm font-medium text-gray-900 truncate">{{ $item->supplier->nama ?? 'N/A' }}</div>
+                                    <div class="text-xs text-gray-500">{{ $item->supplier->kode_supplier ?? 'N/A' }}</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2 ml-2">
+                                <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="ti ti-calendar text-white text-xs"></i>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-xs font-medium text-gray-900">{{ $item->tanggal->format('d M Y') }}</div>
+                                    <div class="text-xs text-gray-500">{{ $item->created_at->format('H:i') }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Items & Total Row -->
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+                                    <i class="ti ti-shopping-bag text-white text-xs"></i>
+                                </div>
+                                <div class="inline-flex items-center px-3 py-1 rounded-lg bg-orange-50 text-orange-700">
+                                    <i class="ti ti-shopping-bag text-xs mr-1.5"></i>
+                                    <span class="text-xs font-semibold">{{ $item->detailPembelian->count() }}</span>
+                                    <span class="text-xs ml-1">item</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-base font-bold text-gray-900">Rp {{ number_format($item->total, 0, ',', '.') }}</div>
+                            </div>
+                        </div>
+
+                        <!-- Jenis Transaksi & Actions Row -->
+                        <div class="flex items-center justify-between pt-3 border-t border-gray-200">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $jenisTransaksiConfig['bg'] }} {{ $jenisTransaksiConfig['text'] }} shadow-sm">
+                                <i class="ti {{ $jenisTransaksiConfig['icon'] }} text-xs mr-1"></i>
+                                {{ $jenisTransaksiConfig['label'] }}
+                            </span>
+                            <div class="flex items-center space-x-2">
+                                <a href="{{ route('pembelian.show', $item->encrypted_id) }}"
+                                    class="inline-flex items-center justify-center w-9 h-9 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition-all duration-200"
+                                    title="Lihat Detail">
+                                    <i class="ti ti-eye text-sm"></i>
+                                </a>
+
+                                {{-- Edit button hidden --}}
+                                @if (!$isMoreThanOneDay)
+                                    {{-- <a href="{{ route('pembelian.edit', $item->encrypted_id) }}"
+                                        class="inline-flex items-center justify-center w-9 h-9 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-emerald-600 hover:to-emerald-700 transform hover:scale-105 transition-all duration-200"
+                                        title="Edit Pembelian">
+                                        <i class="ti ti-edit text-sm"></i>
+                                    </a> --}}
+                                    <button type="button"
+                                        onclick="confirmDelete('{{ $item->encrypted_id }}', '{{ $item->no_faktur }}')"
+                                        class="inline-flex items-center justify-center w-9 h-9 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-red-600 hover:to-red-700 transform hover:scale-105 transition-all duration-200"
+                                        title="Hapus Pembelian">
+                                        <i class="ti ti-trash text-sm"></i>
+                                    </button>
+                                @else
+                                    {{-- <button type="button" disabled
+                                        class="inline-flex items-center justify-center w-9 h-9 bg-gray-400 text-white rounded-lg cursor-not-allowed"
+                                        title="Tidak dapat diedit setelah H+1">
+                                        <i class="ti ti-edit text-sm"></i>
+                                    </button> --}}
+                                    <button type="button" disabled
+                                        class="inline-flex items-center justify-center w-9 h-9 bg-gray-400 text-white rounded-lg cursor-not-allowed"
+                                        title="Tidak dapat dihapus setelah H+1">
+                                        <i class="ti ti-trash text-sm"></i>
+                                    </button>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="p-12 text-center">
+                        <div class="text-gray-500">
+                            <i class="ti ti-shopping-cart-off text-5xl mx-auto mb-4 text-gray-400"></i>
+                            <p class="text-lg font-medium">Tidak ada transaksi ditemukan</p>
+                            <p class="text-sm">Coba ubah filter pencarian atau buat transaksi baru</p>
+                        </div>
+                    </div>
+                @endforelse
             </div>
         </div>
 
@@ -834,29 +1000,104 @@
                 cancelButtonColor: '#ea580c',
                 confirmButtonText: 'Ya, Hapus!',
                 cancelButtonText: 'Batal',
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = `{{ route('pembelian.destroy', '') }}/${purchaseId}`;
-
-                    const csrfToken = document.createElement('input');
-                    csrfToken.type = 'hidden';
-                    csrfToken.name = '_token';
-                    csrfToken.value = '{{ csrf_token() }}';
-
-                    const methodField = document.createElement('input');
-                    methodField.type = 'hidden';
-                    methodField.name = '_method';
-                    methodField.value = 'DELETE';
-
-                    form.appendChild(csrfToken);
-                    form.appendChild(methodField);
-                    document.body.appendChild(form);
-                    form.submit();
-                }
+                reverseButtons: true,
+                showLoaderOnConfirm: true,
+                preConfirm: () => {
+                    return fetch(`{{ route('pembelian.destroy', '') }}/${purchaseId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        },
+                        credentials: 'same-origin'
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            // Try to parse as JSON, if fails, use status text
+                            return response.text().then(text => {
+                                try {
+                                    const err = JSON.parse(text);
+                                    throw new Error(err.message || 'Terjadi kesalahan saat menghapus pembelian');
+                                } catch (e) {
+                                    throw new Error(text || response.statusText || 'Terjadi kesalahan saat menghapus pembelian');
+                                }
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: data.message || 'Pembelian berhasil dihapus.',
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            // Hanya tampilkan message-nya saja, bukan JSON
+                            const errorMessage = data.message || 'Terjadi kesalahan saat menghapus pembelian';
+                            throw new Error(errorMessage);
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: error.message || 'Terjadi kesalahan saat menghapus pembelian',
+                            confirmButtonText: 'OK'
+                        });
+                        throw error;
+                    });
+                },
+                allowOutsideClick: () => !Swal.isLoading()
             });
+        }
+
+        // Helper function untuk show toast (jika belum ada)
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white transform transition-all duration-300 translate-x-full`;
+            
+            if (type === 'success') {
+                toast.classList.add('bg-green-500');
+            } else if (type === 'error') {
+                toast.classList.add('bg-red-500');
+            } else if (type === 'warning') {
+                toast.classList.add('bg-yellow-500');
+            } else {
+                toast.classList.add('bg-blue-500');
+            }
+
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <span class="mr-2">
+                        ${type === 'success' ? '<i class="ti ti-check-circle"></i>' : 
+                          type === 'error' ? '<i class="ti ti-x-circle"></i>' : 
+                          type === 'warning' ? '<i class="ti ti-alert-circle"></i>' : 
+                          '<i class="ti ti-info-circle"></i>'}
+                    </span>
+                    <span>${message}</span>
+                </div>
+            `;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 100);
+
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
         }
     </script>
 @endpush

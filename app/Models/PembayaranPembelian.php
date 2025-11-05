@@ -19,6 +19,7 @@ class PembayaranPembelian extends Model
         'metode_pembayaran',
         'kas_bank_id',
         'status_bayar',
+        'status_uang_muka',
         'keterangan',
         'user_id',
     ];
@@ -26,6 +27,7 @@ class PembayaranPembelian extends Model
     protected $casts = [
         'tanggal' => 'datetime',
         'jumlah_bayar' => 'decimal:2',
+        'status_uang_muka' => 'integer',
     ];
 
     protected $appends = ['encrypted_id'];

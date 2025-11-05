@@ -404,7 +404,7 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse ($pembayaranPembelian as $index => $pembayaran)
-                            <tr class="hover:bg-gray-50 transition-colors duration-200">
+                            <tr class="hover:bg-gray-50 transition-colors duration-200 {{ ($pembayaran->status_uang_muka ?? 0) == 1 ? 'bg-purple-50 border-l-4 border-purple-500' : '' }}">
                                 <td class="px-4 py-4 whitespace-nowrap text-center">
                                     <div class="flex items-center justify-center">
                                         <div
@@ -415,12 +415,17 @@
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
-                                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                            <i class="ti ti-receipt text-blue-600 text-sm"></i>
+                                        <div class="w-8 h-8 {{ ($pembayaran->status_uang_muka ?? 0) == 1 ? 'bg-purple-100' : 'bg-blue-100' }} rounded-lg flex items-center justify-center mr-3">
+                                            <i class="ti ti-receipt {{ ($pembayaran->status_uang_muka ?? 0) == 1 ? 'text-purple-600' : 'text-blue-600' }} text-sm"></i>
                                         </div>
                                         <div>
                                             <div class="text-sm font-medium text-gray-900">{{ $pembayaran->no_bukti }}
                                             </div>
+                                            @if (($pembayaran->status_uang_muka ?? 0) == 1)
+                                                <div class="text-xs text-purple-600 font-medium mt-0.5">
+                                                    <i class="ti ti-wallet text-xs mr-1"></i>Uang Muka
+                                                </div>
+                                            @endif
                                         </div>
                                     </div>
                                 </td>
@@ -463,6 +468,7 @@
                                     </span>
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap text-center">
+                                    <div class="flex flex-col items-center space-y-1">
                                     <span
                                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                         @if ($pembayaran->status_bayar === 'P') bg-green-100 text-green-800
@@ -482,6 +488,12 @@
                                             {{ $pembayaran->status_bayar }}
                                         @endif
                                     </span>
+                                        @if (($pembayaran->status_uang_muka ?? 0) == 1)
+                                            <span class="inline-flex items-center px-2 py-0.5 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
+                                                <i class="ti ti-wallet text-xs mr-1"></i>Uang Muka
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
@@ -731,12 +743,19 @@
                                 <p class="text-sm text-gray-600">Tanggal: ${new Date(pembayaran.tanggal).toLocaleDateString('id-ID')}</p>
                             </div>
                             <div class="text-right">
+                                <div class="flex flex-col items-end space-y-2">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
                                     ${pembayaran.status_bayar === 'P' ? 'bg-green-100 text-green-800' : 
                                       pembayaran.status_bayar === 'D' ? 'bg-blue-100 text-blue-800' : 
                                       'bg-orange-100 text-orange-800'}">
                                     ${pembayaran.status_bayar_display}
                                 </span>
+                                    ${pembayaran.status_uang_muka == 1 ? `
+                                    <span class="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
+                                        <i class="ti ti-wallet text-xs mr-1"></i>Uang Muka
+                                    </span>
+                                    ` : ''}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -758,6 +777,14 @@
                                     <span class="text-gray-600">Status:</span>
                                     <span class="font-semibold">${pembayaran.status_bayar_display}</span>
                                 </div>
+                                ${pembayaran.status_uang_muka == 1 ? `
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">Jenis Pembayaran:</span>
+                                    <span class="inline-flex items-center px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
+                                        <i class="ti ti-wallet text-xs mr-1"></i>Uang Muka
+                                    </span>
+                                </div>
+                                ` : ''}
                                 <div class="flex justify-between">
                                     <span class="text-gray-600">Dibuat Oleh:</span>
                                     <span class="font-semibold">${pembayaran.user.name}</span>

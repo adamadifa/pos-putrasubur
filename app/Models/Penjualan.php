@@ -82,6 +82,14 @@ class Penjualan extends Model
     }
 
     /**
+     * Relationship dengan PenggunaanUangMukaPenjualan
+     */
+    public function penggunaanUangMuka()
+    {
+        return $this->hasMany(PenggunaanUangMukaPenjualan::class);
+    }
+
+    /**
      * Get total setelah diskon
      */
     public function getTotalSetelahDiskonAttribute()

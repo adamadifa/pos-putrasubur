@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class PembayaranController extends Controller
 {
@@ -62,6 +63,8 @@ class PembayaranController extends Controller
      */
     public function store(Request $request)
     {
+
+
         // Log the request data for debugging
         Log::info('Payment creation request', [
             'request_data' => $request->all(),
@@ -70,52 +73,131 @@ class PembayaranController extends Controller
             'metode_pembayaran_raw' => $request->input('metode_pembayaran')
         ]);
 
-        // Clean and parse jumlah input
-        $jumlahInput = $request->input('jumlah');
-        $jumlahClean = preg_replace('/[^\d]/', '', $jumlahInput);
-        $jumlahNumeric = (int) $jumlahClean;
+        try {
+            // Clean and parse jumlah input
+            $jumlahInput = $request->input('jumlah');
+            $jumlahClean = preg_replace('/[^\d]/', '', $jumlahInput);
+            $jumlahNumeric = (int) $jumlahClean;
 
-        $validated = $request->validate([
-            'penjualan_id' => 'required|exists:penjualan,id',
-            'jumlah' => 'required|string',
-            'metode_pembayaran' => 'required|string|max:50',
-            'kas_bank_id' => 'nullable|exists:kas_bank,id',
-            'tanggal' => 'required|date',
-            'keterangan' => 'nullable|string|max:255',
-        ], [
-            'penjualan_id.required' => 'Transaksi wajib dipilih.',
-            'penjualan_id.exists' => 'Transaksi tidak valid.',
-            'jumlah.required' => 'Jumlah bayar wajib diisi.',
-            'metode_pembayaran.required' => 'Metode pembayaran wajib dipilih.',
-            'tanggal.required' => 'Tanggal pembayaran wajib diisi.',
-            'kas_bank_id.exists' => 'Kas/Bank yang dipilih tidak valid.',
-            'tanggal.date' => 'Format tanggal tidak valid.',
-            'keterangan.max' => 'Keterangan maksimal 255 karakter.',
-        ]);
+            // Check if using uang muka - jika checkbox dicentang, jumlah yang diinput adalah jumlah uang muka yang digunakan
+            $useUangMuka = $request->input('use_uang_muka', false); // Flag checkbox
+            $hasUangMuka = false;
+            $totalUangMukaInput = 0;
+
+            if ($useUangMuka) {
+                // Jika checkbox dicentang, jumlah yang diinput adalah jumlah uang muka yang digunakan
+                $hasUangMuka = true;
+                $totalUangMukaInput = $jumlahNumeric; // Jumlah dari field "Jumlah Pembayaran"
+            } else {
+                // Jika tidak dicentang, cek apakah ada data uang_muka dari form
+                $uangMukaFromRequest = $request->input('uang_muka');
+                if ($uangMukaFromRequest && is_array($uangMukaFromRequest)) {
+                    $validUangMuka = array_filter($uangMukaFromRequest, function ($um) {
+                        return isset($um['id']) && !empty($um['id']) && isset($um['jumlah']) && floatval($um['jumlah']) > 0;
+                    });
+                    $hasUangMuka = count($validUangMuka) > 0;
+
+                    foreach ($uangMukaFromRequest as $um) {
+                        if (isset($um['jumlah']) && is_numeric($um['jumlah'])) {
+                            $totalUangMukaInput += floatval($um['jumlah']);
+                        }
+                    }
+                }
+            }
+
+            // Validate request - adjust rules based on whether uang muka is used
+            $validationRules = [
+                'penjualan_id' => 'required|exists:penjualan,id',
+                'tanggal' => 'required|date',
+                'keterangan' => 'nullable|string|max:255',
+            ];
+
+            // Jumlah hanya required jika tidak menggunakan uang muka
+            if (!$hasUangMuka) {
+                $validationRules['jumlah'] = 'required|string';
+            } else {
+                $validationRules['jumlah'] = 'nullable|string';
+            }
+
+            // Metode pembayaran dan kas_bank_id selalu required - sama seperti tanpa checklist
+            $validationRules['metode_pembayaran'] = 'required|string|max:50';
+            $validationRules['kas_bank_id'] = 'nullable|exists:kas_bank,id';
+
+            $customMessages = [
+                'penjualan_id.required' => 'Transaksi wajib dipilih.',
+                'penjualan_id.exists' => 'Transaksi tidak valid.',
+                'jumlah.required' => 'Jumlah bayar wajib diisi.',
+                'metode_pembayaran.required' => 'Metode pembayaran wajib dipilih.',
+                'tanggal.required' => 'Tanggal pembayaran wajib diisi.',
+                'kas_bank_id.exists' => 'Kas/Bank yang dipilih tidak valid.',
+                'tanggal.date' => 'Format tanggal tidak valid.',
+                'keterangan.max' => 'Keterangan maksimal 255 karakter.',
+            ];
+
+            $validated = $request->validate($validationRules, $customMessages);
+        } catch (ValidationException $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi gagal.',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
+        }
 
         // Validate metode pembayaran exists
+        if (!isset($validated['metode_pembayaran'])) {
+            $errorMessage = 'Metode pembayaran wajib dipilih.';
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMessage
+                ], 422);
+            }
+            return back()->withInput()->with('error', $errorMessage);
+        }
+
         $metodePembayaran = \App\Models\MetodePembayaran::where('kode', $validated['metode_pembayaran'])
             ->where('status', true)
             ->first();
 
         if (!$metodePembayaran) {
-            return back()->withInput()
-                ->with('error', 'Metode pembayaran yang dipilih tidak valid atau tidak aktif.');
+            $errorMessage = 'Metode pembayaran yang dipilih tidak valid atau tidak aktif.';
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMessage
+                ], 422);
+            }
+            return back()->withInput()->with('error', $errorMessage);
         }
 
         // Validate kas_bank_id based on payment method
         if (in_array(strtolower($validated['metode_pembayaran']), ['tunai', 'transfer', 'qris'])) {
             if (empty($validated['kas_bank_id'])) {
-                return back()->withInput()
-                    ->with('error', 'Kas/Bank wajib dipilih untuk metode pembayaran ' . $metodePembayaran->nama . '.');
+                $errorMessage = 'Kas/Bank wajib dipilih untuk metode pembayaran ' . $metodePembayaran->nama . '.';
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $errorMessage
+                    ], 422);
+                }
+                return back()->withInput()->with('error', $errorMessage);
             }
 
             // Validate kas_bank exists
             $kasBank = \App\Models\KasBank::find($validated['kas_bank_id']);
 
             if (!$kasBank) {
-                return back()->withInput()
-                    ->with('error', 'Kas/Bank yang dipilih tidak valid.');
+                $errorMessage = 'Kas/Bank yang dipilih tidak valid.';
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $errorMessage
+                    ], 422);
+                }
+                return back()->withInput()->with('error', $errorMessage);
             }
         } else {
             // For other payment methods, set kas_bank_id to null
@@ -124,11 +206,17 @@ class PembayaranController extends Controller
 
         // Custom validation for jumlah
         if ($jumlahNumeric < 1000) {
-            return back()->withInput()
-                ->with('error', 'Jumlah pembayaran minimal Rp 1.000.');
+            $errorMessage = 'Jumlah pembayaran minimal Rp 1.000.';
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMessage
+                ], 422);
+            }
+            return back()->withInput()->with('error', $errorMessage);
         }
 
-        // Update validated data with clean numeric value
+        // Update validated data with clean numeric value (jumlah pembayaran asli, tanpa dikurangi uang muka)
         $validated['jumlah_raw'] = $jumlahNumeric;
 
         // Convert datetime-local to proper format
@@ -136,8 +224,14 @@ class PembayaranController extends Controller
             $tanggal = \Carbon\Carbon::parse($validated['tanggal']);
             $validated['tanggal'] = $tanggal->format('Y-m-d H:i:s');
         } catch (\Exception $e) {
-            return back()->withInput()
-                ->with('error', 'Format tanggal tidak valid.');
+            $errorMessage = 'Format tanggal tidak valid.';
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMessage
+                ], 422);
+            }
+            return back()->withInput()->with('error', $errorMessage);
         }
 
         DB::beginTransaction();
@@ -146,15 +240,125 @@ class PembayaranController extends Controller
             // Get the penjualan
             $penjualan = Penjualan::findOrFail($validated['penjualan_id']);
 
-            // Calculate total already paid
+            // Calculate total already paid (sebelum memproses uang muka baru)
             $sudahDibayar = $penjualan->pembayaranPenjualan->sum('jumlah_bayar');
             $totalTransaksi = $penjualan->total_setelah_diskon; // Gunakan total setelah diskon
             $sisaBayar = $totalTransaksi - $sudahDibayar;
 
-            // Validate payment amount
-            if ($validated['jumlah_raw'] > $sisaBayar) {
-                return back()->withInput()
-                    ->with('error', 'Jumlah bayar tidak boleh melebihi sisa yang harus dibayar (Rp ' . number_format($sisaBayar) . ').');
+            // Handle uang muka jika ada
+            $totalUangMukaDigunakan = 0;
+            $uangMukaData = [];
+
+            if ($useUangMuka) {
+                // Jika checkbox dicentang, jumlah yang diinput adalah jumlah uang muka yang digunakan
+                $jumlahYangAkanDigunakan = $validated['jumlah_raw'];
+
+                // Validasi: jumlah tidak boleh melebihi total sisa uang muka yang tersedia
+                $totalSisaUangMuka = \App\Models\UangMukaPelanggan::where('pelanggan_id', $penjualan->pelanggan_id)
+                    ->where('status', 'aktif')
+                    ->where('sisa_uang_muka', '>', 0)
+                    ->sum('sisa_uang_muka');
+
+                if ($jumlahYangAkanDigunakan > $totalSisaUangMuka) {
+                    DB::rollback();
+                    $errorMessage = "Jumlah uang muka yang digunakan (Rp " . number_format($jumlahYangAkanDigunakan, 0, ',', '.') . ") melebihi total sisa uang muka yang tersedia (Rp " . number_format($totalSisaUangMuka, 0, ',', '.') . ").";
+                    if ($request->ajax() || $request->wantsJson()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => $errorMessage
+                        ], 422);
+                    }
+                    return back()->withInput()->with('error', $errorMessage);
+                }
+
+                // Validasi: jumlah tidak boleh melebihi sisa pembayaran
+                if ($jumlahYangAkanDigunakan > $sisaBayar) {
+                    DB::rollback();
+                    $errorMessage = "Jumlah uang muka yang digunakan (Rp " . number_format($jumlahYangAkanDigunakan, 0, ',', '.') . ") melebihi sisa pembayaran (Rp " . number_format($sisaBayar, 0, ',', '.') . ").";
+                    if ($request->ajax() || $request->wantsJson()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => $errorMessage
+                        ], 422);
+                    }
+                    return back()->withInput()->with('error', $errorMessage);
+                }
+
+                // Ambil uang muka yang tersedia dan distribusikan jumlah yang akan digunakan
+                $availableUangMuka = \App\Models\UangMukaPelanggan::where('pelanggan_id', $penjualan->pelanggan_id)
+                    ->where('status', 'aktif')
+                    ->where('sisa_uang_muka', '>', 0)
+                    ->orderBy('tanggal', 'asc')
+                    ->get();
+
+                $jumlahTersisa = $jumlahYangAkanDigunakan;
+
+                foreach ($availableUangMuka as $uangMuka) {
+                    if ($jumlahTersisa <= 0) break;
+
+                    $jumlahDigunakan = min($jumlahTersisa, $uangMuka->sisa_uang_muka);
+
+                    $uangMukaData[] = [
+                        'uang_muka' => $uangMuka,
+                        'uang_muka_id' => $uangMuka->id,
+                        'jumlah_digunakan' => $jumlahDigunakan,
+                    ];
+
+                    $totalUangMukaDigunakan += $jumlahDigunakan;
+                    $jumlahTersisa -= $jumlahDigunakan;
+                }
+            } elseif ($hasUangMuka && $uangMukaFromRequest && is_array($uangMukaFromRequest)) {
+                // Logika lama untuk backward compatibility
+                foreach ($uangMukaFromRequest as $umItem) {
+                    $uangMukaIdRaw = $umItem['id'] ?? '';
+                    try {
+                        $uangMukaId = decrypt($uangMukaIdRaw);
+                    } catch (\Exception $e) {
+                        // If decrypt fails, assume it's already a plain ID
+                        $uangMukaId = $uangMukaIdRaw;
+                    }
+                    $jumlahDigunakan = floatval($umItem['jumlah'] ?? 0);
+
+                    if ($uangMukaId && $jumlahDigunakan > 0) {
+                        $uangMuka = \App\Models\UangMukaPelanggan::find($uangMukaId);
+                        if ($uangMuka && $uangMuka->pelanggan_id == $penjualan->pelanggan_id) {
+                            // Validasi: jumlah tidak boleh lebih dari sisa
+                            if ($jumlahDigunakan > $uangMuka->sisa_uang_muka) {
+                                DB::rollback();
+                                $errorMessage = "Jumlah uang muka yang digunakan melebihi sisa uang muka untuk {$uangMuka->no_uang_muka}";
+                                if ($request->ajax() || $request->wantsJson()) {
+                                    return response()->json([
+                                        'success' => false,
+                                        'message' => $errorMessage
+                                    ], 422);
+                                }
+                                return back()->withInput()->with('error', $errorMessage);
+                            }
+
+                            $uangMukaData[] = [
+                                'uang_muka' => $uangMuka,
+                                'uang_muka_id' => $uangMukaId,
+                                'jumlah_digunakan' => $jumlahDigunakan,
+                            ];
+
+                            $totalUangMukaDigunakan += $jumlahDigunakan;
+                        }
+                    }
+                }
+            }
+
+            // Validate payment amount (hanya jumlah pembayaran, uang muka tidak dihitung)
+            // Catatan: $sisaBayar, $sudahDibayar, $totalTransaksi sudah dihitung di atas
+            if (!$useUangMuka && $validated['jumlah_raw'] > $sisaBayar) {
+                DB::rollback();
+                $errorMessage = 'Jumlah bayar tidak boleh melebihi sisa yang harus dibayar (Rp ' . number_format($sisaBayar) . ').';
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $errorMessage
+                    ], 422);
+                }
+                return back()->withInput()->with('error', $errorMessage);
             }
 
             // Generate payment reference number
@@ -198,28 +402,131 @@ class PembayaranController extends Controller
             }
 
             // Create payment record
-            $pembayaran = PembayaranPenjualan::create([
-                'penjualan_id' => $validated['penjualan_id'],
-                'no_bukti' => $noBukti,
-                'tanggal' => $validated['tanggal'],
-                'jumlah_bayar' => $validated['jumlah_raw'],
-                'metode_pembayaran' => $validated['metode_pembayaran'],
-                'kas_bank_id' => $validated['kas_bank_id'],
-                'status_bayar' => $statusBayar,
-                'keterangan' => $validated['keterangan'],
-                'user_id' => Auth::id(),
-            ]);
+            // Jika menggunakan uang muka, jangan buat record untuk jumlah pembayaran yang diinput
+            // Hanya buat record untuk uang muka saja dengan status_uang_muka = 1
+            $pembayaran = null;
+            if ($totalUangMukaDigunakan > 0) {
+                // Jika menggunakan uang muka, skip pembuatan record untuk jumlah pembayaran
+                // Akan dibuat record uang muka dengan status_uang_muka = 1 di bawah
+            } elseif ($validated['jumlah_raw'] > 0) {
+                // Hanya buat record jika tidak menggunakan uang muka
+                $pembayaran = PembayaranPenjualan::create([
+                    'penjualan_id' => $validated['penjualan_id'],
+                    'no_bukti' => $noBukti,
+                    'tanggal' => $validated['tanggal'],
+                    'jumlah_bayar' => $validated['jumlah_raw'],
+                    'metode_pembayaran' => $validated['metode_pembayaran'],
+                    'kas_bank_id' => $validated['kas_bank_id'] ?? null,
+                    'status_bayar' => $statusBayar,
+                    'status_uang_muka' => 0, // Tidak menggunakan uang muka
+                    'keterangan' => $validated['keterangan'],
+                    'user_id' => Auth::id(),
+                ]);
+            }
+
+            // Process uang muka jika ada
+            if ($totalUangMukaDigunakan > 0 && !empty($uangMukaData)) {
+                // Update sisa uang muka untuk semua uang muka yang digunakan
+                foreach ($uangMukaData as $umData) {
+                    // Update sisa uang muka
+                    $uangMuka = $umData['uang_muka'];
+                    $uangMuka->sisa_uang_muka -= $umData['jumlah_digunakan'];
+                    if ($uangMuka->sisa_uang_muka <= 0) {
+                        $uangMuka->status = 'habis';
+                    }
+                    $uangMuka->save();
+
+                    // Buat record penggunaan uang muka
+                    $keteranganPenggunaan = $pembayaran && $noBukti ? "Penggunaan uang muka untuk pembayaran " . $noBukti : "Penggunaan uang muka untuk penjualan " . $penjualan->no_faktur;
+                    \App\Models\PenggunaanUangMukaPenjualan::create([
+                        'uang_muka_pelanggan_id' => $umData['uang_muka_id'],
+                        'penjualan_id' => $penjualan->id,
+                        'jumlah_digunakan' => $umData['jumlah_digunakan'],
+                        'tanggal_penggunaan' => $validated['tanggal'],
+                        'keterangan' => $keteranganPenggunaan,
+                        'user_id' => Auth::id(),
+                    ]);
+                }
+
+                // Buat HANYA SATU record PembayaranPenjualan untuk uang muka dengan status_uang_muka = 1
+                // Menggunakan jumlah yang diinput user (bukan total dari semua uang muka)
+                if ($useUangMuka) {
+                    // Jika checkbox dicentang, gunakan jumlah yang diinput sebagai jumlah_bayar
+                    $jumlahBayarUangMuka = $validated['jumlah_raw'];
+                } else {
+                    // Jika tidak, gunakan total dari uang muka yang diproses
+                    $jumlahBayarUangMuka = $totalUangMukaDigunakan;
+                }
+
+                // Hitung status_bayar untuk uang muka (menggunakan logika normal)
+                $statusBayarUangMuka = 'D'; // Default to DP
+                if ($sudahDibayar == 0) {
+                    // First payment dengan uang muka
+                    if ($jumlahBayarUangMuka >= $totalTransaksi) {
+                        $statusBayarUangMuka = 'P'; // Pelunasan (full payment)
+                    } else {
+                        $statusBayarUangMuka = 'D'; // DP (partial payment)
+                    }
+                } else {
+                    // Subsequent payments dengan uang muka
+                    $totalAfterPayment = $sudahDibayar + $jumlahBayarUangMuka;
+                    if ($totalAfterPayment >= $totalTransaksi) {
+                        $statusBayarUangMuka = 'P'; // Pelunasan (final payment)
+                    } else {
+                        $statusBayarUangMuka = 'A'; // Angsuran (partial payment)
+                    }
+                }
+
+                // Generate unique no_bukti untuk uang muka
+                // Format: PAY-UM-YYYYMMDD-PENJUALAN_ID-SEQUENCE
+                $existingUmCount = PembayaranPenjualan::where('penjualan_id', $penjualan->id)
+                    ->where('status_uang_muka', 1)
+                    ->whereDate('created_at', today())
+                    ->count();
+
+                $noBuktiUm = 'PAY-UM-' . date('Ymd') . '-' . str_pad($penjualan->id, 4, '0', STR_PAD_LEFT) . '-' . str_pad($existingUmCount + 1, 3, '0', STR_PAD_LEFT);
+
+                // Pastikan no_bukti unik (jika masih ada duplikasi, tambahkan timestamp)
+                $counter = 1;
+                while (PembayaranPenjualan::where('no_bukti', $noBuktiUm)->exists()) {
+                    $noBuktiUm = 'PAY-UM-' . date('Ymd') . '-' . str_pad($penjualan->id, 4, '0', STR_PAD_LEFT) . '-' . str_pad($existingUmCount + 1 + $counter, 3, '0', STR_PAD_LEFT);
+                    $counter++;
+                }
+
+                PembayaranPenjualan::create([
+                    'penjualan_id' => $penjualan->id,
+                    'no_bukti' => $noBuktiUm,
+                    'tanggal' => $validated['tanggal'],
+                    'jumlah_bayar' => $jumlahBayarUangMuka,
+                    'metode_pembayaran' => $validated['metode_pembayaran'],
+                    'status_bayar' => $statusBayarUangMuka, // D, A, atau P sesuai logika
+                    'status_uang_muka' => 1, // Menandakan penggunaan uang muka
+                    'keterangan' => $validated['keterangan'] ?? "Pembayaran menggunakan uang muka",
+                    'user_id' => Auth::id(),
+                    'kas_bank_id' => null, // NULL agar tidak update saldo kas bank
+                ]);
+            }
 
             // Debug: Log pembayaran yang baru dibuat
-            Log::info('Pembayaran created with kas_bank_id', [
-                'pembayaran_id' => $pembayaran->id,
-                'kas_bank_id' => $pembayaran->kas_bank_id,
-                'metode_pembayaran' => $pembayaran->metode_pembayaran,
-                'validated_kas_bank_id' => $validated['kas_bank_id']
-            ]);
+            if ($pembayaran) {
+                Log::info('Pembayaran created with kas_bank_id', [
+                    'pembayaran_id' => $pembayaran->id,
+                    'kas_bank_id' => $pembayaran->kas_bank_id,
+                    'metode_pembayaran' => $pembayaran->metode_pembayaran,
+                    'validated_kas_bank_id' => $validated['kas_bank_id'] ?? null
+                ]);
+            }
 
             // Update penjualan payment status
-            $totalDibayar = $sudahDibayar + $validated['jumlah_raw'];
+            // Jika menggunakan uang muka, total dibayar hanya dari uang muka
+            // Jika tidak menggunakan uang muka, total dibayar dari jumlah pembayaran
+            if ($totalUangMukaDigunakan > 0) {
+                // Hanya menghitung uang muka yang digunakan
+                $totalDibayar = $sudahDibayar + $totalUangMukaDigunakan;
+            } else {
+                // Hanya menghitung jumlah pembayaran yang diinput
+                $totalDibayar = $sudahDibayar + $validated['jumlah_raw'];
+            }
 
             if ($totalDibayar >= $totalTransaksi) {
                 $penjualan->update(['status_pembayaran' => 'lunas']);
@@ -247,12 +554,13 @@ class PembayaranController extends Controller
             DB::commit();
 
             Log::info('Payment created successfully', [
-                'pembayaran_id' => $pembayaran->id,
+                'pembayaran_id' => $pembayaran ? $pembayaran->id : null,
                 'penjualan_id' => $penjualan->id,
                 'amount' => $validated['jumlah_raw'],
-                'method' => $validated['metode_pembayaran'],
-                'kas_bank_id' => $validated['kas_bank_id'],
-                'status_bayar' => $statusBayar,
+                'uang_muka_digunakan' => $totalUangMukaDigunakan,
+                'method' => $validated['metode_pembayaran'] ?? null,
+                'kas_bank_id' => $validated['kas_bank_id'] ?? null,
+                'status_bayar' => $pembayaran ? $statusBayar : null,
                 'payment_logic' => [
                     'sudah_dibayar' => $sudahDibayar,
                     'total_sebelum_diskon' => $penjualan->total,
@@ -264,21 +572,29 @@ class PembayaranController extends Controller
                 ]
             ]);
 
+            $responseMessage = 'Pembayaran berhasil disimpan!';
+            if ($totalUangMukaDigunakan > 0 && $validated['jumlah_raw'] == 0) {
+                $responseMessage = 'Pembayaran menggunakan uang muka berhasil disimpan!';
+            } elseif ($totalUangMukaDigunakan > 0) {
+                $responseMessage = "Pembayaran berhasil disimpan! (Rp " . number_format($validated['jumlah_raw'], 0, ',', '.')  . ")";
+            }
+
             // Check if request is AJAX
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Pembayaran berhasil disimpan.',
+                    'message' => $responseMessage,
                     'data' => [
-                        'pembayaran_id' => $pembayaran->id,
-                        'no_bukti' => $pembayaran->no_bukti,
-                        'jumlah' => $pembayaran->jumlah_bayar
+                        'pembayaran_id' => $pembayaran ? $pembayaran->id : null,
+                        'no_bukti' => $pembayaran ? $pembayaran->no_bukti : null,
+                        'jumlah' => $pembayaran ? $pembayaran->jumlah_bayar : 0,
+                        'uang_muka_digunakan' => $totalUangMukaDigunakan
                     ]
                 ]);
             }
 
             return redirect()->route('pembayaran.index')
-                ->with('success', 'Pembayaran berhasil disimpan.');
+                ->with('success', $responseMessage);
         } catch (\Exception $e) {
             DB::rollback();
             Log::error('Error creating payment: ' . $e->getMessage());
@@ -359,6 +675,7 @@ class PembayaranController extends Controller
                 'jumlah_bayar' => $validated['jumlah_bayar'],
                 'metode_pembayaran' => $validated['metode_pembayaran'],
                 'status_bayar' => $validated['status_bayar'],
+                'status_uang_muka' => $pembayaran->status_uang_muka ?? 0, // Keep existing value
                 'keterangan' => $validated['keterangan'],
             ]);
 
@@ -404,6 +721,7 @@ class PembayaranController extends Controller
                 'metode_pembayaran_display' => ucfirst($pembayaran->metode_pembayaran),
                 'status_bayar' => $pembayaran->status_bayar,
                 'status_bayar_display' => $this->getStatusBayarDisplay($pembayaran->status_bayar),
+                'status_uang_muka' => $pembayaran->status_uang_muka ?? 0,
                 'keterangan' => $pembayaran->keterangan,
                 'user_name' => $pembayaran->user->name,
                 'penjualan' => [
@@ -549,7 +867,52 @@ class PembayaranController extends Controller
             // Get the penjualan
             $penjualan = $pembayaran->penjualan;
 
-            // Hapus transaksi kas/bank jika ada
+            // Handle uang muka jika pembayaran menggunakan uang muka (status_uang_muka = 1)
+            if (($pembayaran->status_uang_muka ?? 0) == 1) {
+                // Cari record penggunaan uang muka yang terkait dengan pembayaran ini
+                // Dicari berdasarkan penjualan_id dan jumlah yang sama
+                // Note: Biasanya satu pembayaran uang muka = satu penggunaan uang muka dengan jumlah yang sama
+                $penggunaanUangMuka = \App\Models\PenggunaanUangMukaPenjualan::where('penjualan_id', $penjualan->id)
+                    ->where('jumlah_digunakan', $pembayaran->jumlah_bayar)
+                    ->orderBy('created_at', 'desc')
+                    ->first();
+
+                if ($penggunaanUangMuka) {
+                    $uangMuka = $penggunaanUangMuka->uangMukaPelanggan;
+                    $jumlahDigunakan = $penggunaanUangMuka->jumlah_digunakan;
+
+                    // Kembalikan sisa uang muka (tambah kembali jumlah yang digunakan)
+                    $uangMuka->sisa_uang_muka += $jumlahDigunakan;
+
+                    // Update status uang muka jika perlu
+                    // Jika sisa kembali > 0 dan status 'habis', ubah ke 'aktif'
+                    if ($uangMuka->sisa_uang_muka > 0 && $uangMuka->status === 'habis') {
+                        $uangMuka->status = 'aktif';
+                    }
+
+                    $uangMuka->save();
+
+                    // Hapus record penggunaan uang muka
+                    $penggunaanUangMuka->delete();
+
+                    Log::info('Uang muka dikembalikan setelah pembayaran dihapus', [
+                        'pembayaran_id' => $pembayaran->id,
+                        'uang_muka_id' => $uangMuka->id,
+                        'jumlah_dikembalikan' => $jumlahDigunakan,
+                        'sisa_uang_muka_baru' => $uangMuka->sisa_uang_muka,
+                        'status_uang_muka' => $uangMuka->status
+                    ]);
+                } else {
+                    Log::warning('Penggunaan uang muka tidak ditemukan untuk pembayaran yang dihapus', [
+                        'pembayaran_id' => $pembayaran->id,
+                        'penjualan_id' => $penjualan->id,
+                        'jumlah_bayar' => $pembayaran->jumlah_bayar,
+                        'no_bukti' => $pembayaran->no_bukti
+                    ]);
+                }
+            }
+
+            // Hapus transaksi kas/bank jika ada (kecuali untuk uang muka yang kas_bank_id = null)
             if ($pembayaran->kas_bank_id) {
                 try {
                     // Trigger database akan otomatis menangani penghapusan transaksi dan update saldo

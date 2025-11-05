@@ -79,6 +79,11 @@ class Pembelian extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function penggunaanUangMuka()
+    {
+        return $this->hasMany(PenggunaanUangMukaPembelian::class);
+    }
+
     // Accessors
     public function getSisaPembayaranAttribute()
     {

@@ -867,29 +867,104 @@
                 cancelButtonColor: '#3b82f6',
                 confirmButtonText: 'Ya, Hapus!',
                 cancelButtonText: 'Batal',
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = `{{ route('penjualan.destroy', '') }}/${salesId}`;
-
-                    const csrfToken = document.createElement('input');
-                    csrfToken.type = 'hidden';
-                    csrfToken.name = '_token';
-                    csrfToken.value = '{{ csrf_token() }}';
-
-                    const methodField = document.createElement('input');
-                    methodField.type = 'hidden';
-                    methodField.name = '_method';
-                    methodField.value = 'DELETE';
-
-                    form.appendChild(csrfToken);
-                    form.appendChild(methodField);
-                    document.body.appendChild(form);
-                    form.submit();
-                }
+                reverseButtons: true,
+                showLoaderOnConfirm: true,
+                preConfirm: () => {
+                    return fetch(`{{ route('penjualan.destroy', '') }}/${salesId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        },
+                        credentials: 'same-origin'
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            // Try to parse as JSON, if fails, use status text
+                            return response.text().then(text => {
+                                try {
+                                    const err = JSON.parse(text);
+                                    throw new Error(err.message || 'Terjadi kesalahan saat menghapus penjualan');
+                                } catch (e) {
+                                    throw new Error(text || response.statusText || 'Terjadi kesalahan saat menghapus penjualan');
+                                }
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: data.message || 'Penjualan berhasil dihapus.',
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            // Hanya tampilkan message-nya saja, bukan JSON
+                            const errorMessage = data.message || 'Terjadi kesalahan saat menghapus penjualan';
+                            throw new Error(errorMessage);
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: error.message || 'Terjadi kesalahan saat menghapus penjualan',
+                            confirmButtonText: 'OK'
+                        });
+                        throw error;
+                    });
+                },
+                allowOutsideClick: () => !Swal.isLoading()
             });
+        }
+
+        // Helper function untuk show toast (jika belum ada)
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white transform transition-all duration-300 translate-x-full`;
+            
+            if (type === 'success') {
+                toast.classList.add('bg-green-500');
+            } else if (type === 'error') {
+                toast.classList.add('bg-red-500');
+            } else if (type === 'warning') {
+                toast.classList.add('bg-yellow-500');
+            } else {
+                toast.classList.add('bg-blue-500');
+            }
+
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <span class="mr-2">
+                        ${type === 'success' ? '<i class="ti ti-check-circle"></i>' : 
+                          type === 'error' ? '<i class="ti ti-x-circle"></i>' : 
+                          type === 'warning' ? '<i class="ti ti-alert-circle"></i>' : 
+                          '<i class="ti ti-info-circle"></i>'}
+                    </span>
+                    <span>${message}</span>
+                </div>
+            `;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 100);
+
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
         }
     </script>
 @endpush

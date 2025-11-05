@@ -140,6 +140,9 @@ class PembelianController extends Controller
             'kas_bank_id' => 'required|exists:kas_bank,id',
             'dp_amount' => 'nullable|numeric|min:0',
             'diskon' => 'nullable|numeric|min:0',
+            'uang_muka' => 'nullable|array',
+            'uang_muka.*.id' => 'required|exists:uang_muka_supplier,id',
+            'uang_muka.*.jumlah' => 'required|numeric|min:0.01',
             'keterangan' => 'nullable|string|max:255',
             'items' => 'required|array|min:1',
             'items.*.produk_id' => 'required|exists:produk,id',
@@ -304,6 +307,16 @@ class PembelianController extends Controller
                     }
                 }
 
+                // Tentukan status_bayar berdasarkan jumlah pembayaran vs total
+                // D = DP (pembayaran pertama yang belum lunas)
+                // P = Pelunasan (pembayaran yang membuat total menjadi lunas)
+                $statusBayar = 'D'; // Default to DP
+                if ($dpAmount >= $pembelian->total) {
+                    $statusBayar = 'P'; // Pelunasan (full payment)
+                } else {
+                    $statusBayar = 'D'; // DP (partial payment)
+                }
+
                 \App\Models\PembayaranPembelian::create([
                     'pembelian_id' => $pembelian->id,
                     'no_bukti' => $noBukti,
@@ -311,7 +324,8 @@ class PembelianController extends Controller
                     'jumlah_bayar' => $dpAmount,
                     'metode_pembayaran' => $metodePembayaran,
                     'kas_bank_id' => $validated['kas_bank_id'],
-                    'status_bayar' => $jenisTransaksi === 'tunai' ? 'P' : 'D', // P = Pelunasan, D = DP
+                    'status_bayar' => $statusBayar,
+                    'status_uang_muka' => 0, // Tidak menggunakan uang muka
                     'keterangan' => $jenisTransaksi === 'tunai'
                         ? 'Pembayaran tunai penuh'
                         : 'Pembayaran DP awal',
@@ -336,12 +350,127 @@ class PembelianController extends Controller
                 ]);
             }
 
+            // Handle uang muka jika ada
+            $totalUangMukaDigunakan = 0;
+            if ($request->filled('uang_muka') && is_array($request->uang_muka)) {
+                foreach ($request->uang_muka as $um) {
+                    $uangMukaId = $um['id'] ?? null;
+                    $jumlahDigunakan = $um['jumlah'] ?? 0;
+
+                    if ($uangMukaId && $jumlahDigunakan > 0) {
+                        $uangMuka = \App\Models\UangMukaSupplier::find($uangMukaId);
+
+                        if ($uangMuka && $uangMuka->status === 'aktif') {
+                            // Validasi jumlah tidak melebihi sisa uang muka
+                            if ($jumlahDigunakan > $uangMuka->sisa_uang_muka) {
+                                throw new \Exception("Jumlah uang muka yang digunakan ({$jumlahDigunakan}) melebihi sisa uang muka yang tersedia ({$uangMuka->sisa_uang_muka}).");
+                            }
+
+                            // Validasi jumlah tidak melebihi sisa pembayaran pembelian
+                            $sisaPembayaran = $pembelian->total - ($dpAmount ?? 0);
+                            if ($jumlahDigunakan > $sisaPembayaran) {
+                                throw new \Exception("Jumlah uang muka yang digunakan ({$jumlahDigunakan}) melebihi sisa pembayaran ({$sisaPembayaran}).");
+                            }
+
+                            // Update sisa uang muka
+                            $uangMuka->sisa_uang_muka -= $jumlahDigunakan;
+                            if ($uangMuka->sisa_uang_muka <= 0) {
+                                $uangMuka->status = 'habis';
+                            }
+                            $uangMuka->save();
+
+                            // Buat record penggunaan uang muka
+                            \App\Models\PenggunaanUangMukaPembelian::create([
+                                'uang_muka_supplier_id' => $uangMukaId,
+                                'pembelian_id' => $pembelian->id,
+                                'jumlah_digunakan' => $jumlahDigunakan,
+                                'tanggal_penggunaan' => $validated['tanggal'],
+                                'keterangan' => "Penggunaan uang muka untuk faktur {$pembelian->no_faktur}",
+                                'user_id' => auth()->id(),
+                            ]);
+
+                            $totalUangMukaDigunakan += $jumlahDigunakan;
+
+                            Log::info('Uang muka digunakan untuk pembelian', [
+                                'uang_muka_id' => $uangMukaId,
+                                'pembelian_id' => $pembelian->id,
+                                'jumlah_digunakan' => $jumlahDigunakan,
+                                'sisa_uang_muka' => $uangMuka->sisa_uang_muka
+                            ]);
+                        }
+                    }
+                }
+
+                // Buat record PembayaranPembelian untuk uang muka dengan status_uang_muka = 1
+                // Hanya buat 1 record untuk total uang muka yang digunakan
+                if ($totalUangMukaDigunakan > 0) {
+                    // Hitung total pembayaran termasuk DP dan uang muka
+                    $totalSudahDibayar = $dpAmount ?? 0;
+                    $totalPembayaranDenganUm = $totalSudahDibayar + $totalUangMukaDigunakan;
+
+                    // Tentukan status_bayar untuk uang muka (menggunakan logika normal)
+                    // D = DP (pembayaran pertama yang belum lunas)
+                    // A = Angsuran (pembayaran selanjutnya yang belum lunas, tapi ini tidak mungkin karena pembayaran pertama)
+                    // P = Pelunasan (pembayaran yang membuat total menjadi lunas)
+                    $statusBayarUm = 'D'; // Default to DP
+                    if ($totalPembayaranDenganUm >= $pembelian->total) {
+                        $statusBayarUm = 'P'; // Pelunasan (full payment)
+                    } else {
+                        $statusBayarUm = 'D'; // DP (partial payment)
+                    }
+
+                    // Generate unique no_bukti untuk uang muka
+                    $existingUmCount = PembayaranPembelian::where('pembelian_id', $pembelian->id)
+                        ->where('status_uang_muka', 1)
+                        ->whereDate('created_at', today())
+                        ->count();
+
+                    $noBuktiUm = 'PAY-UM-PO-' . date('Ymd') . '-' . str_pad($pembelian->id, 4, '0', STR_PAD_LEFT) . '-' . str_pad($existingUmCount + 1, 3, '0', STR_PAD_LEFT);
+
+                    // Pastikan no_bukti unik
+                    $counter = 1;
+                    while (PembayaranPembelian::where('no_bukti', $noBuktiUm)->exists()) {
+                        $noBuktiUm = 'PAY-UM-PO-' . date('Ymd') . '-' . str_pad($pembelian->id, 4, '0', STR_PAD_LEFT) . '-' . str_pad($existingUmCount + 1 + $counter, 3, '0', STR_PAD_LEFT);
+                        $counter++;
+                    }
+
+                    // Get metode_pembayaran dari uang muka pertama yang digunakan
+                    $firstUangMuka = \App\Models\UangMukaSupplier::find($request->uang_muka[0]['id']);
+                    $metodePembayaranUm = $firstUangMuka ? $firstUangMuka->metode_pembayaran : ($validated['metode_pembayaran'] ?? 'TUNAI');
+
+                    PembayaranPembelian::create([
+                        'pembelian_id' => $pembelian->id,
+                        'no_bukti' => $noBuktiUm,
+                        'tanggal' => $validated['tanggal'],
+                        'jumlah_bayar' => $totalUangMukaDigunakan,
+                        'metode_pembayaran' => $metodePembayaranUm,
+                        'status_bayar' => $statusBayarUm, // D, A, atau P sesuai logika
+                        'status_uang_muka' => 1, // Menandakan penggunaan uang muka
+                        'keterangan' => $validated['keterangan'] ?? "Pembayaran menggunakan uang muka",
+                        'user_id' => auth()->id(),
+                        'kas_bank_id' => null, // NULL agar tidak update saldo kas bank
+                    ]);
+                }
+
+                // Update status pembayaran jika uang muka + DP >= total
+                $totalPembayaran = ($dpAmount ?? 0) + $totalUangMukaDigunakan;
+                if ($totalPembayaran >= $pembelian->total) {
+                    $pembelian->update(['status_pembayaran' => 'lunas']);
+                } elseif ($totalPembayaran > 0) {
+                    $pembelian->update(['status_pembayaran' => 'dp']);
+                }
+            }
+
             DB::commit();
 
             $successMessage = 'Pembelian berhasil ditambahkan.';
 
             if ($dpAmount > 0) {
                 $successMessage .= ' Pembayaran ' . number_format($dpAmount, 0, ',', '.') . ' telah dicatat.';
+            }
+
+            if ($totalUangMukaDigunakan > 0) {
+                $successMessage .= ' Uang muka ' . number_format($totalUangMukaDigunakan, 0, ',', '.') . ' telah digunakan.';
             }
 
             // Debug logging
@@ -374,7 +503,13 @@ class PembelianController extends Controller
     {
         try {
             $pembelian = Pembelian::findByEncryptedId($encryptedId);
-            $pembelian->load(['supplier', 'detailPembelian.produk.satuan', 'pembayaranPembelian', 'user']);
+            $pembelian->load(['supplier', 'detailPembelian.produk.satuan', 'user']);
+
+            // Query terpisah untuk riwayat pembayaran, diorder by id
+            $riwayatPembayaran = PembayaranPembelian::where('pembelian_id', $pembelian->id)
+                ->with(['user', 'kasBank'])
+                ->orderBy('id', 'asc')
+                ->get();
 
             // Calculate sisa pembayaran
             $sisaPembayaran = $pembelian->sisa_pembayaran;
@@ -388,7 +523,7 @@ class PembelianController extends Controller
             // Get kas/bank data
             $kasBank = KasBank::orderBy('nama')->get();
 
-            return view('pembelian.show', compact('pembelian', 'sisaPembayaran', 'metodePembayaran', 'kasBank'));
+            return view('pembelian.show', compact('pembelian', 'sisaPembayaran', 'metodePembayaran', 'kasBank', 'riwayatPembayaran'));
         } catch (\Exception $e) {
             return redirect()->route('pembelian.index')
                 ->with('error', 'Pembelian tidak ditemukan.');
@@ -590,13 +725,24 @@ class PembelianController extends Controller
                     }
                 }
 
+                // Tentukan status_bayar berdasarkan jumlah pembayaran vs total
+                // D = DP (pembayaran pertama yang belum lunas)
+                // P = Pelunasan (pembayaran yang membuat total menjadi lunas)
+                $statusBayar = 'D'; // Default to DP
+                if ($paymentAmount >= $pembelian->total) {
+                    $statusBayar = 'P'; // Pelunasan (full payment)
+                } else {
+                    $statusBayar = 'D'; // DP (partial payment)
+                }
+
                 PembayaranPembelian::create([
                     'pembelian_id' => $pembelian->id,
                     'no_bukti' => $noBukti,
                     'tanggal' => $validated['tanggal'],
                     'jumlah_bayar' => $paymentAmount,
                     'metode_pembayaran' => $metodePembayaran,
-                    'status_bayar' => $validated['jenis_transaksi'] === 'tunai' ? 'P' : 'D', // P = Pelunasan, D = DP
+                    'status_bayar' => $statusBayar,
+                    'status_uang_muka' => 0, // Tidak menggunakan uang muka
                     'keterangan' => $validated['jenis_transaksi'] === 'tunai'
                         ? 'Pembayaran tunai penuh'
                         : 'Pembayaran DP awal',
@@ -654,14 +800,43 @@ class PembelianController extends Controller
             $transactionService = new \App\Services\TransactionService();
             $result = $transactionService->deletePembelian($pembelian);
 
+            // Check if request is AJAX
+            if (request()->ajax() || request()->wantsJson()) {
+                if ($result['success']) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => $result['message']
+                    ]);
+                } else {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $result['message']
+                    ], 422);
+                }
+            }
+
             if ($result['success']) {
                 return redirect()->route('pembelian.index')
                     ->with('success', $result['message']);
             } else {
-                return back()->withErrors(['error' => $result['message']]);
+                return back()->with('error', $result['message']);
             }
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+            Log::error('Error deleting pembelian', [
+                'encrypted_id' => $encryptedId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // Check if request is AJAX
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
@@ -745,7 +920,14 @@ class PembelianController extends Controller
             // Generate filename
             $filename = 'Purchase_Invoice_' . $pembelian->no_faktur . '_' . date('Y-m-d_H-i-s') . '.pdf';
 
-            return $pdf->stream($filename);
+            // Get PDF output
+            $pdfOutput = $pdf->output();
+
+            // Return PDF as download with proper headers for browser download
+            return response($pdfOutput, 200)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
+                ->header('Content-Length', strlen($pdfOutput));
         } catch (\Exception $e) {
             Log::error('Error exporting pembelian PDF: ' . $e->getMessage());
             Log::error('Stack trace: ' . $e->getTraceAsString());

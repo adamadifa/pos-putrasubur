@@ -25,6 +25,8 @@ use App\Http\Controllers\LaporanHutangController;
 use App\Http\Controllers\PenyesuaianStokController;
 use App\Http\Controllers\PengaturanUmumController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UangMukaSupplierController;
+use App\Http\Controllers\UangMukaPelangganController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -182,6 +184,28 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}', [PembayaranPembelianController::class, 'destroy'])->name('destroy');
         Route::get('/{id}/detail', [PembayaranPembelianController::class, 'detail'])->name('detail');
         Route::get('/{id}/print', [PembayaranPembelianController::class, 'print'])->name('print');
+    });
+
+    // Uang Muka Supplier Routes (Admin & Kasir only)
+    Route::prefix('uang-muka-supplier')->name('uang-muka-supplier.')->middleware('role:admin,kasir')->group(function () {
+        Route::get('/', [UangMukaSupplierController::class, 'index'])->name('index');
+        Route::get('/create', [UangMukaSupplierController::class, 'create'])->name('create');
+        Route::post('/', [UangMukaSupplierController::class, 'store'])->name('store');
+        Route::get('/get-available', [UangMukaSupplierController::class, 'getAvailableUangMuka'])->name('get-available');
+        Route::get('/{encryptedId}', [UangMukaSupplierController::class, 'show'])->name('show');
+        Route::delete('/{encryptedId}/cancel', [UangMukaSupplierController::class, 'cancel'])->name('cancel');
+        Route::delete('/{encryptedId}', [UangMukaSupplierController::class, 'destroy'])->name('destroy');
+    });
+
+    // Uang Muka Pelanggan Routes (Admin & Kasir only)
+    Route::prefix('uang-muka-pelanggan')->name('uang-muka-pelanggan.')->middleware('role:admin,kasir')->group(function () {
+        Route::get('/', [UangMukaPelangganController::class, 'index'])->name('index');
+        Route::get('/create', [UangMukaPelangganController::class, 'create'])->name('create');
+        Route::post('/', [UangMukaPelangganController::class, 'store'])->name('store');
+        Route::get('/get-available', [UangMukaPelangganController::class, 'getAvailableUangMuka'])->name('get-available');
+        Route::get('/{encryptedId}', [UangMukaPelangganController::class, 'show'])->name('show');
+        Route::delete('/{encryptedId}/cancel', [UangMukaPelangganController::class, 'cancel'])->name('cancel');
+        Route::delete('/{encryptedId}', [UangMukaPelangganController::class, 'destroy'])->name('destroy');
     });
 
     // Laporan Routes (Admin & Manager only)

@@ -690,7 +690,7 @@
 
                         <!-- Metode Pembayaran -->
                         <div>
-                            <div class="grid grid-cols-1 gap-3" id="previewPaymentMethodContainer">
+                            <div class="grid gap-3" id="previewPaymentMethodContainer" style="grid-template-columns: repeat({{ count($metodePembayaran) }}, 1fr);">
                                 @foreach ($metodePembayaran as $metode)
                                     <label class="relative cursor-pointer preview-payment-method-option">
                                         <input type="radio" name="preview_metode_pembayaran" value="{{ $metode->kode }}"
@@ -936,6 +936,22 @@
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-right text-sm"
                                 placeholder="Jumlah (Rp)" value="0">
                         </div>
+
+                        <!-- Uang Muka Pelanggan -->
+                        <div id="previewUangMukaContainer" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Gunakan Uang Muka (Opsional)
+                            </label>
+                            <div id="uangMukaList" class="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50">
+                                <p class="text-sm text-gray-500 text-center py-4" id="uangMukaEmptyMessage">
+                                    Pilih pelanggan terlebih dahulu untuk melihat uang muka yang tersedia
+                                </p>
+                            </div>
+                            <div class="mt-2 text-xs text-gray-500">
+                                <i class="ti ti-info-circle mr-1"></i>
+                                Pilih uang muka yang akan digunakan dan masukkan jumlahnya
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -958,6 +974,10 @@
 
                         <!-- DP & Remaining (for kredit) -->
                         <div id="previewPaymentBreakdown" class="hidden border-t border-gray-200 pt-2 space-y-2">
+                            <div class="flex justify-between text-sm" id="previewUangMukaRow" style="display: none;">
+                                <span class="text-blue-600">Uang Muka Digunakan</span>
+                                <span class="font-medium text-blue-600" id="previewUangMukaDisplay">Rp 0</span>
+                            </div>
                             <div class="flex justify-between text-sm">
                                 <span class="text-green-600">DP Dibayar</span>
                                 <span class="font-medium text-green-600" id="previewDP">Rp 0</span>
@@ -3647,17 +3667,34 @@
 
             document.getElementById('previewTotal').textContent = `Rp ${formatNumber(total)}`;
 
-            // Show/hide payment breakdown for kredit
+            // Show payment breakdown for both tunai and kredit
             const previewPaymentBreakdown = document.getElementById('previewPaymentBreakdown');
-            if (jenisTransaksi === 'kredit') {
-                const dpAmount = parseFormattedNumber(document.getElementById('dpAmountDisplay').value);
-                const remaining = Math.max(0, total - dpAmount);
+            updatePaymentCalculation(); // This will handle uang muka calculation for both types
 
-                previewPaymentBreakdown.classList.remove('hidden');
-                document.getElementById('previewDP').textContent = `Rp ${formatNumber(dpAmount)}`;
-                document.getElementById('previewRemaining').textContent = `Rp ${formatNumber(remaining)}`;
-            } else {
-                previewPaymentBreakdown.classList.add('hidden');
+            // Load uang muka jika pelanggan sudah dipilih
+            // Selalu reset dan load ulang untuk memastikan data sesuai pelanggan yang dipilih
+            const pelangganId = document.getElementById('pelangganId').value;
+            const uangMukaContainer = document.getElementById('previewUangMukaContainer');
+            const uangMukaList = document.getElementById('uangMukaList');
+            
+            // Reset container dan list sebelum load ulang
+            uangMukaContainer.classList.add('hidden');
+            uangMukaList.innerHTML = '';
+            
+            if (pelangganId) {
+                // Load uang muka untuk pelanggan yang dipilih
+                loadUangMukaPelanggan(pelangganId);
+            }
+
+            // Update payment method grid columns based on count
+            const previewPaymentMethodContainer = document.getElementById('previewPaymentMethodContainer');
+            if (previewPaymentMethodContainer) {
+                const paymentMethodCount = document.querySelectorAll('.preview-payment-method-radio').length;
+                if (paymentMethodCount > 0) {
+                    // Set grid columns to match number of payment methods, max 4 columns
+                    const maxCols = Math.min(paymentMethodCount, 4);
+                    previewPaymentMethodContainer.style.gridTemplateColumns = `repeat(${maxCols}, 1fr)`;
+                }
             }
 
             // Show modal
@@ -3747,6 +3784,16 @@
         // Handle transaction type change in modal
         function handleTransactionTypeChange() {
             const selectedTransactionType = document.querySelector('.preview-transaction-type-radio:checked').value;
+            
+            // Selalu load uang muka jika ada pelanggan (tidak peduli jenis transaksi)
+            const pelangganId = document.getElementById('pelangganId').value;
+            if (pelangganId) {
+                // Selalu reload uang muka untuk memastikan data terbaru sesuai pelanggan yang dipilih
+                loadUangMukaPelanggan(pelangganId);
+            } else {
+                document.getElementById('previewUangMukaContainer').classList.add('hidden');
+            }
+
             if (selectedTransactionType === 'kredit') {
                 previewDpContainer.classList.remove('hidden');
                 previewDpAmount.required = true;
@@ -3760,10 +3807,13 @@
                 document.getElementById('paymentAmountLabel').textContent = 'Jumlah Down Payment (DP)';
                 document.getElementById('previewDpAmount').placeholder = 'Jumlah DP (Rp)';
 
+                // Update calculation
+                updatePaymentCalculation();
+
                 // Show info message
                 showToast('Jumlah DP direset ke 0. Silakan isi jumlah DP yang diinginkan.', 'info');
             } else {
-                // For tunai transactions, auto-fill with total amount
+                // For tunai transactions, calculate payment amount after uang muka
                 const subtotal = orderItems.reduce((total, item) => {
                     const itemSubtotal = item.price * item.qty;
                     const itemDiscount = item.discount || 0;
@@ -3774,20 +3824,230 @@
 
                 previewDpContainer.classList.remove('hidden');
                 previewDpAmount.required = false;
-                previewDpAmount.value = formatNumberInput(total.toString());
-                previewDpAmount.readOnly = true;
+                previewDpAmount.readOnly = false;
 
                 // Update labels for tunai
-                document.getElementById('paymentAmountLabel').textContent = 'Jumlah Pembayaran';
+                document.getElementById('paymentAmountLabel').textContent = 'Jumlah Pembayaran (Sisa setelah uang muka)';
                 document.getElementById('previewDpAmount').placeholder = 'Jumlah (Rp)';
 
+                // Auto-update payment amount after uang muka
+                setTimeout(() => {
+                    updatePaymentCalculationForTunai();
+                }, 300);
+
                 // Show info message
-                showToast('Pembayaran tunai otomatis diisi sesuai total transaksi', 'info');
+                showToast('Uang muka akan mengurangi total pembayaran. Sisanya bisa dibayar cash/transfer.', 'info');
             }
         }
 
         // Setup number formatting for DP input in modal
         setupNumberInput(previewDpAmount);
+
+        // DP amount input handler
+        previewDpAmount.addEventListener('input', function(e) {
+            updatePaymentCalculation();
+        });
+
+        // Function to load uang muka pelanggan
+        function loadUangMukaPelanggan(pelangganId) {
+            // Reset container terlebih dahulu
+            const container = document.getElementById('uangMukaList');
+            const emptyMessage = document.getElementById('uangMukaEmptyMessage');
+            const uangMukaContainer = document.getElementById('previewUangMukaContainer');
+            
+            // Clear previous data
+            // Jangan hapus emptyMessage saat clear, hanya hapus content yang dinamis
+            if (container) {
+                // Hapus hanya item uang muka yang dinamis, jangan hapus emptyMessage
+                const existingItems = container.querySelectorAll('.bg-white.border');
+                existingItems.forEach(item => item.remove());
+            }
+            if (uangMukaContainer) {
+                uangMukaContainer.classList.add('hidden');
+            }
+            // Show empty message jika masih ada (belum dihapus)
+            if (emptyMessage && emptyMessage.parentNode) {
+                emptyMessage.style.display = 'block';
+            }
+            
+            fetch(`/uang-muka-pelanggan/get-available?pelanggan_id=${pelangganId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success || data.data.length === 0) {
+                        if (container) {
+                            container.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">Tidak ada uang muka yang tersedia untuk pelanggan ini</p>';
+                        }
+                        if (uangMukaContainer) {
+                            uangMukaContainer.classList.add('hidden');
+                        }
+                    } else {
+                        // Hide empty message if it exists
+                        if (emptyMessage) {
+                            emptyMessage.style.display = 'none';
+                        }
+                        container.innerHTML = data.data.map(um => `
+                            <div class="bg-white border border-gray-200 rounded-lg p-3 hover:border-blue-300 transition-colors">
+                                <div class="flex items-start space-x-3">
+                                    <input type="checkbox" 
+                                        class="mt-1 uang-muka-checkbox" 
+                                        data-id="${um.id}" 
+                                        data-sisa="${um.sisa_uang_muka}"
+                                        data-max="${um.sisa_uang_muka}">
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-start mb-1">
+                                            <span class="text-sm font-medium text-gray-900">${um.no_uang_muka}</span>
+                                            <span class="text-xs text-gray-500">${um.tanggal}</span>
+                                        </div>
+                                        <div class="text-xs text-gray-600 mb-2">
+                                            <span>Sisa: <strong class="text-green-600">Rp ${formatNumber(um.sisa_uang_muka)}</strong></span>
+                                        </div>
+                                        <input type="text" 
+                                            class="uang-muka-amount w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 text-right" 
+                                            data-id="${um.id}"
+                                            placeholder="Jumlah digunakan (Rp)"
+                                            disabled>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('');
+
+                        // Setup number formatting for uang muka inputs
+                        container.querySelectorAll('.uang-muka-amount').forEach(input => {
+                            setupNumberInput(input);
+                        });
+
+                        // Setup checkbox handlers
+                        container.querySelectorAll('.uang-muka-checkbox').forEach(checkbox => {
+                            checkbox.addEventListener('change', function() {
+                                const amountInput = container.querySelector(`.uang-muka-amount[data-id="${this.dataset.id}"]`);
+                                if (this.checked) {
+                                    amountInput.disabled = false;
+                                    amountInput.focus();
+                                } else {
+                                    amountInput.disabled = true;
+                                    amountInput.value = '';
+                                    updatePaymentCalculation();
+                                }
+                            });
+                        });
+
+                        // Setup amount input handlers
+                        container.querySelectorAll('.uang-muka-amount').forEach(input => {
+                            input.addEventListener('input', function() {
+                                const selectedTransactionType = document.querySelector('.preview-transaction-type-radio:checked')?.value;
+                                if (selectedTransactionType === 'tunai') {
+                                    updatePaymentCalculationForTunai();
+                                } else {
+                                    updatePaymentCalculation();
+                                }
+                            });
+                        });
+
+                        // Setup checkbox handlers untuk auto-fill tunai
+                        container.querySelectorAll('.uang-muka-checkbox').forEach(checkbox => {
+                            checkbox.addEventListener('change', function() {
+                                const selectedTransactionType = document.querySelector('.preview-transaction-type-radio:checked')?.value;
+                                if (selectedTransactionType === 'tunai' && this.checked) {
+                                    setTimeout(() => {
+                                        updatePaymentCalculationForTunai();
+                                    }, 100);
+                                }
+                            });
+                        });
+
+                        if (uangMukaContainer) {
+                            uangMukaContainer.classList.remove('hidden');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading uang muka:', error);
+                    const errorContainer = document.getElementById('previewUangMukaContainer');
+                    if (errorContainer) {
+                        errorContainer.classList.add('hidden');
+                    }
+                });
+        }
+
+        // Function to calculate total uang muka used
+        function getTotalUangMukaUsed() {
+            let total = 0;
+            document.querySelectorAll('.uang-muka-checkbox:checked').forEach(checkbox => {
+                const amountInput = document.querySelector(`.uang-muka-amount[data-id="${checkbox.dataset.id}"]`);
+                if (amountInput && amountInput.value) {
+                    const amount = parseFormattedNumber(amountInput.value);
+                    const maxAmount = parseFloat(checkbox.dataset.max);
+                    const validAmount = Math.min(amount, maxAmount);
+                    total += validAmount;
+                }
+            });
+            return total;
+        }
+
+        // Function to update payment calculation including uang muka
+        function updatePaymentCalculation() {
+            const selectedTransactionType = document.querySelector('.preview-transaction-type-radio:checked')?.value;
+            const total = parseFormattedNumber(document.getElementById('previewTotal').textContent.replace('Rp ', '').replace(/\./g, ''));
+            const uangMukaUsed = getTotalUangMukaUsed();
+            const dpAmount = parseFormattedNumber(previewDpAmount.value);
+            
+            if (selectedTransactionType === 'tunai') {
+                // Untuk tunai: sisa bayar = total - uang muka
+                const sisaBayar = Math.max(0, total - uangMukaUsed);
+                
+                // Auto-fill DP amount dengan sisa bayar
+                if (uangMukaUsed > 0) {
+                    previewDpAmount.value = formatNumberInput(sisaBayar.toString());
+                } else {
+                    previewDpAmount.value = formatNumberInput(total.toString());
+                }
+
+                // Update display
+                if (uangMukaUsed > 0) {
+                    document.getElementById('previewUangMukaRow').style.display = 'flex';
+                    document.getElementById('previewUangMukaDisplay').textContent = `Rp ${formatNumber(uangMukaUsed)}`;
+                } else {
+                    document.getElementById('previewUangMukaRow').style.display = 'none';
+                }
+
+                document.getElementById('previewDP').textContent = `Rp ${formatNumber(parseFormattedNumber(previewDpAmount.value))}`;
+                document.getElementById('previewRemaining').textContent = 'Rp 0'; // Tunai selalu lunas
+
+                document.getElementById('previewPaymentBreakdown').classList.remove('hidden');
+            } else {
+                // Untuk kredit: sisa hutang = total - uang muka - DP
+                const totalPembayaran = uangMukaUsed + dpAmount;
+                const remaining = Math.max(0, total - totalPembayaran);
+
+                // Update uang muka display
+                if (uangMukaUsed > 0) {
+                    document.getElementById('previewUangMukaRow').style.display = 'flex';
+                    document.getElementById('previewUangMukaDisplay').textContent = `Rp ${formatNumber(uangMukaUsed)}`;
+                } else {
+                    document.getElementById('previewUangMukaRow').style.display = 'none';
+                }
+
+                document.getElementById('previewDP').textContent = `Rp ${formatNumber(dpAmount)}`;
+                document.getElementById('previewRemaining').textContent = `Rp ${formatNumber(remaining)}`;
+
+                if (totalPembayaran > 0 || dpAmount > 0) {
+                    document.getElementById('previewPaymentBreakdown').classList.remove('hidden');
+                } else if (dpAmount === 0 && uangMukaUsed === 0) {
+                    document.getElementById('previewPaymentBreakdown').classList.add('hidden');
+                }
+            }
+        }
+
+        // Function untuk update payment calculation khusus tunai
+        function updatePaymentCalculationForTunai() {
+            const total = parseFormattedNumber(document.getElementById('previewTotal').textContent.replace('Rp ', '').replace(/\./g, ''));
+            const uangMukaUsed = getTotalUangMukaUsed();
+            const sisaBayar = Math.max(0, total - uangMukaUsed);
+            
+            // Auto-fill dengan sisa bayar
+            previewDpAmount.value = formatNumberInput(sisaBayar.toString());
+            updatePaymentCalculation();
+        }
 
         // Preview payment method radio button handling
         const previewPaymentRadios = document.querySelectorAll('.preview-payment-method-radio');
@@ -4846,6 +5106,80 @@
             const modalJenisTransaksiValue = modalJenisTransaksi.value;
             console.log("Ini adalah modalJenisTransaksi value:", modalJenisTransaksiValue);
 
+            // Validate uang muka jika ada yang digunakan
+            const checkedUangMuka = document.querySelectorAll('.uang-muka-checkbox:checked');
+            if (checkedUangMuka.length > 0) {
+                // Calculate total penjualan
+                const subtotal = orderItems.reduce((total, item) => {
+                    const itemSubtotal = item.price * item.qty;
+                    const itemDiscount = item.discount || 0;
+                    return total + (itemSubtotal - itemDiscount);
+                }, 0);
+                const discount = parseFormattedNumber(document.getElementById('diskonDisplay').value);
+                const totalPenjualan = subtotal - discount;
+                
+                let totalUangMukaUsed = 0;
+                
+                // Validate each uang muka
+                for (const checkbox of checkedUangMuka) {
+                    const amountInput = document.querySelector(`.uang-muka-amount[data-id="${checkbox.dataset.id}"]`);
+                    if (amountInput && amountInput.value) {
+                        const jumlahDigunakan = parseFormattedNumber(amountInput.value);
+                        const sisaUangMuka = parseFloat(checkbox.dataset.sisa);
+                        const maxUangMuka = parseFloat(checkbox.dataset.max);
+                        
+                        // Validasi: jumlah digunakan tidak boleh lebih dari sisa uang muka
+                        if (jumlahDigunakan > sisaUangMuka) {
+                            showToast(`Jumlah uang muka yang digunakan (Rp ${formatNumber(jumlahDigunakan)}) melebihi sisa uang muka yang tersedia (Rp ${formatNumber(sisaUangMuka)})`, 'error');
+                            // Highlight input yang error
+                            amountInput.classList.add('border-red-500', 'ring-2', 'ring-red-300');
+                            setTimeout(() => {
+                                amountInput.classList.remove('border-red-500', 'ring-2', 'ring-red-300');
+                            }, 3000);
+                            return;
+                        }
+                        
+                        // Validasi: jumlah digunakan tidak boleh lebih dari max uang muka
+                        if (jumlahDigunakan > maxUangMuka) {
+                            showToast(`Jumlah uang muka yang digunakan (Rp ${formatNumber(jumlahDigunakan)}) melebihi sisa uang muka maksimal (Rp ${formatNumber(maxUangMuka)})`, 'error');
+                            amountInput.classList.add('border-red-500', 'ring-2', 'ring-red-300');
+                            setTimeout(() => {
+                                amountInput.classList.remove('border-red-500', 'ring-2', 'ring-red-300');
+                            }, 3000);
+                            return;
+                        }
+                        
+                        // Validasi: jumlah digunakan harus lebih dari 0
+                        if (jumlahDigunakan <= 0) {
+                            showToast('Jumlah uang muka yang digunakan harus lebih dari 0', 'error');
+                            amountInput.classList.add('border-red-500', 'ring-2', 'ring-red-300');
+                            setTimeout(() => {
+                                amountInput.classList.remove('border-red-500', 'ring-2', 'ring-red-300');
+                            }, 3000);
+                            return;
+                        }
+                        
+                        totalUangMukaUsed += jumlahDigunakan;
+                    }
+                }
+                
+                // Validasi: total uang muka tidak boleh lebih dari total penjualan
+                if (totalUangMukaUsed > totalPenjualan) {
+                    showToast(`Total uang muka yang digunakan (Rp ${formatNumber(totalUangMukaUsed)}) melebihi total penjualan (Rp ${formatNumber(totalPenjualan)})`, 'error');
+                    // Highlight semua input uang muka
+                    checkedUangMuka.forEach(checkbox => {
+                        const amountInput = document.querySelector(`.uang-muka-amount[data-id="${checkbox.dataset.id}"]`);
+                        if (amountInput) {
+                            amountInput.classList.add('border-red-500', 'ring-2', 'ring-red-300');
+                            setTimeout(() => {
+                                amountInput.classList.remove('border-red-500', 'ring-2', 'ring-red-300');
+                            }, 3000);
+                        }
+                    });
+                    return;
+                }
+            }
+
             // Validate RFID card for CARD payment method
             if (isCard) {
                 // Check status RFID first
@@ -4972,6 +5306,37 @@
                     return;
                 }
             }
+
+            // Remove any existing uang muka inputs
+            const form = document.getElementById('salesForm');
+            form.querySelectorAll('input[name^="uang_muka["]').forEach(input => input.remove());
+
+            // Add uang muka data to form
+            let uangMukaIndex = 0;
+            document.querySelectorAll('.uang-muka-checkbox:checked').forEach(checkbox => {
+                const amountInput = document.querySelector(`.uang-muka-amount[data-id="${checkbox.dataset.id}"]`);
+                if (amountInput && amountInput.value) {
+                    const amount = parseFormattedNumber(amountInput.value);
+                    const maxAmount = parseFloat(checkbox.dataset.max);
+                    const validAmount = Math.min(amount, maxAmount);
+
+                    if (validAmount > 0) {
+                        const idInput = document.createElement('input');
+                        idInput.type = 'hidden';
+                        idInput.name = `uang_muka[${uangMukaIndex}][id]`;
+                        idInput.value = checkbox.dataset.id;
+                        form.appendChild(idInput);
+
+                        const jumlahInput = document.createElement('input');
+                        jumlahInput.type = 'hidden';
+                        jumlahInput.name = `uang_muka[${uangMukaIndex}][jumlah]`;
+                        jumlahInput.value = validAmount;
+                        form.appendChild(jumlahInput);
+
+                        uangMukaIndex++;
+                    }
+                }
+            });
 
             // Update hidden inputs with modal values
             document.getElementById('modalJenisTransaksi').value = modalJenisTransaksiValue;
@@ -5111,6 +5476,17 @@
                     }
                 }, state.delay);
             });
+        });
+
+        // Check for session error/success messages and display toast
+        document.addEventListener('DOMContentLoaded', function() {
+            @if(session('error'))
+                showToast('{{ session('error') }}', 'error');
+            @endif
+
+            @if(session('success'))
+                showToast('{{ session('success') }}', 'success');
+            @endif
         });
     </script>
 @endpush

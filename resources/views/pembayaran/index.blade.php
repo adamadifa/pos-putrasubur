@@ -404,7 +404,7 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse ($pembayaran as $index => $p)
-                            <tr class="hover:bg-gray-50 transition-colors duration-200">
+                            <tr class="hover:bg-gray-50 transition-colors duration-200 {{ ($p->status_uang_muka ?? 0) == 1 ? 'bg-purple-50 border-l-4 border-purple-500' : '' }}">
                                 <td class="px-4 py-4 whitespace-nowrap text-center">
                                     <div class="flex items-center justify-center">
                                         <div
@@ -416,11 +416,16 @@
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
-                                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                            <i class="ti ti-receipt text-blue-600 text-sm"></i>
+                                        <div class="w-8 h-8 {{ ($p->status_uang_muka ?? 0) == 1 ? 'bg-purple-100' : 'bg-blue-100' }} rounded-lg flex items-center justify-center mr-3">
+                                            <i class="ti ti-receipt {{ ($p->status_uang_muka ?? 0) == 1 ? 'text-purple-600' : 'text-blue-600' }} text-sm"></i>
                                         </div>
                                         <div>
                                             <div class="text-sm font-medium text-gray-900">{{ $p->no_bukti }}</div>
+                                            @if (($p->status_uang_muka ?? 0) == 1)
+                                                <div class="text-xs text-purple-600 font-medium mt-0.5">
+                                                    <i class="ti ti-wallet text-xs mr-1"></i>Uang Muka
+                                                </div>
+                                            @endif
                                         </div>
                                     </div>
                                 </td>
@@ -463,6 +468,7 @@
                                     </span>
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap text-center">
+                                    <div class="flex flex-col items-center space-y-1">
                                     <span
                                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                         @if ($p->status_bayar === 'P') bg-green-100 text-green-800
@@ -482,6 +488,12 @@
                                             {{ $p->status_bayar }}
                                         @endif
                                     </span>
+                                        @if (($p->status_uang_muka ?? 0) == 1)
+                                            <span class="inline-flex items-center px-2 py-0.5 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
+                                                <i class="ti ti-wallet text-xs mr-1"></i>Uang Muka
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap">
                                     <div class="flex items-center">

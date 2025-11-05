@@ -320,24 +320,45 @@
                 </div>
 
                 <!-- Payment History -->
-                @if ($penjualan->pembayaranPenjualan->count() > 0)
+                @if ($riwayatPembayaran->count() > 0)
                     <div class="bg-white rounded-lg shadow border">
                         <div class="px-6 py-4 border-b bg-gradient-to-r from-purple-50 to-pink-50">
                             <h3 class="font-semibold text-gray-900 flex items-center">
                                 <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
                                     <i class="ti ti-wallet text-purple-600"></i>
                                 </div>
-                                Riwayat Pembayaran ({{ $penjualan->pembayaranPenjualan->count() }} transaksi)
+                                Riwayat Pembayaran ({{ $riwayatPembayaran->count() }} transaksi)
                             </h3>
                         </div>
                         <div class="p-6">
+                            @php
+                                // Tentukan payment terakhir di luar loop (lebih efisien)
+                                // Karena data sudah diorder by id asc dari controller, payment terakhir adalah yang ID-nya terbesar
+                                $latestPaymentId = $riwayatPembayaran->max('id');
+                                $today = \Carbon\Carbon::today();
+                            @endphp
                             <div class="space-y-4">
-                                @foreach ($penjualan->pembayaranPenjualan as $pembayaran)
+                                @foreach ($riwayatPembayaran as $pembayaran)
+                                    @php
+                                        // Check if this is the latest payment (by ID)
+                                        $isLatestPayment = $pembayaran->id == $latestPaymentId;
+                                        $paymentDate = \Carbon\Carbon::parse($pembayaran->created_at)->startOfDay();
+                                        
+                                        // Payment can only be deleted if:
+                                        // 1. It's created today AND
+                                        // 2. It's the latest payment (highest ID)
+                                        $canDelete = $today->equalTo($paymentDate) && $isLatestPayment;
+                                    @endphp
                                     <div
-                                        class="flex items-center space-x-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200 hover:shadow-md transition-all duration-200">
+                                        class="flex items-center space-x-4 p-4 {{ ($pembayaran->status_uang_muka ?? 0) == 1 ? 'bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200' : 'bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200' }} hover:shadow-md transition-all duration-200">
                                         <!-- Payment Icon -->
                                         <div class="flex-shrink-0">
                                             @php
+                                                // Cek apakah menggunakan uang muka
+                                                if (($pembayaran->status_uang_muka ?? 0) == 1) {
+                                                    $color = 'from-purple-400 to-pink-500';
+                                                    $icon = 'ti-wallet';
+                                                } else {
                                                 // Get payment method from database
                                                 $metodePembayaranData = \App\Models\MetodePembayaran::where(
                                                     'kode',
@@ -364,6 +385,7 @@
                                                     isset($colorMap[strtolower($metodePembayaranData->kode)])
                                                 ) {
                                                     $color = $colorMap[strtolower($metodePembayaranData->kode)];
+                                                    }
                                                 }
                                             @endphp
                                             <div
@@ -405,26 +427,12 @@
                                                     <i class="ti {{ $status['icon'] }} mr-1"></i>
                                                     {{ $status['label'] }}
                                                 </span>
-
-                                                <!-- Delete Status Badge -->
-                                                @php
-                                                    $today = \Carbon\Carbon::today();
-                                                    $paymentDate = \Carbon\Carbon::parse(
-                                                        $pembayaran->created_at,
-                                                    )->startOfDay();
-
-                                                    // Check if this is the latest payment
-                                                    $latestPayment = $penjualan->pembayaranPenjualan
-                                                        ->sortByDesc('created_at')
-                                                        ->first();
-                                                    $isLatestPayment =
-                                                        $latestPayment && $latestPayment->id === $pembayaran->id;
-
-                                                    // Payment can only be deleted if:
-                                                    // 1. It's created today AND
-// 2. It's the latest payment (no newer payments exist)
-                                                    $canDelete = $today->equalTo($paymentDate) && $isLatestPayment;
-                                                @endphp
+                                                @if (($pembayaran->status_uang_muka ?? 0) == 1)
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                        <i class="ti ti-wallet mr-1"></i>
+                                                        Uang Muka
+                                                    </span>
+                                                @endif
 
                                                 <!-- User Badge -->
                                                 <span
@@ -681,7 +689,7 @@
                             </button>
                         @endif
 
-                        @if ($penjualan->pembayaranPenjualan->count() == 0)
+                        @if ($riwayatPembayaran->count() == 0)
                             <!-- Delete Button -->
                             <button type="button"
                                 onclick="confirmDelete('{{ $penjualan->encrypted_id }}', '{{ $penjualan->no_faktur }}')"
@@ -698,7 +706,8 @@
         </div>
 
         <!-- Payment Modal -->
-        <div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden overflow-y-auto">
+        <div id="paymentModal" style="margin-top: 0 !important;"
+            class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden overflow-y-auto">
             <div class="flex items-start justify-center min-h-full p-2 sm:p-4">
                 <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-auto my-4 sm:my-8 max-h-full flex flex-col">
                     <!-- Modal Header -->
@@ -734,7 +743,7 @@
                                 <div>
                                     <span class="text-gray-600 text-xs">Sudah Bayar:</span>
                                     <div class="font-semibold text-green-600">Rp
-                                        {{ number_format($penjualan->pembayaranPenjualan->sum('jumlah_bayar'), 0) }}</div>
+                                        {{ number_format($riwayatPembayaran->sum('jumlah_bayar'), 0) }}</div>
                                 </div>
                                 <div>
                                     <span class="text-gray-600 text-xs">Sisa:</span>
@@ -787,12 +796,48 @@
                                         placeholder="Keterangan (opsional)..."></textarea>
                                 </div>
 
+                                <!-- Row 2.5: Informasi Uang Muka Pelanggan -->
+                                <div id="paymentUangMukaContainer" class="hidden">
+                                    <div class="mb-3">
+                                        <label class="flex items-center space-x-2 cursor-pointer">
+                                            <input type="checkbox" id="useUangMukaCheckbox"
+                                                class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                            <span class="text-sm font-medium text-gray-700">
+                                                <i class="ti ti-coin mr-1"></i>
+                                                Gunakan Uang Muka
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        <i class="ti ti-info-circle mr-1"></i>
+                                        Informasi Uang Muka Tersedia
+                                    </label>
+                                    <div id="paymentUangMukaList"
+                                        class="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50">
+                                        <p class="text-sm text-gray-500 text-center py-4"
+                                            id="paymentUangMukaEmptyMessage">
+                                            Memuat uang muka yang tersedia...
+                                        </p>
+                                    </div>
+                                    <div class="mt-2 text-xs text-gray-500">
+                                        <i class="ti ti-info-circle mr-1"></i>
+                                        Centang "Gunakan Uang Muka" untuk menggunakan sisa uang muka sebagai jumlah
+                                        pembayaran
+                                    </div>
+                                </div>
+
+                                <!-- Hidden input untuk default value ketika menggunakan uang muka -->
+                                <!-- Note: name tidak diset di hidden input, akan di-set via JavaScript saat submit -->
+                                <input type="hidden" id="hiddenMetodePembayaran" value="TUNAI">
+                                <input type="hidden" id="hiddenKasBankId" value="1">
+
                                 <!-- Row 3: Metode Pembayaran -->
-                                <div>
+                                <div id="paymentMethodSection">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">
                                         Metode Pembayaran <span class="text-red-500">*</span>
                                     </label>
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div class="grid gap-3" id="paymentMethodContainer"
+                                        style="grid-template-columns: repeat({{ count($metodePembayaran) }}, 1fr);">
                                         @foreach ($metodePembayaran as $metode)
                                             <label class="relative cursor-pointer payment-method-option">
                                                 <input type="radio" name="metode_pembayaran"
@@ -820,7 +865,7 @@
                                 </div>
 
                                 <!-- Row 4: Kas/Bank Selection -->
-                                <div>
+                                <div id="kasBankSection">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">
                                         Kas/Bank <span class="text-red-500">*</span>
                                     </label>
@@ -901,7 +946,7 @@
                                         <span class="text-blue-700 text-xs">Status:</span>
                                         <div class="font-medium text-green-600" id="previewStatus">
                                             @php
-                                                $sudahDibayar = $penjualan->pembayaranPenjualan->sum('jumlah_bayar');
+                                                $sudahDibayar = $riwayatPembayaran->sum('jumlah_bayar');
                                                 $totalTransaksi = $penjualan->total;
                                                 $sisaPembayaran = $penjualan->sisa_pembayaran;
 
@@ -1010,20 +1055,20 @@
             </div>
 
             <!-- Payment Info -->
-            @if ($penjualan->pembayaranPenjualan->count() > 0)
+            @if ($riwayatPembayaran->count() > 0)
                 <div style="margin-bottom: 15px;">
                     <h3 style="font-size: 12px; font-weight: bold; margin: 0 0 8px 0;">PEMBAYARAN:</h3>
-                    @foreach ($penjualan->pembayaranPenjualan as $pembayaran)
+                    @foreach ($riwayatPembayaran as $pembayaran)
                         <p style="margin: 2px 0; font-size: 11px;">{{ $pembayaran->metode_pembayaran }}:
                             {{ number_format($pembayaran->jumlah_bayar, 0) }}</p>
                     @endforeach
                     <hr style="border: none; border-top: 1px solid #000; margin: 8px 0;">
                     <div style="text-align: right;">
                         <p style="margin: 2px 0; font-size: 11px; font-weight: bold;">Total Bayar:
-                            {{ number_format($penjualan->pembayaranPenjualan->sum('jumlah_bayar'), 0) }}</p>
-                        @if ($penjualan->pembayaranPenjualan->sum('jumlah_bayar') < $penjualan->grand_total)
+                            {{ number_format($riwayatPembayaran->sum('jumlah_bayar'), 0) }}</p>
+                        @if ($riwayatPembayaran->sum('jumlah_bayar') < $penjualan->grand_total)
                             <p style="margin: 2px 0; font-size: 11px; font-weight: bold;">Sisa:
-                                {{ number_format($penjualan->grand_total - $penjualan->pembayaranPenjualan->sum('jumlah_bayar'), 0) }}
+                                {{ number_format($penjualan->grand_total - $riwayatPembayaran->sum('jumlah_bayar'), 0) }}
                             </p>
                         @endif
                     </div>
@@ -1037,7 +1082,7 @@
                         <strong>Faktur:</strong> {{ $penjualan->no_faktur }} -
                         {{ $penjualan->tanggal->format('d/m/Y H:i') }}
                     </div>
-                    @foreach ($penjualan->pembayaranPenjualan->sortBy('created_at') as $pembayaran)
+                    @foreach ($riwayatPembayaran as $pembayaran)
                         <div style="margin-bottom: 6px; font-size: 10px;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
                                 <span style="font-weight: bold;">{{ $pembayaran->no_bukti }}</span>
@@ -1056,6 +1101,9 @@
                                     $status = $statusConfig[$pembayaran->status_bayar] ?? 'DP';
                                 @endphp
                                 <span style="margin-left: 8px;">({{ $status }})</span>
+                                @if (($pembayaran->status_uang_muka ?? 0) == 1)
+                                    <span style="margin-left: 4px; color: #9333ea; font-weight: bold;">[Uang Muka]</span>
+                                @endif
                             </div>
                             @if ($pembayaran->keterangan)
                                 <div style="font-size: 9px; color: #666; margin-top: 1px;">
@@ -1547,7 +1595,7 @@
 
             // Payment info
             @php
-                $totalBayar = $penjualan->pembayaranPenjualan->sum('jumlah_bayar');
+                $totalBayar = $riwayatPembayaran->sum('jumlah_bayar');
             @endphp
             @if ($totalBayar > 0)
                 invoiceLines.push("Bayar: Rp {{ number_format($totalBayar, 0) }}\n");
@@ -1561,20 +1609,21 @@
             @endif
 
             // Payment history detail
-            @if ($penjualan->pembayaranPenjualan->count() > 0)
+            @if ($riwayatPembayaran->count() > 0)
                 invoiceLines.push("================================\n");
                 invoiceLines.push("RIWAYAT PEMBAYARAN:\n");
                 invoiceLines.push("--------------------------------\n");
                 invoiceLines.push(
                     "Faktur: {{ $penjualan->no_faktur }} - {{ $penjualan->created_at->format('d/m/Y H:i') }}\n");
                 invoiceLines.push("--------------------------------\n");
-                @foreach ($penjualan->pembayaranPenjualan->sortBy('created_at') as $pembayaran)
+                @foreach ($riwayatPembayaran as $pembayaran)
                     invoiceLines.push("{{ $pembayaran->no_bukti }}\n");
                     @php
                         $statusConfig = [
                             'D' => 'DP',
                             'A' => 'Angsuran',
                             'P' => 'Pelunasan',
+                            'U' => 'Uang Muka',
                         ];
                         $status = $statusConfig[$pembayaran->status_bayar] ?? 'DP';
                     @endphp
@@ -1653,7 +1702,23 @@
             // Reset form and preview
             document.getElementById('paymentForm').reset();
             document.getElementById('paymentAmount').value = {{ $penjualan->sisa_pembayaran }};
+
+            // Reset checkbox uang muka
+            const useUangMukaCheckbox = document.getElementById('useUangMukaCheckbox');
+            if (useUangMukaCheckbox) {
+                useUangMukaCheckbox.checked = false;
+            }
+
+            // Clear uang muka data
+            window.paymentUangMukaData = null;
+
             updatePaymentInfo();
+
+            // Load uang muka pelanggan
+            const pelangganId = {{ $penjualan->pelanggan_id }};
+            if (pelangganId) {
+                loadPaymentUangMukaPelanggan(pelangganId);
+            }
 
             // Initialize Flatpickr for payment date
             flatpickr("#paymentDate", {
@@ -1690,6 +1755,164 @@
             return result;
         }
 
+        // Format number for display
+        function formatNumber(value) {
+            return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        // Function to load uang muka pelanggan for payment form
+        function loadPaymentUangMukaPelanggan(pelangganId) {
+            const container = document.getElementById('paymentUangMukaList');
+            const emptyMessage = document.getElementById('paymentUangMukaEmptyMessage');
+            const uangMukaContainer = document.getElementById('paymentUangMukaContainer');
+
+            // Clear previous data
+            if (container) {
+                const existingItems = container.querySelectorAll('.bg-white.border');
+                existingItems.forEach(item => item.remove());
+            }
+            if (uangMukaContainer) {
+                uangMukaContainer.classList.add('hidden');
+            }
+            if (emptyMessage && emptyMessage.parentNode) {
+                emptyMessage.style.display = 'block';
+                emptyMessage.textContent = 'Memuat uang muka yang tersedia...';
+            }
+
+            fetch(`/uang-muka-pelanggan/get-available?pelanggan_id=${pelangganId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success || data.data.length === 0) {
+                        if (emptyMessage) {
+                            emptyMessage.textContent = 'Tidak ada uang muka yang tersedia untuk pelanggan ini';
+                        }
+                        if (uangMukaContainer) {
+                            uangMukaContainer.classList.add('hidden');
+                        }
+                    } else {
+                        // Hide empty message
+                        if (emptyMessage) {
+                            emptyMessage.style.display = 'none';
+                        }
+
+                        // Render uang muka items (hanya informasi, tanpa checkbox dan input)
+                        container.innerHTML = data.data.map(um => `
+                            <div class="bg-white border border-gray-200 rounded-lg p-3 hover:border-blue-300 transition-colors">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-center mb-1">
+                                            <span class="text-sm font-medium text-gray-900">${um.no_uang_muka}</span>
+                                            <span class="text-xs text-gray-500">${um.tanggal}</span>
+                                        </div>
+                                        <div class="text-xs text-gray-600">
+                                            <span>Jumlah Awal: <strong class="text-gray-700">Rp ${formatNumber(um.jumlah_uang_muka)}</strong></span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4 text-right">
+                                        <div class="text-xs text-gray-500 mb-1">Sisa</div>
+                                        <div class="text-sm font-bold text-green-600">Rp ${formatNumber(um.sisa_uang_muka)}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('');
+
+                        // Setup checkbox handler untuk menggunakan uang muka
+                        const useUangMukaCheckbox = document.getElementById('useUangMukaCheckbox');
+                        if (useUangMukaCheckbox) {
+                            // Simpan data uang muka untuk digunakan
+                            window.paymentUangMukaData = data.data;
+
+                            // Hapus event listener lama dengan clone element
+                            const oldCheckbox = useUangMukaCheckbox;
+                            const newCheckbox = oldCheckbox.cloneNode(true);
+                            oldCheckbox.parentNode.replaceChild(newCheckbox, oldCheckbox);
+
+                            // Tambahkan event listener baru
+                            document.getElementById('useUangMukaCheckbox').addEventListener('change', function() {
+                                const paymentAmountInput = document.getElementById('paymentAmount');
+                                const paymentMethodSection = document.getElementById('paymentMethodSection');
+                                const kasBankSection = document.getElementById('kasBankSection');
+                                const hiddenMetodePembayaran = document.getElementById(
+                                    'hiddenMetodePembayaran');
+                                const hiddenKasBankId = document.getElementById('hiddenKasBankId');
+
+                                if (this.checked && data.data.length > 0) {
+                                    // Isi field jumlah pembayaran dengan sisa pembayaran (bukan sisa uang muka)
+                                    const sisaPembayaran = {{ $penjualan->sisa_pembayaran }};
+                                    if (paymentAmountInput) {
+                                        paymentAmountInput.value = formatNumberInput(sisaPembayaran.toString());
+                                        updatePaymentInfo();
+                                    }
+
+                                    // Hide metode pembayaran dan kas/bank section
+                                    if (paymentMethodSection) {
+                                        paymentMethodSection.style.display = 'none';
+                                    }
+                                    if (kasBankSection) {
+                                        kasBankSection.style.display = 'none';
+                                    }
+
+                                    // Set default value untuk hidden input
+                                    if (hiddenMetodePembayaran) {
+                                        hiddenMetodePembayaran.value = 'TUNAI';
+                                    }
+                                    if (hiddenKasBankId) {
+                                        hiddenKasBankId.value = '1';
+                                    }
+
+                                    // Uncheck semua radio button yang ada
+                                    document.querySelectorAll('input[name="metode_pembayaran"]').forEach(
+                                        radio => {
+                                            radio.checked = false;
+                                        });
+                                    document.querySelectorAll('input[name="kas_bank_id"]').forEach(radio => {
+                                        radio.checked = false;
+                                    });
+                                } else {
+                                    // Reset ke sisa pembayaran jika uncheck
+                                    const sisaPembayaran = {{ $penjualan->sisa_pembayaran }};
+                                    if (paymentAmountInput) {
+                                        paymentAmountInput.value = formatNumberInput(sisaPembayaran.toString());
+                                        updatePaymentInfo();
+                                    }
+
+                                    // Show metode pembayaran dan kas/bank section
+                                    if (paymentMethodSection) {
+                                        paymentMethodSection.style.display = 'block';
+                                    }
+                                    if (kasBankSection) {
+                                        kasBankSection.style.display = 'block';
+                                    }
+
+                                    // Clear hidden input value
+                                    if (hiddenMetodePembayaran) {
+                                        hiddenMetodePembayaran.value = '';
+                                    }
+                                    if (hiddenKasBankId) {
+                                        hiddenKasBankId.value = '';
+                                    }
+                                }
+                            });
+                        }
+
+                        // Show container
+                        if (uangMukaContainer) {
+                            uangMukaContainer.classList.remove('hidden');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading uang muka:', error);
+                    if (emptyMessage) {
+                        emptyMessage.textContent = 'Error memuat uang muka';
+                    }
+                    if (uangMukaContainer) {
+                        uangMukaContainer.classList.add('hidden');
+                    }
+                });
+        }
+
+
         // Setup number input formatting
         function setupNumberInput(input) {
             input.addEventListener('input', function(e) {
@@ -1709,7 +1932,7 @@
             const paymentAmount = parseFormattedNumber(document.getElementById('paymentAmount').value) || 0;
             const sisaPembayaran = {{ $penjualan->sisa_pembayaran }};
             const remainingAmount = sisaPembayaran - paymentAmount;
-            const sudahDibayar = {{ $penjualan->pembayaranPenjualan->sum('jumlah_bayar') }};
+            const sudahDibayar = {{ $riwayatPembayaran->sum('jumlah_bayar') }};
 
             // Update preview
             document.getElementById('previewAmount').textContent = `Rp ${paymentAmount.toLocaleString('id-ID')}`;
@@ -1750,8 +1973,27 @@
             // Validate form data before submission
             const jumlahRaw = formData.get('jumlah');
             const jumlah = parseFormattedNumber(jumlahRaw);
-            const metode_pembayaran = formData.get('metode_pembayaran');
-            const kas_bank_id = formData.get('kas_bank_id');
+
+            // Ambil metode_pembayaran dan kas_bank_id
+            // Jika checkbox uang muka dicentang, gunakan hidden input
+            const useUangMukaCheckbox = document.getElementById('useUangMukaCheckbox');
+            let metode_pembayaran = formData.get('metode_pembayaran');
+            let kas_bank_id = formData.get('kas_bank_id');
+
+            if (useUangMukaCheckbox && useUangMukaCheckbox.checked) {
+                // Jika checkbox dicentang, gunakan hidden input
+                const hiddenMetodePembayaran = document.getElementById('hiddenMetodePembayaran');
+                const hiddenKasBankId = document.getElementById('hiddenKasBankId');
+                if (hiddenMetodePembayaran) {
+                    metode_pembayaran = hiddenMetodePembayaran.value;
+                    formData.set('metode_pembayaran', metode_pembayaran);
+                }
+                if (hiddenKasBankId) {
+                    kas_bank_id = hiddenKasBankId.value;
+                    formData.set('kas_bank_id', kas_bank_id);
+                }
+            }
+
             const tanggal = formData.get('tanggal');
 
 
@@ -1769,15 +2011,6 @@
                 return;
             }
 
-            // Validate maksimum pembayaran
-            const maxPayment = {{ $penjualan->sisa_pembayaran }};
-            if (jumlah > maxPayment) {
-                showPaymentError(
-                    `Jumlah pembayaran tidak boleh melebihi sisa pembayaran (Rp ${maxPayment.toLocaleString('id-ID')})!`
-                );
-                document.getElementById('paymentAmount').focus();
-                return;
-            }
 
             if (!metode_pembayaran) {
                 showPaymentError('Metode pembayaran wajib dipilih!');
@@ -1842,6 +2075,14 @@
             // Update form data with parsed values
             formData.set('jumlah', jumlah);
 
+            // Add flag use_uang_muka jika checkbox dicentang
+            // useUangMukaCheckbox sudah dideklarasi di atas
+            if (useUangMukaCheckbox && useUangMukaCheckbox.checked) {
+                // Kirim flag bahwa menggunakan uang muka
+                // Jumlah yang diinput di field "Jumlah Pembayaran" akan digunakan sebagai jumlah uang muka
+                formData.append('use_uang_muka', '1');
+            }
+
             // Convert tanggal from dd/mm/yyyy to Y-m-d format for backend
             try {
                 const [day, month, year] = tanggal.split('/');
@@ -1882,7 +2123,24 @@
                 .then(response => {
                     if (!response.ok) {
                         return response.json().then(err => {
-                            throw new Error(err.message || 'Terjadi kesalahan pada server');
+                            // Handle validation errors safely
+                            let errorMessage = 'Terjadi kesalahan pada server';
+                            if (err.message) {
+                                errorMessage = err.message;
+                            } else if (err.errors && typeof err.errors === 'object') {
+                                // Get first error message from errors object
+                                const errorKeys = Object.keys(err.errors);
+                                if (errorKeys.length > 0) {
+                                    const firstErrorKey = errorKeys[0];
+                                    const firstError = err.errors[firstErrorKey];
+                                    if (Array.isArray(firstError) && firstError.length > 0) {
+                                        errorMessage = firstError[0];
+                                    } else if (typeof firstError === 'string') {
+                                        errorMessage = firstError;
+                                    }
+                                }
+                            }
+                            throw new Error(errorMessage);
                         });
                     }
                     return response.json();
@@ -2094,7 +2352,7 @@
 
             // Payment info
             @php
-                $totalBayar = $penjualan->pembayaranPenjualan->sum('jumlah_bayar');
+                $totalBayar = $riwayatPembayaran->sum('jumlah_bayar');
             @endphp
             @if ($totalBayar > 0)
                 content += 'Bayar: Rp {{ number_format($totalBayar, 0) }}\n';
@@ -2119,6 +2377,17 @@
 
         // Payment Method Option Buttons Styling
         document.addEventListener('DOMContentLoaded', function() {
+            // Update payment method grid columns based on count
+            const paymentMethodContainer = document.getElementById('paymentMethodContainer');
+            if (paymentMethodContainer) {
+                const paymentMethodCount = document.querySelectorAll('.payment-method-radio').length;
+                if (paymentMethodCount > 0) {
+                    // Set grid columns to match number of payment methods, max 4 columns
+                    const maxCols = Math.min(paymentMethodCount, 4);
+                    paymentMethodContainer.style.gridTemplateColumns = `repeat(${maxCols}, 1fr)`;
+                }
+            }
+
             const paymentRadios = document.querySelectorAll('.payment-method-radio');
             const paymentCards = document.querySelectorAll('.payment-method-card');
 

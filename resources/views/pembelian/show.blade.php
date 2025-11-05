@@ -1,7 +1,7 @@
 @extends('layouts.pos')
 
 @section('title', 'Detail Pembelian')
-@section('page-title', 'Detail Transaksi Pembelian')
+@section('page-title', 'Detail Pembelian')
 
 @section('content')
     <div class="max-w-6xl mx-auto space-y-6">
@@ -21,8 +21,9 @@
 
         <!-- Header -->
         <div class="bg-white rounded-lg shadow border">
-            <div class="px-6 py-4 border-b bg-gray-50">
-                <div class="flex items-center justify-between">
+            <div class="px-4 py-3 md:px-6 md:py-4 border-b bg-gray-50">
+                <!-- Desktop Header -->
+                <div class="hidden md:flex items-center justify-between">
                     <div class="flex items-center space-x-4">
                         <a href="{{ route('pembelian.index') }}"
                             class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
@@ -95,6 +96,32 @@
                         </span>
                     </div>
                 </div>
+
+                <!-- Mobile Header -->
+                <div class="block md:hidden">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <a href="{{ route('pembelian.index') }}"
+                            class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+                            <i class="ti ti-arrow-left text-xl"></i>
+                        </a>
+                        <div class="flex-1 min-w-0">
+                            <h1 class="text-lg font-bold text-gray-900 truncate">{{ $pembelian->no_faktur }}</h1>
+                            <p class="text-xs text-gray-500">{{ $pembelian->tanggal->format('d M Y, H:i') }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span
+                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $config['bg'] }} {{ $config['text'] }}">
+                            <i class="ti {{ $config['icon'] }} text-xs mr-1"></i>
+                            {{ $config['label'] }}
+                        </span>
+                        <span
+                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $jenisTransaksiConfig['bg'] }} {{ $jenisTransaksiConfig['text'] }}">
+                            <i class="ti {{ $jenisTransaksiConfig['icon'] }} text-xs mr-1"></i>
+                            {{ $jenisTransaksiConfig['label'] }}
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -112,27 +139,30 @@
                             Informasi Supplier
                         </h3>
                     </div>
-                    <div class="p-6">
+                    <div class="p-4 md:p-6">
                         <!-- Supplier Profile Section -->
-                        <div class="flex items-start space-x-6 mb-6 pb-6 border-b border-gray-100">
+                        <div
+                            class="flex flex-col md:flex-row md:items-start md:space-x-6 space-y-4 md:space-y-0 mb-4 md:mb-6 pb-4 md:pb-6 border-b border-gray-100">
                             <!-- Supplier Photo -->
-                            <div class="flex-shrink-0">
+                            <div class="flex-shrink-0 flex justify-center md:justify-start">
                                 <div
-                                    class="w-20 h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center shadow-md">
-                                    <i class="ti ti-building-store text-3xl text-white"></i>
+                                    class="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center shadow-md">
+                                    <i class="ti ti-building-store text-2xl md:text-3xl text-white"></i>
                                 </div>
                             </div>
 
                             <!-- Supplier Basic Info -->
-                            <div class="flex-1">
-                                <h4 class="text-xl font-bold text-gray-900 mb-1">{{ $pembelian->supplier->nama ?? 'N/A' }}
+                            <div class="flex-1 text-center md:text-left">
+                                <h4 class="text-lg md:text-xl font-bold text-gray-900 mb-1">
+                                    {{ $pembelian->supplier->nama ?? 'N/A' }}
                                 </h4>
-                                <div class="flex items-center text-sm text-gray-500 mb-2">
+                                <div class="flex items-center justify-center md:justify-start text-sm text-gray-500 mb-2">
                                     <i class="ti ti-id-badge mr-1"></i>
                                     {{ $pembelian->supplier->kode_supplier ?? 'N/A' }}
                                 </div>
                                 @if ($pembelian->supplier->telepon)
-                                    <div class="flex items-center text-sm text-gray-600 mb-1">
+                                    <div
+                                        class="flex items-center justify-center md:justify-start text-sm text-gray-600 mb-1">
                                         <i class="ti ti-phone text-green-600 mr-2"></i>
                                         <a href="tel:{{ $pembelian->supplier->telepon }}" class="hover:text-orange-600">
                                             {{ $pembelian->supplier->telepon }}
@@ -140,24 +170,26 @@
                                     </div>
                                 @endif
                                 @if ($pembelian->supplier->email)
-                                    <div class="flex items-center text-sm text-gray-600 mb-1">
+                                    <div
+                                        class="flex items-center justify-center md:justify-start text-sm text-gray-600 mb-1">
                                         <i class="ti ti-mail text-blue-600 mr-2"></i>
-                                        <a href="mailto:{{ $pembelian->supplier->email }}" class="hover:text-orange-600">
+                                        <a href="mailto:{{ $pembelian->supplier->email }}"
+                                            class="hover:text-orange-600 break-all">
                                             {{ $pembelian->supplier->email }}
                                         </a>
                                     </div>
                                 @endif
                                 @if ($pembelian->supplier->alamat)
-                                    <div class="flex items-start text-sm text-gray-600">
+                                    <div class="flex items-start justify-center md:justify-start text-sm text-gray-600">
                                         <i class="ti ti-map-pin text-red-500 mr-2 mt-0.5"></i>
-                                        <span>{{ $pembelian->supplier->alamat }}</span>
+                                        <span class="text-center md:text-left">{{ $pembelian->supplier->alamat }}</span>
                                     </div>
                                 @endif
                             </div>
                         </div>
 
                         <!-- Transaction Details -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                             <div class="flex items-center space-x-3">
                                 <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
                                     <i class="ti ti-user-check text-purple-600"></i>
@@ -206,19 +238,19 @@
 
                 <!-- Products Detail -->
                 <div class="bg-white rounded-lg shadow border">
-                    <div class="px-6 py-4 border-b bg-gradient-to-r from-green-50 to-emerald-50">
-                        <h3 class="font-semibold text-gray-900 flex items-center">
+                    <div class="px-4 md:px-6 py-3 md:py-4 border-b bg-gradient-to-r from-green-50 to-emerald-50">
+                        <h3 class="font-semibold text-gray-900 flex items-center text-sm md:text-base">
                             <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
                                 <i class="ti ti-shopping-cart text-green-600"></i>
                             </div>
                             Detail Produk ({{ $pembelian->detailPembelian->count() }} item)
                         </h3>
                     </div>
-                    <div class="p-6">
-                        <div class="space-y-4">
+                    <div class="p-4 md:p-6">
+                        <div class="space-y-3 md:space-y-4">
                             @foreach ($pembelian->detailPembelian as $detail)
                                 <div
-                                    class="flex items-center space-x-4 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200">
+                                    class="flex flex-col md:flex-row md:items-center space-y-3 md:space-y-0 md:space-x-4 p-3 md:p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200">
                                     <!-- Product Photo/Icon -->
                                     <div class="flex-shrink-0">
                                         @if ($detail->produk->foto ?? false)
@@ -241,9 +273,9 @@
                                     </div>
 
                                     <!-- Product Info -->
-                                    <div class="flex-1">
-                                        <div class="flex items-center space-x-2 mb-1">
-                                            <h5 class="font-semibold text-gray-900">
+                                    <div class="flex-1 w-full md:w-auto">
+                                        <div class="flex flex-wrap items-center gap-2 mb-2">
+                                            <h5 class="font-semibold text-gray-900 text-sm md:text-base w-full md:w-auto">
                                                 {{ $detail->produk->nama_produk ?? 'N/A' }}</h5>
                                             <span
                                                 class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
@@ -259,7 +291,8 @@
                                             @endif
                                         </div>
 
-                                        <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                        <div
+                                            class="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm text-gray-600">
                                             <div class="flex items-center">
                                                 <i class="ti ti-package text-orange-500 mr-1"></i>
                                                 <span class="font-medium">{{ number_format($detail->qty, 2, ',', '.') }}
@@ -305,8 +338,8 @@
                                     </div>
 
                                     <!-- Price -->
-                                    <div class="text-right">
-                                        <div class="text-lg font-bold text-gray-900">
+                                    <div class="text-left md:text-right w-full md:w-auto">
+                                        <div class="text-base md:text-lg font-bold text-gray-900">
                                             Rp {{ number_format($detail->subtotal, 0, ',', '.') }}
                                         </div>
                                         @if ($detail->discount > 0)
@@ -322,21 +355,37 @@
                 </div>
 
                 <!-- Payment History -->
-                @if ($pembelian->pembayaranPembelian->count() > 0)
+                @if (count($riwayatPembayaran) > 0)
                     <div class="bg-white rounded-lg shadow border">
-                        <div class="px-6 py-4 border-b bg-gradient-to-r from-purple-50 to-pink-50">
-                            <h3 class="font-semibold text-gray-900 flex items-center">
+                        <div class="px-4 md:px-6 py-3 md:py-4 border-b bg-gradient-to-r from-purple-50 to-pink-50">
+                            <h3 class="font-semibold text-gray-900 flex items-center text-sm md:text-base">
                                 <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
                                     <i class="ti ti-wallet text-purple-600"></i>
                                 </div>
-                                Riwayat Pembayaran ({{ $pembelian->pembayaranPembelian->count() }} transaksi)
+                                Riwayat Pembayaran ({{ count($riwayatPembayaran) }} transaksi)
                             </h3>
                         </div>
-                        <div class="p-6">
-                            <div class="space-y-4">
-                                @foreach ($pembelian->pembayaranPembelian as $pembayaran)
+                        <div class="p-4 md:p-6">
+                            @php
+                                // Tentukan payment terakhir di luar loop (lebih efisien)
+                                // Karena data sudah diorder by id asc dari controller, payment terakhir adalah yang ID-nya terbesar
+                                $latestPaymentId = $riwayatPembayaran->max('id');
+                                $today = \Carbon\Carbon::today();
+                            @endphp
+                            <div class="space-y-3 md:space-y-4">
+                                @foreach ($riwayatPembayaran as $pembayaran)
+                                    @php
+                                        // Check if this is the latest payment (by ID)
+                                        $isLatestPayment = $pembayaran->id == $latestPaymentId;
+                                        $paymentDate = \Carbon\Carbon::parse($pembayaran->created_at)->startOfDay();
+
+                                        // Payment can only be deleted if:
+                                        // 1. It's created today AND
+// 2. It's the latest payment (highest ID)
+                                        $canDelete = $today->equalTo($paymentDate) && $isLatestPayment;
+                                    @endphp
                                     <div
-                                        class="flex items-center space-x-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200 hover:shadow-md transition-all duration-200">
+                                        class="flex flex-col md:flex-row md:items-center space-y-3 md:space-y-0 md:space-x-4 p-3 md:p-4 {{ ($pembayaran->status_uang_muka ?? 0) == 1 ? 'bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200' : 'bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200' }} hover:shadow-md transition-all duration-200">
                                         <!-- Payment Icon -->
                                         <div class="flex-shrink-0">
                                             @php
@@ -352,20 +401,26 @@
                                                     : 'ti-credit-card';
                                                 $color = 'from-blue-400 to-indigo-500'; // Default color
 
-                                                // Color mapping based on common payment methods
-                                                $colorMap = [
-                                                    'tunai' => 'from-green-400 to-emerald-500',
-                                                    'transfer' => 'from-blue-400 to-indigo-500',
-                                                    'qris' => 'from-purple-400 to-pink-500',
-                                                    'kartu' => 'from-orange-400 to-red-500',
-                                                    'ewallet' => 'from-cyan-400 to-blue-500',
-                                                ];
+                                                // Jika menggunakan uang muka, gunakan warna ungu
+                                                if (($pembayaran->status_uang_muka ?? 0) == 1) {
+                                                    $color = 'from-purple-400 to-pink-500';
+                                                    $icon = 'ti-wallet';
+                                                } else {
+                                                    // Color mapping based on common payment methods
+                                                    $colorMap = [
+                                                        'tunai' => 'from-green-400 to-emerald-500',
+                                                        'transfer' => 'from-blue-400 to-indigo-500',
+                                                        'qris' => 'from-purple-400 to-pink-500',
+                                                        'kartu' => 'from-orange-400 to-red-500',
+                                                        'ewallet' => 'from-cyan-400 to-blue-500',
+                                                    ];
 
-                                                if (
-                                                    $metodePembayaranData &&
-                                                    isset($colorMap[strtolower($metodePembayaranData->kode)])
-                                                ) {
-                                                    $color = $colorMap[strtolower($metodePembayaranData->kode)];
+                                                    if (
+                                                        $metodePembayaranData &&
+                                                        isset($colorMap[strtolower($metodePembayaranData->kode)])
+                                                    ) {
+                                                        $color = $colorMap[strtolower($metodePembayaranData->kode)];
+                                                    }
                                                 }
                                             @endphp
                                             <div
@@ -375,9 +430,11 @@
                                         </div>
 
                                         <!-- Payment Info -->
-                                        <div class="flex-1">
-                                            <div class="flex items-center space-x-2 mb-1">
-                                                <h5 class="font-semibold text-gray-900">{{ $pembayaran->no_bukti }}</h5>
+                                        <div class="flex-1 w-full md:w-auto">
+                                            <div class="flex flex-wrap items-center gap-2 mb-2">
+                                                <h5
+                                                    class="font-semibold text-gray-900 text-sm md:text-base w-full md:w-auto">
+                                                    {{ $pembayaran->no_bukti }}</h5>
                                                 @php
                                                     $statusConfig = [
                                                         'D' => [
@@ -408,35 +465,25 @@
                                                     {{ $status['label'] }}
                                                 </span>
 
-                                                <!-- Delete Status Badge -->
-                                                @php
-                                                    $today = \Carbon\Carbon::today();
-                                                    $paymentDate = \Carbon\Carbon::parse(
-                                                        $pembayaran->created_at,
-                                                    )->startOfDay();
-
-                                                    // Check if this is the latest payment
-                                                    $latestPayment = $pembelian->pembayaranPembelian
-                                                        ->sortByDesc('created_at')
-                                                        ->first();
-                                                    $isLatestPayment =
-                                                        $latestPayment && $latestPayment->id === $pembayaran->id;
-
-                                                    // Payment can only be deleted if:
-                                                    // 1. It's created today AND
-// 2. It's the latest payment (no newer payments exist)
-                                                    $canDelete = $today->equalTo($paymentDate) && $isLatestPayment;
-                                                @endphp
+                                                @if (($pembayaran->status_uang_muka ?? 0) == 1)
+                                                    <span
+                                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                        <i class="ti ti-wallet mr-1"></i>
+                                                        Uang Muka
+                                                    </span>
+                                                @endif
 
                                                 <!-- User Badge -->
                                                 <span
                                                     class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                                                     <i class="ti ti-user mr-1"></i>
-                                                    {{ $pembayaran->user->name ?? 'Unknown' }}
+                                                    <span
+                                                        class="truncate max-w-[100px]">{{ $pembayaran->user->name ?? 'Unknown' }}</span>
                                                 </span>
                                             </div>
 
-                                            <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                            <div
+                                                class="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm text-gray-600 mb-2">
                                                 <div class="flex items-center">
                                                     <i class="ti ti-calendar text-blue-500 mr-1"></i>
                                                     <span>{{ $pembayaran->tanggal->format('d M Y') }}</span>
@@ -455,8 +502,7 @@
                                                 </div>
                                                 <div class="flex items-center">
                                                     <i class="ti ti-clock text-gray-500 mr-1"></i>
-                                                    <span>Dibuat:
-                                                        {{ $pembayaran->created_at->format('d M Y, H:i') }}</span>
+                                                    <span>{{ $pembayaran->created_at->format('H:i') }}</span>
                                                 </div>
                                             </div>
 
@@ -464,43 +510,43 @@
                                                 <div class="flex items-center mt-1">
                                                     <i class="ti ti-note text-gray-400 mr-1"></i>
                                                     <span
-                                                        class="text-xs text-gray-500">{{ $pembayaran->keterangan }}</span>
+                                                        class="text-xs text-gray-500 line-clamp-2">{{ $pembayaran->keterangan }}</span>
                                                 </div>
                                             @endif
                                         </div>
 
-                                        <!-- Payment Amount -->
-                                        <div class="text-right">
-                                            <div class="text-lg font-bold text-gray-900">
+                                        <!-- Payment Amount & Actions -->
+                                        <div
+                                            class="flex items-center justify-between md:block md:text-right w-full md:w-auto">
+                                            <div class="text-base md:text-lg font-bold text-gray-900">
                                                 Rp {{ number_format($pembayaran->jumlah_bayar, 0, ',', '.') }}
                                             </div>
-                                        </div>
-
-                                        <!-- Action Buttons -->
-                                        <div class="flex items-center space-x-2 ml-4">
-                                            @if ($canDelete)
-                                                <button
-                                                    onclick="confirmDeletePayment('{{ $pembayaran->encrypted_id }}', '{{ $pembayaran->no_bukti }}')"
-                                                    class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors duration-200"
-                                                    title="Hapus Pembayaran">
-                                                    <i class="ti ti-trash text-sm"></i>
-                                                </button>
-                                            @else
-                                                @php
-                                                    $tooltipMessage = '';
-                                                    if (!$today->equalTo($paymentDate)) {
-                                                        $tooltipMessage =
-                                                            'Pembayaran hanya bisa dihapus pada hari yang sama dengan pembuatan.';
-                                                    } else {
-                                                        $tooltipMessage =
-                                                            'Pembayaran tidak dapat dihapus karena sudah ada pembayaran baru.';
-                                                    }
-                                                @endphp
-                                                <button class="p-2 text-gray-400 cursor-not-allowed"
-                                                    title="{{ $tooltipMessage }}">
-                                                    <i class="ti ti-trash text-sm"></i>
-                                                </button>
-                                            @endif
+                                            <!-- Action Buttons -->
+                                            <div class="flex items-center space-x-2 md:ml-4 md:mt-2 md:justify-end">
+                                                @if ($canDelete)
+                                                    <button
+                                                        onclick="confirmDeletePayment('{{ $pembayaran->encrypted_id }}', '{{ $pembayaran->no_bukti }}')"
+                                                        class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                                                        title="Hapus Pembayaran">
+                                                        <i class="ti ti-trash text-sm"></i>
+                                                    </button>
+                                                @else
+                                                    @php
+                                                        $tooltipMessage = '';
+                                                        if (!$today->equalTo($paymentDate)) {
+                                                            $tooltipMessage =
+                                                                'Pembayaran hanya bisa dihapus pada hari yang sama dengan pembuatan.';
+                                                        } else {
+                                                            $tooltipMessage =
+                                                                'Pembayaran tidak dapat dihapus karena sudah ada pembayaran baru.';
+                                                        }
+                                                    @endphp
+                                                    <button class="p-2 text-gray-400 cursor-not-allowed"
+                                                        title="{{ $tooltipMessage }}">
+                                                        <i class="ti ti-trash text-sm"></i>
+                                                    </button>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
                                 @endforeach
@@ -514,15 +560,15 @@
             <div class="space-y-6">
                 <!-- Financial Summary -->
                 <div class="bg-white rounded-lg shadow border">
-                    <div class="px-6 py-4 border-b bg-gradient-to-r from-indigo-50 to-blue-50">
-                        <h3 class="font-semibold text-gray-900 flex items-center">
+                    <div class="px-4 md:px-6 py-3 md:py-4 border-b bg-gradient-to-r from-indigo-50 to-blue-50">
+                        <h3 class="font-semibold text-gray-900 flex items-center text-sm md:text-base">
                             <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
                                 <i class="ti ti-calculator text-indigo-600"></i>
                             </div>
                             Ringkasan Keuangan
                         </h3>
                     </div>
-                    <div class="p-6 space-y-4">
+                    <div class="p-4 md:p-6 space-y-3 md:space-y-4">
                         <!-- Subtotal -->
                         <div class="flex items-center justify-between py-2">
                             <div class="flex items-center">
@@ -612,26 +658,27 @@
 
                 <!-- Actions -->
                 <div class="bg-white rounded-lg shadow border">
-                    <div class="px-6 py-4 border-b bg-gradient-to-r from-gray-50 to-slate-50">
-                        <h3 class="font-semibold text-gray-900 flex items-center">
+                    <div class="px-4 md:px-6 py-3 md:py-4 border-b bg-gradient-to-r from-gray-50 to-slate-50">
+                        <h3 class="font-semibold text-gray-900 flex items-center text-sm md:text-base">
                             <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
                                 <i class="ti ti-settings text-gray-600"></i>
                             </div>
                             Aksi Transaksi
                         </h3>
                     </div>
-                    <div class="p-6 space-y-3">
+                    <div class="p-4 md:p-6 space-y-2 md:space-y-3">
                         <!-- Print Buttons -->
                         <div class="space-y-2">
                             <!-- QZ Tray Print Button -->
                             <button onclick="printInvoiceWithQZTray(event)"
-                                class="w-full flex items-center justify-center px-4 py-3 bg-gradient-to-r from-gray-600 to-slate-600 text-white rounded-lg hover:from-gray-700 hover:to-slate-700 transition-all duration-200 shadow-sm hover:shadow-md">
-                                <div class="w-5 h-5 bg-white/20 rounded flex items-center justify-center mr-3">
+                                class="w-full flex items-center justify-center px-3 md:px-4 py-2.5 md:py-3 bg-gradient-to-r from-gray-600 to-slate-600 text-white rounded-lg hover:from-gray-700 hover:to-slate-700 transition-all duration-200 shadow-sm hover:shadow-md">
+                                <div class="w-5 h-5 bg-white/20 rounded flex items-center justify-center mr-2 md:mr-3">
                                     <i class="ti ti-printer text-sm"></i>
                                 </div>
                                 <div class="flex flex-col items-center text-center">
-                                    <span id="printButtonText" class="font-medium">Cetak Invoice (QZ Tray)</span>
-                                    <div id="printerInfo" class="text-xs text-white/80 font-normal">
+                                    <span id="printButtonText" class="font-medium text-sm md:text-base">Cetak Invoice (QZ
+                                        Tray)</span>
+                                    <div id="printerInfo" class="text-xs text-white/80 font-normal hidden md:block">
                                         @php
                                             $defaultPrinter = \App\Models\PrinterSetting::getDefault();
                                         @endphp
@@ -655,7 +702,7 @@
 
                             <!-- Export PDF Button -->
                             <button onclick="exportToPDF()"
-                                class="w-full flex items-center justify-center px-3 py-2 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-lg hover:from-red-600 hover:to-rose-600 transition-all duration-200 shadow-sm hover:shadow-md text-sm">
+                                class="w-full flex items-center justify-center px-3 py-2.5 md:py-2 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-lg hover:from-red-600 hover:to-rose-600 transition-all duration-200 shadow-sm hover:shadow-md text-sm">
                                 <div class="w-4 h-4 bg-white/20 rounded flex items-center justify-center mr-2">
                                     <i class="ti ti-file-download text-xs"></i>
                                 </div>
@@ -666,8 +713,8 @@
                         @if ($pembelian->status_pembayaran !== 'lunas')
                             <!-- Edit Button -->
                             <a href="{{ route('pembelian.edit', $pembelian->encrypted_id) }}"
-                                class="w-full flex items-center justify-center px-4 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-lg hover:from-orange-700 hover:to-red-700 transition-all duration-200 shadow-sm hover:shadow-md">
-                                <div class="w-5 h-5 bg-white/20 rounded flex items-center justify-center mr-3">
+                                class="w-full flex items-center justify-center px-3 md:px-4 py-2.5 md:py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-lg hover:from-orange-700 hover:to-red-700 transition-all duration-200 shadow-sm hover:shadow-md text-sm md:text-base">
+                                <div class="w-5 h-5 bg-white/20 rounded flex items-center justify-center mr-2 md:mr-3">
                                     <i class="ti ti-edit text-sm"></i>
                                 </div>
                                 Edit Transaksi
@@ -677,8 +724,8 @@
                         @if ($sisaPembayaran > 0)
                             <!-- Payment Button -->
                             <button type="button" onclick="openPaymentModal()"
-                                class="w-full flex items-center justify-center px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-sm hover:shadow-md">
-                                <div class="w-5 h-5 bg-white/20 rounded flex items-center justify-center mr-3">
+                                class="w-full flex items-center justify-center px-3 md:px-4 py-2.5 md:py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-sm hover:shadow-md text-sm md:text-base">
+                                <div class="w-5 h-5 bg-white/20 rounded flex items-center justify-center mr-2 md:mr-3">
                                     <i class="ti ti-cash text-sm"></i>
                                 </div>
                                 Tambah Pembayaran
@@ -778,8 +825,8 @@
                                             </div>
                                             <input type="text" id="paymentAmount" name="jumlah"
                                                 value="{{ number_format($sisaPembayaran, 0, ',', '.') }}"
-                                                class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200 text-right text-lg font-semibold"
-                                                placeholder="0">
+                                                class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200 text-right text-lg font-semibold {{ $pembelian->jenis_transaksi == 'tunai' ? 'bg-gray-100 cursor-not-allowed' : '' }}"
+                                                placeholder="0" @if ($pembelian->jenis_transaksi == 'tunai') readonly @endif>
                                         </div>
                                     </div>
                                 </div>
@@ -791,12 +838,49 @@
                                         placeholder="Keterangan (opsional)..."></textarea>
                                 </div>
 
+                                <!-- Uang Muka Supplier (jika ada) -->
+                                @if ($pembelian->supplier_id)
+                                    <div id="paymentUangMukaContainer" class="hidden">
+                                        <div class="mb-3">
+                                            <label class="flex items-center space-x-2 cursor-pointer">
+                                                <input type="checkbox" id="useUangMukaCheckbox"
+                                                    class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                                <span class="text-sm font-medium text-gray-700">
+                                                    <i class="ti ti-coin mr-1"></i>
+                                                    Gunakan Uang Muka
+                                                </span>
+                                            </label>
+                                        </div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                                            <i class="ti ti-info-circle mr-1"></i>
+                                            Informasi Uang Muka Tersedia
+                                        </label>
+                                        <div id="paymentUangMukaList"
+                                            class="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50">
+                                            <p class="text-sm text-gray-500 text-center py-4"
+                                                id="paymentUangMukaEmptyMessage">
+                                                Memuat uang muka yang tersedia...
+                                            </p>
+                                        </div>
+                                        <div class="mt-2 text-xs text-gray-500">
+                                            <i class="ti ti-info-circle mr-1"></i>
+                                            Centang "Gunakan Uang Muka" untuk menggunakan sisa uang muka sebagai jumlah
+                                            pembayaran
+                                        </div>
+                                    </div>
+
+                                    <!-- Hidden input untuk default value ketika menggunakan uang muka -->
+                                    <input type="hidden" id="hiddenMetodePembayaran" value="TUNAI">
+                                    <input type="hidden" id="hiddenKasBankId" value="1">
+                                @endif
+
                                 <!-- Row 3: Metode Pembayaran -->
-                                <div>
+                                <div id="paymentMethodSection">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">
                                         Metode Pembayaran <span class="text-red-500">*</span>
                                     </label>
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div class="grid gap-3" id="paymentMethodContainer"
+                                        style="grid-template-columns: repeat({{ count($metodePembayaran) }}, 1fr);">
                                         @foreach ($metodePembayaran as $metode)
                                             <label class="relative cursor-pointer payment-method-option">
                                                 <input type="radio" name="metode_pembayaran"
@@ -824,7 +908,7 @@
                                 </div>
 
                                 <!-- Row 4: Kas/Bank Selection -->
-                                <div>
+                                <div id="kasBankSection">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">
                                         Kas/Bank <span class="text-red-500">*</span>
                                     </label>
@@ -836,7 +920,7 @@
                                             kas/bank</p>
                                     </div>
 
-                                    <div class="hidden gap-3" id="kasBankContainer">
+                                    <div class="hidden flex flex-col gap-3" id="kasBankContainer">
                                         @foreach ($kasBank as $kas)
                                             <label class="relative cursor-pointer kas-bank-option">
                                                 <input type="radio" name="kas_bank_id" value="{{ $kas->id }}"
@@ -844,7 +928,7 @@
                                                     data-image="{{ $kas->image_url ?? '' }}"
                                                     class="sr-only kas-bank-radio">
                                                 <div
-                                                    class="hidden p-4 border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 transition-all duration-300 kas-bank-card items-center justify-between shadow-sm hover:shadow-md">
+                                                    class="hidden p-4 border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 transition-all duration-300 kas-bank-card flex items-center justify-between shadow-sm hover:shadow-md w-full">
                                                     <div class="flex items-center flex-1">
                                                         <div
                                                             class="w-16 h-16 rounded-xl flex items-center justify-center mr-4 overflow-hidden shadow-sm flex-shrink-0">
@@ -1133,8 +1217,21 @@
 
             // Reset form and preview
             document.getElementById('paymentForm').reset();
-            document.getElementById('paymentAmount').value =
-                {{ $pembelian->total - $pembelian->pembayaranPembelian->sum('jumlah_bayar') }};
+            const paymentAmountInput = document.getElementById('paymentAmount');
+            const sisaPembayaran = {{ $pembelian->total - $pembelian->pembayaranPembelian->sum('jumlah_bayar') }};
+
+            // Set payment amount value
+            paymentAmountInput.value = sisaPembayaran.toLocaleString('id-ID');
+
+            // Set readonly for tunai transactions
+            @if ($pembelian->jenis_transaksi == 'tunai')
+                paymentAmountInput.setAttribute('readonly', 'readonly');
+                paymentAmountInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+            @else
+                paymentAmountInput.removeAttribute('readonly');
+                paymentAmountInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+            @endif
+
             updatePaymentInfo();
 
             // Initialize Flatpickr for payment date
@@ -1145,6 +1242,11 @@
                 clickOpens: true,
                 locale: "id"
             });
+
+            // Load uang muka jika ada supplier
+            @if ($pembelian->supplier_id)
+                loadPaymentUangMukaSupplier({{ $pembelian->supplier_id }});
+            @endif
         }
 
 
@@ -1213,6 +1315,165 @@
             });
         }
 
+        // Function to load uang muka supplier for payment form
+        function loadPaymentUangMukaSupplier(supplierId) {
+            const container = document.getElementById('paymentUangMukaList');
+            const emptyMessage = document.getElementById('paymentUangMukaEmptyMessage');
+            const uangMukaContainer = document.getElementById('paymentUangMukaContainer');
+
+            // Clear previous data
+            if (container) {
+                const existingItems = container.querySelectorAll('.bg-white.border');
+                existingItems.forEach(item => item.remove());
+            }
+            if (uangMukaContainer) {
+                uangMukaContainer.classList.add('hidden');
+            }
+            if (emptyMessage && emptyMessage.parentNode) {
+                emptyMessage.style.display = 'block';
+                emptyMessage.textContent = 'Memuat uang muka yang tersedia...';
+            }
+
+            fetch(`/uang-muka-supplier/get-available?supplier_id=${supplierId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success || data.data.length === 0) {
+                        if (emptyMessage) {
+                            emptyMessage.textContent = 'Tidak ada uang muka yang tersedia untuk supplier ini';
+                        }
+                        if (uangMukaContainer) {
+                            uangMukaContainer.classList.add('hidden');
+                        }
+                    } else {
+                        // Hide empty message
+                        if (emptyMessage) {
+                            emptyMessage.style.display = 'none';
+                        }
+
+                        // Render uang muka items (hanya informasi, tanpa checkbox dan input)
+                        container.innerHTML = data.data.map(um => `
+                            <div class="bg-white border border-gray-200 rounded-lg p-3 hover:border-blue-300 transition-colors">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-center mb-1">
+                                            <span class="text-sm font-medium text-gray-900">${um.no_uang_muka}</span>
+                                            <span class="text-xs text-gray-500">${um.tanggal}</span>
+                                        </div>
+                                        <div class="text-xs text-gray-600">
+                                            <span>Jumlah Awal: <strong class="text-gray-700">Rp ${formatNumber(um.jumlah_uang_muka)}</strong></span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4 text-right">
+                                        <div class="text-xs text-gray-500 mb-1">Sisa</div>
+                                        <div class="text-sm font-bold text-green-600">Rp ${formatNumber(um.sisa_uang_muka)}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('');
+
+                        // Setup checkbox handler untuk menggunakan uang muka
+                        const useUangMukaCheckbox = document.getElementById('useUangMukaCheckbox');
+                        if (useUangMukaCheckbox) {
+                            // Simpan data uang muka untuk digunakan
+                            window.paymentUangMukaData = data.data;
+
+                            // Hapus event listener lama dengan clone element
+                            const oldCheckbox = useUangMukaCheckbox;
+                            const newCheckbox = oldCheckbox.cloneNode(true);
+                            oldCheckbox.parentNode.replaceChild(newCheckbox, oldCheckbox);
+
+                            // Tambahkan event listener baru
+                            document.getElementById('useUangMukaCheckbox').addEventListener('change', function() {
+                                const paymentAmountInput = document.getElementById('paymentAmount');
+                                const paymentMethodSection = document.getElementById('paymentMethodSection');
+                                const kasBankSection = document.getElementById('kasBankSection');
+                                const hiddenMetodePembayaran = document.getElementById(
+                                    'hiddenMetodePembayaran');
+                                const hiddenKasBankId = document.getElementById('hiddenKasBankId');
+
+                                if (this.checked && data.data.length > 0) {
+                                    // Isi field jumlah pembayaran dengan sisa pembayaran (bukan sisa uang muka)
+                                    const sisaPembayaran =
+                                        {{ $pembelian->total - $pembelian->pembayaranPembelian->sum('jumlah_bayar') }};
+                                    if (paymentAmountInput) {
+                                        paymentAmountInput.value = formatNumberInput(sisaPembayaran.toString());
+                                        updatePaymentInfo();
+                                    }
+
+                                    // Hide metode pembayaran dan kas/bank section
+                                    if (paymentMethodSection) {
+                                        paymentMethodSection.style.display = 'none';
+                                    }
+                                    if (kasBankSection) {
+                                        kasBankSection.style.display = 'none';
+                                    }
+
+                                    // Set default value untuk hidden input
+                                    if (hiddenMetodePembayaran) {
+                                        hiddenMetodePembayaran.value = 'TUNAI';
+                                    }
+                                    if (hiddenKasBankId) {
+                                        hiddenKasBankId.value = '1';
+                                    }
+
+                                    // Uncheck semua radio button yang ada
+                                    document.querySelectorAll('input[name="metode_pembayaran"]').forEach(
+                                        radio => {
+                                            radio.checked = false;
+                                        });
+                                    document.querySelectorAll('input[name="kas_bank_id"]').forEach(radio => {
+                                        radio.checked = false;
+                                    });
+                                } else {
+                                    // Reset ke sisa pembayaran jika uncheck
+                                    const sisaPembayaran =
+                                        {{ $pembelian->total - $pembelian->pembayaranPembelian->sum('jumlah_bayar') }};
+                                    if (paymentAmountInput) {
+                                        paymentAmountInput.value = formatNumberInput(sisaPembayaran.toString());
+                                        updatePaymentInfo();
+                                    }
+
+                                    // Show metode pembayaran dan kas/bank section
+                                    if (paymentMethodSection) {
+                                        paymentMethodSection.style.display = 'block';
+                                    }
+                                    if (kasBankSection) {
+                                        kasBankSection.style.display = 'block';
+                                    }
+
+                                    // Clear hidden input value
+                                    if (hiddenMetodePembayaran) {
+                                        hiddenMetodePembayaran.value = '';
+                                    }
+                                    if (hiddenKasBankId) {
+                                        hiddenKasBankId.value = '';
+                                    }
+                                }
+                            });
+                        }
+
+                        // Show container
+                        if (uangMukaContainer) {
+                            uangMukaContainer.classList.remove('hidden');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading uang muka:', error);
+                    if (emptyMessage) {
+                        emptyMessage.textContent = 'Error memuat uang muka';
+                    }
+                    if (uangMukaContainer) {
+                        uangMukaContainer.classList.add('hidden');
+                    }
+                });
+        }
+
+        // Format number helper
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
         function updatePaymentInfo() {
             const paymentAmount = parseFormattedNumber(document.getElementById('paymentAmount').value) || 0;
             const sisaPembayaran = {{ $pembelian->total - $pembelian->pembayaranPembelian->sum('jumlah_bayar') }};
@@ -1259,30 +1520,51 @@
 
             // Validation
             const paymentAmount = parseFormattedNumber(formData.get('jumlah'));
-            const metodePembayaran = formData.get('metode_pembayaran');
-            const kasBankId = formData.get('kas_bank_id');
-            let isValid = true;
+            let metodePembayaran = formData.get('metode_pembayaran');
+            let kasBankId = formData.get('kas_bank_id');
 
-            // Validate payment method first
-            if (!metodePembayaran) {
-                const paymentMethodCards = document.querySelectorAll('.payment-method-card');
-                paymentMethodCards.forEach(card => {
-                    card.style.border = '2px solid #ef4444';
-                    card.style.backgroundColor = '#fef2f2';
-                });
-                showToast('Pilih metode pembayaran terlebih dahulu!', 'error');
-                isValid = false;
+            // Check if using uang muka
+            const useUangMukaCheckbox = document.getElementById('useUangMukaCheckbox');
+            if (useUangMukaCheckbox && useUangMukaCheckbox.checked) {
+                // Jika checkbox dicentang, ambil dari hidden input
+                const hiddenMetodePembayaran = document.getElementById('hiddenMetodePembayaran');
+                const hiddenKasBankId = document.getElementById('hiddenKasBankId');
+                if (hiddenMetodePembayaran) {
+                    metodePembayaran = hiddenMetodePembayaran.value;
+                    formData.set('metode_pembayaran', metodePembayaran);
+                }
+                if (hiddenKasBankId) {
+                    kasBankId = hiddenKasBankId.value;
+                    formData.set('kas_bank_id', kasBankId);
+                }
+                // Tambahkan flag use_uang_muka
+                formData.append('use_uang_muka', '1');
             }
 
-            // Only validate kas/bank if payment method is selected
-            if (metodePembayaran && !kasBankId) {
-                const kasBankCards = document.querySelectorAll('.kas-bank-card');
-                kasBankCards.forEach(card => {
-                    card.style.border = '2px solid #ef4444';
-                    card.style.backgroundColor = '#fef2f2';
-                });
-                showToast('Pilih kas/bank terlebih dahulu!', 'error');
-                isValid = false;
+            let isValid = true;
+
+            // Validate payment method first (skip jika menggunakan uang muka)
+            if (!useUangMukaCheckbox || !useUangMukaCheckbox.checked) {
+                if (!metodePembayaran) {
+                    const paymentMethodCards = document.querySelectorAll('.payment-method-card');
+                    paymentMethodCards.forEach(card => {
+                        card.style.border = '2px solid #ef4444';
+                        card.style.backgroundColor = '#fef2f2';
+                    });
+                    showToast('Pilih metode pembayaran terlebih dahulu!', 'error');
+                    isValid = false;
+                }
+
+                // Only validate kas/bank if payment method is selected
+                if (metodePembayaran && !kasBankId) {
+                    const kasBankCards = document.querySelectorAll('.kas-bank-card');
+                    kasBankCards.forEach(card => {
+                        card.style.border = '2px solid #ef4444';
+                        card.style.backgroundColor = '#fef2f2';
+                    });
+                    showToast('Pilih kas/bank terlebih dahulu!', 'error');
+                    isValid = false;
+                }
             }
 
             // Only validate payment amount if payment method and kas/bank are selected
@@ -1323,23 +1605,49 @@
                 })
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        return response.json().then(err => {
+                            // Handle validation errors safely
+                            let errorMessage = 'Terjadi kesalahan pada server';
+                            if (err.message) {
+                                errorMessage = err.message;
+                            } else if (err.errors && typeof err.errors === 'object') {
+                                // Get first error message from errors object
+                                const errorKeys = Object.keys(err.errors);
+                                if (errorKeys.length > 0) {
+                                    const firstErrorKey = errorKeys[0];
+                                    const firstError = err.errors[firstErrorKey];
+                                    if (Array.isArray(firstError) && firstError.length > 0) {
+                                        errorMessage = firstError[0];
+                                    } else if (typeof firstError === 'string') {
+                                        errorMessage = firstError;
+                                    }
+                                }
+                            }
+                            throw new Error(errorMessage);
+                        });
                     }
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Print response:', data);
-                    if (data && data.success) {
+                    if (data.success) {
+                        // Show success message
                         showToast(data.message, 'success');
+
+                        // Close modal
+                        closePaymentModal();
+
+                        // Reload page after short delay to show updated data
                         setTimeout(() => {
                             window.location.reload();
-                        }, 2000);
+                        }, 1500);
                     } else {
-                        throw new Error(data.message || 'Terjadi kesalahan');
+                        throw new Error(data.message || 'Terjadi kesalahan saat menyimpan pembayaran');
                     }
                 })
                 .catch(error => {
+                    console.error('Payment submission error:', error);
                     showToast(error.message || 'Terjadi kesalahan saat menyimpan pembayaran', 'error');
+
                     // Reset button
                     submitBtn.disabled = false;
                     submitBtnText.textContent = 'Simpan Pembayaran';
@@ -1797,13 +2105,14 @@
                 invoiceLines.push(
                     "Faktur: {{ $pembelian->no_faktur }} - {{ $pembelian->created_at->format('d/m/Y H:i') }}\n");
                 invoiceLines.push("--------------------------------\n");
-                @foreach ($pembelian->pembayaranPembelian->sortBy('created_at') as $pembayaran)
+                @foreach ($riwayatPembayaran as $pembayaran)
                     invoiceLines.push("{{ $pembayaran->no_bukti }}\n");
                     @php
                         $statusConfig = [
                             'D' => 'DP',
                             'A' => 'Angsuran',
                             'P' => 'Pelunasan',
+                            'U' => 'Uang Muka',
                         ];
                         $status = $statusConfig[$pembayaran->status_bayar] ?? 'DP';
                     @endphp
@@ -1981,60 +2290,46 @@
                 Exporting...
             `;
 
-            // Use fetch API like laporan penjualan
-            fetch('{{ route('pembelian.export-pdf', $pembelian->encrypted_id) }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/pdf'
-                    },
-                    body: JSON.stringify({})
-                })
-                .then(response => {
-                    if (response.ok) {
-                        return response.blob();
-                    } else {
-                        return response.json();
-                    }
-                })
-                .then(data => {
-                    if (data instanceof Blob) {
-                        // Handle PDF response - open in new tab for preview
-                        const url = window.URL.createObjectURL(data);
-                        window.open(url, '_blank');
-                        // Clean up the URL after a delay
-                        setTimeout(() => {
-                            window.URL.revokeObjectURL(url);
-                        }, 1000);
-                    } else {
-                        // Handle JSON response (error)
-                        if (data.success === false) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: data.message || 'Terjadi kesalahan dalam mengexport PDF'
-                            });
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Gagal mengexport PDF: ' + error.message
-                    });
-                })
-                .finally(() => {
-                    // Reset button
-                    button.disabled = false;
-                    button.innerHTML = originalText;
-                });
+            // Create a form to submit POST request for PDF download
+            // This approach is more reliable than fetch for downloads
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ route('pembelian.export-pdf', $pembelian->encrypted_id) }}';
+            form.style.display = 'none';
+
+            // Add CSRF token
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = '{{ csrf_token() }}';
+            form.appendChild(csrfInput);
+
+            // Append form to body and submit
+            document.body.appendChild(form);
+            form.submit();
+
+            // Remove form after a short delay
+            setTimeout(() => {
+                document.body.removeChild(form);
+                // Reset button
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }, 2000);
         }
 
         // Payment Method Option Buttons Styling
         document.addEventListener('DOMContentLoaded', function() {
+            // Update payment method grid columns based on count
+            const paymentMethodContainer = document.getElementById('paymentMethodContainer');
+            if (paymentMethodContainer) {
+                const paymentMethodCount = document.querySelectorAll('.payment-method-radio').length;
+                if (paymentMethodCount > 0) {
+                    // Set grid columns to match number of payment methods, max 4 columns
+                    const maxCols = Math.min(paymentMethodCount, 4);
+                    paymentMethodContainer.style.gridTemplateColumns = `repeat(${maxCols}, 1fr)`;
+                }
+            }
+
             const paymentRadios = document.querySelectorAll('.payment-method-radio');
             const paymentCards = document.querySelectorAll('.payment-method-card');
 
@@ -2161,16 +2456,9 @@
                     }
                 });
 
-                // Update grid columns based on visible count
-                if (visibleCount === 1) {
-                    kasBankContainer.className = 'grid gap-3 grid-cols-1';
-                } else if (visibleCount === 2) {
-                    kasBankContainer.className = 'grid gap-3 grid-cols-2';
-                } else if (visibleCount === 3) {
-                    kasBankContainer.className = 'grid gap-3 grid-cols-3';
-                } else if (visibleCount >= 4) {
-                    kasBankContainer.className = 'grid gap-3 grid-cols-4';
-                }
+                // Keep flex flex-col layout (vertical, full width)
+                kasBankContainer.classList.remove('hidden');
+                kasBankContainer.classList.add('flex', 'flex-col');
 
                 // Uncheck any hidden kas/bank selections
                 kasBankRadios.forEach((radio, index) => {

@@ -19,6 +19,7 @@ class PembayaranPenjualan extends Model
         'metode_pembayaran',
         'kas_bank_id',
         'status_bayar',
+        'status_uang_muka',
         'keterangan',
         'user_id',
     ];
@@ -26,6 +27,7 @@ class PembayaranPenjualan extends Model
     protected $casts = [
         'tanggal' => 'datetime',
         'jumlah_bayar' => 'decimal:2',
+        'status_uang_muka' => 'integer',
     ];
 
     /**
@@ -85,7 +87,7 @@ class PembayaranPenjualan extends Model
         $status = [
             'D' => 'DP',
             'A' => 'Angsuran',
-            'P' => 'Pelunasan'
+            'P' => 'Pelunasan',
         ];
 
         return $status[$this->status_bayar] ?? $this->status_bayar;
