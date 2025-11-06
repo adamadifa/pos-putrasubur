@@ -4,23 +4,25 @@
 @section('page-title', 'Kelola Penjualan')
 
 @section('content')
-    <div class="space-y-6">
+    <div class="space-y-4 md:space-y-6 px-2 md:px-0">
         <!-- Header Actions -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="text-xl font-semibold text-gray-900">Daftar Transaksi Penjualan</h2>
                 <p class="text-sm text-gray-600">Kelola semua transaksi penjualan dalam sistem POS Anda</p>
             </div>
-            <div class="mt-4 sm:mt-0 flex items-center space-x-3">
+            <div class="mt-4 sm:mt-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 sm:space-x-0">
                 <button
-                    class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-lg font-medium text-sm text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
-                    <i class="ti ti-download text-lg mr-2"></i>
-                    Export Excel
+                    class="inline-flex items-center justify-center px-3 md:px-4 py-2 bg-green-600 border border-transparent rounded-lg font-medium text-xs md:text-sm text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                    <i class="ti ti-download text-base md:text-lg mr-2"></i>
+                    <span class="hidden sm:inline">Export Excel</span>
+                    <span class="sm:hidden">Export</span>
                 </button>
                 <a href="{{ route('penjualan.create') }}"
-                    class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-lg font-medium text-sm text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
-                    <i class="ti ti-plus text-lg mr-2"></i>
-                    Transaksi Baru
+                    class="inline-flex items-center justify-center px-3 md:px-4 py-2 bg-primary-600 border border-transparent rounded-lg font-medium text-xs md:text-sm text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                    <i class="ti ti-plus text-base md:text-lg mr-2"></i>
+                    <span class="hidden sm:inline">Transaksi Baru</span>
+                    <span class="sm:hidden">Baru</span>
                 </a>
             </div>
         </div>
@@ -78,153 +80,158 @@
         @endif
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-            <!-- Transaksi Hari Ini Card -->
-            <div
-                class="relative bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
-                <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-                <div class="relative p-6">
-                    <div class="flex items-center justify-between">
+        <div class="overflow-x-auto md:overflow-visible -mx-2 md:mx-0 px-2 md:px-0">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-6 min-w-max md:min-w-0">
+                <!-- Transaksi Hari Ini Card -->
+                <div
+                    class="relative bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+                    <div class="relative p-4 md:p-6">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <div
+                                        class="w-10 h-10 md:w-12 md:h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                        <i class="ti ti-shopping-cart text-xl md:text-2xl text-white"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-3 md:ml-4">
+                                    <h3 class="text-xs md:text-sm font-medium text-blue-100">Transaksi Hari Ini</h3>
+                                    <p class="text-2xl md:text-3xl font-bold text-white">{{ $penjualanHariIni ?? 0 }}</p>
+                                    <div class="flex items-center mt-1">
+                                        @if ($perubahanPenjualan > 0)
+                                            <i class="ti ti-trending-up text-green-300 text-sm mr-1"></i>
+                                            <span
+                                                class="text-xs text-green-300">+{{ number_format($perubahanPenjualan, 1) }}%</span>
+                                        @elseif($perubahanPenjualan < 0)
+                                            <i class="ti ti-trending-down text-red-300 text-sm mr-1"></i>
+                                            <span
+                                                class="text-xs text-red-300">{{ number_format($perubahanPenjualan, 1) }}%</span>
+                                        @else
+                                            <i class="ti ti-minus text-blue-200 text-sm mr-1"></i>
+                                            <span class="text-xs text-blue-200">0%</span>
+                                        @endif
+                                        <span class="text-xs text-blue-200 ml-1">vs kemarin</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nilai Hari Ini Card -->
+                <div
+                    class="relative bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+                    <div class="relative p-4 md:p-6">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <div
+                                        class="w-10 h-10 md:w-12 md:h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                        <i class="ti ti-currency-dollar text-xl md:text-2xl text-white"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-3 md:ml-4">
+                                    <h3 class="text-xs md:text-sm font-medium text-emerald-100">Penjualan Hari Ini</h3>
+                                    <p class="text-lg md:text-2xl font-bold text-white">Rp
+                                        {{ number_format($nilaiHariIni ?? 0, 0, ',', '.') }}</p>
+                                    <div class="flex items-center mt-1">
+                                        @if ($perubahanNilai > 0)
+                                            <i class="ti ti-trending-up text-green-300 text-sm mr-1"></i>
+                                            <span
+                                                class="text-xs text-green-300">+{{ number_format($perubahanNilai, 1) }}%</span>
+                                        @elseif($perubahanNilai < 0)
+                                            <i class="ti ti-trending-down text-red-300 text-sm mr-1"></i>
+                                            <span
+                                                class="text-xs text-red-300">{{ number_format($perubahanNilai, 1) }}%</span>
+                                        @else
+                                            <i class="ti ti-minus text-emerald-200 text-sm mr-1"></i>
+                                            <span class="text-xs text-emerald-200">0%</span>
+                                        @endif
+                                        <span class="text-xs text-emerald-200 ml-1">vs kemarin</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lunas Hari Ini Card -->
+                <div
+                    class="relative bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+                    <div class="relative p-4 md:p-6">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
                                 <div
-                                    class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                    <i class="ti ti-shopping-cart text-2xl text-white"></i>
+                                    class="w-10 h-10 md:w-12 md:h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                    <i class="ti ti-check-circle text-xl md:text-2xl text-white"></i>
                                 </div>
                             </div>
-                            <div class="ml-4">
-                                <h3 class="text-sm font-medium text-blue-100">Transaksi Hari Ini</h3>
-                                <p class="text-3xl font-bold text-white">{{ $penjualanHariIni ?? 0 }}</p>
-                                <div class="flex items-center mt-1">
-                                    @if ($perubahanPenjualan > 0)
-                                        <i class="ti ti-trending-up text-green-300 text-sm mr-1"></i>
-                                        <span
-                                            class="text-xs text-green-300">+{{ number_format($perubahanPenjualan, 1) }}%</span>
-                                    @elseif($perubahanPenjualan < 0)
-                                        <i class="ti ti-trending-down text-red-300 text-sm mr-1"></i>
-                                        <span
-                                            class="text-xs text-red-300">{{ number_format($perubahanPenjualan, 1) }}%</span>
-                                    @else
-                                        <i class="ti ti-minus text-blue-200 text-sm mr-1"></i>
-                                        <span class="text-xs text-blue-200">0%</span>
-                                    @endif
-                                    <span class="text-xs text-blue-200 ml-1">vs kemarin</span>
-                                </div>
+                            <div class="ml-3 md:ml-4">
+                                <h3 class="text-xs md:text-sm font-medium text-purple-100">Lunas Hari Ini</h3>
+                                <p class="text-2xl md:text-3xl font-bold text-white">
+                                    {{ $statusCountsHariIni['lunas'] ?? 0 }}</p>
+                                <p class="text-sm text-purple-200 flex items-center mt-1">
+                                    <i class="ti ti-circle-check text-lg mr-1"></i>
+                                    dari {{ $penjualanHariIni }} transaksi
+                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Nilai Hari Ini Card -->
-            <div
-                class="relative bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
-                <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-                <div class="relative p-6">
-                    <div class="flex items-center justify-between">
+                <!-- Belum Bayar Hari Ini Card -->
+                <div
+                    class="relative bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+                    <div class="relative p-4 md:p-6">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
                                 <div
-                                    class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                    <i class="ti ti-currency-dollar text-2xl text-white"></i>
+                                    class="w-10 h-10 md:w-12 md:h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                    <i class="ti ti-clock text-xl md:text-2xl text-white"></i>
                                 </div>
                             </div>
-                            <div class="ml-4">
-                                <h3 class="text-sm font-medium text-emerald-100">Penjualan Hari Ini</h3>
-                                <p class="text-2xl font-bold text-white">Rp
-                                    {{ number_format($nilaiHariIni ?? 0, 0, ',', '.') }}</p>
-                                <div class="flex items-center mt-1">
-                                    @if ($perubahanNilai > 0)
-                                        <i class="ti ti-trending-up text-green-300 text-sm mr-1"></i>
-                                        <span
-                                            class="text-xs text-green-300">+{{ number_format($perubahanNilai, 1) }}%</span>
-                                    @elseif($perubahanNilai < 0)
-                                        <i class="ti ti-trending-down text-red-300 text-sm mr-1"></i>
-                                        <span class="text-xs text-red-300">{{ number_format($perubahanNilai, 1) }}%</span>
-                                    @else
-                                        <i class="ti ti-minus text-emerald-200 text-sm mr-1"></i>
-                                        <span class="text-xs text-emerald-200">0%</span>
-                                    @endif
-                                    <span class="text-xs text-emerald-200 ml-1">vs kemarin</span>
-                                </div>
+                            <div class="ml-3 md:ml-4">
+                                <h3 class="text-xs md:text-sm font-medium text-orange-100">Belum Bayar</h3>
+                                <p class="text-2xl md:text-3xl font-bold text-white">
+                                    {{ $statusCountsHariIni['belum_bayar'] ?? 0 }}</p>
+                                <p class="text-sm text-orange-200 flex items-center mt-1">
+                                    <i class="ti ti-alert-circle text-lg mr-1"></i>
+                                    perlu tindak lanjut
+                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Lunas Hari Ini Card -->
-            <div
-                class="relative bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
-                <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-                <div class="relative p-6">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div
-                                class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                <i class="ti ti-check-circle text-2xl text-white"></i>
-                            </div>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-sm font-medium text-purple-100">Lunas Hari Ini</h3>
-                            <p class="text-3xl font-bold text-white">{{ $statusCountsHariIni['lunas'] ?? 0 }}</p>
-                            <p class="text-sm text-purple-200 flex items-center mt-1">
-                                <i class="ti ti-circle-check text-lg mr-1"></i>
-                                dari {{ $penjualanHariIni }} transaksi
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Belum Bayar Hari Ini Card -->
-            <div
-                class="relative bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
-                <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-                <div class="relative p-6">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div
-                                class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                <i class="ti ti-clock text-2xl text-white"></i>
-                            </div>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-sm font-medium text-orange-100">Belum Bayar</h3>
-                            <p class="text-3xl font-bold text-white">{{ $statusCountsHariIni['belum_bayar'] ?? 0 }}</p>
-                            <p class="text-sm text-orange-200 flex items-center mt-1">
-                                <i class="ti ti-alert-circle text-lg mr-1"></i>
-                                perlu tindak lanjut
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Jenis Transaksi Card -->
-            <div
-                class="relative bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
-                <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-                <div class="relative p-6">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div
-                                class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                <i class="ti ti-cash text-2xl text-white"></i>
-                            </div>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-sm font-medium text-indigo-100">Jenis Transaksi</h3>
-                            <div class="flex items-center space-x-3 mt-2">
-                                <div class="text-center">
-                                    <p class="text-lg font-bold text-white">
-                                        {{ $jenisTransaksiCountsHariIni['tunai'] ?? 0 }}</p>
-                                    <p class="text-xs text-indigo-200">Tunai</p>
+                <!-- Jenis Transaksi Card -->
+                <div
+                    class="relative bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+                    <div class="relative p-4 md:p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div
+                                    class="w-10 h-10 md:w-12 md:h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                    <i class="ti ti-cash text-xl md:text-2xl text-white"></i>
                                 </div>
-                                <div class="text-center">
-                                    <p class="text-lg font-bold text-white">
-                                        {{ $jenisTransaksiCountsHariIni['kredit'] ?? 0 }}</p>
-                                    <p class="text-xs text-indigo-200">Kredit</p>
+                            </div>
+                            <div class="ml-3 md:ml-4">
+                                <h3 class="text-xs md:text-sm font-medium text-indigo-100">Jenis Transaksi</h3>
+                                <div class="flex items-center space-x-3 mt-2">
+                                    <div class="text-center">
+                                        <p class="text-lg font-bold text-white">
+                                            {{ $jenisTransaksiCountsHariIni['tunai'] ?? 0 }}</p>
+                                        <p class="text-xs text-indigo-200">Tunai</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <p class="text-lg font-bold text-white">
+                                            {{ $jenisTransaksiCountsHariIni['kredit'] ?? 0 }}</p>
+                                        <p class="text-xs text-indigo-200">Kredit</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -233,10 +240,8 @@
             </div>
         </div>
 
-
-
         <!-- Filters -->
-        <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-3 md:p-6">
             <form method="GET" action="{{ route('penjualan.index') }}"
                 class="space-y-4 lg:space-y-0 lg:flex lg:items-end lg:space-x-4">
                 <!-- Search -->
@@ -332,7 +337,135 @@
         </div>
 
         <!-- Modern Table -->
-        <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <!-- Mobile: Card View -->
+        <div class="block md:hidden space-y-3">
+            @forelse ($penjualan as $item)
+                @php
+                    $statusConfig = [
+                        'lunas' => [
+                            'bg' => 'bg-gradient-to-r from-green-500 to-green-600',
+                            'text' => 'text-white',
+                            'icon' => 'ti-check-circle',
+                            'label' => 'Lunas',
+                        ],
+                        'dp' => [
+                            'bg' => 'bg-gradient-to-r from-red-500 to-red-600',
+                            'text' => 'text-white',
+                            'icon' => 'ti-x-circle',
+                            'label' => 'Belum Lunas',
+                        ],
+                        'angsuran' => [
+                            'bg' => 'bg-gradient-to-r from-red-500 to-red-600',
+                            'text' => 'text-white',
+                            'icon' => 'ti-x-circle',
+                            'label' => 'Belum Lunas',
+                        ],
+                        'belum_bayar' => [
+                            'bg' => 'bg-gradient-to-r from-red-500 to-red-600',
+                            'text' => 'text-white',
+                            'icon' => 'ti-x-circle',
+                            'label' => 'Belum Lunas',
+                        ],
+                    ];
+                    $config = $statusConfig[$item->status_pembayaran] ?? $statusConfig['belum_bayar'];
+                    $jenisConfig = [
+                        'tunai' => [
+                            'bg' => 'bg-gradient-to-r from-green-500 to-green-600',
+                            'text' => 'text-white',
+                            'icon' => 'ti-cash',
+                            'label' => 'Tunai',
+                        ],
+                        'kredit' => [
+                            'bg' => 'bg-gradient-to-r from-purple-500 to-purple-600',
+                            'text' => 'text-white',
+                            'icon' => 'ti-credit-card',
+                            'label' => 'Kredit',
+                        ],
+                    ];
+                    $jenisTransaksiConfig = $jenisConfig[$item->jenis_transaksi] ?? $jenisConfig['tunai'];
+                    $today = \Carbon\Carbon::today();
+                    $transactionDate = \Carbon\Carbon::parse($item->created_at)->startOfDay();
+                    $isMoreThanOneDay = $today->diffInDays($transactionDate) > 1;
+                @endphp
+                <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <div
+                                    class="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="ti ti-receipt text-white text-xs"></i>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="text-sm font-semibold text-gray-900 truncate">{{ $item->no_faktur }}</div>
+                                    <div class="text-xs text-gray-500">{{ $item->kasir->name ?? 'N/A' }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-1">
+                            @if (!$isMoreThanOneDay)
+                                <a href="{{ route('penjualan.edit', $item->encrypted_id) }}"
+                                    class="hidden items-center justify-center w-7 h-7 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg shadow-sm">
+                                    <i class="ti ti-edit text-xs"></i>
+                                </a>
+                                <button type="button"
+                                    onclick="confirmDelete('{{ $item->encrypted_id }}', '{{ $item->no_faktur }}')"
+                                    class="inline-flex items-center justify-center w-7 h-7 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg shadow-sm">
+                                    <i class="ti ti-trash text-xs"></i>
+                                </button>
+                            @endif
+                            <a href="{{ route('penjualan.show', $item->encrypted_id) }}"
+                                class="inline-flex items-center justify-center w-7 h-7 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-sm">
+                                <i class="ti ti-eye text-xs"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-500">Tanggal:</span>
+                            <span class="font-medium text-gray-900">{{ $item->tanggal->format('d M Y') }}
+                                {{ $item->created_at->format('H:i') }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-500">Pelanggan:</span>
+                            <span
+                                class="font-medium text-gray-900 truncate ml-2">{{ $item->pelanggan->nama ?? 'N/A' }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-500">Items:</span>
+                            <span class="font-medium text-gray-900">{{ $item->detailPenjualan->count() }} item</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-500">Total:</span>
+                            <span class="font-bold text-lg text-gray-900">Rp
+                                {{ number_format($item->total_setelah_diskon, 0, ',', '.') }}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-200">
+                        <span
+                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $config['bg'] }} {{ $config['text'] }}">
+                            <i class="ti {{ $config['icon'] }} text-xs mr-1"></i>
+                            {{ $config['label'] }}
+                        </span>
+                        <span
+                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $jenisTransaksiConfig['bg'] }} {{ $jenisTransaksiConfig['text'] }}">
+                            <i class="ti {{ $jenisTransaksiConfig['icon'] }} text-xs mr-1"></i>
+                            {{ $jenisTransaksiConfig['label'] }}
+                        </span>
+                    </div>
+                </div>
+            @empty
+                <div class="text-center py-12">
+                    <div class="text-gray-500">
+                        <i class="ti ti-shopping-cart-off text-5xl mx-auto mb-4 text-gray-400"></i>
+                        <p class="text-lg font-medium">Tidak ada transaksi ditemukan</p>
+                        <p class="text-sm">Coba ubah filter pencarian atau buat transaksi baru</p>
+                    </div>
+                </div>
+            @endforelse
+        </div>
+
+        <!-- Desktop: Table View -->
+        <div class="hidden md:block bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
@@ -544,13 +677,13 @@
 
                                         @if (!$isMoreThanOneDay)
                                             <a href="{{ route('penjualan.edit', $item->encrypted_id) }}"
-                                                class="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-emerald-600 hover:to-emerald-700 transform hover:scale-105 transition-all duration-200"
+                                                class="hidden items-center justify-center w-8 h-8 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-emerald-600 hover:to-emerald-700 transform hover:scale-105 transition-all duration-200"
                                                 title="Edit Penjualan">
                                                 <i class="ti ti-edit text-sm"></i>
                                             </a>
                                         @else
                                             <button type="button" disabled
-                                                class="inline-flex items-center justify-center w-8 h-8 bg-gray-400 text-white rounded-lg cursor-not-allowed"
+                                                class="hidden items-center justify-center w-8 h-8 bg-gray-400 text-white rounded-lg cursor-not-allowed"
                                                 title="Tidak dapat diedit setelah H+1">
                                                 <i class="ti ti-edit text-sm"></i>
                                             </button>
@@ -871,54 +1004,57 @@
                 showLoaderOnConfirm: true,
                 preConfirm: () => {
                     return fetch(`{{ route('penjualan.destroy', '') }}/${salesId}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json'
-                        },
-                        credentials: 'same-origin'
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            // Try to parse as JSON, if fails, use status text
-                            return response.text().then(text => {
-                                try {
-                                    const err = JSON.parse(text);
-                                    throw new Error(err.message || 'Terjadi kesalahan saat menghapus penjualan');
-                                } catch (e) {
-                                    throw new Error(text || response.statusText || 'Terjadi kesalahan saat menghapus penjualan');
-                                }
-                            });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json'
+                            },
+                            credentials: 'same-origin'
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                // Try to parse as JSON, if fails, use status text
+                                return response.text().then(text => {
+                                    try {
+                                        const err = JSON.parse(text);
+                                        throw new Error(err.message ||
+                                            'Terjadi kesalahan saat menghapus penjualan');
+                                    } catch (e) {
+                                        throw new Error(text || response.statusText ||
+                                            'Terjadi kesalahan saat menghapus penjualan');
+                                    }
+                                });
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    text: data.message || 'Penjualan berhasil dihapus.',
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                // Hanya tampilkan message-nya saja, bukan JSON
+                                const errorMessage = data.message ||
+                                    'Terjadi kesalahan saat menghapus penjualan';
+                                throw new Error(errorMessage);
+                            }
+                        })
+                        .catch(error => {
                             Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil!',
-                                text: data.message || 'Penjualan berhasil dihapus.',
-                                timer: 2000,
-                                showConfirmButton: false
-                            }).then(() => {
-                                window.location.reload();
+                                icon: 'error',
+                                title: 'Error!',
+                                text: error.message || 'Terjadi kesalahan saat menghapus penjualan',
+                                confirmButtonText: 'OK'
                             });
-                        } else {
-                            // Hanya tampilkan message-nya saja, bukan JSON
-                            const errorMessage = data.message || 'Terjadi kesalahan saat menghapus penjualan';
-                            throw new Error(errorMessage);
-                        }
-                    })
-                    .catch(error => {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: error.message || 'Terjadi kesalahan saat menghapus penjualan',
-                            confirmButtonText: 'OK'
+                            throw error;
                         });
-                        throw error;
-                    });
                 },
                 allowOutsideClick: () => !Swal.isLoading()
             });
@@ -927,8 +1063,9 @@
         // Helper function untuk show toast (jika belum ada)
         function showToast(message, type = 'info') {
             const toast = document.createElement('div');
-            toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white transform transition-all duration-300 translate-x-full`;
-            
+            toast.className =
+                `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white transform transition-all duration-300 translate-x-full`;
+
             if (type === 'success') {
                 toast.classList.add('bg-green-500');
             } else if (type === 'error') {

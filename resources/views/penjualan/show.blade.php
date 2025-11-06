@@ -1,10 +1,10 @@
 @extends('layouts.pos')
 
 @section('title', 'Detail Penjualan')
-@section('page-title', 'Detail Transaksi Penjualan')
+@section('page-title', 'Detail Penjualan')
 
 @section('content')
-    <div class="max-w-6xl mx-auto space-y-6">
+    <div class="max-w-6xl mx-auto space-y-4 md:space-y-6 px-2 md:px-0">
         <!-- Success Alert -->
         @if (session('success'))
             <div class="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -21,8 +21,9 @@
 
         <!-- Header -->
         <div class="bg-white rounded-lg shadow border">
-            <div class="px-6 py-4 border-b bg-gray-50">
-                <div class="flex items-center justify-between">
+            <div class="px-4 py-3 md:px-6 md:py-4 border-b bg-gray-50">
+                <!-- Desktop Header -->
+                <div class="hidden md:flex items-center justify-between">
                     <div class="flex items-center space-x-4">
                         <a href="{{ route('penjualan.index') }}"
                             class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
@@ -95,6 +96,32 @@
                         </span>
                     </div>
                 </div>
+
+                <!-- Mobile Header -->
+                <div class="block md:hidden">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <a href="{{ route('penjualan.index') }}"
+                            class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+                            <i class="ti ti-arrow-left text-xl"></i>
+                        </a>
+                        <div class="flex-1 min-w-0">
+                            <h1 class="text-lg font-bold text-gray-900 truncate">{{ $penjualan->no_faktur }}</h1>
+                            <p class="text-xs text-gray-500">{{ $penjualan->tanggal->format('d M Y, H:i') }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span
+                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $config['bg'] }} {{ $config['text'] }}">
+                            <i class="ti {{ $config['icon'] }} text-xs mr-1"></i>
+                            {{ $config['label'] }}
+                        </span>
+                        <span
+                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $jenisTransaksiConfig['bg'] }} {{ $jenisTransaksiConfig['text'] }}">
+                            <i class="ti {{ $jenisTransaksiConfig['icon'] }} text-xs mr-1"></i>
+                            {{ $jenisTransaksiConfig['label'] }}
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -104,41 +131,43 @@
             <div class="lg:col-span-2 space-y-6">
                 <!-- Customer Info -->
                 <div class="bg-white rounded-lg shadow border">
-                    <div class="px-6 py-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
-                        <h3 class="font-semibold text-gray-900 flex items-center">
+                    <div class="px-4 md:px-6 py-3 md:py-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+                        <h3 class="font-semibold text-gray-900 flex items-center text-sm md:text-base">
                             <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
                                 <i class="ti ti-user-circle text-blue-600"></i>
                             </div>
                             Informasi Pelanggan
                         </h3>
                     </div>
-                    <div class="p-6">
+                    <div class="p-4 md:p-6">
                         <!-- Customer Profile Section -->
-                        <div class="flex items-start space-x-6 mb-6 pb-6 border-b border-gray-100">
+                        <div
+                            class="flex flex-col md:flex-row md:items-start md:space-x-6 space-y-4 md:space-y-0 mb-4 md:mb-6 pb-4 md:pb-6 border-b border-gray-100">
                             <!-- Customer Photo -->
-                            <div class="flex-shrink-0">
+                            <div class="flex-shrink-0 flex justify-center md:justify-start">
                                 @if ($penjualan->pelanggan->foto ?? false)
                                     <img src="{{ asset('storage/pelanggan/' . $penjualan->pelanggan->foto) }}"
                                         alt="{{ $penjualan->pelanggan->nama }}"
-                                        class="w-20 h-20 rounded-full object-cover border-4 border-blue-100 shadow-md">
+                                        class="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-4 border-blue-100 shadow-md">
                                 @else
                                     <div
-                                        class="w-20 h-20 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center shadow-md">
-                                        <i class="ti ti-user text-3xl text-white"></i>
+                                        class="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center shadow-md">
+                                        <i class="ti ti-user text-2xl md:text-3xl text-white"></i>
                                     </div>
                                 @endif
                             </div>
 
                             <!-- Customer Basic Info -->
-                            <div class="flex-1">
-                                <h4 class="text-xl font-bold text-gray-900 mb-1">{{ $penjualan->pelanggan->nama ?? 'N/A' }}
+                            <div class="flex-1 text-center md:text-left">
+                                <h4 class="text-lg md:text-xl font-bold text-gray-900 mb-1">{{ $penjualan->pelanggan->nama ?? 'N/A' }}
                                 </h4>
-                                <div class="flex items-center text-sm text-gray-500 mb-2">
+                                <div class="flex items-center justify-center md:justify-start text-sm text-gray-500 mb-2">
                                     <i class="ti ti-id-badge mr-1"></i>
                                     {{ $penjualan->pelanggan->kode_pelanggan ?? 'N/A' }}
                                 </div>
                                 @if ($penjualan->pelanggan->telepon)
-                                    <div class="flex items-center text-sm text-gray-600 mb-1">
+                                    <div
+                                        class="flex items-center justify-center md:justify-start text-sm text-gray-600 mb-1">
                                         <i class="ti ti-phone text-green-600 mr-2"></i>
                                         <a href="tel:{{ $penjualan->pelanggan->telepon }}" class="hover:text-blue-600">
                                             {{ $penjualan->pelanggan->telepon }}
@@ -146,16 +175,16 @@
                                     </div>
                                 @endif
                                 @if ($penjualan->pelanggan->alamat)
-                                    <div class="flex items-start text-sm text-gray-600">
+                                    <div class="flex items-start justify-center md:justify-start text-sm text-gray-600">
                                         <i class="ti ti-map-pin text-red-500 mr-2 mt-0.5"></i>
-                                        <span>{{ $penjualan->pelanggan->alamat }}</span>
+                                        <span class="text-center md:text-left">{{ $penjualan->pelanggan->alamat }}</span>
                                     </div>
                                 @endif
                             </div>
                         </div>
 
                         <!-- Transaction Details -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                             <div class="flex items-center space-x-3">
                                 <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
                                     <i class="ti ti-user-check text-purple-600"></i>
@@ -227,19 +256,19 @@
 
                 <!-- Products Detail -->
                 <div class="bg-white rounded-lg shadow border">
-                    <div class="px-6 py-4 border-b bg-gradient-to-r from-green-50 to-emerald-50">
-                        <h3 class="font-semibold text-gray-900 flex items-center">
+                    <div class="px-4 md:px-6 py-3 md:py-4 border-b bg-gradient-to-r from-green-50 to-emerald-50">
+                        <h3 class="font-semibold text-gray-900 flex items-center text-sm md:text-base">
                             <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
                                 <i class="ti ti-shopping-cart text-green-600"></i>
                             </div>
                             Detail Produk ({{ $penjualan->detailPenjualan->count() }} item)
                         </h3>
                     </div>
-                    <div class="p-6">
-                        <div class="space-y-4">
+                    <div class="p-4 md:p-6">
+                        <div class="space-y-3 md:space-y-4">
                             @foreach ($penjualan->detailPenjualan as $detail)
                                 <div
-                                    class="flex items-center space-x-4 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200">
+                                    class="flex flex-col md:flex-row md:items-center space-y-3 md:space-y-0 md:space-x-4 p-3 md:p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200">
                                     <!-- Product Photo/Icon -->
                                     <div class="flex-shrink-0">
                                         @if ($detail->produk->foto ?? false)
@@ -262,9 +291,9 @@
                                     </div>
 
                                     <!-- Product Info -->
-                                    <div class="flex-1">
-                                        <div class="flex items-center space-x-2 mb-1">
-                                            <h5 class="font-semibold text-gray-900">
+                                    <div class="flex-1 w-full md:w-auto">
+                                        <div class="flex flex-wrap items-center gap-2 mb-2">
+                                            <h5 class="font-semibold text-gray-900 text-sm md:text-base w-full md:w-auto">
                                                 {{ $detail->produk->nama_produk ?? 'N/A' }}</h5>
                                             <span
                                                 class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
@@ -280,7 +309,8 @@
                                             @endif
                                         </div>
 
-                                        <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                        <div
+                                            class="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm text-gray-600">
                                             <div class="flex items-center">
                                                 <i class="ti ti-package text-indigo-500 mr-1"></i>
                                                 <span class="font-medium">{{ $detail->qty }}
@@ -290,20 +320,19 @@
                                                 <i class="ti ti-currency-dollar text-green-500 mr-1"></i>
                                                 <span>@ Rp {{ number_format($detail->harga, 0, ',', '.') }}</span>
                                             </div>
+                                            @if ($detail->discount > 0)
+                                                <div class="flex items-center">
+                                                    <i class="ti ti-discount text-red-500 mr-1"></i>
+                                                    <span class="text-red-600 font-medium">
+                                                        Diskon: Rp {{ number_format($detail->discount, 0, ',', '.') }}
+                                                    </span>
+                                                </div>
+                                            @endif
                                         </div>
-
-                                        @if ($detail->discount > 0)
-                                            <div class="flex items-center mt-1">
-                                                <i class="ti ti-discount text-red-500 mr-1"></i>
-                                                <span class="text-xs text-red-600 font-medium">
-                                                    Diskon: Rp {{ number_format($detail->discount, 0, ',', '.') }}
-                                                </span>
-                                            </div>
-                                        @endif
                                     </div>
 
                                     <!-- Price -->
-                                    <div class="text-right">
+                                    <div class="text-right md:text-right w-full md:w-auto">
                                         <div class="text-lg font-bold text-gray-900">
                                             Rp {{ number_format($detail->subtotal, 0, ',', '.') }}
                                         </div>
@@ -322,22 +351,22 @@
                 <!-- Payment History -->
                 @if ($riwayatPembayaran->count() > 0)
                     <div class="bg-white rounded-lg shadow border">
-                        <div class="px-6 py-4 border-b bg-gradient-to-r from-purple-50 to-pink-50">
-                            <h3 class="font-semibold text-gray-900 flex items-center">
+                        <div class="px-4 md:px-6 py-3 md:py-4 border-b bg-gradient-to-r from-purple-50 to-pink-50">
+                            <h3 class="font-semibold text-gray-900 flex items-center text-sm md:text-base">
                                 <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
                                     <i class="ti ti-wallet text-purple-600"></i>
                                 </div>
                                 Riwayat Pembayaran ({{ $riwayatPembayaran->count() }} transaksi)
                             </h3>
                         </div>
-                        <div class="p-6">
+                        <div class="p-4 md:p-6">
                             @php
                                 // Tentukan payment terakhir di luar loop (lebih efisien)
                                 // Karena data sudah diorder by id asc dari controller, payment terakhir adalah yang ID-nya terbesar
                                 $latestPaymentId = $riwayatPembayaran->max('id');
                                 $today = \Carbon\Carbon::today();
                             @endphp
-                            <div class="space-y-4">
+                            <div class="space-y-3 md:space-y-4">
                                 @foreach ($riwayatPembayaran as $pembayaran)
                                     @php
                                         // Check if this is the latest payment (by ID)
@@ -350,7 +379,7 @@
                                         $canDelete = $today->equalTo($paymentDate) && $isLatestPayment;
                                     @endphp
                                     <div
-                                        class="flex items-center space-x-4 p-4 {{ ($pembayaran->status_uang_muka ?? 0) == 1 ? 'bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200' : 'bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200' }} hover:shadow-md transition-all duration-200">
+                                        class="flex flex-col md:flex-row md:items-center space-y-3 md:space-y-0 md:space-x-4 p-3 md:p-4 {{ ($pembayaran->status_uang_muka ?? 0) == 1 ? 'bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200' : 'bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200' }} hover:shadow-md transition-all duration-200">
                                         <!-- Payment Icon -->
                                         <div class="flex-shrink-0">
                                             @php
@@ -389,110 +418,110 @@
                                                 }
                                             @endphp
                                             <div
-                                                class="w-12 h-12 bg-gradient-to-br {{ $color }} rounded-xl flex items-center justify-center shadow-sm">
-                                                <i class="ti {{ $icon }} text-white text-lg"></i>
+                                                class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br {{ $color }} rounded-xl flex items-center justify-center shadow-sm">
+                                                <i class="ti {{ $icon }} text-white text-base md:text-lg"></i>
                                             </div>
                                         </div>
 
                                         <!-- Payment Info -->
-                                        <div class="flex-1">
-                                            <div class="flex items-center space-x-2 mb-1">
-                                                <h5 class="font-semibold text-gray-900">{{ $pembayaran->no_bukti }}</h5>
-                                                @php
-                                                    $statusConfig = [
-                                                        'D' => [
-                                                            'label' => 'DP',
-                                                            'bg' => 'bg-blue-100',
-                                                            'text' => 'text-blue-800',
-                                                            'icon' => 'ti-clock',
-                                                        ],
-                                                        'A' => [
-                                                            'label' => 'Angsuran',
-                                                            'bg' => 'bg-orange-100',
-                                                            'text' => 'text-orange-800',
-                                                            'icon' => 'ti-coins',
-                                                        ],
-                                                        'P' => [
-                                                            'label' => 'Pelunasan',
-                                                            'bg' => 'bg-green-100',
-                                                            'text' => 'text-green-800',
-                                                            'icon' => 'ti-check',
-                                                        ],
-                                                    ];
-                                                    $status =
-                                                        $statusConfig[$pembayaran->status_bayar] ?? $statusConfig['D'];
-                                                @endphp
-                                                <span
-                                                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $status['bg'] }} {{ $status['text'] }}">
-                                                    <i class="ti {{ $status['icon'] }} mr-1"></i>
-                                                    {{ $status['label'] }}
-                                                </span>
-                                                @if (($pembayaran->status_uang_muka ?? 0) == 1)
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                                        <i class="ti ti-wallet mr-1"></i>
-                                                        Uang Muka
+                                        <div class="flex-1 min-w-0">
+                                            <!-- Transaction ID -->
+                                            <div class="mb-2">
+                                                <h5 class="font-semibold text-gray-900 text-sm md:text-base mb-1.5 break-words">
+                                                    {{ $pembayaran->no_bukti }}
+                                                </h5>
+                                                <!-- Badges -->
+                                                <div class="flex flex-wrap items-center gap-1.5">
+                                                    @php
+                                                        $statusConfig = [
+                                                            'D' => [
+                                                                'label' => 'DP',
+                                                                'bg' => 'bg-blue-100',
+                                                                'text' => 'text-blue-800',
+                                                                'icon' => 'ti-clock',
+                                                            ],
+                                                            'A' => [
+                                                                'label' => 'Angsuran',
+                                                                'bg' => 'bg-orange-100',
+                                                                'text' => 'text-orange-800',
+                                                                'icon' => 'ti-coins',
+                                                            ],
+                                                            'P' => [
+                                                                'label' => 'Pelunasan',
+                                                                'bg' => 'bg-green-100',
+                                                                'text' => 'text-green-800',
+                                                                'icon' => 'ti-check',
+                                                            ],
+                                                        ];
+                                                        $status =
+                                                            $statusConfig[$pembayaran->status_bayar] ?? $statusConfig['D'];
+                                                    @endphp
+                                                    <span
+                                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $status['bg'] }} {{ $status['text'] }}">
+                                                        <i class="ti {{ $status['icon'] }} mr-1 text-xs"></i>
+                                                        {{ $status['label'] }}
                                                     </span>
-                                                @endif
-
-                                                <!-- User Badge -->
-                                                <span
-                                                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                                    <i class="ti ti-user mr-1"></i>
-                                                    {{ $pembayaran->user->name ?? 'Unknown' }}
-                                                </span>
-
-
+                                                    @if (($pembayaran->status_uang_muka ?? 0) == 1)
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                            <i class="ti ti-wallet mr-1 text-xs"></i>
+                                                            Uang Muka
+                                                        </span>
+                                                    @endif
+                                                    <span
+                                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                                        <i class="ti ti-user mr-1 text-xs"></i>
+                                                        {{ $pembayaran->user->name ?? 'Unknown' }}
+                                                    </span>
+                                                </div>
                                             </div>
 
-                                            <div class="flex items-center space-x-4 text-sm text-gray-600">
-                                                <div class="flex items-center">
-                                                    <i class="ti ti-calendar text-blue-500 mr-1"></i>
-                                                    <span>{{ $pembayaran->tanggal->format('d M Y') }}</span>
+                                            <!-- Date and Method Info -->
+                                            <div class="space-y-1 mb-2">
+                                                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs md:text-sm text-gray-600">
+                                                    <div class="flex items-center">
+                                                        <i class="ti ti-calendar text-blue-500 mr-1.5 text-xs"></i>
+                                                        <span>{{ $pembayaran->tanggal->format('d M Y') }}</span>
+                                                    </div>
+                                                    <div class="flex items-center">
+                                                        <i class="ti ti-credit-card text-purple-500 mr-1.5 text-xs"></i>
+                                                        <span class="capitalize">
+                                                            @php
+                                                                $metodePembayaranData = \App\Models\MetodePembayaran::where(
+                                                                    'kode',
+                                                                    $pembayaran->metode_pembayaran,
+                                                                )->first();
+                                                            @endphp
+                                                            {{ $metodePembayaranData ? $metodePembayaranData->nama : $pembayaran->metode_pembayaran }}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <div class="flex items-center">
-                                                    <i class="ti ti-credit-card text-purple-500 mr-1"></i>
-                                                    <span class="capitalize">
-                                                        @php
-                                                            $metodePembayaranData = \App\Models\MetodePembayaran::where(
-                                                                'kode',
-                                                                $pembayaran->metode_pembayaran,
-                                                            )->first();
-                                                        @endphp
-                                                        {{ $metodePembayaranData ? $metodePembayaranData->nama : $pembayaran->metode_pembayaran }}
-                                                    </span>
+                                                <div class="flex items-center text-xs text-gray-500">
+                                                    <i class="ti ti-clock mr-1.5 text-xs"></i>
+                                                    <span>Dibuat: {{ $pembayaran->created_at->format('d M Y, H:i') }}</span>
                                                 </div>
-                                                <div class="flex items-center">
-                                                    <i class="ti ti-clock text-gray-500 mr-1"></i>
-                                                    <span>Dibuat:
-                                                        {{ $pembayaran->created_at->format('d M Y, H:i') }}</span>
-                                                </div>
-
                                             </div>
 
                                             @if ($pembayaran->keterangan)
-                                                <div class="flex items-center mt-1">
-                                                    <i class="ti ti-note text-gray-400 mr-1"></i>
-                                                    <span
-                                                        class="text-xs text-gray-500">{{ $pembayaran->keterangan }}</span>
+                                                <div class="flex items-start mt-2 mb-2">
+                                                    <i class="ti ti-note text-gray-400 mr-1.5 mt-0.5 text-xs"></i>
+                                                    <span class="text-xs text-gray-500 break-words">{{ $pembayaran->keterangan }}</span>
                                                 </div>
                                             @endif
                                         </div>
 
-                                        <!-- Payment Amount -->
-                                        <div class="text-right">
-                                            <div class="text-lg font-bold text-gray-900">
-                                                Rp {{ number_format($pembayaran->jumlah_bayar, 0, ',', '.') }}
+                                        <!-- Amount and Action -->
+                                        <div class="flex flex-col items-end justify-between md:justify-start gap-2 flex-shrink-0">
+                                            <div class="text-right md:text-left">
+                                                <div class="text-base md:text-lg font-bold text-gray-900">
+                                                    Rp {{ number_format($pembayaran->jumlah_bayar, 0, ',', '.') }}
+                                                </div>
                                             </div>
-                                        </div>
-
-                                        <!-- Action Buttons -->
-                                        <div class="flex items-center space-x-2 ml-4">
                                             @if ($canDelete)
                                                 <button
                                                     onclick="confirmDeletePayment({{ $pembayaran->id }}, '{{ $pembayaran->no_bukti }}')"
                                                     class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors duration-200"
                                                     title="Hapus Pembayaran">
-                                                    <i class="ti ti-trash text-sm"></i>
+                                                    <i class="ti ti-trash text-base"></i>
                                                 </button>
                                             @else
                                                 @php
@@ -507,7 +536,7 @@
                                                 @endphp
                                                 <button class="p-2 text-gray-400 cursor-not-allowed"
                                                     title="{{ $tooltipMessage }}" disabled>
-                                                    <i class="ti ti-trash text-sm"></i>
+                                                    <i class="ti ti-trash text-base"></i>
                                                 </button>
                                             @endif
                                         </div>
@@ -523,15 +552,15 @@
             <div class="space-y-6">
                 <!-- Financial Summary -->
                 <div class="bg-white rounded-lg shadow border">
-                    <div class="px-6 py-4 border-b bg-gradient-to-r from-indigo-50 to-blue-50">
-                        <h3 class="font-semibold text-gray-900 flex items-center">
+                    <div class="px-4 md:px-6 py-3 md:py-4 border-b bg-gradient-to-r from-indigo-50 to-blue-50">
+                        <h3 class="font-semibold text-gray-900 flex items-center text-sm md:text-base">
                             <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
                                 <i class="ti ti-calculator text-indigo-600"></i>
                             </div>
                             Ringkasan Keuangan
                         </h3>
                     </div>
-                    <div class="p-6 space-y-4">
+                    <div class="p-4 md:p-6 space-y-3 md:space-y-4">
                         <!-- Subtotal -->
                         <div class="flex items-center justify-between py-2">
                             <div class="flex items-center">
@@ -616,15 +645,15 @@
 
                 <!-- Actions -->
                 <div class="bg-white rounded-lg shadow border">
-                    <div class="px-6 py-4 border-b bg-gradient-to-r from-gray-50 to-slate-50">
-                        <h3 class="font-semibold text-gray-900 flex items-center">
+                    <div class="px-4 md:px-6 py-3 md:py-4 border-b bg-gradient-to-r from-gray-50 to-slate-50">
+                        <h3 class="font-semibold text-gray-900 flex items-center text-sm md:text-base">
                             <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
                                 <i class="ti ti-settings text-gray-600"></i>
                             </div>
                             Aksi Transaksi
                         </h3>
                     </div>
-                    <div class="p-6 space-y-3">
+                    <div class="p-4 md:p-6 space-y-2 md:space-y-3">
                         <!-- Print Buttons -->
                         <div class="space-y-2">
                             <!-- QZ Tray Print Button -->

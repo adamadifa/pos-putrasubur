@@ -1,30 +1,32 @@
 @extends('layouts.pos')
 
 @section('title', 'Transaksi Baru')
-@section('page-title', 'Buat Transaksi Penjualan')
+@section('page-title', 'Penjualan')
 
 @section('content')
     <div class="min-h-screen">
         <!-- Back Button -->
-        <div class="px-6 pt-6 pb-2">
-            <a href="{{ route('penjualan.index') }}" class="inline-flex items-center text-gray-600 hover:text-blue-600 transition-colors">
+        <div class="px-2 md:px-6 pt-4 md:pt-6 pb-2">
+            <a href="{{ route('penjualan.index') }}"
+                class="inline-flex items-center text-gray-600 hover:text-blue-600 transition-colors text-sm md:text-base">
                 <i class="ti ti-arrow-left text-lg mr-2"></i>
-                Kembali ke Daftar Penjualan
+                <span class="hidden md:inline">Kembali ke Daftar Penjualan</span>
+                <span class="md:hidden">Kembali</span>
             </a>
         </div>
 
         <!-- Error Alert -->
         @if ($errors->any())
-            <div class="mx-6 mb-6 bg-red-50 border border-red-200 rounded-xl p-4 shadow-sm">
+            <div class="mx-2 md:mx-6 mb-4 md:mb-6 bg-red-50 border border-red-200 rounded-xl p-3 md:p-4 shadow-sm">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
                         <i class="ti ti-alert-circle text-lg text-red-400"></i>
                     </div>
                     <div class="ml-3">
-                        <h3 class="text-sm font-medium text-red-800">
+                        <h3 class="text-xs md:text-sm font-medium text-red-800">
                             Terdapat {{ $errors->count() }} kesalahan yang perlu diperbaiki:
                         </h3>
-                        <div class="mt-2 text-sm text-red-700">
+                        <div class="mt-2 text-xs md:text-sm text-red-700">
                             <ul class="list-disc pl-5 space-y-1">
                                 @foreach ($errors->all() as $error)
                                     <li>{{ $error }}</li>
@@ -36,29 +38,73 @@
             </div>
         @endif
 
-        <div class="flex gap-6 px-6">
+        <!-- Mobile Wizard Stepper -->
+        <div class="block lg:hidden mb-4 px-2">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-2">
+                        <div id="stepIndicator1"
+                            class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-semibold transition-all">
+                            1
+                        </div>
+                        <div class="h-1 w-12 md:w-16 bg-gray-200 rounded">
+                            <div id="progressBar1" class="h-full bg-blue-600 rounded transition-all" style="width: 0%">
+                            </div>
+                        </div>
+                        <div id="stepIndicator2"
+                            class="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-sm font-semibold transition-all">
+                            2
+                        </div>
+                        <div class="h-1 w-12 md:w-16 bg-gray-200 rounded">
+                            <div id="progressBar2" class="h-full bg-blue-600 rounded transition-all" style="width: 0%">
+                            </div>
+                        </div>
+                        <div id="stepIndicator3"
+                            class="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-sm font-semibold transition-all">
+                            3
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <h3 id="stepTitle" class="text-sm font-semibold text-gray-900">Langkah 1: Informasi Transaksi</h3>
+                    <p id="stepDescription" class="text-xs text-gray-500 mt-1">Isi informasi pelanggan dan tanggal</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-4 md:gap-6 px-2 md:px-6">
             <!-- Left Side - Products Menu -->
-            <div class="flex-1">
+            <div class="flex-1 order-2 lg:order-1 mobile-step mobile-step-2 hidden lg:block">
+                <!-- Mobile: Proceed to Review Button (shown when cart has items) -->
+                <div id="proceedToReviewBtnContainer" class="lg:hidden mb-4 hidden">
+                    <button type="button" id="proceedToReviewBtn"
+                        class="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg font-medium hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg">
+                        <i class="ti ti-check text-lg mr-2"></i>
+                        Lanjut ke Review Pesanan
+                        <span id="cartItemCount" class="ml-2 px-2 py-0.5 bg-white/20 rounded-full text-sm">0 item</span>
+                    </button>
+                </div>
                 <!-- Category Tabs -->
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
-                    <div class="p-4 border-b border-gray-200">
-                        <div class="flex gap-3 mb-4">
+                    <div class="p-3 md:p-4 border-b border-gray-200">
+                        <div class="flex flex-col md:flex-row gap-3 mb-3 md:mb-4">
                             <div class="relative flex-1">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <i class="ti ti-search text-lg text-gray-400"></i>
                                 </div>
-                                <input type="text" id="productSearch" placeholder="Cari nama atau SKU produk..."
-                                    class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                <input type="text" id="productSearch" placeholder="Cari produk..."
+                                    class="w-full pl-11 pr-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm md:text-base">
                             </div>
                             <div class="relative flex-1">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <i class="ti ti-scan text-lg text-gray-400"></i>
                                 </div>
                                 <input type="text" id="barcodeSearch" placeholder="Scan barcode..."
-                                    class="w-full pl-11 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
+                                    class="w-full pl-11 pr-12 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white text-sm md:text-base">
                                 <button type="button" id="scanButton"
                                     class="absolute inset-y-0 right-0 pr-3 flex items-center text-green-600 hover:text-green-700">
-                                    <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center hover:bg-green-200 transition-colors">
+                                    <div
+                                        class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center hover:bg-green-200 transition-colors">
                                         <i class="ti ti-qrcode text-lg"></i>
                                     </div>
                                 </button>
@@ -67,8 +113,8 @@
                     </div>
 
                     <!-- Category Filter -->
-                    <div class="p-4 border-b border-gray-200">
-                        <div class="flex space-x-2 overflow-x-auto">
+                    <div class="p-3 md:p-4 border-b border-gray-200">
+                        <div class="flex space-x-2 overflow-x-auto pb-2 -mb-2">
                             <button
                                 class="category-filter active px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium whitespace-nowrap transition-colors"
                                 data-category="all">
@@ -89,19 +135,22 @@
                 </div>
 
                 <!-- Products Grid -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" id="productsGrid">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 md:p-6">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4"
+                        id="productsGrid">
                         @foreach ($produk as $product)
-                            <div class="product-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 cursor-pointer group"
-                                data-id="{{ $product->id }}" data-name="{{ $product->nama_produk }}" data-code="{{ $product->kode_produk }}"
-                                data-price="{{ $product->harga_jual }}" data-stock="{{ $product->stok }}" data-unit="{{ $product->satuan->nama ?? '' }}"
+                            <div class="product-card bg-white border border-gray-200 rounded-lg p-2 md:p-4 hover:shadow-md transition-all duration-200 cursor-pointer group"
+                                data-id="{{ $product->id }}" data-name="{{ $product->nama_produk }}"
+                                data-code="{{ $product->kode_produk }}" data-price="{{ $product->harga_jual }}"
+                                data-stock="{{ $product->stok }}" data-unit="{{ $product->satuan->nama ?? '' }}"
                                 data-category="{{ $product->kategori->nama ?? '' }}">
 
                                 <!-- Product Image Placeholder -->
                                 <div
-                                    class="w-full h-24 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg mb-3 flex items-center justify-center group-hover:from-blue-200 group-hover:to-blue-300 transition-all duration-200">
+                                    class="w-full h-20 md:h-24 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg mb-2 md:mb-3 flex items-center justify-center group-hover:from-blue-200 group-hover:to-blue-300 transition-all duration-200">
                                     @if ($product->foto)
-                                        <img src="{{ asset('storage/' . $product->foto) }}" alt="{{ $product->nama_produk }}"
+                                        <img src="{{ asset('storage/' . $product->foto) }}"
+                                            alt="{{ $product->nama_produk }}"
                                             class="w-full h-full object-cover rounded-lg">
                                     @else
                                         <i class="ti ti-package text-2xl text-blue-600"></i>
@@ -110,26 +159,28 @@
 
                                 <!-- Product Info -->
                                 <div class="text-center">
-                                    <h3 class="font-semibold text-sm text-gray-900 mb-1 line-clamp-2">
+                                    <h3 class="font-semibold text-xs md:text-sm text-gray-900 mb-1 md:mb-2 line-clamp-2">
                                         {{ $product->nama_produk }}</h3>
-                                    <p class="text-xs text-gray-500 mb-2">{{ $product->kode_produk }}</p>
-                                    <p class="text-lg font-bold text-blue-600 mb-2">Rp
+                                    <p class="text-xs text-gray-500 mb-1 md:mb-2 hidden md:block">
+                                        {{ $product->kode_produk }}</p>
+                                    <p class="text-base md:text-lg font-bold text-blue-600 mb-1 md:mb-2">Rp
                                         {{ number_format($product->harga_jual, 0, ',', '.') }}</p>
 
                                     <!-- Category Badge -->
-                                    <div class="flex items-center justify-center">
+                                    <div class="flex items-center justify-center mb-1 md:mb-0">
                                         <div
-                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border bg-blue-100 text-blue-800 border-blue-200">
-                                            <i class="ti ti-tag text-xs mr-1"></i>
-                                            <span>{{ $product->kategori->nama ?? 'Uncategorized' }}</span>
+                                            class="inline-flex items-center px-1.5 md:px-2 py-0.5 md:py-1 rounded-full text-xs font-medium border bg-blue-100 text-blue-800 border-blue-200">
+                                            <i class="ti ti-tag text-xs mr-0.5 md:mr-1"></i>
+                                            <span
+                                                class="truncate max-w-[80px] md:max-w-none">{{ $product->kategori->nama ?? 'Uncategorized' }}</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Add Button -->
                                 <button
-                                    class="add-product-btn w-full mt-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors opacity-0 group-hover:opacity-100">
-                                    <i class="ti ti-plus text-sm mr-1"></i>
+                                    class="add-product-btn w-full mt-2 md:mt-3 py-1.5 md:py-2 bg-blue-600 text-white rounded-lg text-xs md:text-sm font-medium hover:bg-blue-700 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100">
+                                    <i class="ti ti-plus text-xs md:text-sm mr-1"></i>
                                     Tambah
                                 </button>
                             </div>
@@ -139,25 +190,37 @@
             </div>
 
             <!-- Right Side - Order Summary -->
-            <div class="w-96">
+            <div class="w-full lg:w-96 order-1 lg:order-2">
                 <form action="{{ route('penjualan.store') }}" method="POST" id="salesForm">
                     @csrf
 
-                    <!-- Customer & Invoice Info -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Informasi Transaksi</h3>
+                    <!-- Mobile Step 1: Customer & Invoice Info -->
+                    <div
+                        class="mobile-step mobile-step-1 lg:hidden bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900">Informasi Transaksi</h3>
+                            <button type="button" id="nextToStep2"
+                                class="lg:hidden px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                                Lanjut <i class="ti ti-arrow-right ml-1"></i>
+                            </button>
+                        </div>
 
                         <!-- Invoice Number -->
                         <div class="mb-2">
-                            <input type="text" name="no_faktur" value="{{ old('no_faktur', $invoiceNumber) }}"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500" placeholder="Nomor Faktur" readonly>
+                            <label class="block text-xs md:text-sm text-gray-700 mb-1">No. Faktur</label>
+                            <input type="text" name="no_faktur" id="noFaktur"
+                                value="{{ old('no_faktur', $invoiceNumber) }}"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 text-sm md:text-base"
+                                placeholder="Nomor Faktur" readonly>
                         </div>
 
                         <!-- Date -->
                         <div class="mb-2">
+                            <label class="block text-xs md:text-sm text-gray-700 mb-1">Tanggal</label>
                             <div class="date-input-wrapper">
-                                <input type="text" id="tanggal" value="{{ old('tanggal', date('d/m/Y')) }}" class="flatpickr-input w-full"
-                                    placeholder="Pilih tanggal" required readonly>
+                                <input type="text" id="tanggal" value="{{ old('tanggal', date('d/m/Y')) }}"
+                                    class="flatpickr-input w-full text-sm md:text-base" placeholder="Pilih tanggal"
+                                    required readonly>
                                 <i class="ti ti-calendar"></i>
                             </div>
                             <input type="hidden" name="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}">
@@ -165,10 +228,12 @@
 
                         <!-- Customer -->
                         <div class="mb-2">
+                            <label class="block text-xs md:text-sm text-gray-700 mb-1">Pelanggan <span
+                                    class="text-red-500">*</span></label>
                             <div class="flex space-x-2">
                                 <div class="relative flex-1">
                                     <input type="text" id="customerDisplay"
-                                        class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+                                        class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 text-sm md:text-base"
                                         placeholder="Pilih Pelanggan" readonly>
                                     <button type="button" id="clearCustomerBtn"
                                         class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors hidden">
@@ -176,97 +241,227 @@
                                     </button>
                                 </div>
                                 <button type="button" id="searchCustomerBtn"
-                                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                                    <i class="ti ti-search text-lg"></i>
+                                    class="px-3 md:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                    <i class="ti ti-search text-base md:text-lg"></i>
                                 </button>
                             </div>
-                            <input type="hidden" name="pelanggan_id" id="pelangganId" value="{{ old('pelanggan_id') }}" required>
+                            <input type="hidden" name="pelanggan_id" id="pelangganId"
+                                value="{{ old('pelanggan_id') }}" required>
 
                             <!-- Hidden input for no_rekening from RFID scan (used as API parameter for CARD payment method) -->
                             <input type="text" name="no_rekening" id="noRekening" value="">
                         </div>
 
                         <!-- Payment Configuration Info -->
-                        <div class="mb-2">
-                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                <div class="flex items-center">
-                                    <i class="ti ti-info-circle text-blue-600 mr-2"></i>
-                                    <p class="text-sm text-blue-800">
-                                        <strong>Konfigurasi pembayaran</strong> akan diatur di halaman ringkasan transaksi
-                                    </p>
-                                </div>
+                        <div class="mb-3 md:mb-4 p-2 md:p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div class="flex items-start">
+                                <i class="ti ti-info-circle text-blue-600 mr-2 mt-0.5"></i>
+                                <span class="text-xs md:text-sm text-blue-800">Konfigurasi pembayaran akan diatur pada
+                                    preview pesanan</span>
                             </div>
                         </div>
 
                         <!-- Hidden inputs for modal data -->
-                        <input type="hidden" name="modal_jenis_transaksi" id="modalJenisTransaksi" value="{{ old('jenis_transaksi', 'tunai') }}">
-                        <input type="hidden" name="modal_metode_pembayaran" id="modalMetodePembayaran" value="{{ old('metode_pembayaran') }}">
-                        <input type="hidden" name="modal_kas_bank_id" id="modalKasBankId" value="{{ old('kas_bank_id') }}">
-                        <input type="hidden" name="modal_dp_amount" id="modalDpAmount" value="{{ old('dp_amount', 0) }}">
+                        <input type="hidden" name="modal_jenis_transaksi" id="modalJenisTransaksi"
+                            value="{{ old('jenis_transaksi', 'tunai') }}">
+                        <input type="hidden" name="modal_metode_pembayaran" id="modalMetodePembayaran"
+                            value="{{ old('metode_pembayaran') }}">
+                        <input type="hidden" name="modal_kas_bank_id" id="modalKasBankId"
+                            value="{{ old('kas_bank_id') }}">
+                        <input type="hidden" name="modal_dp_amount" id="modalDpAmount"
+                            value="{{ old('dp_amount', 0) }}">
 
                         <!-- Hidden inputs for controller -->
-                        <input type="hidden" name="jenis_transaksi" id="jenisTransaksi" value="{{ old('jenis_transaksi', 'tunai') }}">
-                        <input type="hidden" name="metode_pembayaran" id="metodePembayaran" value="{{ old('metode_pembayaran') }}">
+                        <input type="hidden" name="jenis_transaksi" id="jenisTransaksi"
+                            value="{{ old('jenis_transaksi', 'tunai') }}">
+                        <input type="hidden" name="metode_pembayaran" id="metodePembayaran"
+                            value="{{ old('metode_pembayaran') }}">
                         <input type="hidden" name="dp_amount" id="dpAmount" value="{{ old('dp_amount', 0) }}">
                         <input type="hidden" name="kas_bank_id" id="kasBankId" value="{{ old('kas_bank_id') }}">
 
                     </div>
 
-                    <!-- Order Summary -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
+                    <!-- Desktop: Customer & Invoice Info (always visible) -->
+                    <div class="hidden lg:block bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Informasi Transaksi</h3>
+                        <!-- Invoice Number -->
+                        <div class="mb-2">
+                            <input type="text" name="no_faktur" id="noFakturDesktop"
+                                value="{{ old('no_faktur', $invoiceNumber) }}"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                                placeholder="Nomor Faktur" readonly>
+                        </div>
+                        <!-- Date -->
+                        <div class="mb-2">
+                            <div class="date-input-wrapper">
+                                <input type="text" id="tanggalDesktop" value="{{ old('tanggal', date('d/m/Y')) }}"
+                                    class="flatpickr-input w-full" placeholder="Pilih tanggal" required readonly>
+                                <i class="ti ti-calendar"></i>
+                            </div>
+                            <input type="hidden" name="tanggal_desktop" value="{{ old('tanggal', date('Y-m-d')) }}">
+                        </div>
+                        <!-- Customer -->
+                        <div class="mb-2">
+                            <div class="flex space-x-2">
+                                <div class="relative flex-1">
+                                    <input type="text" id="customerDisplayDesktop"
+                                        class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+                                        placeholder="Pilih Pelanggan" readonly>
+                                    <button type="button" id="clearCustomerBtnDesktop"
+                                        class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors hidden">
+                                        <i class="ti ti-x text-lg"></i>
+                                    </button>
+                                </div>
+                                <button type="button" id="searchCustomerBtnDesktop"
+                                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                    <i class="ti ti-search text-lg"></i>
+                                </button>
+                            </div>
+                            <input type="hidden" name="pelanggan_id_desktop" id="pelangganIdDesktop"
+                                value="{{ old('pelanggan_id') }}">
+                        </div>
+                        <!-- Info Box -->
+                        <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div class="flex items-start">
+                                <i class="ti ti-info-circle text-blue-600 mr-2 mt-0.5"></i>
+                                <span class="text-sm text-blue-800">Konfigurasi pembayaran akan diatur pada preview
+                                    pesanan</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Step 3: Order Summary & Review -->
+                    <div
+                        class="mobile-step mobile-step-3 hidden lg:hidden bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-semibold text-gray-900">Ringkasan Pesanan</h3>
-                            <span class="text-sm text-gray-500" id="orderCount">0 item</span>
+                            <h3 class="text-lg font-semibold text-gray-900">Review Pesanan</h3>
+                            <button type="button" id="backToStep2"
+                                class="lg:hidden px-3 py-1.5 text-blue-600 hover:text-blue-700 transition-colors">
+                                <i class="ti ti-arrow-left mr-1"></i> Kembali
+                            </button>
                         </div>
 
-                        <!-- Order Items -->
-                        <div id="orderItems" class="space-y-3 mb-4 max-h-64 overflow-y-auto">
-                            <!-- Items will be added here dynamically -->
+                        <!-- Order Items Review -->
+                        <div id="orderItemsReview" class="space-y-3 mb-4 max-h-64 overflow-y-auto">
+                            <!-- Items will be populated here -->
                         </div>
 
                         <!-- Empty State -->
-                        <div id="emptyState" class="text-center py-8 text-gray-500">
+                        <div id="emptyStateReview" class="text-center py-8 text-gray-500">
                             <i class="ti ti-shopping-cart-off text-3xl mb-2"></i>
                             <p class="text-sm">Belum ada produk dipilih</p>
                         </div>
 
                         <!-- Discount -->
-                        <div class="border-t border-gray-200 pt-4">
-                            <input type="text" id="diskonDisplay" value="{{ old('diskon', 0) }}"
+                        <div class="border-t border-gray-200 pt-4 mb-4">
+                            <label class="block text-sm text-gray-700 mb-1">Diskon</label>
+                            <input type="text" id="diskonDisplayReview" value="{{ old('diskon', 0) }}"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-right"
+                                placeholder="Diskon (Rp)">
+                            <input type="hidden" name="diskon_review" id="diskonReview"
+                                value="{{ old('diskon', 0) }}">
+                        </div>
+
+                        <!-- Summary -->
+                        <div class="space-y-2 mb-4 pb-4 border-b border-gray-200">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Subtotal</span>
+                                <span class="font-medium" id="subtotalReviewDisplay">Rp 0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Diskon</span>
+                                <span class="font-medium text-red-600" id="discountReviewDisplay">Rp 0</span>
+                            </div>
+                            <div class="flex justify-between text-lg font-bold border-t border-gray-200 pt-2">
+                                <span>Total</span>
+                                <span id="totalReviewDisplay">Rp 0</span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="space-y-2">
+                            <button type="button" id="showOrderPreviewMobile"
+                                class="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                                <i class="ti ti-eye text-lg mr-2"></i>
+                                Preview Pesanan
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Desktop: Order Summary -->
+                    <div class="hidden lg:block bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
+                        <div class="flex items-center justify-between mb-3 md:mb-4">
+                            <h3 class="text-base md:text-lg font-semibold text-gray-900">Ringkasan Pesanan</h3>
+                            <span class="text-xs md:text-sm text-gray-500" id="orderCountDesktop">0 item</span>
+                        </div>
+
+                        <!-- Order Items -->
+                        <div id="orderItems"
+                            class="space-y-2 md:space-y-3 mb-3 md:mb-4 max-h-48 md:max-h-64 overflow-y-auto">
+                            <!-- Items will be added here dynamically -->
+                        </div>
+
+                        <!-- Empty State -->
+                        <div id="emptyState" class="text-center py-6 md:py-8 text-gray-500">
+                            <i class="ti ti-shopping-cart-off text-2xl md:text-3xl mb-2"></i>
+                            <p class="text-xs md:text-sm">Belum ada produk dipilih</p>
+                        </div>
+
+                        <!-- Discount -->
+                        <div class="border-t border-gray-200 pt-3 md:pt-4">
+                            <label class="block text-xs md:text-sm text-gray-700 mb-1">Diskon</label>
+                            <input type="text" id="diskonDisplay" value="{{ old('diskon', 0) }}"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-right text-sm md:text-base"
                                 placeholder="Diskon (Rp)">
                             <input type="hidden" name="diskon" id="diskon" value="{{ old('diskon', 0) }}">
                         </div>
                     </div>
 
-                    <!-- Total & Actions -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                        <!-- Summary -->
+                    <!-- Desktop: Total Summary -->
+                    <div class="hidden lg:block bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
                         <div class="space-y-2 mb-4">
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600">Subtotal</span>
-                                <span class="font-medium" id="subtotalDisplay">Rp 0</span>
+                                <span class="font-medium" id="subtotalDisplayDesktop">Rp 0</span>
                             </div>
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600">Diskon</span>
-                                <span class="font-medium text-red-600" id="discountDisplay">Rp 0</span>
+                                <span class="font-medium text-red-600" id="discountDisplayDesktop">Rp 0</span>
                             </div>
                             <div class="flex justify-between text-lg font-bold border-t border-gray-200 pt-2">
                                 <span>Total</span>
-                                <span id="totalDisplay">Rp 0</span>
+                                <span id="totalDisplayDesktop">Rp 0</span>
                             </div>
-
-
                         </div>
 
                         <!-- Action Buttons -->
                         <div class="space-y-2">
-                            <button type="submit"
-                                class="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
-                                <i class="ti ti-device-floppy text-lg mr-2"></i>
-                                Simpan Transaksi
+                            <button type="button" id="showOrderPreviewDesktop"
+                                class="w-full py-2.5 md:py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm md:text-base">
+                                <i class="ti ti-eye text-base md:text-lg mr-2"></i>
+                                Preview Pesanan
                             </button>
+                        </div>
+                    </div>
 
+                    <!-- Mobile: Total & Actions (sticky bottom, only visible when not in step 3) -->
+                    <div
+                        class="lg:hidden bg-white rounded-lg shadow-sm border border-gray-200 p-3 md:p-4 sticky bottom-0 z-10 mobile-total-actions">
+                        <!-- Summary -->
+                        <div class="space-y-2 mb-3 md:mb-4">
+                            <div class="flex justify-between text-xs md:text-sm">
+                                <span class="text-gray-600">Subtotal</span>
+                                <span class="font-medium text-sm md:text-base" id="subtotalDisplayMobile">Rp 0</span>
+                            </div>
+                            <div class="flex justify-between text-xs md:text-sm">
+                                <span class="text-gray-600">Diskon</span>
+                                <span class="font-medium text-red-600 text-sm md:text-base" id="discountDisplayMobile">Rp
+                                    0</span>
+                            </div>
+                            <div class="flex justify-between text-base md:text-lg font-bold border-t border-gray-200 pt-2">
+                                <span>Total</span>
+                                <span id="totalDisplayMobile">Rp 0</span>
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -276,117 +471,162 @@
 
     <!-- Quantity Input Modal -->
     <div id="quantityModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-1/2 transform -translate-y-1/2 mx-auto p-5 border w-11/12 md:w-96 shadow-lg rounded-xl bg-white">
-            <div class="mt-3">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Masukkan Quantity</h3>
-                    <button type="button" id="closeQuantityModal" class="text-gray-400 hover:text-gray-600">
-                        <i class="ti ti-x text-xl"></i>
+        <div
+            class="relative w-full md:w-2/3 lg:w-1/2 xl:w-96 max-w-xl mx-auto p-0 md:p-6 border-0 md:border shadow-lg rounded-t-2xl md:rounded-xl bg-white md:top-1/2 md:transform md:-translate-y-1/2 min-h-screen md:min-h-0 flex flex-col">
+            <div class="flex-1 overflow-y-auto p-4 md:p-0 md:mt-3">
+                <!-- Header with gradient background on mobile -->
+                <div
+                    class="flex items-center justify-between mb-4 md:mb-4 pb-4 md:pb-0 border-b border-gray-200 md:border-b-0 -mx-4 md:mx-0 px-4 md:px-0 bg-gradient-to-r from-blue-50 to-indigo-50 md:bg-transparent py-3 md:py-0">
+                    <h3 class="text-lg md:text-lg font-bold md:font-semibold text-gray-900">Masukkan Quantity</h3>
+                    <button type="button" id="closeQuantityModal"
+                        class="text-gray-500 hover:text-gray-700 md:text-gray-400 md:hover:text-gray-600 bg-white/80 hover:bg-white rounded-full p-1.5 md:p-0 md:bg-transparent transition-colors shadow-sm md:shadow-none">
+                        <i class="ti ti-x text-xl md:text-xl"></i>
                     </button>
                 </div>
 
                 <!-- Product Info -->
-                <div id="modalProductInfo" class="mb-4 p-3 bg-gray-50 rounded-lg">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
-                            <i class="ti ti-package text-xl text-blue-600"></i>
+                <div id="modalProductInfo"
+                    class="mb-4 md:mb-4 p-3 md:p-3 bg-gradient-to-br from-gray-50 to-blue-50 md:bg-gray-50 rounded-xl md:rounded-lg border border-gray-200 md:border-0 shadow-sm md:shadow-none">
+                    <div class="flex items-center space-x-3 md:space-x-3">
+                        <div
+                            class="w-14 h-14 md:w-12 md:h-12 bg-gradient-to-br from-blue-500 to-indigo-600 md:from-blue-100 md:to-blue-200 rounded-xl md:rounded-lg flex items-center justify-center shadow-md md:shadow-none flex-shrink-0">
+                            <i class="ti ti-package text-xl md:text-xl text-white md:text-blue-600"></i>
                         </div>
-                        <div class="flex-1">
-                            <h4 id="modalProductName" class="font-semibold text-gray-900"></h4>
-                            <p id="modalProductCode" class="text-sm text-gray-500"></p>
-                            <p id="modalProductPrice" class="text-sm font-medium text-blue-600"></p>
+                        <div class="flex-1 min-w-0">
+                            <h4 id="modalProductName"
+                                class="font-bold md:font-semibold text-base md:text-base text-gray-900 truncate mb-1 md:mb-0">
+                            </h4>
+                            <p id="modalProductCode" class="text-xs md:text-sm text-gray-500 truncate mb-1 md:mb-0"></p>
+                            <p id="modalProductPrice" class="text-sm md:text-sm font-bold md:font-medium text-blue-600">
+                            </p>
                         </div>
                     </div>
-                    <div class="mt-2 text-sm text-gray-600">
+                    <div
+                        class="mt-3 md:mt-2 pt-3 md:pt-0 border-t md:border-t-0 border-gray-200 text-xs md:text-sm text-gray-600 flex items-center md:block">
+                        <i class="ti ti-ruler text-blue-500 mr-2 md:hidden"></i>
                         <span>Satuan: </span>
-                        <span id="modalProductUnit" class="font-medium text-blue-600"></span>
+                        <span id="modalProductUnit"
+                            class="font-semibold md:font-medium text-blue-600 ml-1 md:ml-0"></span>
                     </div>
                 </div>
 
                 <!-- Quantity Input -->
-                <div class="mb-4">
-                    <label for="quantityInput" class="block text-sm font-medium text-gray-700 mb-2">
+                <div class="mb-4 md:mb-4">
+                    <label for="quantityInput"
+                        class="flex items-center md:block text-sm md:text-sm font-semibold md:font-medium text-gray-700 mb-3 md:mb-2">
+                        <i class="ti ti-hash text-blue-500 mr-2 md:hidden"></i>
                         Quantity
                     </label>
-                    <div class="flex items-center space-x-2">
+                    <div class="flex items-center space-x-3 md:space-x-2">
                         <button type="button" id="decreaseQty"
-                            class="w-12 h-12 bg-red-500 hover:bg-red-600 rounded-xl text-white flex items-center justify-center font-bold text-xl transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg">
+                            class="w-12 h-12 md:w-10 md:h-10 bg-gradient-to-br from-red-500 to-red-600 md:bg-red-500 hover:from-red-600 hover:to-red-700 md:hover:bg-red-600 rounded-xl md:rounded-lg text-white flex items-center justify-center font-bold text-lg md:text-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg md:shadow-md hover:shadow-xl md:hover:shadow-lg">
                             <i class="ti ti-minus"></i>
                         </button>
                         <div class="flex-1 relative">
                             <input type="text" id="quantityInput"
-                                class="w-full pl-4 pr-16 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-lg font-semibold"
+                                class="w-full pl-4 md:pl-4 pr-16 md:pr-16 py-3.5 md:py-3 border-2 md:border border-gray-300 rounded-xl md:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 md:focus:border-blue-500 text-center text-xl md:text-lg font-bold md:font-semibold bg-gray-50 md:bg-white focus:bg-white"
                                 value="1" placeholder="0">
-                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                <span id="modalProductUnitInInput" class="text-sm font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded"></span>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 md:pr-3 pointer-events-none">
+                                <span id="modalProductUnitInInput"
+                                    class="text-xs md:text-sm font-semibold md:font-medium text-gray-600 md:text-gray-500 bg-blue-100 md:bg-gray-100 px-2 md:px-2 py-1.5 md:py-1 rounded-lg"></span>
                             </div>
                         </div>
                         <button type="button" id="increaseQty"
-                            class="w-12 h-12 bg-blue-600 hover:bg-blue-700 rounded-xl text-white flex items-center justify-center font-bold text-xl transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg">
+                            class="w-12 h-12 md:w-10 md:h-10 bg-gradient-to-br from-blue-600 to-blue-700 md:bg-blue-600 hover:from-blue-700 hover:to-blue-800 md:hover:bg-blue-700 rounded-xl md:rounded-lg text-white flex items-center justify-center font-bold text-lg md:text-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg md:shadow-md hover:shadow-xl md:hover:shadow-lg">
                             <i class="ti ti-plus"></i>
                         </button>
                     </div>
-                    <p class="text-xs text-gray-500 mt-1">Masukkan jumlah yang diinginkan</p>
+                    <p class="text-xs text-gray-500 mt-2 text-center hidden md:block">Masukkan jumlah yang diinginkan</p>
                 </div>
 
                 <!-- Price Input -->
-                <div class="mb-4">
-                    <label for="modalPriceInput" class="block text-sm font-medium text-gray-700 mb-2">
+                <div class="mb-4 md:mb-4">
+                    <label for="modalPriceInput"
+                        class="flex items-center md:block text-sm md:text-sm font-semibold md:font-medium text-gray-700 mb-3 md:mb-2">
+                        <i class="ti ti-currency-dollar text-green-500 mr-2 md:hidden"></i>
                         Harga Satuan
                     </label>
                     <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span class="text-gray-500 text-sm font-medium">Rp</span>
+                        <div class="absolute inset-y-0 left-0 pl-4 md:pl-3 flex items-center pointer-events-none">
+                            <span
+                                class="text-gray-600 md:text-gray-500 text-sm md:text-sm font-bold md:font-medium">Rp</span>
                         </div>
                         <input type="text" id="modalPriceInput"
-                            class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-right text-lg font-semibold"
+                            class="w-full pl-12 md:pl-12 pr-4 md:pr-4 py-3.5 md:py-3 border-2 md:border border-gray-300 rounded-xl md:rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-right text-lg md:text-lg font-bold md:font-semibold bg-gray-50 md:bg-white focus:bg-white"
                             placeholder="0">
                     </div>
-                    <p class="text-xs text-gray-500 mt-1">Harga default: <span id="modalDefaultPrice" class="font-medium text-blue-600"></span></p>
+                    <p class="text-xs text-gray-500 mt-2 flex items-center md:block">
+                        <i class="ti ti-info-circle mr-1 md:hidden"></i>
+                        Harga default: <span id="modalDefaultPrice"
+                            class="font-semibold md:font-medium text-blue-600 ml-1 md:ml-0"></span>
+                    </p>
                 </div>
 
                 <!-- Discount Input -->
-                <div class="mb-6">
-                    <label for="discountInput" class="block text-sm font-medium text-gray-700 mb-2">
-                        Potongan Harga (Opsional)
+                <div class="mb-5 md:mb-6">
+                    <label for="discountInput"
+                        class="flex items-center md:block text-sm md:text-sm font-semibold md:font-medium text-gray-700 mb-3 md:mb-2">
+                        <i class="ti ti-discount text-orange-500 mr-2 md:hidden"></i>
+                        Potongan Harga <span class="text-xs font-normal text-gray-500 ml-1">(Opsional)</span>
                     </label>
                     <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span class="text-gray-500 text-sm font-medium">Rp</span>
+                        <div class="absolute inset-y-0 left-0 pl-4 md:pl-3 flex items-center pointer-events-none">
+                            <span
+                                class="text-gray-600 md:text-gray-500 text-sm md:text-sm font-bold md:font-medium">Rp</span>
                         </div>
                         <input type="text" id="discountInput"
-                            class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-right text-lg font-semibold"
+                            class="w-full pl-12 md:pl-12 pr-4 md:pr-4 py-3.5 md:py-3 border-2 md:border border-gray-300 rounded-xl md:rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-right text-lg md:text-lg font-bold md:font-semibold bg-gray-50 md:bg-white focus:bg-white"
                             value="0" placeholder="0">
                     </div>
-                    <p class="text-xs text-gray-500 mt-1">Masukkan potongan harga untuk produk ini (dalam Rupiah)</p>
+                    <p class="text-xs text-gray-500 mt-2 hidden md:block">Masukkan potongan harga untuk produk ini (dalam
+                        Rupiah)</p>
                 </div>
 
                 <!-- Total Price Preview -->
-                <div class="mb-6 p-3 bg-blue-50 rounded-lg">
-                    <div class="space-y-2">
-                        <div class="flex justify-between items-center text-sm">
-                            <span class="text-gray-600">Subtotal:</span>
-                            <span id="modalSubtotalPrice" class="font-medium text-gray-800">Rp 0</span>
+                <div
+                    class="mb-4 md:mb-6 p-4 md:p-3 bg-gradient-to-br from-blue-50 to-indigo-50 md:bg-blue-50 rounded-xl md:rounded-lg border-2 md:border-0 border-blue-200 md:border-blue-200 shadow-sm md:shadow-none">
+                    <div class="space-y-3 md:space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-700 md:text-gray-600 flex items-center">
+                                <i class="ti ti-receipt text-gray-500 mr-2 md:hidden"></i>
+                                Subtotal:
+                            </span>
+                            <span id="modalSubtotalPrice"
+                                class="font-bold md:font-medium text-base md:text-sm text-gray-800">Rp 0</span>
                         </div>
-                        <div class="flex justify-between items-center text-sm" id="modalDiscountRow" style="display: none;">
-                            <span class="text-orange-600">Potongan:</span>
-                            <span id="modalDiscountPrice" class="font-medium text-orange-600">Rp 0</span>
+                        <div class="flex justify-between items-center" id="modalDiscountRow" style="display: none;">
+                            <span class="text-sm font-medium text-orange-600 flex items-center">
+                                <i class="ti ti-discount text-orange-500 mr-2 md:hidden"></i>
+                                Potongan:
+                            </span>
+                            <span id="modalDiscountPrice"
+                                class="font-bold md:font-medium text-base md:text-sm text-orange-600">Rp 0</span>
                         </div>
-                        <div class="flex justify-between items-center border-t border-blue-200 pt-2">
-                            <span class="text-sm font-medium text-gray-700">Total Harga:</span>
-                            <span id="modalTotalPrice" class="text-lg font-bold text-blue-600">Rp 0</span>
+                        <div
+                            class="flex justify-between items-center border-t-2 md:border-t border-blue-300 md:border-blue-200 pt-3 md:pt-2">
+                            <span
+                                class="text-base md:text-sm font-bold md:font-medium text-gray-800 md:text-gray-700 flex items-center">
+                                <i class="ti ti-currency-dollar text-blue-600 mr-2 md:hidden"></i>
+                                Total Harga:
+                            </span>
+                            <span id="modalTotalPrice"
+                                class="text-xl md:text-lg font-extrabold md:font-bold text-blue-600">Rp 0</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="flex space-x-3">
+            </div>
+
+            <!-- Action Buttons - Sticky Bottom for Mobile -->
+            <div
+                class="sticky bottom-0 bg-white border-t border-gray-200 p-4 md:p-0 md:relative md:bg-transparent md:mt-3 shadow-2xl md:shadow-none z-10 -mx-4 md:mx-0 px-4">
+                <div class="flex gap-3 md:gap-3">
                     <button type="button" id="cancelQuantity"
-                        class="w-24 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                        class="px-6 md:px-6 py-3 md:py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 active:bg-gray-300 transition-all text-base flex items-center justify-center whitespace-nowrap">
                         Batal
                     </button>
                     <button type="button" id="confirmQuantity"
-                        class="flex-1 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors whitespace-nowrap">
+                        class="flex-1 py-3 md:py-2.5 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 active:bg-blue-700 transition-all text-base flex items-center justify-center">
                         <i class="ti ti-plus text-sm mr-1"></i>
                         Tambah ke Keranjang
                     </button>
@@ -397,63 +637,71 @@
 
     <!-- Customer Selection Modal -->
     <div id="customerModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-xl bg-white">
-            <div class="mt-3">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Pilih Pelanggan</h3>
+        <div
+            class="relative top-0 md:top-20 mx-auto p-0 md:p-5 border-0 md:border w-full md:w-3/4 lg:w-1/2 shadow-lg rounded-t-2xl md:rounded-xl bg-white min-h-screen md:min-h-0 flex flex-col">
+            <div class="flex-1 overflow-y-auto p-3 md:p-0 md:mt-3">
+                <div
+                    class="flex items-center justify-between mb-3 md:mb-4 pb-3 md:pb-0 border-b md:border-b-0 border-gray-200">
+                    <h3 class="text-base md:text-lg font-semibold text-gray-900">Pilih Pelanggan</h3>
                     <button type="button" id="closeCustomerModal" class="text-gray-400 hover:text-gray-600">
                         <i class="ti ti-x text-xl"></i>
                     </button>
                 </div>
 
                 <!-- Search Customer -->
-                <div class="mb-4">
+                <div class="mb-3 md:mb-4">
                     <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="ti ti-search text-lg text-gray-400"></i>
+                        <div class="absolute inset-y-0 left-0 pl-2 md:pl-3 flex items-center pointer-events-none">
+                            <i class="ti ti-search text-base md:text-lg text-gray-400"></i>
                         </div>
                         <input type="text" id="customerSearch" placeholder="Cari nama atau kode pelanggan..."
-                            class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            class="w-full pl-9 md:pl-11 pr-3 md:pr-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base">
                     </div>
                 </div>
 
                 <!-- Customer List -->
-                <div id="customerList" class="max-h-96 overflow-y-auto space-y-2">
+                <div id="customerList" class="max-h-[calc(100vh-280px)] md:max-h-96 overflow-y-auto space-y-2">
                     @foreach ($pelanggan as $customer)
-                        <div class="customer-item p-4 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-all duration-200"
-                            data-id="{{ $customer->id }}" data-name="{{ $customer->nama }}" data-code="{{ $customer->kode_pelanggan }}"
-                            data-phone="{{ $customer->nomor_telepon ?? '' }}" data-address="{{ $customer->alamat ?? '' }}">
+                        <div class="customer-item p-3 md:p-4 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-all duration-200"
+                            data-id="{{ $customer->id }}" data-name="{{ $customer->nama }}"
+                            data-code="{{ $customer->kode_pelanggan }}"
+                            data-phone="{{ $customer->nomor_telepon ?? '' }}"
+                            data-address="{{ $customer->alamat ?? '' }}">
                             <div class="flex items-center justify-between">
-                                <div class="flex-1">
-                                    <div class="flex items-center space-x-3">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center space-x-2 md:space-x-3">
                                         <div
-                                            class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-                                            <i class="ti ti-user text-white"></i>
+                                            class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <i class="ti ti-user text-white text-sm md:text-base"></i>
                                         </div>
-                                        <div>
-                                            <h4 class="font-semibold text-gray-900">{{ $customer->nama }}</h4>
-                                            <p class="text-sm text-gray-500">{{ $customer->kode_pelanggan }}</p>
+                                        <div class="min-w-0 flex-1">
+                                            <h4 class="font-semibold text-sm md:text-base text-gray-900 truncate">
+                                                {{ $customer->nama }}</h4>
+                                            <p class="text-xs md:text-sm text-gray-500 truncate">
+                                                {{ $customer->kode_pelanggan }}</p>
                                             @if ($customer->nomor_telepon)
-                                                <p class="text-xs text-gray-400">{{ $customer->nomor_telepon }}</p>
+                                                <p class="text-xs text-gray-400 truncate">{{ $customer->nomor_telepon }}
+                                                </p>
                                             @endif
                                         </div>
                                     </div>
                                     @if ($customer->alamat)
-                                        <p class="text-xs text-gray-500 mt-2 ml-13">
+                                        <p class="text-xs text-gray-500 mt-2 ml-0 md:ml-13 truncate">
                                             {{ Str::limit($customer->alamat, 50) }}</p>
                                     @endif
                                 </div>
-                                <div class="text-right">
+                                <div class="text-right flex-shrink-0 ml-2">
                                     @if ($customer->status)
                                         <span
-                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            class="inline-flex items-center px-2 md:px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                             <i class="ti ti-check-circle text-xs mr-1"></i>
-                                            Aktif
+                                            <span class="hidden md:inline">Aktif</span>
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        <span
+                                            class="inline-flex items-center px-2 md:px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                             <i class="ti ti-x-circle text-xs mr-1"></i>
-                                            Nonaktif
+                                            <span class="hidden md:inline">Nonaktif</span>
                                         </span>
                                     @endif
                                 </div>
@@ -461,15 +709,16 @@
                         </div>
                     @endforeach
                 </div>
+            </div>
 
-                <!-- Add New Customer Button -->
-                <div class="mt-4 pt-4 border-t border-gray-200">
-                    <button type="button" id="addNewCustomerBtn"
-                        class="w-full flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                        <i class="ti ti-plus text-lg mr-2"></i>
-                        Tambah Pelanggan Baru
-                    </button>
-                </div>
+            <!-- Add New Customer Button - Sticky Bottom for Mobile -->
+            <div
+                class="sticky bottom-0 bg-white border-t border-gray-200 md:border-t-0 p-3 md:p-0 md:relative md:bg-transparent md:mt-4 md:pt-4 md:px-0 shadow-lg md:shadow-none z-10">
+                <button type="button" id="addNewCustomerBtn"
+                    class="w-full flex items-center justify-center px-4 py-2.5 md:py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm md:text-base">
+                    <i class="ti ti-plus text-base md:text-lg mr-2"></i>
+                    Tambah Pelanggan Baru
+                </button>
             </div>
         </div>
     </div>
@@ -497,7 +746,8 @@
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="ti ti-barcode text-lg text-gray-400"></i>
                             </div>
-                            <input type="text" name="kode_pelanggan" id="new_kode_pelanggan" value="{{ $kodePelanggan }}"
+                            <input type="text" name="kode_pelanggan" id="new_kode_pelanggan"
+                                value="{{ $kodePelanggan }}"
                                 class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white"
                                 placeholder="Contoh: PEL2509001" maxlength="20" readonly>
                             <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -603,71 +853,79 @@
 
     <!-- Order Preview Modal -->
     <div id="orderPreviewModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 xl:w-1/2 shadow-lg rounded-xl bg-white">
-            <div class="mt-3">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-xl font-bold text-gray-900">Preview Pesanan</h3>
+        <div
+            class="relative top-0 md:top-20 mx-auto p-0 md:p-5 border-0 md:border w-full md:w-11/12 lg:w-1/2 xl:w-2/5 shadow-lg rounded-t-2xl md:rounded-xl bg-white min-h-screen md:min-h-0 flex flex-col">
+            <div class="flex-1 overflow-y-auto p-3 md:p-0 md:mt-3">
+                <!-- Mobile: Close button at top -->
+                <div
+                    class="flex items-center justify-between mb-3 md:mb-6 pb-3 md:pb-0 border-b md:border-b-0 border-gray-200">
+                    <h3 class="text-base md:text-xl font-bold text-gray-900">Preview Pesanan</h3>
                     <button type="button" id="closeOrderPreviewModal" class="text-gray-400 hover:text-gray-600">
-                        <i class="ti ti-x text-2xl"></i>
+                        <i class="ti ti-x text-xl md:text-2xl"></i>
                     </button>
                 </div>
 
                 <!-- Customer Info -->
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                            <i class="ti ti-user text-white"></i>
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
+                    <div class="flex items-center space-x-2 md:space-x-3">
+                        <div
+                            class="w-8 h-8 md:w-10 md:h-10 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="ti ti-user text-white text-sm md:text-base"></i>
                         </div>
-                        <div>
-                            <h4 class="font-semibold text-gray-900" id="previewCustomerName">-</h4>
-                            <p class="text-sm text-gray-600" id="previewCustomerCode">-</p>
+                        <div class="min-w-0 flex-1">
+                            <h4 class="font-semibold text-gray-900 text-sm md:text-base truncate"
+                                id="previewCustomerName">-</h4>
+                            <p class="text-xs md:text-sm text-gray-600 truncate" id="previewCustomerCode">-</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Transaction Info -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div class="bg-gray-50 rounded-lg p-3">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 mb-4 md:mb-6">
+                    <div class="bg-gray-50 rounded-lg p-2 md:p-3">
                         <p class="text-xs text-gray-500 mb-1">No. Faktur</p>
-                        <p class="font-semibold text-gray-900" id="previewInvoiceNumber">-</p>
+                        <p class="font-semibold text-gray-900 text-sm md:text-base truncate" id="previewInvoiceNumber">-
+                        </p>
                     </div>
-                    <div class="bg-gray-50 rounded-lg p-3">
+                    <div class="bg-gray-50 rounded-lg p-2 md:p-3">
                         <p class="text-xs text-gray-500 mb-1">Tanggal</p>
-                        <p class="font-semibold text-gray-900" id="previewDate">-</p>
+                        <p class="font-semibold text-gray-900 text-sm md:text-base" id="previewDate">-</p>
                     </div>
-                    <div class="bg-gray-50 rounded-lg p-3">
+                    <div class="bg-gray-50 rounded-lg p-2 md:p-3">
                         <p class="text-xs text-gray-500 mb-1">Jenis Transaksi</p>
-                        <p class="font-semibold text-gray-900" id="previewTransactionType">-</p>
+                        <p class="font-semibold text-gray-900 text-sm md:text-base" id="previewTransactionType">-</p>
                     </div>
                 </div>
 
                 <!-- Order Items -->
-                <div class="mb-6">
-                    <h4 class="font-semibold text-gray-900 mb-3">Detail Pesanan</h4>
-                    <div class="max-h-64 overflow-y-auto" id="previewOrderItems">
+                <div class="mb-4 md:mb-6">
+                    <h4 class="font-semibold text-gray-900 mb-2 md:mb-3 text-sm md:text-base">Detail Pesanan</h4>
+                    <div class="max-h-48 md:max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-2 md:p-0 md:border-0"
+                        id="previewOrderItems">
                         <!-- Items will be populated here -->
                     </div>
                 </div>
 
                 <!-- Payment Configuration -->
-                <div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-                    <h4 class="font-semibold text-gray-900 mb-3">Konfigurasi Pembayaran</h4>
+                <div class="bg-white border border-gray-200 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
+                    <h4 class="font-semibold text-gray-900 mb-2 md:mb-3 text-sm md:text-base">Konfigurasi Pembayaran</h4>
 
-                    <div class="space-y-4">
+                    <div class="space-y-3 md:space-y-4">
                         <!-- Jenis Transaksi -->
                         <div>
-                            <div class="grid grid-cols-2 gap-3" id="previewTransactionTypeContainer">
+                            <div class="grid grid-cols-2 gap-2 md:gap-3" id="previewTransactionTypeContainer">
                                 <label class="relative cursor-pointer preview-transaction-type-option">
                                     <input type="radio" name="preview_jenis_transaksi" value="tunai"
                                         class="sr-only preview-transaction-type-radio">
                                     <div
-                                        class="p-3 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 preview-transaction-type-card">
+                                        class="p-2 md:p-3 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 preview-transaction-type-card">
                                         <div class="flex flex-col items-center text-center">
-                                            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mb-2">
-                                                <i class="ti ti-cash text-green-600 text-sm"></i>
+                                            <div
+                                                class="w-7 h-7 md:w-8 md:h-8 bg-green-100 rounded-lg flex items-center justify-center mb-1 md:mb-2">
+                                                <i class="ti ti-cash text-green-600 text-xs md:text-sm"></i>
                                             </div>
-                                            <span class="text-sm font-medium text-gray-900">Tunai</span>
-                                            <span class="text-xs text-gray-500">Bayar Langsung</span>
+                                            <span class="text-xs md:text-sm font-medium text-gray-900">Tunai</span>
+                                            <span class="text-xs text-gray-500 hidden md:block">Bayar Langsung</span>
                                         </div>
                                     </div>
                                 </label>
@@ -675,13 +933,14 @@
                                     <input type="radio" name="preview_jenis_transaksi" value="kredit"
                                         class="sr-only preview-transaction-type-radio">
                                     <div
-                                        class="p-3 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 preview-transaction-type-card">
+                                        class="p-2 md:p-3 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 preview-transaction-type-card">
                                         <div class="flex flex-col items-center text-center">
-                                            <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mb-2">
-                                                <i class="ti ti-credit-card text-orange-600 text-sm"></i>
+                                            <div
+                                                class="w-7 h-7 md:w-8 md:h-8 bg-orange-100 rounded-lg flex items-center justify-center mb-1 md:mb-2">
+                                                <i class="ti ti-credit-card text-orange-600 text-xs md:text-sm"></i>
                                             </div>
-                                            <span class="text-sm font-medium text-gray-900">Kredit</span>
-                                            <span class="text-xs text-gray-500">Bayar Nanti</span>
+                                            <span class="text-xs md:text-sm font-medium text-gray-900">Kredit</span>
+                                            <span class="text-xs text-gray-500 hidden md:block">Bayar Nanti</span>
                                         </div>
                                     </div>
                                 </label>
@@ -690,18 +949,22 @@
 
                         <!-- Metode Pembayaran -->
                         <div>
-                            <div class="grid gap-3" id="previewPaymentMethodContainer" style="grid-template-columns: repeat({{ count($metodePembayaran) }}, 1fr);">
+                            <div class="grid grid-cols-2 md:grid-cols-{{ min(count($metodePembayaran), 4) }} gap-2 md:gap-3"
+                                id="previewPaymentMethodContainer">
                                 @foreach ($metodePembayaran as $metode)
                                     <label class="relative cursor-pointer preview-payment-method-option">
-                                        <input type="radio" name="preview_metode_pembayaran" value="{{ $metode->kode }}"
-                                            class="sr-only preview-payment-method-radio">
+                                        <input type="radio" name="preview_metode_pembayaran"
+                                            value="{{ $metode->kode }}" class="sr-only preview-payment-method-radio">
                                         <div
-                                            class="p-3 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 preview-payment-method-card">
+                                            class="p-2 md:p-3 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 preview-payment-method-card">
                                             <div class="flex items-center">
-                                                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                                    <i class="ti {{ $metode->icon_display }} text-blue-600 text-sm"></i>
+                                                <div
+                                                    class="w-6 h-6 md:w-8 md:h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-2 md:mr-3 flex-shrink-0">
+                                                    <i
+                                                        class="ti {{ $metode->icon_display }} text-blue-600 text-xs md:text-sm"></i>
                                                 </div>
-                                                <span class="text-sm font-medium text-gray-900">{{ $metode->nama }}</span>
+                                                <span
+                                                    class="text-xs md:text-sm font-medium text-gray-900 truncate">{{ $metode->nama }}</span>
                                             </div>
                                         </div>
                                     </label>
@@ -712,10 +975,10 @@
                         <!-- Kas/Bank Selection -->
                         <div>
                             <!-- Message when no payment method selected -->
-                            <div id="kasBankMessage" class="text-center py-8 text-gray-500">
-                                <i class="ti ti-arrow-up text-2xl mb-2"></i>
-                                <p class="text-sm">Pilih metode pembayaran terlebih dahulu untuk melihat pilihan kas/bank
-                                </p>
+                            <div id="kasBankMessage" class="text-center py-6 md:py-8 text-gray-500">
+                                <i class="ti ti-arrow-up text-xl md:text-2xl mb-2"></i>
+                                <p class="text-xs md:text-sm">Pilih metode pembayaran terlebih dahulu untuk melihat pilihan
+                                    kas/bank</p>
                             </div>
 
                             <!-- Card Scan Area for CARD payment method -->
@@ -723,13 +986,15 @@
                                 <div
                                     class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-dashed border-blue-300 rounded-xl p-8 text-center">
                                     <div class="flex flex-col items-center">
-                                        <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                                        <div
+                                            class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-4">
                                             <i class="ti ti-credit-card text-blue-600 text-3xl"></i>
                                         </div>
                                         <h3 class="text-lg font-semibold text-gray-900 mb-2">Tempelkan Kartu RFID</h3>
                                         <p class="text-sm text-gray-600 mb-4">Tempelkan kartu RFID Anda pada area scanner
                                             untuk melanjutkan pembayaran</p>
-                                        <div class="w-full max-w-xs h-16 bg-white border-2 border-blue-200 rounded-lg flex items-center justify-center">
+                                        <div
+                                            class="w-full max-w-xs h-16 bg-white border-2 border-blue-200 rounded-lg flex items-center justify-center">
                                             <i class="ti ti-scan text-blue-400 text-2xl animate-pulse"></i>
                                         </div>
                                         <p class="text-xs text-gray-500 mt-3">Menunggu kartu terdeteksi...</p>
@@ -762,8 +1027,8 @@
                                                     <span class="text-xs text-gray-600" id="rfidProgress">0/10</span>
                                                 </div>
                                                 <div class="w-full bg-gray-200 rounded-full h-2">
-                                                    <div class="bg-blue-500 h-2 rounded-full transition-all duration-300" id="rfidProgressBar"
-                                                        style="width: 0%"></div>
+                                                    <div class="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                                                        id="rfidProgressBar" style="width: 0%"></div>
                                                 </div>
                                             </div>
                                             <div class="mt-2 flex gap-2">
@@ -805,12 +1070,14 @@
                                                     <div class="flex justify-between items-start p-5 relative z-10">
                                                         <div class="text-white card-emboss">
                                                             <h3 class="text-lg font-semibold">Kartu Siswa</h3>
-                                                            <p class="text-sm text-gray-300" style="color:white !important;">Koperasi Tsarwah</p>
+                                                            <p class="text-sm text-gray-300"
+                                                                style="color:white !important;">Koperasi Tsarwah</p>
                                                         </div>
                                                         <div class="text-right text-white">
                                                             <div
                                                                 class="w-8 h-6 card-logo card-hologram rounded-sm flex items-center justify-center shadow-lg">
-                                                                <div class="w-6 h-4 bg-yellow-300 rounded-sm flex items-center justify-center">
+                                                                <div
+                                                                    class="w-6 h-4 bg-yellow-300 rounded-sm flex items-center justify-center">
                                                                     <div class="w-4 h-3 bg-yellow-200 rounded-sm"></div>
                                                                 </div>
                                                             </div>
@@ -823,8 +1090,10 @@
                                                         <div class="flex-shrink-0">
                                                             <div
                                                                 class="w-12 h-8 card-chip card-chip-hologram rounded-sm flex items-center justify-center shadow-lg">
-                                                                <div class="w-10 h-6 bg-yellow-300 rounded-sm flex items-center justify-center">
-                                                                    <div class="w-8 h-4 bg-yellow-200 rounded-sm flex items-center justify-center">
+                                                                <div
+                                                                    class="w-10 h-6 bg-yellow-300 rounded-sm flex items-center justify-center">
+                                                                    <div
+                                                                        class="w-8 h-4 bg-yellow-200 rounded-sm flex items-center justify-center">
                                                                         <div class="w-6 h-3 bg-yellow-100 rounded-sm">
                                                                         </div>
                                                                     </div>
@@ -844,7 +1113,8 @@
 
                                                     <!-- Nama Pemegang -->
                                                     <div class="px-5 pb-2 relative z-30">
-                                                        <div class="text-white text-xl font-bold card-emboss card-name" id="rfidCardholderName"
+                                                        <div class="text-white text-xl font-bold card-emboss card-name"
+                                                            id="rfidCardholderName"
                                                             style="text-shadow: 2px 2px 4px rgba(0,0,0,0.8); background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 4px; display: inline-block;">
                                                             -
                                                         </div>
@@ -864,7 +1134,8 @@
                                                             <!-- Saldo -->
                                                             <div class="mt-2">
                                                                 <div class="text-xs text-gray-300">SALDO</div>
-                                                                <div class="font-mono text-sm font-bold" id="rfidBalanceDisplay">
+                                                                <div class="font-mono text-sm font-bold"
+                                                                    id="rfidBalanceDisplay">
                                                                     Rp 0
                                                                 </div>
                                                             </div>
@@ -883,39 +1154,43 @@
                                 </div>
                             </div>
 
-                            <div class="grid gap-3" id="previewKasBankContainer">
+                            <div class="grid gap-2 md:gap-3" id="previewKasBankContainer">
                                 @foreach ($kasBank ?? [] as $kas)
                                     <label class="relative cursor-pointer preview-kas-bank-option">
-                                        <input type="radio" name="preview_kas_bank" value="{{ $kas->id }}" data-jenis="{{ $kas->jenis }}"
-                                            data-image="{{ $kas->image_url ?? '' }}" class="sr-only preview-kas-bank-radio">
+                                        <input type="radio" name="preview_kas_bank" value="{{ $kas->id }}"
+                                            data-jenis="{{ $kas->jenis }}" data-image="{{ $kas->image_url ?? '' }}"
+                                            class="sr-only preview-kas-bank-radio">
                                         <div
-                                            class="p-4 border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 transition-all duration-300 preview-kas-bank-card flex items-center justify-between shadow-sm hover:shadow-md">
-                                            <div class="flex items-center flex-1">
+                                            class="p-3 md:p-4 border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 transition-all duration-300 preview-kas-bank-card flex items-center justify-between shadow-sm hover:shadow-md">
+                                            <div class="flex items-center flex-1 min-w-0">
                                                 <div
-                                                    class="w-16 h-16 rounded-xl flex items-center justify-center mr-4 overflow-hidden shadow-sm flex-shrink-0">
+                                                    class="w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center mr-2 md:mr-4 overflow-hidden shadow-sm flex-shrink-0">
                                                     @if ($kas->jenis === 'KAS')
                                                         <div
                                                             class="w-full h-full bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
-                                                            <i class="ti ti-cash text-green-600 text-xl"></i>
+                                                            <i class="ti ti-cash text-green-600 text-base md:text-xl"></i>
                                                         </div>
                                                     @else
                                                         @if ($kas->image)
-                                                            <img src="{{ asset('storage/' . $kas->image) }}" alt="Logo {{ $kas->nama }}"
+                                                            <img src="{{ asset('storage/' . $kas->image) }}"
+                                                                alt="Logo {{ $kas->nama }}"
                                                                 class="w-full h-full object-contain">
                                                         @else
                                                             <div
                                                                 class="w-full h-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
-                                                                <i class="ti ti-building-bank text-purple-600 text-xl"></i>
+                                                                <i
+                                                                    class="ti ti-building-bank text-purple-600 text-base md:text-xl"></i>
                                                             </div>
                                                         @endif
                                                     @endif
                                                 </div>
-                                                <div class="flex-1 flex flex-col justify-center">
-                                                    <div class="text-base font-bold text-gray-900 leading-tight">
+                                                <div class="flex-1 flex flex-col justify-center min-w-0">
+                                                    <div
+                                                        class="text-sm md:text-base font-bold text-gray-900 leading-tight truncate">
                                                         {{ $kas->nama }}
                                                     </div>
                                                     @if ($kas->no_rekening)
-                                                        <div class="text-sm text-gray-500 font-medium">
+                                                        <div class="text-xs md:text-sm text-gray-500 font-medium truncate">
                                                             {{ $kas->no_rekening }}
                                                         </div>
                                                     @endif
@@ -929,12 +1204,13 @@
 
                         <!-- Payment Amount -->
                         <div class="hidden" id="previewDpContainer">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <span id="paymentAmountLabel">Jumlah Pembayaran</span>
+                            <label for="previewDpAmount" id="previewDpLabel"
+                                class="block text-sm font-medium text-gray-700 mb-2">
+                                Jumlah Down Payment (DP)
                             </label>
                             <input type="text" id="previewDpAmount"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-right text-sm"
-                                placeholder="Jumlah (Rp)" value="0">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-right"
+                                placeholder="Jumlah DP (Rp)">
                         </div>
 
                         <!-- Uang Muka Pelanggan -->
@@ -942,7 +1218,8 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Gunakan Uang Muka (Opsional)
                             </label>
-                            <div id="uangMukaList" class="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50">
+                            <div id="uangMukaList"
+                                class="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50">
                                 <p class="text-sm text-gray-500 text-center py-4" id="uangMukaEmptyMessage">
                                     Pilih pelanggan terlebih dahulu untuk melihat uang muka yang tersedia
                                 </p>
@@ -956,51 +1233,58 @@
                 </div>
 
                 <!-- Order Summary -->
-                <div class="bg-gray-50 rounded-lg p-4 mb-6">
-                    <h4 class="font-semibold text-gray-900 mb-3">Ringkasan Pembayaran</h4>
+                <div class="bg-gray-50 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
+                    <h4 class="font-semibold text-gray-900 mb-2 md:mb-3 text-sm md:text-base">Ringkasan Pesanan</h4>
                     <div class="space-y-2">
-                        <div class="flex justify-between text-sm">
+                        <div class="flex justify-between text-xs md:text-sm">
                             <span class="text-gray-600">Subtotal</span>
-                            <span class="font-medium" id="previewSubtotal">Rp 0</span>
+                            <span class="font-medium text-sm md:text-base" id="previewSubtotal">Rp 0</span>
                         </div>
-                        <div class="flex justify-between text-sm" id="previewDiscountRow" style="display: none;">
-                            <span class="text-gray-600">Diskon Keseluruhan</span>
-                            <span class="font-medium text-red-600" id="previewDiscount">Rp 0</span>
+                        <div class="flex justify-between text-xs md:text-sm" id="previewDiscountRow"
+                            style="display: none;">
+                            <span class="text-gray-600">Diskon</span>
+                            <span class="font-medium text-red-600 text-sm md:text-base" id="previewDiscount">Rp 0</span>
                         </div>
-                        <div class="flex justify-between text-lg font-bold border-t border-gray-200 pt-2">
+                        <div class="flex justify-between text-base md:text-lg font-bold border-t border-gray-200 pt-2">
                             <span>Total</span>
-                            <span class="text-blue-600" id="previewTotal">Rp 0</span>
+                            <span id="previewTotal">Rp 0</span>
                         </div>
-
-                        <!-- DP & Remaining (for kredit) -->
                         <div id="previewPaymentBreakdown" class="hidden border-t border-gray-200 pt-2 space-y-2">
-                            <div class="flex justify-between text-sm" id="previewUangMukaRow" style="display: none;">
+                            <div class="flex justify-between text-xs md:text-sm" id="previewUangMukaRow"
+                                style="display: none;">
                                 <span class="text-blue-600">Uang Muka Digunakan</span>
-                                <span class="font-medium text-blue-600" id="previewUangMukaDisplay">Rp 0</span>
+                                <span class="font-medium text-blue-600 text-sm md:text-base"
+                                    id="previewUangMukaDisplay">Rp 0</span>
                             </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="text-green-600">DP Dibayar</span>
-                                <span class="font-medium text-green-600" id="previewDP">Rp 0</span>
+                            <div class="flex justify-between text-xs md:text-sm">
+                                <span class="text-green-600" id="previewDpLabelText">DP Dibayar</span>
+                                <span class="font-medium text-green-600 text-sm md:text-base" id="previewDpDisplay">Rp
+                                    0</span>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-xs md:text-sm">
                                 <span class="text-orange-600">Sisa Pembayaran</span>
-                                <span class="font-medium text-orange-600" id="previewRemaining">Rp 0</span>
+                                <span class="font-medium text-orange-600 text-sm md:text-base"
+                                    id="previewRemainingDisplay">Rp 0</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="flex space-x-3">
+            </div>
+
+            <!-- Action Buttons - Sticky Bottom for Mobile -->
+            <div
+                class="sticky bottom-0 bg-white border-t border-gray-200 md:border-t-0 p-3 md:p-0 md:relative md:bg-transparent md:mt-3 md:px-0 shadow-lg md:shadow-none z-10">
+                <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-3">
                     <button type="button" id="cancelOrderPreview"
-                        class="flex-1 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors">
-                        <i class="ti ti-arrow-left text-lg mr-2"></i>
-                        Kembali Edit
+                        class="w-full md:flex-1 py-2.5 md:py-3 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600 transition-colors text-sm md:text-base">
+                        <i class="ti ti-x text-base md:text-lg mr-2"></i>
+                        Batal
                     </button>
                     <button type="button" id="confirmOrderSave"
-                        class="flex-1 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
-                        <i class="ti ti-device-floppy text-lg mr-2"></i>
-                        Konfirmasi & Simpan
+                        class="w-full md:flex-1 py-2.5 md:py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm md:text-base">
+                        <i class="ti ti-device-floppy text-base md:text-lg mr-2"></i>
+                        Simpan Penjualan
                     </button>
                 </div>
             </div>
@@ -1206,22 +1490,47 @@
 
         /* Modal animation */
         #customerModal {
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(8px);
         }
 
         #customerModal>div {
-            animation: modalSlideIn 0.3s ease;
+            animation: slideInDown 0.3s ease-out;
         }
 
-        @keyframes modalSlideIn {
+        @keyframes slideInDown {
             from {
                 opacity: 0;
-                transform: translateY(-20px);
+                transform: translateY(-50px);
             }
 
             to {
                 opacity: 1;
                 transform: translateY(0);
+            }
+        }
+
+        /* Customer Modal Mobile Styles */
+        @media (max-width: 768px) {
+            #customerModal {
+                display: flex;
+                align-items: flex-end;
+            }
+
+            #customerModal.hidden {
+                display: none;
+            }
+
+            #customerModal>div {
+                animation: slideUp 0.3s ease-out;
+                width: 100%;
+                margin-top: auto;
+                max-height: 100vh;
+                height: 100vh;
+            }
+
+            #customerModal>div>div:first-child {
+                padding-bottom: 20px;
+                /* Space for sticky button */
             }
         }
 
@@ -1246,22 +1555,47 @@
 
         /* Quantity Modal Styles */
         #quantityModal {
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(8px);
         }
 
         #quantityModal>div {
-            animation: quantityModalSlideIn 0.3s ease;
+            animation: slideInDown 0.3s ease-out;
         }
 
-        @keyframes quantityModalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-50%) scale(0.95);
+        /* Quantity Modal Mobile Styles */
+        @media (max-width: 768px) {
+            #quantityModal {
+                display: flex;
+                align-items: flex-end;
             }
 
-            to {
-                opacity: 1;
-                transform: translateY(-50%) scale(1);
+            #quantityModal.hidden {
+                display: none;
+            }
+
+            #quantityModal>div {
+                animation: slideUp 0.3s ease-out;
+                width: 100%;
+                margin-top: auto;
+                max-height: 100vh;
+                height: 100vh;
+            }
+
+            #quantityModal>div>div:first-child {
+                padding-bottom: 20px;
+                /* Space for sticky button */
+            }
+
+            @keyframes slideUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(100%);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
             }
         }
 
@@ -1388,18 +1722,54 @@
         }
 
         #orderPreviewModal>div {
-            animation: previewModalSlideIn 0.3s ease;
+            animation: slideInDown 0.3s ease-out;
         }
 
-        @keyframes previewModalSlideIn {
+        @keyframes slideInDown {
             from {
                 opacity: 0;
-                transform: translateY(-20px) scale(0.95);
+                transform: translateY(-50px);
             }
 
             to {
                 opacity: 1;
-                transform: translateY(0) scale(1);
+                transform: translateY(0);
+            }
+        }
+
+        /* Order Preview Modal Mobile Styles */
+        @media (max-width: 768px) {
+            #orderPreviewModal {
+                display: flex;
+                align-items: flex-end;
+            }
+
+            #orderPreviewModal.hidden {
+                display: none;
+            }
+
+            #orderPreviewModal>div {
+                animation: slideUpPreview 0.3s ease-out;
+                width: 100%;
+                margin-top: auto;
+                max-height: 95vh;
+            }
+
+            #orderPreviewModal>div>div:first-child {
+                padding-bottom: 20px;
+                /* Space for sticky button */
+            }
+
+            @keyframes slideUpPreview {
+                from {
+                    opacity: 0;
+                    transform: translateY(100%);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
             }
         }
 
@@ -1438,19 +1808,6 @@
         @media (max-width: 768px) {
             #productsGrid {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-
-            .w-96 {
-                width: 100%;
-                max-width: 384px;
-            }
-
-            .flex {
-                flex-direction: column;
-            }
-
-            .flex-1 {
-                margin-bottom: 1rem;
             }
         }
 
@@ -2249,6 +2606,113 @@
 
 @push('scripts')
     <script>
+        // Mobile Step Navigation
+        let currentStep = 1;
+        const totalSteps = 3;
+
+        function showStep(step) {
+            // Hide all mobile steps
+            document.querySelectorAll('.mobile-step').forEach(el => {
+                el.classList.add('hidden');
+            });
+
+            // Show selected step
+            const stepElement = document.querySelector(`.mobile-step-${step}`);
+            if (stepElement) {
+                stepElement.classList.remove('hidden');
+            }
+
+            // Show/hide mobile total actions based on step
+            const mobileTotalActions = document.querySelector('.mobile-total-actions');
+            if (mobileTotalActions) {
+                // Hide sticky bottom actions when in step 1 (transaction info) or step 3 (review)
+                if (step === 1 || step === 3) {
+                    mobileTotalActions.classList.add('hidden');
+                } else {
+                    mobileTotalActions.classList.remove('hidden');
+                }
+            }
+
+            // Update stepper indicators
+            updateStepper(step);
+
+            // Scroll to top
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        function updateStepper(step) {
+            currentStep = step;
+
+            // Update step indicators
+            for (let i = 1; i <= totalSteps; i++) {
+                const indicator = document.getElementById(`stepIndicator${i}`);
+                const progressBar = document.getElementById(`progressBar${i}`);
+
+                if (i < step) {
+                    // Completed step
+                    indicator.classList.remove('bg-gray-200', 'text-gray-600');
+                    indicator.classList.add('bg-green-500', 'text-white');
+                    if (progressBar) progressBar.style.width = '100%';
+                } else if (i === step) {
+                    // Current step
+                    indicator.classList.remove('bg-gray-200', 'text-gray-600', 'bg-green-500');
+                    indicator.classList.add('bg-blue-600', 'text-white');
+                    if (progressBar) progressBar.style.width = '50%';
+                } else {
+                    // Future step
+                    indicator.classList.remove('bg-blue-600', 'text-white', 'bg-green-500');
+                    indicator.classList.add('bg-gray-200', 'text-gray-600');
+                    if (progressBar) progressBar.style.width = '0%';
+                }
+            }
+
+            // Update step title and description
+            const stepTitle = document.getElementById('stepTitle');
+            const stepDescription = document.getElementById('stepDescription');
+
+            const stepConfig = {
+                1: {
+                    title: 'Langkah 1: Informasi Transaksi',
+                    description: 'Isi informasi pelanggan dan tanggal'
+                },
+                2: {
+                    title: 'Langkah 2: Pilih Produk',
+                    description: 'Pilih produk yang akan dijual'
+                },
+                3: {
+                    title: 'Langkah 3: Review Pesanan',
+                    description: 'Periksa dan konfirmasi pesanan'
+                }
+            };
+
+            if (stepTitle && stepDescription && stepConfig[step]) {
+                stepTitle.textContent = stepConfig[step].title;
+                stepDescription.textContent = stepConfig[step].description;
+            }
+        }
+
+        function validateStep(step) {
+            if (step === 1) {
+                const pelangganId = document.getElementById('pelangganId').value;
+                if (!pelangganId) {
+                    showToast('Pilih pelanggan terlebih dahulu!', 'error');
+                    return false;
+                }
+                return true;
+            } else if (step === 2) {
+                // Check if cart has items
+                if (orderItems.length === 0) {
+                    showToast('Pilih minimal 1 produk terlebih dahulu!', 'error');
+                    return false;
+                }
+                return true;
+            }
+            return true;
+        }
+
         let productIndex = 0;
         let orderItems = [];
         let currentProduct = null;
@@ -2256,6 +2720,117 @@
 
         // Initialize product card states
         document.addEventListener('DOMContentLoaded', function() {
+            // Mobile Step Navigation Initialization
+            // Only show step navigation on mobile
+            if (window.innerWidth < 1024) {
+                showStep(1);
+            } else {
+                // Desktop: hide all mobile steps (they should use desktop version)
+                document.querySelectorAll('.mobile-step').forEach(el => {
+                    el.classList.add('hidden');
+                });
+            }
+
+            // Next to Step 2 button
+            const nextToStep2Btn = document.getElementById('nextToStep2');
+            if (nextToStep2Btn) {
+                nextToStep2Btn.addEventListener('click', function() {
+                    if (validateStep(1)) {
+                        showStep(2);
+                    }
+                });
+            }
+
+            // Back to Step 2 button (from Step 3)
+            const backToStep2Btn = document.getElementById('backToStep2');
+            if (backToStep2Btn) {
+                backToStep2Btn.addEventListener('click', function() {
+                    showStep(2);
+                });
+            }
+
+            // Proceed to Review button (from Step 2)
+            const proceedToReviewBtn = document.getElementById('proceedToReviewBtn');
+            if (proceedToReviewBtn) {
+                proceedToReviewBtn.addEventListener('click', function() {
+                    if (validateStep(2)) {
+                        showStep(3);
+                        // Update review with current cart
+                        updateOrderSummaryReview();
+                        calculateTotalsReview();
+                    }
+                });
+            }
+
+            // Sync customer between mobile and desktop
+            const pelangganIdInput = document.getElementById('pelangganId');
+            const customerDisplayInput = document.getElementById('customerDisplay');
+
+            if (pelangganIdInput && customerDisplayInput) {
+                // Sync when customer changes
+                const observer = new MutationObserver(function(mutations) {
+                    const pelangganIdDesktop = document.getElementById('pelangganIdDesktop');
+                    const customerDisplayDesktop = document.getElementById('customerDisplayDesktop');
+
+                    if (pelangganIdDesktop && customerDisplayDesktop) {
+                        pelangganIdDesktop.value = pelangganIdInput.value;
+                        customerDisplayDesktop.value = customerDisplayInput.value;
+                    }
+                });
+
+                observer.observe(pelangganIdInput, {
+                    attributes: true,
+                    attributeFilter: ['value']
+                });
+            }
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 1024) {
+                    // Desktop: hide all mobile steps
+                    document.querySelectorAll('.mobile-step').forEach(el => {
+                        el.classList.add('hidden');
+                    });
+                } else {
+                    // Mobile: show current step
+                    showStep(currentStep);
+                }
+            });
+
+            // Mobile preview button (sticky bottom)
+            const showOrderPreviewMobileBtn = document.getElementById('showOrderPreviewMobile');
+            if (showOrderPreviewMobileBtn) {
+                showOrderPreviewMobileBtn.addEventListener('click', function() {
+                    if (orderItems.length === 0) {
+                        showToast('Pilih produk terlebih dahulu', 'error');
+                        return;
+                    }
+                    const pelangganId = document.getElementById('pelangganId');
+                    if (!pelangganId || !pelangganId.value) {
+                        showToast('Pilih pelanggan terlebih dahulu', 'error');
+                        return;
+                    }
+                    showOrderPreview();
+                });
+            }
+
+            // Desktop preview button
+            const showOrderPreviewDesktopBtn = document.getElementById('showOrderPreviewDesktop');
+            if (showOrderPreviewDesktopBtn) {
+                showOrderPreviewDesktopBtn.addEventListener('click', function() {
+                    if (orderItems.length === 0) {
+                        showToast('Pilih produk terlebih dahulu', 'error');
+                        return;
+                    }
+                    const pelangganId = document.getElementById('pelangganId');
+                    if (!pelangganId || !pelangganId.value) {
+                        showToast('Pilih pelanggan terlebih dahulu', 'error');
+                        return;
+                    }
+                    showOrderPreview();
+                });
+            }
+
             updateProductCardStates();
 
             // Initialize Flatpickr for date input
@@ -2308,6 +2883,7 @@
         // Customer modal functionality
         const customerModal = document.getElementById('customerModal');
         const searchCustomerBtn = document.getElementById('searchCustomerBtn');
+        const searchCustomerBtnDesktop = document.getElementById('searchCustomerBtnDesktop');
         const closeCustomerModal = document.getElementById('closeCustomerModal');
         const customerSearch = document.getElementById('customerSearch');
         const customerDisplay = document.getElementById('customerDisplay');
@@ -2315,61 +2891,99 @@
         const clearCustomerBtn = document.getElementById('clearCustomerBtn');
 
         // Open customer modal
-        searchCustomerBtn.addEventListener('click', () => {
-            customerModal.classList.remove('hidden');
-            customerSearch.focus();
-        });
+        if (searchCustomerBtn && customerModal && customerSearch) {
+            searchCustomerBtn.addEventListener('click', () => {
+                customerModal.classList.remove('hidden');
+                customerSearch.focus();
+            });
+        }
+
+        // Open customer modal for desktop
+        if (searchCustomerBtnDesktop && customerModal && customerSearch) {
+            searchCustomerBtnDesktop.addEventListener('click', () => {
+                customerModal.classList.remove('hidden');
+                customerSearch.focus();
+            });
+        }
 
         // Close customer modal
-        closeCustomerModal.addEventListener('click', () => {
-            customerModal.classList.add('hidden');
-        });
+        if (closeCustomerModal && customerModal) {
+            closeCustomerModal.addEventListener('click', () => {
+                customerModal.classList.add('hidden');
+            });
+        }
 
         // Clear customer selection
-        clearCustomerBtn.addEventListener('click', () => {
-            pelangganId.value = '';
-            customerDisplay.value = '';
-            clearCustomerBtn.classList.add('hidden');
+        if (clearCustomerBtn) {
+            clearCustomerBtn.addEventListener('click', () => {
+                if (pelangganId) pelangganId.value = '';
+                if (customerDisplay) customerDisplay.value = '';
+                clearCustomerBtn.classList.add('hidden');
 
-            // Remove selection styling from all customer items
-            document.querySelectorAll('.customer-item').forEach(item => {
-                item.classList.remove('bg-blue-100', 'border-blue-500');
+                // Remove selection styling from all customer items
+                document.querySelectorAll('.customer-item').forEach(item => {
+                    item.classList.remove('bg-blue-100', 'border-blue-500');
+                });
+
+                showToast('Pilihan pelanggan dibersihkan', 'info');
             });
+        }
 
-            showToast('Pilihan pelanggan dibersihkan', 'info');
-        });
+        // Clear customer selection for desktop
+        const clearCustomerBtnDesktop = document.getElementById('clearCustomerBtnDesktop');
+        const pelangganIdDesktop = document.getElementById('pelangganIdDesktop');
+        const customerDisplayDesktop = document.getElementById('customerDisplayDesktop');
+        if (clearCustomerBtnDesktop) {
+            clearCustomerBtnDesktop.addEventListener('click', () => {
+                if (pelangganIdDesktop) pelangganIdDesktop.value = '';
+                if (customerDisplayDesktop) customerDisplayDesktop.value = '';
+                clearCustomerBtnDesktop.classList.add('hidden');
+
+                // Remove selection styling from all customer items
+                document.querySelectorAll('.customer-item').forEach(item => {
+                    item.classList.remove('bg-blue-100', 'border-blue-500');
+                });
+
+                showToast('Pilihan pelanggan dibersihkan', 'info');
+            });
+        }
 
         // Close modal when clicking outside
-        customerModal.addEventListener('click', (e) => {
-            if (e.target === customerModal) {
-                customerModal.classList.add('hidden');
-            }
-        });
-
-        // Close modal with ESC key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && !customerModal.classList.contains('hidden')) {
-                customerModal.classList.add('hidden');
-            }
-        });
-
-        // Customer search functionality
-        customerSearch.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const customerItems = document.querySelectorAll('.customer-item');
-
-            customerItems.forEach(item => {
-                const name = item.dataset.name.toLowerCase();
-                const code = item.dataset.code.toLowerCase();
-                const phone = item.dataset.phone.toLowerCase();
-
-                if (name.includes(searchTerm) || code.includes(searchTerm) || phone.includes(searchTerm)) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
+        if (customerModal) {
+            customerModal.addEventListener('click', (e) => {
+                if (e.target === customerModal) {
+                    customerModal.classList.add('hidden');
                 }
             });
-        });
+
+            // Close modal with ESC key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !customerModal.classList.contains('hidden')) {
+                    customerModal.classList.add('hidden');
+                }
+            });
+        }
+
+        // Customer search functionality
+        if (customerSearch) {
+            customerSearch.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const customerItems = document.querySelectorAll('.customer-item');
+
+                customerItems.forEach(item => {
+                    const name = item.dataset.name?.toLowerCase() || '';
+                    const code = item.dataset.code?.toLowerCase() || '';
+                    const phone = item.dataset.phone?.toLowerCase() || '';
+
+                    if (name.includes(searchTerm) || code.includes(searchTerm) || phone.includes(
+                            searchTerm)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        }
 
         // Customer selection
         document.querySelectorAll('.customer-item').forEach(item => {
@@ -2379,14 +2993,14 @@
                 const customerCode = item.dataset.code;
 
                 // Update form fields
-                pelangganId.value = customerId;
-                customerDisplay.value = `${customerName} (${customerCode})`;
+                if (pelangganId) pelangganId.value = customerId;
+                if (customerDisplay) customerDisplay.value = `${customerName} (${customerCode})`;
 
                 // Show clear button
-                clearCustomerBtn.classList.remove('hidden');
+                if (clearCustomerBtn) clearCustomerBtn.classList.remove('hidden');
 
                 // Close modal
-                customerModal.classList.add('hidden');
+                if (customerModal) customerModal.classList.add('hidden');
 
                 // Show success message
                 showToast(`Pelanggan ${customerName} dipilih`, 'success');
@@ -2405,7 +3019,7 @@
         @if (old('pelanggan_id'))
             const initialCustomerId = '{{ old('pelanggan_id') }}';
             const initialCustomerItem = document.querySelector(`[data-id="${initialCustomerId}"]`);
-            if (initialCustomerItem) {
+            if (initialCustomerItem && customerDisplay && clearCustomerBtn) {
                 const customerName = initialCustomerItem.dataset.name;
                 const customerCode = initialCustomerItem.dataset.code;
                 customerDisplay.value = `${customerName} (${customerCode})`;
@@ -3100,14 +3714,14 @@
                         </div>
 
                         ${discount > 0 ? `
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span class="text-orange-600 flex items-center">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            Potongan Harga
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Potongan Harga
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ` : ''}
 
                         <!-- Total Line -->
                         <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -3173,14 +3787,14 @@
                 </div>
 
                 ${discount > 0 ? `
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <span class="text-orange-600 flex items-center">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    Potongan Harga
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Potongan Harga
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ` : ''}
 
                 <!-- Total Line -->
                 <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -3282,13 +3896,98 @@
             // Update product card states based on order items
             updateProductCardStates();
 
-            const discount = parseFormattedNumber(document.getElementById('diskonDisplay').value);
+            const discount = parseFormattedNumber(document.getElementById('diskonDisplay')?.value || 0);
             const total = subtotal - discount;
 
-            document.getElementById('orderCount').textContent = `${orderItems.length} item`;
-            document.getElementById('subtotalDisplay').textContent = `Rp ${formatNumber(subtotal)}`;
-            document.getElementById('discountDisplay').textContent = `Rp ${formatNumber(discount)}`;
-            document.getElementById('totalDisplay').textContent = `Rp ${formatNumber(total)}`;
+            // Update desktop displays
+            const orderCountEl = document.getElementById('orderCountDesktop');
+            if (orderCountEl) orderCountEl.textContent = `${orderItems.length} item`;
+
+            const subtotalDisplayDesktop = document.getElementById('subtotalDisplayDesktop');
+            if (subtotalDisplayDesktop) subtotalDisplayDesktop.textContent = `Rp ${formatNumber(subtotal)}`;
+
+            const discountDisplayDesktop = document.getElementById('discountDisplayDesktop');
+            if (discountDisplayDesktop) discountDisplayDesktop.textContent = `Rp ${formatNumber(discount)}`;
+
+            const totalDisplayDesktop = document.getElementById('totalDisplayDesktop');
+            if (totalDisplayDesktop) totalDisplayDesktop.textContent = `Rp ${formatNumber(total)}`;
+
+            // Update mobile displays
+            const subtotalDisplayMobile = document.getElementById('subtotalDisplayMobile');
+            if (subtotalDisplayMobile) subtotalDisplayMobile.textContent = `Rp ${formatNumber(subtotal)}`;
+
+            const discountDisplayMobile = document.getElementById('discountDisplayMobile');
+            if (discountDisplayMobile) discountDisplayMobile.textContent = `Rp ${formatNumber(discount)}`;
+
+            const totalDisplayMobile = document.getElementById('totalDisplayMobile');
+            if (totalDisplayMobile) totalDisplayMobile.textContent = `Rp ${formatNumber(total)}`;
+
+            // Update cart item count for proceed button
+            const cartItemCount = document.getElementById('cartItemCount');
+            if (cartItemCount) {
+                cartItemCount.textContent = `${orderItems.length} item`;
+            }
+
+            // Show/hide proceed to review button based on cart items
+            const proceedToReviewBtnContainer = document.getElementById('proceedToReviewBtnContainer');
+            if (proceedToReviewBtnContainer) {
+                if (orderItems.length > 0) {
+                    proceedToReviewBtnContainer.classList.remove('hidden');
+                } else {
+                    proceedToReviewBtnContainer.classList.add('hidden');
+                }
+            }
+        }
+
+        function updateOrderSummaryReview() {
+            // Calculate subtotal with individual item discounts
+            const subtotal = orderItems.reduce((total, item) => {
+                const itemSubtotal = item.price * item.qty;
+                const itemDiscount = item.discount || 0;
+                return total + (itemSubtotal - itemDiscount);
+            }, 0);
+
+            const discount = parseFormattedNumber(document.getElementById('diskonDisplayReview')?.value || 0);
+            const total = subtotal - discount;
+
+            // Update review displays
+            const subtotalReviewDisplay = document.getElementById('subtotalReviewDisplay');
+            if (subtotalReviewDisplay) subtotalReviewDisplay.textContent = `Rp ${formatNumber(subtotal)}`;
+
+            const discountReviewDisplay = document.getElementById('discountReviewDisplay');
+            if (discountReviewDisplay) discountReviewDisplay.textContent = `Rp ${formatNumber(discount)}`;
+
+            const totalReviewDisplay = document.getElementById('totalReviewDisplay');
+            if (totalReviewDisplay) totalReviewDisplay.textContent = `Rp ${formatNumber(total)}`;
+
+            // Update order items in review
+            const orderItemsReview = document.getElementById('orderItemsReview');
+            const emptyStateReview = document.getElementById('emptyStateReview');
+
+            if (orderItems.length === 0) {
+                if (orderItemsReview) orderItemsReview.innerHTML = '';
+                if (emptyStateReview) emptyStateReview.classList.remove('hidden');
+            } else {
+                if (emptyStateReview) emptyStateReview.classList.add('hidden');
+                if (orderItemsReview) {
+                    orderItemsReview.innerHTML = orderItems.map((item, index) => `
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-sm text-gray-900">${item.name}</h4>
+                                <p class="text-xs text-gray-500">${item.qty} ${item.unit} x Rp ${formatNumber(item.price)}</p>
+                                ${item.discount > 0 ? `<p class="text-xs text-red-600">Diskon: Rp ${formatNumber(item.discount)}</p>` : ''}
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold text-gray-900">Rp ${formatNumber((item.price * item.qty) - (item.discount || 0))}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+
+        function calculateTotalsReview() {
+            updateOrderSummaryReview();
         }
 
 
@@ -3571,40 +4270,82 @@
 
         // Show order preview
         function showOrderPreview() {
+            // Validate order items first
+            if (!orderItems || orderItems.length === 0) {
+                showToast('Pilih produk terlebih dahulu', 'error');
+                return;
+            }
+
+            // Validate customer selection
+            const pelangganIdInput = document.getElementById('pelangganId');
+            if (!pelangganIdInput || !pelangganIdInput.value) {
+                showToast('Pilih pelanggan terlebih dahulu', 'error');
+                return;
+            }
+
             // Get customer info
-            const customerName = document.getElementById('customerDisplay').value || 'Belum dipilih';
+            const customerName = document.getElementById('customerDisplay')?.value || 'Belum dipilih';
             const selectedCustomer = document.querySelector('.customer-item.bg-blue-100');
 
-            document.getElementById('previewCustomerName').textContent = customerName;
-            document.getElementById('previewCustomerCode').textContent = selectedCustomer ?
+            const previewCustomerName = document.getElementById('previewCustomerName');
+            const previewCustomerCode = document.getElementById('previewCustomerCode');
+            if (previewCustomerName) previewCustomerName.textContent = customerName;
+            if (previewCustomerCode) previewCustomerCode.textContent = selectedCustomer ?
                 selectedCustomer.dataset.code : '-';
 
             // Get transaction info
-            document.getElementById('previewInvoiceNumber').textContent =
-                document.querySelector('input[name="no_faktur"]').value;
-            document.getElementById('previewDate').textContent =
-                new Date(document.querySelector('input[name="tanggal"]').value).toLocaleDateString('id-ID');
+            const previewInvoiceNumber = document.getElementById('previewInvoiceNumber');
+            const previewDate = document.getElementById('previewDate');
+            const previewTransactionType = document.getElementById('previewTransactionType');
 
-            const jenisTransaksi = document.getElementById('jenisTransaksi').value;
-            document.getElementById('previewTransactionType').textContent =
-                jenisTransaksi === 'kredit' ? 'Kredit' : 'Tunai';
+            if (previewInvoiceNumber) {
+                previewInvoiceNumber.textContent = document.querySelector('input[name="no_faktur"]')?.value || '-';
+            }
+            if (previewDate) {
+                const tanggalInput = document.querySelector('input[name="tanggal"]');
+                if (tanggalInput?.value) {
+                    previewDate.textContent = new Date(tanggalInput.value).toLocaleDateString('id-ID');
+                } else {
+                    previewDate.textContent = '-';
+                }
+            }
+
+            const jenisTransaksi = document.getElementById('jenisTransaksi')?.value || 'tunai';
+            if (previewTransactionType) {
+                previewTransactionType.textContent = jenisTransaksi === 'kredit' ? 'Kredit' : 'Tunai';
+            }
 
             // Initialize modal form with current values (no auto-select for transaction type)
             // User must choose transaction type manually
-            updatePreviewTransactionTypeCards();
+            if (typeof updatePreviewTransactionTypeCards === 'function') {
+                updatePreviewTransactionTypeCards();
+            }
 
             // Set DP amount based on transaction type (will be updated when user selects transaction type)
-            document.getElementById('previewDpAmount').value = '0';
-            document.getElementById('previewDpAmount').readOnly = false;
-            document.getElementById('paymentAmountLabel').textContent = 'Jumlah Pembayaran';
-            document.getElementById('previewDpAmount').placeholder = 'Jumlah (Rp)';
+            const previewDpAmount = document.getElementById('previewDpAmount');
+            if (previewDpAmount) {
+                previewDpAmount.value = '0';
+                previewDpAmount.readOnly = false;
+                previewDpAmount.placeholder = 'Jumlah DP (Rp)';
+            }
+
+            const previewDpLabel = document.getElementById('previewDpLabel');
+            if (previewDpLabel) {
+                previewDpLabel.textContent = 'Jumlah Down Payment (DP)';
+            }
 
             // Show/hide DP container based on transaction type (will be updated when user selects transaction type)
             const previewDpContainer = document.getElementById('previewDpContainer');
-            previewDpContainer.classList.add('hidden'); // Hide initially until user selects transaction type
+            if (previewDpContainer) {
+                previewDpContainer.classList.add('hidden'); // Hide initially until user selects transaction type
+            }
 
             // Populate order items
             const previewOrderItems = document.getElementById('previewOrderItems');
+            if (!previewOrderItems) {
+                console.error('previewOrderItems element not found');
+                return;
+            }
             previewOrderItems.innerHTML = '';
 
             orderItems.forEach(item => {
@@ -3630,11 +4371,11 @@
                                 <span>Rp ${formatNumber(subtotal)}</span>
                             </div>
                             ${discount > 0 ? `
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="flex justify-between text-xs">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span class="text-orange-600">Potongan</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <div class="flex justify-between text-xs">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="text-orange-600">Potongan</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ` : ''}
                             <div class="flex justify-between text-sm font-medium">
                                 <span>Total</span>
                                 <span class="text-blue-600">Rp ${formatNumber(total)}</span>
@@ -3651,36 +4392,55 @@
                 const itemDiscount = item.discount || 0;
                 return total + (itemSubtotal - itemDiscount);
             }, 0);
-            const discount = parseFormattedNumber(document.getElementById('diskonDisplay').value);
+            const diskonDisplay = document.getElementById('diskonDisplay');
+            const discount = diskonDisplay ? parseFormattedNumber(diskonDisplay.value) : 0;
             const total = subtotalItems - discount;
 
             // Update summary
-            document.getElementById('previewSubtotal').textContent = `Rp ${formatNumber(subtotalItems)}`;
-
-            const previewDiscountRow = document.getElementById('previewDiscountRow');
-            if (discount > 0) {
-                previewDiscountRow.style.display = 'flex';
-                document.getElementById('previewDiscount').textContent = `Rp ${formatNumber(discount)}`;
-            } else {
-                previewDiscountRow.style.display = 'none';
+            const previewSubtotal = document.getElementById('previewSubtotal');
+            if (previewSubtotal) {
+                previewSubtotal.textContent = `Rp ${formatNumber(subtotalItems)}`;
             }
 
-            document.getElementById('previewTotal').textContent = `Rp ${formatNumber(total)}`;
+            const previewDiscountRow = document.getElementById('previewDiscountRow');
+            if (previewDiscountRow) {
+                if (discount > 0) {
+                    previewDiscountRow.style.display = 'flex';
+                    const previewDiscount = document.getElementById('previewDiscount');
+                    if (previewDiscount) {
+                        previewDiscount.textContent = `Rp ${formatNumber(discount)}`;
+                    }
+                } else {
+                    previewDiscountRow.style.display = 'none';
+                }
+            }
+
+            const previewTotal = document.getElementById('previewTotal');
+            if (previewTotal) {
+                previewTotal.textContent = `Rp ${formatNumber(total)}`;
+            }
 
             // Show payment breakdown for both tunai and kredit
             const previewPaymentBreakdown = document.getElementById('previewPaymentBreakdown');
-            updatePaymentCalculation(); // This will handle uang muka calculation for both types
+            if (typeof updatePaymentCalculation === 'function') {
+                updatePaymentCalculation(); // This will handle uang muka calculation for both types
+            }
 
             // Load uang muka jika pelanggan sudah dipilih
             // Selalu reset dan load ulang untuk memastikan data sesuai pelanggan yang dipilih
-            const pelangganId = document.getElementById('pelangganId').value;
+            // pelangganIdInput already declared above in validation
+            const pelangganId = pelangganIdInput ? pelangganIdInput.value : '';
             const uangMukaContainer = document.getElementById('previewUangMukaContainer');
             const uangMukaList = document.getElementById('uangMukaList');
-            
+
             // Reset container dan list sebelum load ulang
-            uangMukaContainer.classList.add('hidden');
-            uangMukaList.innerHTML = '';
-            
+            if (uangMukaContainer) {
+                uangMukaContainer.classList.add('hidden');
+            }
+            if (uangMukaList) {
+                uangMukaList.innerHTML = '';
+            }
+
             if (pelangganId) {
                 // Load uang muka untuk pelanggan yang dipilih
                 loadUangMukaPelanggan(pelangganId);
@@ -3698,7 +4458,11 @@
             }
 
             // Show modal
-            orderPreviewModal.classList.remove('hidden');
+            if (orderPreviewModal) {
+                orderPreviewModal.classList.remove('hidden');
+            } else {
+                console.error('orderPreviewModal element not found');
+            }
 
             // Initialize kas/bank logos
             const selectedKasBank = document.querySelector('.preview-kas-bank-radio:checked');
@@ -3784,7 +4548,7 @@
         // Handle transaction type change in modal
         function handleTransactionTypeChange() {
             const selectedTransactionType = document.querySelector('.preview-transaction-type-radio:checked').value;
-            
+
             // Selalu load uang muka jika ada pelanggan (tidak peduli jenis transaksi)
             const pelangganId = document.getElementById('pelangganId').value;
             if (pelangganId) {
@@ -3804,8 +4568,13 @@
                 previewDpAmount.focus();
 
                 // Update labels for kredit
-                document.getElementById('paymentAmountLabel').textContent = 'Jumlah Down Payment (DP)';
-                document.getElementById('previewDpAmount').placeholder = 'Jumlah DP (Rp)';
+                const previewDpLabel = document.getElementById('previewDpLabel');
+                if (previewDpLabel) {
+                    previewDpLabel.textContent = 'Jumlah Down Payment (DP)';
+                }
+                if (previewDpAmount) {
+                    previewDpAmount.placeholder = 'Jumlah DP (Rp)';
+                }
 
                 // Update calculation
                 updatePaymentCalculation();
@@ -3827,8 +4596,13 @@
                 previewDpAmount.readOnly = false;
 
                 // Update labels for tunai
-                document.getElementById('paymentAmountLabel').textContent = 'Jumlah Pembayaran (Sisa setelah uang muka)';
-                document.getElementById('previewDpAmount').placeholder = 'Jumlah (Rp)';
+                const previewDpLabel = document.getElementById('previewDpLabel');
+                if (previewDpLabel) {
+                    previewDpLabel.textContent = 'Jumlah Pembayaran (Sisa setelah uang muka)';
+                }
+                if (previewDpAmount) {
+                    previewDpAmount.placeholder = 'Jumlah (Rp)';
+                }
 
                 // Auto-update payment amount after uang muka
                 setTimeout(() => {
@@ -3854,7 +4628,7 @@
             const container = document.getElementById('uangMukaList');
             const emptyMessage = document.getElementById('uangMukaEmptyMessage');
             const uangMukaContainer = document.getElementById('previewUangMukaContainer');
-            
+
             // Clear previous data
             // Jangan hapus emptyMessage saat clear, hanya hapus content yang dinamis
             if (container) {
@@ -3869,13 +4643,14 @@
             if (emptyMessage && emptyMessage.parentNode) {
                 emptyMessage.style.display = 'block';
             }
-            
+
             fetch(`/uang-muka-pelanggan/get-available?pelanggan_id=${pelangganId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (!data.success || data.data.length === 0) {
                         if (container) {
-                            container.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">Tidak ada uang muka yang tersedia untuk pelanggan ini</p>';
+                            container.innerHTML =
+                                '<p class="text-sm text-gray-500 text-center py-4">Tidak ada uang muka yang tersedia untuk pelanggan ini</p>';
                         }
                         if (uangMukaContainer) {
                             uangMukaContainer.classList.add('hidden');
@@ -3919,7 +4694,8 @@
                         // Setup checkbox handlers
                         container.querySelectorAll('.uang-muka-checkbox').forEach(checkbox => {
                             checkbox.addEventListener('change', function() {
-                                const amountInput = container.querySelector(`.uang-muka-amount[data-id="${this.dataset.id}"]`);
+                                const amountInput = container.querySelector(
+                                    `.uang-muka-amount[data-id="${this.dataset.id}"]`);
                                 if (this.checked) {
                                     amountInput.disabled = false;
                                     amountInput.focus();
@@ -3934,7 +4710,8 @@
                         // Setup amount input handlers
                         container.querySelectorAll('.uang-muka-amount').forEach(input => {
                             input.addEventListener('input', function() {
-                                const selectedTransactionType = document.querySelector('.preview-transaction-type-radio:checked')?.value;
+                                const selectedTransactionType = document.querySelector(
+                                    '.preview-transaction-type-radio:checked')?.value;
                                 if (selectedTransactionType === 'tunai') {
                                     updatePaymentCalculationForTunai();
                                 } else {
@@ -3946,7 +4723,8 @@
                         // Setup checkbox handlers untuk auto-fill tunai
                         container.querySelectorAll('.uang-muka-checkbox').forEach(checkbox => {
                             checkbox.addEventListener('change', function() {
-                                const selectedTransactionType = document.querySelector('.preview-transaction-type-radio:checked')?.value;
+                                const selectedTransactionType = document.querySelector(
+                                    '.preview-transaction-type-radio:checked')?.value;
                                 if (selectedTransactionType === 'tunai' && this.checked) {
                                     setTimeout(() => {
                                         updatePaymentCalculationForTunai();
@@ -3987,14 +4765,15 @@
         // Function to update payment calculation including uang muka
         function updatePaymentCalculation() {
             const selectedTransactionType = document.querySelector('.preview-transaction-type-radio:checked')?.value;
-            const total = parseFormattedNumber(document.getElementById('previewTotal').textContent.replace('Rp ', '').replace(/\./g, ''));
+            const total = parseFormattedNumber(document.getElementById('previewTotal').textContent.replace('Rp ', '')
+                .replace(/\./g, ''));
             const uangMukaUsed = getTotalUangMukaUsed();
             const dpAmount = parseFormattedNumber(previewDpAmount.value);
-            
+
             if (selectedTransactionType === 'tunai') {
                 // Untuk tunai: sisa bayar = total - uang muka
                 const sisaBayar = Math.max(0, total - uangMukaUsed);
-                
+
                 // Auto-fill DP amount dengan sisa bayar
                 if (uangMukaUsed > 0) {
                     previewDpAmount.value = formatNumberInput(sisaBayar.toString());
@@ -4010,8 +4789,14 @@
                     document.getElementById('previewUangMukaRow').style.display = 'none';
                 }
 
-                document.getElementById('previewDP').textContent = `Rp ${formatNumber(parseFormattedNumber(previewDpAmount.value))}`;
-                document.getElementById('previewRemaining').textContent = 'Rp 0'; // Tunai selalu lunas
+                const previewDpDisplay = document.getElementById('previewDpDisplay');
+                const previewRemainingDisplay = document.getElementById('previewRemainingDisplay');
+                if (previewDpDisplay) {
+                    previewDpDisplay.textContent = `Rp ${formatNumber(parseFormattedNumber(previewDpAmount.value))}`;
+                }
+                if (previewRemainingDisplay) {
+                    previewRemainingDisplay.textContent = 'Rp 0'; // Tunai selalu lunas
+                }
 
                 document.getElementById('previewPaymentBreakdown').classList.remove('hidden');
             } else {
@@ -4027,8 +4812,14 @@
                     document.getElementById('previewUangMukaRow').style.display = 'none';
                 }
 
-                document.getElementById('previewDP').textContent = `Rp ${formatNumber(dpAmount)}`;
-                document.getElementById('previewRemaining').textContent = `Rp ${formatNumber(remaining)}`;
+                const previewDpDisplay = document.getElementById('previewDpDisplay');
+                const previewRemainingDisplay = document.getElementById('previewRemainingDisplay');
+                if (previewDpDisplay) {
+                    previewDpDisplay.textContent = `Rp ${formatNumber(dpAmount)}`;
+                }
+                if (previewRemainingDisplay) {
+                    previewRemainingDisplay.textContent = `Rp ${formatNumber(remaining)}`;
+                }
 
                 if (totalPembayaran > 0 || dpAmount > 0) {
                     document.getElementById('previewPaymentBreakdown').classList.remove('hidden');
@@ -4040,10 +4831,11 @@
 
         // Function untuk update payment calculation khusus tunai
         function updatePaymentCalculationForTunai() {
-            const total = parseFormattedNumber(document.getElementById('previewTotal').textContent.replace('Rp ', '').replace(/\./g, ''));
+            const total = parseFormattedNumber(document.getElementById('previewTotal').textContent.replace('Rp ', '')
+                .replace(/\./g, ''));
             const uangMukaUsed = getTotalUangMukaUsed();
             const sisaBayar = Math.max(0, total - uangMukaUsed);
-            
+
             // Auto-fill dengan sisa bayar
             previewDpAmount.value = formatNumberInput(sisaBayar.toString());
             updatePaymentCalculation();
@@ -5117,20 +5909,23 @@
                 }, 0);
                 const discount = parseFormattedNumber(document.getElementById('diskonDisplay').value);
                 const totalPenjualan = subtotal - discount;
-                
+
                 let totalUangMukaUsed = 0;
-                
+
                 // Validate each uang muka
                 for (const checkbox of checkedUangMuka) {
-                    const amountInput = document.querySelector(`.uang-muka-amount[data-id="${checkbox.dataset.id}"]`);
+                    const amountInput = document.querySelector(
+                        `.uang-muka-amount[data-id="${checkbox.dataset.id}"]`);
                     if (amountInput && amountInput.value) {
                         const jumlahDigunakan = parseFormattedNumber(amountInput.value);
                         const sisaUangMuka = parseFloat(checkbox.dataset.sisa);
                         const maxUangMuka = parseFloat(checkbox.dataset.max);
-                        
+
                         // Validasi: jumlah digunakan tidak boleh lebih dari sisa uang muka
                         if (jumlahDigunakan > sisaUangMuka) {
-                            showToast(`Jumlah uang muka yang digunakan (Rp ${formatNumber(jumlahDigunakan)}) melebihi sisa uang muka yang tersedia (Rp ${formatNumber(sisaUangMuka)})`, 'error');
+                            showToast(
+                                `Jumlah uang muka yang digunakan (Rp ${formatNumber(jumlahDigunakan)}) melebihi sisa uang muka yang tersedia (Rp ${formatNumber(sisaUangMuka)})`,
+                                'error');
                             // Highlight input yang error
                             amountInput.classList.add('border-red-500', 'ring-2', 'ring-red-300');
                             setTimeout(() => {
@@ -5138,17 +5933,19 @@
                             }, 3000);
                             return;
                         }
-                        
+
                         // Validasi: jumlah digunakan tidak boleh lebih dari max uang muka
                         if (jumlahDigunakan > maxUangMuka) {
-                            showToast(`Jumlah uang muka yang digunakan (Rp ${formatNumber(jumlahDigunakan)}) melebihi sisa uang muka maksimal (Rp ${formatNumber(maxUangMuka)})`, 'error');
+                            showToast(
+                                `Jumlah uang muka yang digunakan (Rp ${formatNumber(jumlahDigunakan)}) melebihi sisa uang muka maksimal (Rp ${formatNumber(maxUangMuka)})`,
+                                'error');
                             amountInput.classList.add('border-red-500', 'ring-2', 'ring-red-300');
                             setTimeout(() => {
                                 amountInput.classList.remove('border-red-500', 'ring-2', 'ring-red-300');
                             }, 3000);
                             return;
                         }
-                        
+
                         // Validasi: jumlah digunakan harus lebih dari 0
                         if (jumlahDigunakan <= 0) {
                             showToast('Jumlah uang muka yang digunakan harus lebih dari 0', 'error');
@@ -5158,21 +5955,25 @@
                             }, 3000);
                             return;
                         }
-                        
+
                         totalUangMukaUsed += jumlahDigunakan;
                     }
                 }
-                
+
                 // Validasi: total uang muka tidak boleh lebih dari total penjualan
                 if (totalUangMukaUsed > totalPenjualan) {
-                    showToast(`Total uang muka yang digunakan (Rp ${formatNumber(totalUangMukaUsed)}) melebihi total penjualan (Rp ${formatNumber(totalPenjualan)})`, 'error');
+                    showToast(
+                        `Total uang muka yang digunakan (Rp ${formatNumber(totalUangMukaUsed)}) melebihi total penjualan (Rp ${formatNumber(totalPenjualan)})`,
+                        'error');
                     // Highlight semua input uang muka
                     checkedUangMuka.forEach(checkbox => {
-                        const amountInput = document.querySelector(`.uang-muka-amount[data-id="${checkbox.dataset.id}"]`);
+                        const amountInput = document.querySelector(
+                            `.uang-muka-amount[data-id="${checkbox.dataset.id}"]`);
                         if (amountInput) {
                             amountInput.classList.add('border-red-500', 'ring-2', 'ring-red-300');
                             setTimeout(() => {
-                                amountInput.classList.remove('border-red-500', 'ring-2', 'ring-red-300');
+                                amountInput.classList.remove('border-red-500', 'ring-2',
+                                    'ring-red-300');
                             }, 3000);
                         }
                     });
@@ -5314,7 +6115,8 @@
             // Add uang muka data to form
             let uangMukaIndex = 0;
             document.querySelectorAll('.uang-muka-checkbox:checked').forEach(checkbox => {
-                const amountInput = document.querySelector(`.uang-muka-amount[data-id="${checkbox.dataset.id}"]`);
+                const amountInput = document.querySelector(
+                    `.uang-muka-amount[data-id="${checkbox.dataset.id}"]`);
                 if (amountInput && amountInput.value) {
                     const amount = parseFormattedNumber(amountInput.value);
                     const maxAmount = parseFloat(checkbox.dataset.max);
@@ -5480,11 +6282,11 @@
 
         // Check for session error/success messages and display toast
         document.addEventListener('DOMContentLoaded', function() {
-            @if(session('error'))
+            @if (session('error'))
                 showToast('{{ session('error') }}', 'error');
             @endif
 
-            @if(session('success'))
+            @if (session('success'))
                 showToast('{{ session('success') }}', 'success');
             @endif
         });
