@@ -170,6 +170,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/{encryptedId}', [PembelianController::class, 'update'])->name('update');
         Route::delete('/{encryptedId}', [PembelianController::class, 'destroy'])->name('destroy');
         Route::post('/{encryptedId}/export-pdf', [PembelianController::class, 'exportPdf'])->name('export-pdf');
+        Route::get('/{encryptedId}/cetak-rawbt', [PembelianController::class, 'cetakRawBT'])->name('cetak-rawbt');
     });
     Route::get('pembelian/search', [PembelianController::class, 'getPembelian'])->name('pembelian.search');
 

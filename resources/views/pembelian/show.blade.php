@@ -691,6 +691,15 @@
                                 </div>
                             </button>
 
+                            <!-- RAW BT Print Button (Mobile) -->
+                            <a href="{{ route('pembelian.cetak-rawbt', $pembelian->encrypted_id) }}" target="_blank"
+                                class="w-full md:hidden flex items-center justify-center px-3 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-sm hover:shadow-md text-sm">
+                                <div class="w-4 h-4 bg-white/20 rounded flex items-center justify-center mr-2">
+                                    <i class="ti ti-bluetooth text-xs"></i>
+                                </div>
+                                <span>Cetak RAW BT</span>
+                            </a>
+
                             <!-- Browser Print Button -->
                             <button onclick="printInvoiceRaw()"
                                 class="hidden w-full px-3 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 shadow-sm hover:shadow-md text-sm">
@@ -2539,5 +2548,490 @@
             // Initialize kas/bank filter
             filterKasBankByPaymentMethod();
         });
+
+        // RAW BT Printing Function
+        let bluetoothDevice = null;
+        let bluetoothCharacteristic = null;
+
+        async function printInvoiceRAWBT(event) {
+            // Prevent default if event exists
+            if (event && event.preventDefault) {
+                event.preventDefault();
+            }
+
+            // Get button element - try multiple ways
+            let button = null;
+            if (event && event.target) {
+                button = event.target.closest('button');
+            }
+            if (!button) {
+                // Fallback: find button by onclick handler or by ID
+                const buttons = document.querySelectorAll('button[onclick*="printInvoiceRAWBT"]');
+                button = buttons.length > 0 ? buttons[0] : document.querySelector('#rawBtButtonText')?.closest(
+                    'button');
+            }
+
+            const buttonText = document.getElementById('rawBtButtonText');
+
+            // Disable button and show loading
+            if (button) {
+                button.disabled = true;
+                button.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+            if (buttonText) {
+                buttonText.innerHTML = '<i class="ti ti-loader animate-spin mr-2"></i>Mencetak...';
+            }
+
+            try {
+                // Generate ESC/POS commands first
+                const escPosData = generateESCPOSCommands();
+
+                // Try multiple methods: Web Bluetooth, Web Serial, or Intent URL
+                let printSuccess = false;
+
+                // Method 1: Try Web Bluetooth API (if available)
+                if (navigator.bluetooth) {
+                    try {
+                        let deviceConnected = false;
+                        if (bluetoothDevice) {
+                            try {
+                                deviceConnected = bluetoothDevice.gatt && bluetoothDevice.gatt.connected;
+                            } catch (e) {
+                                deviceConnected = false;
+                                bluetoothDevice = null;
+                                bluetoothCharacteristic = null;
+                            }
+                        }
+
+                        if (!deviceConnected) {
+                            bluetoothDevice = await connectBluetoothPrinter();
+                        }
+
+                        await sendDataToPrinter(escPosData);
+                        printSuccess = true;
+                    } catch (btError) {
+                        console.log('Web Bluetooth failed, trying alternative methods:', btError);
+                    }
+                }
+
+                // Method 2: Try Web Serial API (more compatible)
+                if (!printSuccess && navigator.serial) {
+                    try {
+                        await printViaWebSerial(escPosData);
+                        printSuccess = true;
+                    } catch (serialError) {
+                        console.log('Web Serial failed, trying Intent URL:', serialError);
+                    }
+                }
+
+                // Method 3: Use Intent URL for Android (most compatible) or download file
+                if (!printSuccess) {
+                    try {
+                        await printViaIntentURL(escPosData);
+                        printSuccess = true;
+                    } catch (intentError) {
+                        // If all methods fail, throw error
+                        throw new Error(
+                            'Tidak ada metode printing yang tersedia. Pastikan browser mendukung Web Bluetooth, Web Serial, atau gunakan aplikasi printer Bluetooth.'
+                        );
+                    }
+                }
+
+                // Show success message
+                if (printSuccess) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Invoice berhasil dikirim ke printer',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        alert('Invoice berhasil dikirim ke printer');
+                    }
+                }
+
+            } catch (error) {
+                console.error('RAW BT Print Error:', error);
+
+                // Show user-friendly error message
+                let errorMessage = 'Terjadi kesalahan saat mencetak ke printer Bluetooth';
+
+                if (error.message) {
+                    errorMessage = error.message;
+                } else if (error.name) {
+                    switch (error.name) {
+                        case 'NotFoundError':
+                            errorMessage =
+                                'Printer Bluetooth tidak ditemukan. Pastikan printer sudah dipasangkan dan dalam jangkauan.';
+                            break;
+                        case 'SecurityError':
+                            errorMessage = 'Akses Bluetooth ditolak. Izinkan akses Bluetooth di pengaturan browser.';
+                            break;
+                        case 'NetworkError':
+                            errorMessage =
+                                'Gagal terhubung ke printer. Pastikan printer dalam jangkauan dan sudah dipasangkan.';
+                            break;
+                        default:
+                            errorMessage = error.name + ': ' + (error.message || 'Error tidak diketahui');
+                    }
+                }
+
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal Mencetak',
+                        text: errorMessage,
+                        confirmButtonText: 'OK'
+                    });
+                } else {
+                    alert('Gagal Mencetak: ' + errorMessage);
+                }
+            } finally {
+                // Re-enable button
+                if (button) {
+                    button.disabled = false;
+                    button.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+                if (buttonText) {
+                    buttonText.textContent = 'Cetak RAW BT';
+                }
+            }
+        }
+
+        async function connectBluetoothPrinter() {
+            try {
+                // Request Bluetooth device - Try multiple service UUIDs for different printer types
+                const device = await navigator.bluetooth.requestDevice({
+                    acceptAllDevices: true, // Allow all devices to be shown
+                    optionalServices: [
+                        '00001101-0000-1000-8000-00805f9b34fb', // Serial Port Profile (SPP)
+                        '0000ffe0-0000-1000-8000-00805f9b34fb', // Some thermal printers
+                        '49535343-fe7d-4ae5-8fa9-9fafd205e455' // Generic BLE service
+                    ]
+                });
+
+                // Connect to GATT server
+                const server = await device.gatt.connect();
+
+                // Try to find the correct service
+                let service = null;
+                let characteristic = null;
+
+                const serviceUUIDs = [
+                    '00001101-0000-1000-8000-00805f9b34fb', // SPP
+                    '0000ffe0-0000-1000-8000-00805f9b34fb', // Thermal printer service
+                    '49535343-fe7d-4ae5-8fa9-9fafd205e455' // Generic BLE
+                ];
+
+                for (const serviceUUID of serviceUUIDs) {
+                    try {
+                        service = await server.getPrimaryService(serviceUUID);
+
+                        // Try to find characteristic for writing
+                        const characteristics = await service.getCharacteristics();
+
+                        // Look for write characteristic
+                        for (const char of characteristics) {
+                            if (char.properties.write || char.properties.writeWithoutResponse) {
+                                characteristic = char;
+                                break;
+                            }
+                        }
+
+                        if (characteristic) break;
+                    } catch (e) {
+                        // Try next service
+                        continue;
+                    }
+                }
+
+                if (!characteristic) {
+                    throw new Error('Karakteristik penulisan tidak ditemukan. Pastikan printer mendukung BLE.');
+                }
+
+                bluetoothCharacteristic = characteristic;
+                return device;
+
+            } catch (error) {
+                if (error.name === 'NotFoundError') {
+                    throw new Error(
+                        'Printer Bluetooth tidak ditemukan. Pastikan printer sudah dipasangkan dan dalam jangkauan.'
+                    );
+                } else if (error.name === 'SecurityError') {
+                    throw new Error('Akses Bluetooth ditolak. Izinkan akses Bluetooth di pengaturan browser.');
+                } else if (error.name === 'NetworkError') {
+                    throw new Error(
+                        'Gagal terhubung ke printer. Pastikan printer dalam jangkauan dan sudah dipasangkan.');
+                } else if (error.name === 'AbortError' || error.name === 'DOMException') {
+                    // User cancelled the device selection
+                    throw new Error(
+                        'Pemilihan printer dibatalkan. Silakan coba lagi dan pilih printer yang diinginkan.');
+                } else {
+                    throw new Error('Gagal terhubung ke printer Bluetooth: ' + (error.message || error.name ||
+                        'Error tidak diketahui'));
+                }
+            }
+        }
+
+        async function sendDataToPrinter(data) {
+            if (!bluetoothCharacteristic) {
+                throw new Error('Tidak terhubung ke printer. Silakan hubungkan terlebih dahulu.');
+            }
+
+            try {
+                // Convert string to Uint8Array
+                const encoder = new TextEncoder();
+                const dataArray = encoder.encode(data);
+
+                // Check if writeWithoutResponse is supported (faster)
+                const useWriteWithoutResponse = bluetoothCharacteristic.properties.writeWithoutResponse;
+
+                // Split data into chunks (max 20 bytes per chunk for BLE)
+                const chunkSize = useWriteWithoutResponse ? 512 :
+                    20; // Larger chunks if writeWithoutResponse is available
+
+                for (let i = 0; i < dataArray.length; i += chunkSize) {
+                    const chunk = dataArray.slice(i, i + chunkSize);
+
+                    if (useWriteWithoutResponse) {
+                        await bluetoothCharacteristic.writeValueWithoutResponse(chunk);
+                    } else {
+                        await bluetoothCharacteristic.writeValue(chunk);
+                    }
+
+                    // Small delay between chunks to prevent buffer overflow
+                    await new Promise(resolve => setTimeout(resolve, useWriteWithoutResponse ? 5 : 10));
+                }
+
+            } catch (error) {
+                throw new Error('Gagal mengirim data ke printer: ' + (error.message || error.name));
+            }
+        }
+
+        // Web Serial API printing (alternative method)
+        async function printViaWebSerial(data) {
+            if (!navigator.serial) {
+                throw new Error('Web Serial API tidak didukung');
+            }
+
+            try {
+                // Request port
+                const port = await navigator.serial.requestPort();
+
+                // Open port
+                await port.open({
+                    baudRate: 9600
+                });
+
+                // Convert data to Uint8Array
+                const encoder = new TextEncoder();
+                const dataArray = encoder.encode(data);
+
+                // Write data
+                const writer = port.writable.getWriter();
+                await writer.write(dataArray);
+                writer.releaseLock();
+
+                // Close port
+                await port.close();
+            } catch (error) {
+                throw new Error('Gagal mencetak via Web Serial: ' + (error.message || error.name));
+            }
+        }
+
+        // Intent URL printing for Android (most compatible method)
+        async function printViaIntentURL(data) {
+            // Convert ESC/POS commands to base64 for sharing
+            const encoder = new TextEncoder();
+            const dataArray = encoder.encode(data);
+
+            // Create blob with ESC/POS data
+            const blob = new Blob([dataArray], {
+                type: 'application/octet-stream'
+            });
+            const url = URL.createObjectURL(blob);
+
+            // Try to use Web Share API first (most compatible)
+            if (navigator.share && navigator.canShare) {
+                try {
+                    const file = new File([dataArray], `invoice_${new Date().getTime()}.prn`, {
+                        type: 'application/octet-stream'
+                    });
+
+                    if (navigator.canShare({
+                            files: [file]
+                        })) {
+                        await navigator.share({
+                            files: [file],
+                            title: 'Invoice Pembelian',
+                            text: 'File invoice untuk printer Bluetooth'
+                        });
+
+                        URL.revokeObjectURL(url);
+                        return; // Success
+                    }
+                } catch (shareError) {
+                    console.log('Web Share API not available or cancelled:', shareError);
+                }
+            }
+
+            // Fallback: Download file and show instructions
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `invoice_${new Date().getTime()}.prn`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            // Show instructions
+            const isAndroid = /Android/i.test(navigator.userAgent);
+            let instructionText = 'File invoice telah didownload. ';
+
+            if (isAndroid) {
+                instructionText +=
+                    'Buka aplikasi printer Bluetooth (seperti Star Print, PrinterShare, atau Bluetooth Printer) dan pilih file ini untuk mencetak ke printer Bluetooth Anda.';
+            } else {
+                instructionText += 'Buka aplikasi printer Bluetooth Anda dan pilih file ini untuk mencetak.';
+            }
+
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'File Disiapkan',
+                    html: instructionText +
+                        '<br><br><small>File tersimpan dengan ekstensi .prn untuk kompatibilitas dengan printer thermal.</small>',
+                    confirmButtonText: 'OK'
+                });
+            } else {
+                alert(instructionText);
+            }
+        }
+
+        function generateESCPOSCommands() {
+            let commands = '';
+
+            // Initialize printer
+            commands += '\x1B\x40'; // ESC @ - Initialize printer
+
+            // Header - Center align
+            commands += '\x1B\x61\x01'; // ESC a 1 - Center align
+            commands += '\x1B\x21\x10'; // ESC ! 16 - Double height
+            commands += '{{ $pengaturanUmum->nama_toko }}\n';
+            commands += '\x1B\x21\x00'; // ESC ! 0 - Normal text
+
+            @if ($pengaturanUmum->deskripsi)
+                commands += '{{ $pengaturanUmum->deskripsi }}\n';
+            @endif
+            @if ($pengaturanUmum->alamat)
+                commands += '{{ $pengaturanUmum->alamat }}\n';
+            @endif
+            @if ($pengaturanUmum->no_telepon)
+                commands += 'Telp: {{ $pengaturanUmum->no_telepon }}\n';
+            @endif
+            @if ($pengaturanUmum->email)
+                commands += 'Email: {{ $pengaturanUmum->email }}\n';
+            @endif
+            commands += '================================\n';
+
+            // Left align
+            commands += '\x1B\x61\x00'; // ESC a 0 - Left align
+            commands += '\x1B\x21\x08'; // ESC ! 8 - Bold, normal height
+            commands += 'PEMBELIAN\n';
+            commands += '\x1B\x21\x00'; // ESC ! 0 - Normal text
+            commands += 'No. Faktur: {{ $pembelian->no_faktur }}\n';
+            commands += 'Tanggal: {{ $pembelian->created_at->format('d/m/Y H:i') }}\n';
+            commands += 'Supplier: {{ $pembelian->supplier->nama ?? 'N/A' }}\n';
+            commands += 'Kasir: {{ $pembelian->user->name ?? 'N/A' }}\n';
+            commands += '================================\n';
+
+            // Items
+            @foreach ($pembelian->detailPembelian as $detail)
+                commands += '{{ substr($detail->produk->nama_produk, 0, 30) }}\n';
+                @php
+                    $qtyText = number_format($detail->qty, 2, ',', '.') . ' ' . ($detail->produk->satuan->nama ?? 'pcs');
+                    if ($detail->qty_discount > 0) {
+                        $qtyText .= ' - ' . number_format($detail->qty_discount, 2, ',', '.') . ' ' . ($detail->produk->satuan->nama ?? 'pcs');
+                        $qtyText .= ' = ' . number_format($detail->qty - $detail->qty_discount, 2, ',', '.') . ' ' . ($detail->produk->satuan->nama ?? 'pcs');
+                    }
+                @endphp
+                commands +=
+                    '  {{ $qtyText }} x {{ number_format($detail->harga_beli, 0, ',', '.') }} = {{ number_format($detail->subtotal, 0, ',', '.') }}\n';
+                @if ($detail->discount > 0)
+                    commands += '  Diskon: -{{ number_format($detail->discount, 0) }}\n';
+                @endif
+                @if ($detail->keterangan)
+                    commands += '  Note: {{ $detail->keterangan }}\n';
+                @endif
+            @endforeach
+
+            commands += '--------------------------------\n';
+
+            // Totals
+            commands += 'Subtotal: Rp {{ number_format($pembelian->total, 0) }}\n';
+            @if ($pembelian->diskon > 0)
+                commands += 'Diskon: -Rp {{ number_format($pembelian->diskon, 0) }}\n';
+            @endif
+            @if ($pembelian->ppn > 0)
+                commands += 'PPN: Rp {{ number_format($pembelian->ppn, 0) }}\n';
+            @endif
+            commands += '\x1B\x21\x08'; // ESC ! 8 - Bold
+            commands += 'TOTAL: Rp {{ number_format($pembelian->grand_total, 0) }}\n';
+            commands += '\x1B\x21\x00'; // ESC ! 0 - Normal text
+
+            // Payment info
+            @php
+                $totalBayar = $pembelian->pembayaranPembelian->sum('jumlah_bayar');
+            @endphp
+            @if ($totalBayar > 0)
+                commands += 'Bayar: Rp {{ number_format($totalBayar, 0) }}\n';
+                @if ($totalBayar < $pembelian->grand_total)
+                    @php
+                        $sisa = $pembelian->grand_total - $totalBayar;
+                    @endphp
+                    commands += 'Sisa: Rp {{ number_format($sisa, 0) }}\n';
+                @endif
+                commands += '\n';
+            @endif
+
+            // Payment history
+            @if ($pembelian->pembayaranPembelian->count() > 0)
+                commands += '================================\n';
+                commands += 'RIWAYAT PEMBAYARAN:\n';
+                commands += '--------------------------------\n';
+                @foreach ($riwayatPembayaran as $pembayaran)
+                    commands += '{{ $pembayaran->no_bukti }}\n';
+                    @php
+                        $statusConfig = [
+                            'D' => 'DP',
+                            'A' => 'Angsuran',
+                            'P' => 'Pelunasan',
+                            'U' => 'Uang Muka',
+                        ];
+                        $status = $statusConfig[$pembayaran->status_bayar] ?? 'DP';
+                    @endphp
+                    commands +=
+                        '{{ $pembayaran->created_at->format('d/m/Y H:i') }} - {{ $pembayaran->metode_pembayaran }} ({{ $status }})\n';
+                    commands += 'Rp {{ number_format($pembayaran->jumlah_bayar, 0) }}\n';
+                    @if ($pembayaran->keterangan)
+                        commands += '{{ $pembayaran->keterangan }}\n';
+                    @endif
+                    commands += '--------------------------------\n';
+                @endforeach
+            @endif
+
+            // Footer
+            commands += '================================\n';
+            commands += '\x1B\x61\x01'; // Center align
+            commands += 'Terima kasih atas kunjungan Anda\n';
+            commands += '\n\n\n';
+
+            // Cut paper
+            commands += '\x1D\x56\x42\x00'; // GS V B 0 - Partial cut
+
+            return commands;
+        }
     </script>
 @endpush

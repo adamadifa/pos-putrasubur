@@ -9,6 +9,8 @@ use App\Models\DetailPembelian;
 use App\Models\PembayaranPembelian;
 use App\Models\MetodePembayaran;
 use App\Models\KasBank;
+use App\Models\PengaturanUmum;
+use App\Helpers\ItemHelper;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +18,11 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Exception;
+use Mike42\Escpos\CapabilityProfile;
+use Mike42\Escpos\EscposImage;
+use Mike42\Escpos\PrintConnectors\RawbtPrintConnector;
+use Mike42\Escpos\Printer;
 
 class PembelianController extends Controller
 {
@@ -523,7 +530,10 @@ class PembelianController extends Controller
             // Get kas/bank data
             $kasBank = KasBank::orderBy('nama')->get();
 
-            return view('pembelian.show', compact('pembelian', 'sisaPembayaran', 'metodePembayaran', 'kasBank', 'riwayatPembayaran'));
+            // Get pengaturan umum
+            $pengaturanUmum = PengaturanUmum::getActive();
+
+            return view('pembelian.show', compact('pembelian', 'sisaPembayaran', 'metodePembayaran', 'kasBank', 'riwayatPembayaran', 'pengaturanUmum'));
         } catch (\Exception $e) {
             return redirect()->route('pembelian.index')
                 ->with('error', 'Pembelian tidak ditemukan.');
@@ -934,6 +944,214 @@ class PembelianController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan dalam mengexport PDF: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Cetak invoice menggunakan RAW BT (untuk HP)
+     */
+    public function cetakRawBT($encryptedId)
+    {
+        try {
+            $pembelian = Pembelian::findByEncryptedId($encryptedId);
+            $pembelian->load(['supplier', 'detailPembelian.produk.satuan', 'user', 'pembayaranPembelian.user', 'pembayaranPembelian.kasBank']);
+
+            // Get pengaturan umum
+            $pengaturanUmum = PengaturanUmum::getActive();
+            if (!$pengaturanUmum) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pengaturan umum tidak ditemukan'
+                ], 404);
+            }
+
+            // Get payment history
+            $riwayatPembayaran = PembayaranPembelian::where('pembelian_id', $pembelian->id)
+                ->with(['user', 'kasBank'])
+                ->orderBy('id', 'asc')
+                ->get();
+
+            $totalBayar = $riwayatPembayaran->sum('jumlah_bayar');
+
+            // Setup printer dengan RawbtPrintConnector
+            $profile = CapabilityProfile::load("POS-5890");
+            $connector = new RawbtPrintConnector();
+            $printer = new Printer($connector, $profile);
+
+            // Start output buffering untuk menangkap intent URL dari finalize()
+            ob_start();
+
+            try {
+                // Header - Center align
+                $printer->setJustification(Printer::JUSTIFY_CENTER);
+                $printer->setEmphasis(true);
+                $printer->text(strtoupper($pengaturanUmum->nama_toko) . ".\n");
+                $printer->setEmphasis(false);
+                $printer->selectPrintMode();
+
+                if ($pengaturanUmum->deskripsi) {
+                    $printer->text($pengaturanUmum->deskripsi . ".\n");
+                }
+                if ($pengaturanUmum->alamat) {
+                    $printer->text($pengaturanUmum->alamat . ".\n");
+                }
+                if ($pengaturanUmum->no_telepon) {
+                    $printer->text("Telp: " . $pengaturanUmum->no_telepon . "\n");
+                }
+                if ($pengaturanUmum->email) {
+                    $printer->text("Email: " . $pengaturanUmum->email . "\n");
+                }
+                $printer->text("================================\n");
+
+                // Invoice info - Left align
+                $printer->setJustification(Printer::JUSTIFY_LEFT);
+                $printer->setEmphasis(true);
+                $printer->text("PEMBELIAN\n");
+                $printer->setEmphasis(false);
+
+                $printer->text(new ItemHelper('', ''));
+                $printer->text(new ItemHelper($pembelian->no_faktur, $pembelian->user->name ?? 'N/A'));
+                $printer->text($pembelian->created_at->format('d-m-Y H:i:s') . "\n");
+                $printer->text($pembelian->supplier->kode_supplier . " - " . $pembelian->supplier->nama . "\n");
+                if ($pembelian->supplier->alamat) {
+                    $printer->text($pembelian->supplier->alamat . "\n");
+                }
+                $printer->text("================================\n");
+
+                // Items
+                $printer->setEmphasis(true);
+                foreach ($pembelian->detailPembelian as $detail) {
+                    $printer->text(substr($detail->produk->nama_produk, 0, 30) . "\n");
+                    
+                    $qtyText = number_format($detail->qty, 2, ',', '.') . ' ' . ($detail->produk->satuan->nama ?? 'pcs');
+                    if ($detail->qty_discount > 0) {
+                        $qtyText .= ' - ' . number_format($detail->qty_discount, 2, ',', '.') . ' ' . ($detail->produk->satuan->nama ?? 'pcs');
+                        $qtyText .= ' = ' . number_format($detail->qty - $detail->qty_discount, 2, ',', '.') . ' ' . ($detail->produk->satuan->nama ?? 'pcs');
+                    }
+                    
+                    $itemLine = "  " . $qtyText . " x " . number_format($detail->harga_beli, 0, ',', '.') . " = " . number_format($detail->subtotal, 0, ',', '.');
+                    $printer->text($itemLine . "\n");
+                    
+                    if ($detail->discount > 0) {
+                        $printer->text("  Diskon: -" . number_format($detail->discount, 0, ',', '.') . "\n");
+                    }
+                    
+                    if ($detail->keterangan) {
+                        $printer->text("  Note: " . $detail->keterangan . "\n");
+                    }
+                }
+                $printer->setEmphasis(false);
+
+                $printer->text("--------------------------------\n");
+
+                // Totals
+                $subtotal = new ItemHelper('Subtotal', number_format($pembelian->total, 0, ',', '.'));
+                $printer->setEmphasis(true);
+                $printer->text($subtotal->getAsString(32));
+                $printer->setEmphasis(false);
+
+                if ($pembelian->diskon > 0) {
+                    $potongan = new ItemHelper('Potongan', number_format($pembelian->diskon, 0, ',', '.'));
+                    $printer->text($potongan->getAsString(32));
+                }
+
+                if ($pembelian->ppn > 0) {
+                    $ppn = new ItemHelper('PPN', number_format($pembelian->ppn, 0, ',', '.'));
+                    $printer->text($ppn->getAsString(32));
+                }
+
+                $grandtotal = new ItemHelper('Grand Total', number_format($pembelian->grand_total, 0, ',', '.'));
+                $printer->feed();
+                $printer->setEmphasis(true);
+                $printer->text($grandtotal->getAsString(32));
+                $printer->setEmphasis(false);
+
+                // Payment info
+                if ($totalBayar > 0) {
+                    $printer->feed();
+                    $printer->setJustification(Printer::JUSTIFY_LEFT);
+                    $printer->text("PEMBAYARAN\n");
+                    $printer->setEmphasis(true);
+                    
+                    foreach ($riwayatPembayaran as $pembayaran) {
+                        $printer->text(new ItemHelper($pembayaran->created_at->format('d-m-y'), number_format($pembayaran->jumlah_bayar, 0, ',', '.')));
+                    }
+                    
+                    $totalBayarItem = new ItemHelper('TOTAL BAYAR', number_format($totalBayar, 0, ',', '.'));
+                    $printer->text($totalBayarItem->getAsString(32));
+                    
+                    if ($totalBayar < $pembelian->grand_total) {
+                        $sisa = $pembelian->grand_total - $totalBayar;
+                        $sisaItem = new ItemHelper('SISA TAGIHAN', number_format($sisa, 0, ',', '.'));
+                        $printer->text($sisaItem->getAsString(32));
+                    }
+                    $printer->setEmphasis(false);
+                }
+
+                // Footer
+                $printer->feed(2);
+                $printer->setJustification(Printer::JUSTIFY_CENTER);
+                $printer->text("Terima kasih atas kunjungan Anda\n");
+                $printer->text("Barang yang sudah dibeli\n");
+                $printer->text("tidak dapat dikembalikan\n");
+                $printer->text("================================\n");
+
+                // Cut paper
+                $printer->cut();
+                $printer->pulse();
+
+            } catch (Exception $e) {
+                // Clean output buffer jika ada error
+                if (ob_get_level() > 0) {
+                    ob_end_clean();
+                }
+                Log::error('Error printing RAW BT: ' . $e->getMessage());
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal mencetak: ' . $e->getMessage()
+                ], 500);
+            } finally {
+                $printer->close(); // Ini akan memanggil finalize() yang meng-echo intent URL
+            }
+
+            // Get intent URL yang di-output oleh finalize()
+            $intentUrl = ob_get_clean();
+
+            // Return HTML yang akan membuka intent URL untuk aplikasi RawBT
+            // Browser akan otomatis membuka aplikasi RawBT ketika melihat intent://
+            $html = '<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mencetak ke Printer Bluetooth...</title>
+    <script>
+        // Coba buka intent URL langsung
+        window.location.href = ' . json_encode($intentUrl) . ';
+        
+        // Fallback: jika tidak berhasil, tampilkan pesan
+        setTimeout(function() {
+            document.body.innerHTML = \'<div style="padding: 20px; text-align: center;"><h2>Mencetak ke Printer Bluetooth</h2><p>Jika aplikasi RawBT tidak terbuka, pastikan aplikasi RawBT sudah terinstall di HP Anda.</p><p><a href="' . route('pembelian.show', $pembelian->encrypted_id) . '">Kembali ke Detail Pembelian</a></p></div>\';
+        }, 2000);
+    </script>
+</head>
+<body>
+    <div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">
+        <h2>Membuka aplikasi RawBT...</h2>
+        <p>Mohon tunggu sebentar...</p>
+    </div>
+</body>
+</html>';
+
+            return response($html, 200)
+                ->header('Content-Type', 'text/html; charset=utf-8');
+
+        } catch (\Exception $e) {
+            Log::error('Error cetak RAW BT: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ], 500);
         }
     }

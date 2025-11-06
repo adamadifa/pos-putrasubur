@@ -190,8 +190,98 @@
             </form>
         </div>
 
-        <!-- Table -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <!-- Mobile Card View -->
+        <div class="md:hidden space-y-4">
+            @forelse ($uangMuka as $um)
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                    <!-- Header -->
+                    <div class="flex items-start justify-between mb-3 pb-3 border-b border-gray-200">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <h3 class="text-sm font-semibold text-gray-900">{{ $um->no_uang_muka }}</h3>
+                                @if ($um->status == 'aktif')
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Aktif
+                                    </span>
+                                @elseif ($um->status == 'habis')
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        Habis
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        Dibatalkan
+                                    </span>
+                                @endif
+                            </div>
+                            <p class="text-sm text-gray-600">{{ $um->pelanggan->nama ?? '-' }}</p>
+                            <p class="text-xs text-gray-500 mt-1">
+                                <i class="ti ti-calendar mr-1"></i>{{ $um->tanggal->format('d/m/Y') }}
+                            </p>
+                        </div>
+                        <div class="flex items-center space-x-2 ml-2">
+                            <a href="{{ route('uang-muka-pelanggan.show', $um->encrypted_id) }}"
+                                class="text-blue-600 hover:text-blue-900 p-2" title="Detail">
+                                <i class="ti ti-eye text-lg"></i>
+                            </a>
+                            @if ($um->status == 'aktif' && (!$um->penggunaan_penjualan_sum_jumlah_digunakan || $um->penggunaan_penjualan_sum_jumlah_digunakan == 0))
+                                <form action="{{ route('uang-muka-pelanggan.cancel', $um->encrypted_id) }}" method="POST" class="inline"
+                                    onsubmit="return confirm('Apakah Anda yakin ingin membatalkan uang muka ini?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-orange-600 hover:text-orange-900 p-2" title="Batalkan">
+                                        <i class="ti ti-x text-lg"></i>
+                                    </button>
+                                </form>
+                            @endif
+                            @if (!$um->penggunaan_penjualan_sum_jumlah_digunakan || $um->penggunaan_penjualan_sum_jumlah_digunakan == 0)
+                                <form action="{{ route('uang-muka-pelanggan.destroy', $um->encrypted_id) }}"
+                                    method="POST" class="inline"
+                                    onsubmit="return confirm('Apakah Anda yakin ingin menghapus permanen uang muka ini? Data yang dihapus tidak dapat dikembalikan.');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-red-600 hover:text-red-900 p-2" title="Hapus">
+                                        <i class="ti ti-trash text-lg"></i>
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Details -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-500">Jumlah</span>
+                            <span class="text-sm font-semibold text-gray-900">Rp {{ number_format($um->jumlah_uang_muka, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-500">Digunakan</span>
+                            <span class="text-sm font-medium text-red-600">Rp {{ number_format($um->penggunaan_penjualan_sum_jumlah_digunakan ?? 0, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="flex justify-between items-center pt-2 border-t border-gray-100">
+                            <span class="text-xs font-medium text-gray-700">Sisa</span>
+                            <span class="text-sm font-bold text-green-600">Rp {{ number_format($um->sisa_uang_muka, 0, ',', '.') }}</span>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+                    <div class="text-gray-500">
+                        <i class="ti ti-inbox text-4xl mb-2"></i>
+                        <p class="text-sm">Tidak ada data uang muka pelanggan</p>
+                    </div>
+                </div>
+            @endforelse
+
+            <!-- Pagination Mobile -->
+            @if ($uangMuka->hasPages())
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                    {{ $uangMuka->links() }}
+                </div>
+            @endif
+        </div>
+
+        <!-- Desktop Table View -->
+        <div class="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">

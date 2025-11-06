@@ -365,6 +365,12 @@
                             </div>
                         </div>
 
+                        <!-- Preview Button for Step 3 -->
+                        <button type="button" id="showOrderPreviewMobileStep3"
+                            class="w-full py-2.5 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors text-sm flex items-center justify-center">
+                            <i class="ti ti-eye text-base mr-2"></i>
+                            Preview Pesanan
+                        </button>
                     </div>
 
                     <!-- Desktop: Order Summary -->
@@ -456,7 +462,6 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </form>
             </div>
@@ -2291,11 +2296,11 @@
                                 </div>
                                 
                                 ${qtyDiscount > 0 ? `
-                                                                                                                    <div class="flex items-center justify-between text-sm">
-                                                                                                                        <span class="text-blue-600">Potongan Qty: ${formatDecimalInput(qtyDiscount)} ${item.unit}</span>
-                                                                                                                        <span class="font-medium text-blue-600">-${formatDecimalInput(qtyDiscount)} ${item.unit}</span>
-                                                                                                                    </div>
-                                                                                                                    ` : ''}
+                                                                                                                                <div class="flex items-center justify-between text-sm">
+                                                                                                                                    <span class="text-blue-600">Potongan Qty: ${formatDecimalInput(qtyDiscount)} ${item.unit}</span>
+                                                                                                                                    <span class="font-medium text-blue-600">-${formatDecimalInput(qtyDiscount)} ${item.unit}</span>
+                                                                                                                                </div>
+                                                                                                                                ` : ''}
                                 
                                 <div class="flex items-center justify-between text-sm">
                                     <span class="text-gray-600">Subtotal (${formatDecimalInput(effectiveQty)} × Rp ${formatNumber(item.price)})</span>
@@ -2303,14 +2308,14 @@
                                 </div>
                                 
                                 ${discount > 0 ? `
-                                                                                                                                                                                                                                <div class="flex items-center justify-between text-sm">
-                                                                                                                                                                                                                                    <span class="text-orange-600 flex items-center">
-                                                                                                                                                                                                                                        <i class="ti ti-discount-2 text-xs mr-1"></i>
-                                                                                                                                                                                                                                        Potongan Harga
-                                                                                                                                                                                                                                    </span>
-                                                                                                                                                                                                                                    <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                                                                </div>
-                                                                                                                                                                                                                            ` : ''}
+                                                                                                                                                                                                                                            <div class="flex items-center justify-between text-sm">
+                                                                                                                                                                                                                                                <span class="text-orange-600 flex items-center">
+                                                                                                                                                                                                                                                    <i class="ti ti-discount-2 text-xs mr-1"></i>
+                                                                                                                                                                                                                                                    Potongan Harga
+                                                                                                                                                                                                                                                </span>
+                                                                                                                                                                                                                                                <span class="font-medium text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                                        ` : ''}
                                 
                                 <!-- Total Line -->
                                 <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
@@ -3162,7 +3167,7 @@
         const closeOrderPreviewModal = document.getElementById('closeOrderPreviewModal');
         const closePreviewModalBtn = document.getElementById('closePreviewModal');
         const showOrderPreviewBtn = document.getElementById('showOrderPreview');
-        const showOrderPreviewMobileBtn = document.getElementById('showOrderPreviewMobile');
+        const showOrderPreviewMobileStep3Btn = document.getElementById('showOrderPreviewMobileStep3');
         const showOrderPreviewDesktopBtn = document.getElementById('showOrderPreviewDesktop');
         const confirmOrderSaveBtn = document.getElementById('confirmOrderSave');
 
@@ -3210,9 +3215,9 @@
             });
         }
 
-        // Mobile preview button (review section)
-        if (showOrderPreviewMobileBtn) {
-            showOrderPreviewMobileBtn.addEventListener('click', function() {
+        // Mobile preview button (step 3 - review section)
+        if (showOrderPreviewMobileStep3Btn) {
+            showOrderPreviewMobileStep3Btn.addEventListener('click', function() {
                 if (cart.length === 0) {
                     showToast('Pilih produk terlebih dahulu', 'error');
                     return;
@@ -3299,11 +3304,11 @@
                                 <span>Rp ${formatNumber(subtotal)}</span>
                             </div>
                             ${discount > 0 ? `
-                                                                                                                                                                                <div class="flex justify-between text-xs">
-                                                                                                                                                                                    <span class="text-orange-600">Potongan</span>
-                                                                                                                                                                                    <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
-                                                                                                                                                                                </div>
-                                                                                                                                                                            ` : ''}
+                                                                                                                                                                                            <div class="flex justify-between text-xs">
+                                                                                                                                                                                                <span class="text-orange-600">Potongan</span>
+                                                                                                                                                                                                <span class="text-orange-600">-Rp ${formatNumber(discount)}</span>
+                                                                                                                                                                                            </div>
+                                                                                                                                                                                        ` : ''}
                             <div class="flex justify-between text-sm font-medium">
                                 <span>Total</span>
                                 <span class="text-blue-600">Rp ${formatNumber(total)}</span>
