@@ -27,6 +27,8 @@ use App\Http\Controllers\PengaturanUmumController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UangMukaSupplierController;
 use App\Http\Controllers\UangMukaPelangganController;
+use App\Http\Controllers\PinjamanController;
+use App\Http\Controllers\PeminjamController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -144,6 +146,17 @@ Route::middleware('auth')->group(function () {
     });
     Route::get('supplier/search', [SupplierController::class, 'getSuppliers'])->name('supplier.search');
 
+    // Peminjam Routes (Admin & Kasir only)
+    Route::prefix('peminjam')->name('peminjam.')->middleware('role:admin,kasir')->group(function () {
+        Route::get('/', [PeminjamController::class, 'index'])->name('index');
+        Route::get('/create', [PeminjamController::class, 'create'])->name('create');
+        Route::post('/', [PeminjamController::class, 'store'])->name('store');
+        Route::get('/{encryptedId}', [PeminjamController::class, 'show'])->name('show');
+        Route::get('/{encryptedId}/edit', [PeminjamController::class, 'edit'])->name('edit');
+        Route::put('/{encryptedId}', [PeminjamController::class, 'update'])->name('update');
+        Route::delete('/{encryptedId}', [PeminjamController::class, 'destroy'])->name('destroy');
+    });
+
     // Kas & Bank Routes (Admin & Kasir only)
     Route::resource('kas-bank', KasBankController::class)->middleware('role:admin,kasir');
 
@@ -185,6 +198,19 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}', [PembayaranPembelianController::class, 'destroy'])->name('destroy');
         Route::get('/{id}/detail', [PembayaranPembelianController::class, 'detail'])->name('detail');
         Route::get('/{id}/print', [PembayaranPembelianController::class, 'print'])->name('print');
+    });
+
+    // Pinjaman Routes (Admin & Kasir only)
+    Route::prefix('pinjaman')->name('pinjaman.')->middleware('role:admin,kasir')->group(function () {
+        Route::get('/', [PinjamanController::class, 'index'])->name('index');
+        Route::get('/create', [PinjamanController::class, 'create'])->name('create');
+        Route::post('/', [PinjamanController::class, 'store'])->name('store');
+        Route::delete('/pembayaran/{encryptedPembayaranId}', [PinjamanController::class, 'destroyPayment'])->name('pembayaran.destroy');
+        Route::get('/{encryptedId}', [PinjamanController::class, 'show'])->name('show');
+        Route::get('/{encryptedId}/edit', [PinjamanController::class, 'edit'])->name('edit');
+        Route::put('/{encryptedId}', [PinjamanController::class, 'update'])->name('update');
+        Route::delete('/{encryptedId}', [PinjamanController::class, 'destroy'])->name('destroy');
+        Route::post('/{encryptedId}/pembayaran', [PinjamanController::class, 'storePayment'])->name('pembayaran.store');
     });
 
     // Uang Muka Supplier Routes (Admin & Kasir only)

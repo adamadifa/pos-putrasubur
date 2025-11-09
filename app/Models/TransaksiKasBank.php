@@ -58,6 +58,14 @@ class TransaksiKasBank extends Model
         return null;
     }
 
+    public function pembayaranPinjaman()
+    {
+        if ($this->referensi_tipe === 'PPN') {
+            return $this->belongsTo(\App\Models\PembayaranPinjaman::class, 'referensi_id');
+        }
+        return null;
+    }
+
     // Accessors
     public function getJenisTransaksiDisplayAttribute()
     {
@@ -80,7 +88,10 @@ class TransaksiKasBank extends Model
         $tipe = [
             'PPJ' => 'Pembayaran Penjualan',
             'PPB' => 'Pembayaran Pembelian',
-            'MN' => 'Manual'
+            'MN' => 'Manual',
+            'UMS' => 'Uang Muka Supplier',
+            'UMP' => 'Uang Muka Pelanggan',
+            'PPN' => 'Pembayaran Pinjaman'
         ];
         return $tipe[$this->referensi_tipe] ?? $this->referensi_tipe;
     }
