@@ -2079,7 +2079,8 @@
             const discount = parseFormattedNumber(document.getElementById('discountInput').value) || 0;
 
             // Calculate effective quantity (qty - qtyDiscount)
-            const effectiveQty = Math.max(0, qty - qtyDiscount);
+            // Round to avoid floating point precision issues
+            const effectiveQty = Math.max(0, Math.round((qty - qtyDiscount) * 10000) / 10000);
             const subtotal = effectiveQty * price;
             const total = subtotal - discount;
 
@@ -2177,7 +2178,8 @@
             }
 
             // Validate discount
-            const effectiveQty = Math.max(0, qty - qtyDiscount);
+            // Round to avoid floating point precision issues
+            const effectiveQty = Math.max(0, Math.round((qty - qtyDiscount) * 10000) / 10000);
             const subtotal = price * effectiveQty;
             if (discount > subtotal) {
                 showToast('Potongan tidak boleh melebihi subtotal!', 'error');
@@ -2254,7 +2256,8 @@
                 // Generate order items HTML
                 const orderItemsHTML = cart.map((item, index) => {
                     const qtyDiscount = item.qtyDiscount || 0;
-                    const effectiveQty = Math.max(0, item.qty - qtyDiscount);
+                    // Round to avoid floating point precision issues
+                    const effectiveQty = Math.max(0, Math.round((item.qty - qtyDiscount) * 10000) / 10000);
                     const subtotal = item.price * effectiveQty;
                     const discount = item.discount || 0;
                     const total = subtotal - discount;
@@ -2428,7 +2431,8 @@
 
             cart.forEach(item => {
                 const qtyDiscount = item.qtyDiscount || 0;
-                const effectiveQty = Math.max(0, item.qty - qtyDiscount);
+                // Round to avoid floating point precision issues
+                const effectiveQty = Math.max(0, Math.round((item.qty - qtyDiscount) * 10000) / 10000);
                 subtotal += (effectiveQty * item.price) - (item.discount || 0);
             });
 
@@ -3272,7 +3276,8 @@
 
             cart.forEach((item, index) => {
                 const qtyDiscount = item.qtyDiscount || 0;
-                const effectiveQty = Math.max(0, item.qty - qtyDiscount);
+                // Round to avoid floating point precision issues
+                const effectiveQty = Math.max(0, Math.round((item.qty - qtyDiscount) * 10000) / 10000);
                 const subtotal = item.price * effectiveQty;
                 const discount = item.discount || 0;
                 const total = subtotal - discount;
