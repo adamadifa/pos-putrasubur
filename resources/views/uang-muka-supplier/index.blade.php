@@ -154,8 +154,7 @@
 
         <!-- Filters -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-            <form method="GET" action="{{ route('uang-muka-supplier.index') }}"
-                class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <form method="GET" action="{{ route('uang-muka-supplier.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                 <!-- Search -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Cari</label>
@@ -171,8 +170,7 @@
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
                         <option value="">Semua Supplier</option>
                         @foreach ($suppliers ?? [] as $supplier)
-                            <option value="{{ $supplier->id }}"
-                                {{ request('supplier_id') == $supplier->id ? 'selected' : '' }}>
+                            <option value="{{ $supplier->id }}" {{ request('supplier_id') == $supplier->id ? 'selected' : '' }}>
                                 {{ $supplier->nama }}
                             </option>
                         @endforeach
@@ -194,8 +192,7 @@
 
                 <!-- Action Buttons -->
                 <div class="flex space-x-2">
-                    <button type="submit"
-                        class="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
+                    <button type="submit" class="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
                         <i class="ti ti-search mr-2"></i>Filter
                     </button>
                     <a href="{{ route('uang-muka-supplier.index') }}"
@@ -235,13 +232,12 @@
                             </p>
                         </div>
                         <div class="flex items-center space-x-2 ml-2">
-                            <a href="{{ route('uang-muka-supplier.show', $um->encrypted_id) }}"
-                                class="text-blue-600 hover:text-blue-900 p-2" title="Detail">
+                            <a href="{{ route('uang-muka-supplier.show', $um->encrypted_id) }}" class="text-blue-600 hover:text-blue-900 p-2"
+                                title="Detail">
                                 <i class="ti ti-eye text-lg"></i>
                             </a>
                             @if ($um->status == 'aktif' && (!$um->penggunaan_pembelian_sum_jumlah_digunakan || $um->penggunaan_pembelian_sum_jumlah_digunakan == 0))
-                                <form action="{{ route('uang-muka-supplier.cancel', $um->encrypted_id) }}"
-                                    method="POST" class="inline"
+                                <form action="{{ route('uang-muka-supplier.cancel', $um->encrypted_id) }}" method="POST" class="inline"
                                     onsubmit="return confirm('Apakah Anda yakin ingin membatalkan uang muka ini?');">
                                     @csrf
                                     @method('DELETE')
@@ -251,8 +247,7 @@
                                 </form>
                             @endif
                             @if (!$um->penggunaan_pembelian_sum_jumlah_digunakan || $um->penggunaan_pembelian_sum_jumlah_digunakan == 0)
-                                <form action="{{ route('uang-muka-supplier.destroy', $um->encrypted_id) }}"
-                                    method="POST" class="inline"
+                                <form action="{{ route('uang-muka-supplier.destroy', $um->encrypted_id) }}" method="POST" class="inline"
                                     onsubmit="return confirm('Apakah Anda yakin ingin menghapus permanen uang muka ini? Data yang dihapus tidak dapat dikembalikan.');">
                                     @csrf
                                     @method('DELETE')
@@ -272,11 +267,12 @@
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-xs text-gray-500">Digunakan</span>
-                            <span class="text-sm font-medium text-red-600">Rp {{ number_format($um->penggunaan_pembelian_sum_jumlah_digunakan ?? 0, 0, ',', '.') }}</span>
+                            <span class="text-sm font-medium text-red-600 text-right">Rp
+                                {{ number_format($um->penggunaan_pembelian_sum_jumlah_digunakan ?? 0, 0, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between items-center pt-2 border-t border-gray-100">
                             <span class="text-xs font-medium text-gray-700">Sisa</span>
-                            <span class="text-sm font-bold text-green-600">Rp {{ number_format($um->sisa_uang_muka, 0, ',', '.') }}</span>
+                            <span class="text-sm font-bold text-green-600 text-right">Rp {{ number_format($um->sisa_uang_muka, 0, ',', '.') }}</span>
                         </div>
                     </div>
                 </div>
@@ -338,12 +334,12 @@
                                         {{ number_format($um->jumlah_uang_muka, 0, ',', '.') }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right">
-                                    <div class="text-sm text-red-600">Rp
+                                    <div class="text-sm text-red-600 text-right">Rp
                                         {{ number_format($um->penggunaan_pembelian_sum_jumlah_digunakan ?? 0, 0, ',', '.') }}
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right">
-                                    <div class="text-sm font-medium text-green-600">Rp
+                                    <div class="text-sm font-medium text-green-600 text-right">Rp
                                         {{ number_format($um->sisa_uang_muka, 0, ',', '.') }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -353,45 +349,37 @@
                                             Aktif
                                         </span>
                                     @elseif ($um->status == 'habis')
-                                        <span
-                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                             Habis
                                         </span>
                                     @else
-                                        <span
-                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                             Dibatalkan
                                         </span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                     <div class="flex items-center justify-center space-x-2">
-                                        <a href="{{ route('uang-muka-supplier.show', $um->encrypted_id) }}"
-                                            class="text-blue-600 hover:text-blue-900" title="Detail">
+                                        <a href="{{ route('uang-muka-supplier.show', $um->encrypted_id) }}" class="text-blue-600 hover:text-blue-900"
+                                            title="Detail">
                                             <i class="ti ti-eye text-lg"></i>
                                         </a>
-                                        @if (
-                                            $um->status == 'aktif' &&
-                                                (!$um->penggunaan_pembelian_sum_jumlah_digunakan || $um->penggunaan_pembelian_sum_jumlah_digunakan == 0))
-                                            <form action="{{ route('uang-muka-supplier.cancel', $um->encrypted_id) }}"
-                                                method="POST" class="inline"
+                                        @if ($um->status == 'aktif' && (!$um->penggunaan_pembelian_sum_jumlah_digunakan || $um->penggunaan_pembelian_sum_jumlah_digunakan == 0))
+                                            <form action="{{ route('uang-muka-supplier.cancel', $um->encrypted_id) }}" method="POST" class="inline"
                                                 onsubmit="return confirm('Apakah Anda yakin ingin membatalkan uang muka ini?');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="text-orange-600 hover:text-orange-900"
-                                                    title="Batalkan">
+                                                <button type="submit" class="text-orange-600 hover:text-orange-900" title="Batalkan">
                                                     <i class="ti ti-x text-lg"></i>
                                                 </button>
                                             </form>
                                         @endif
                                         @if (!$um->penggunaan_pembelian_sum_jumlah_digunakan || $um->penggunaan_pembelian_sum_jumlah_digunakan == 0)
-                                            <form action="{{ route('uang-muka-supplier.destroy', $um->encrypted_id) }}"
-                                                method="POST" class="inline"
+                                            <form action="{{ route('uang-muka-supplier.destroy', $um->encrypted_id) }}" method="POST" class="inline"
                                                 onsubmit="return confirm('Apakah Anda yakin ingin menghapus permanen uang muka ini? Data yang dihapus tidak dapat dikembalikan.');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-900"
-                                                    title="Hapus">
+                                                <button type="submit" class="text-red-600 hover:text-red-900" title="Hapus">
                                                     <i class="ti ti-trash text-lg"></i>
                                                 </button>
                                             </form>

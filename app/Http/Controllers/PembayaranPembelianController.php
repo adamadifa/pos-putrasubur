@@ -36,14 +36,12 @@ class PembayaranPembelianController extends Controller
         }
 
         // Date range filter
-        if ($request->filled('tanggal_dari_hidden')) {
-            $tanggalDari = Carbon::parse($request->tanggal_dari_hidden)->startOfDay();
-            $query->where('tanggal', '>=', $tanggalDari);
+        if ($request->filled('tanggal_dari')) {
+            $query->whereDate('tanggal', '>=', $request->tanggal_dari);
         }
 
-        if ($request->filled('tanggal_sampai_hidden')) {
-            $tanggalSampai = Carbon::parse($request->tanggal_sampai_hidden)->endOfDay();
-            $query->where('tanggal', '<=', $tanggalSampai);
+        if ($request->filled('tanggal_sampai')) {
+            $query->whereDate('tanggal', '<=', $request->tanggal_sampai);
         }
 
         // Status filter
@@ -58,7 +56,8 @@ class PembayaranPembelianController extends Controller
 
         $pembayaranPembelian = $query->orderBy('tanggal', 'desc')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(15)
+            ->appends($request->query());
 
         return view('pembayaran-pembelian.index', compact('pembayaranPembelian'));
     }

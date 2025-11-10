@@ -18,12 +18,47 @@ class PembayaranController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $pembayaran = PembayaranPenjualan::with(['penjualan.pelanggan', 'user'])
-            ->orderBy('tanggal', 'desc')
+        $query = PembayaranPenjualan::with(['penjualan.pelanggan', 'user']);
+
+        // Handle search
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('no_bukti', 'like', "%{$searchTerm}%")
+                    ->orWhereHas('penjualan', function ($q) use ($searchTerm) {
+                        $q->where('no_faktur', 'like', "%{$searchTerm}%")
+                            ->orWhereHas('pelanggan', function ($q) use ($searchTerm) {
+                                $q->where('nama', 'like', "%{$searchTerm}%");
+                            });
+                    });
+            });
+        }
+
+        // Handle date filter
+        if ($request->filled('tanggal_dari')) {
+            $query->whereDate('tanggal', '>=', $request->tanggal_dari);
+        }
+        if ($request->filled('tanggal_sampai')) {
+            $query->whereDate('tanggal', '<=', $request->tanggal_sampai);
+        }
+
+        // Handle status filter
+        if ($request->filled('status')) {
+            $query->where('status_bayar', $request->status);
+        }
+
+        // Handle metode pembayaran filter
+        if ($request->filled('metode_pembayaran')) {
+            $query->where('metode_pembayaran', $request->metode_pembayaran);
+        }
+
+        // Default sorting by date descending
+        $pembayaran = $query->orderBy('tanggal', 'desc')
             ->orderBy('created_at', 'desc')
-            ->paginate(15);
+            ->paginate(15)
+            ->appends($request->query());
 
         return view('pembayaran.index', compact('pembayaran'));
     }

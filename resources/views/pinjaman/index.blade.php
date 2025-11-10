@@ -157,14 +157,32 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Dari</label>
-                    <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari') }}"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+                    <div class="relative">
+                        <input type="text" id="tanggal_dari" readonly
+                            value="{{ request('tanggal_dari') ? \Carbon\Carbon::parse(request('tanggal_dari'))->format('d/m/Y') : '' }}"
+                            placeholder="Pilih tanggal"
+                            class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer bg-white hover:bg-gray-50">
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <i class="ti ti-calendar text-gray-400"></i>
+                        </div>
+                    </div>
+                    <input type="hidden" name="tanggal_dari" id="tanggal_dari_hidden"
+                        value="{{ request('tanggal_dari') ? \Carbon\Carbon::parse(request('tanggal_dari'))->format('Y-m-d') : '' }}">
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Sampai</label>
-                    <input type="date" name="tanggal_sampai" value="{{ request('tanggal_sampai') }}"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+                    <div class="relative">
+                        <input type="text" id="tanggal_sampai" readonly
+                            value="{{ request('tanggal_sampai') ? \Carbon\Carbon::parse(request('tanggal_sampai'))->format('d/m/Y') : '' }}"
+                            placeholder="Pilih tanggal"
+                            class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer bg-white hover:bg-gray-50">
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <i class="ti ti-calendar text-gray-400"></i>
+                        </div>
+                    </div>
+                    <input type="hidden" name="tanggal_sampai" id="tanggal_sampai_hidden"
+                        value="{{ request('tanggal_sampai') ? \Carbon\Carbon::parse(request('tanggal_sampai'))->format('Y-m-d') : '' }}">
                 </div>
 
                 <div>
@@ -400,3 +418,117 @@
         </div>
     </div>
 @endsection
+
+@push('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        /* Custom Flatpickr Styling - Tema Orange untuk Pinjaman */
+        .flatpickr-calendar {
+            background: #ffffff !important;
+            border: 1px solid #e5e7eb !important;
+            border-radius: 16px !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 14px !important;
+        }
+
+        .flatpickr-months {
+            background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%) !important;
+            border-radius: 16px 16px 0 0 !important;
+            padding: 16px 0 !important;
+        }
+
+        .flatpickr-month {
+            color: #ffffff !important;
+            font-weight: 600 !important;
+        }
+
+        .flatpickr-current-month {
+            color: #ffffff !important;
+        }
+
+        .flatpickr-day.selected {
+            background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%) !important;
+            color: #ffffff !important;
+            border: none !important;
+        }
+
+        .flatpickr-day.today {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+            color: #ffffff !important;
+        }
+    </style>
+@endpush
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
+    <script>
+        // Initialize Flatpickr Date Pickers
+        document.addEventListener('DOMContentLoaded', function() {
+            // Date From Picker
+            const dateFromPicker = flatpickr("#tanggal_dari", {
+                locale: "id",
+                dateFormat: "d/m/Y",
+                allowInput: false,
+                clickOpens: true,
+                @if(request('tanggal_dari'))
+                defaultDate: "{{ \Carbon\Carbon::parse(request('tanggal_dari'))->format('d/m/Y') }}",
+                @endif
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (selectedDates[0]) {
+                        // Format tanggal ke Y-m-d tanpa terpengaruh timezone
+                        const date = selectedDates[0];
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const isoDate = `${year}-${month}-${day}`;
+                        
+                        document.getElementById('tanggal_dari_hidden').value = isoDate;
+                    }
+                }
+            });
+
+            // Date To Picker
+            const dateToPicker = flatpickr("#tanggal_sampai", {
+                locale: "id",
+                dateFormat: "d/m/Y",
+                allowInput: false,
+                clickOpens: true,
+                @if(request('tanggal_sampai'))
+                defaultDate: "{{ \Carbon\Carbon::parse(request('tanggal_sampai'))->format('d/m/Y') }}",
+                @endif
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (selectedDates[0]) {
+                        // Format tanggal ke Y-m-d tanpa terpengaruh timezone
+                        const date = selectedDates[0];
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const isoDate = `${year}-${month}-${day}`;
+                        
+                        document.getElementById('tanggal_sampai_hidden').value = isoDate;
+                    }
+                }
+            });
+
+            // Set min date for date_to based on date_from
+            dateFromPicker.config.onChange.push(function(selectedDates) {
+                if (selectedDates[0]) {
+                    dateToPicker.set('minDate', selectedDates[0]);
+                }
+            });
+
+            // Initialize hidden inputs with ISO format if defaultDate is set
+            @if(request('tanggal_dari'))
+            const tanggalDariValue = "{{ \Carbon\Carbon::parse(request('tanggal_dari'))->format('Y-m-d') }}";
+            document.getElementById('tanggal_dari_hidden').value = tanggalDariValue;
+            @endif
+
+            @if(request('tanggal_sampai'))
+            const tanggalSampaiValue = "{{ \Carbon\Carbon::parse(request('tanggal_sampai'))->format('Y-m-d') }}";
+            document.getElementById('tanggal_sampai_hidden').value = tanggalSampaiValue;
+            @endif
+        });
+    </script>
+@endpush
