@@ -167,7 +167,9 @@ class UangMukaSupplierController extends Controller
                 'user',
                 'kasBank',
                 'penggunaanPembelian.pembelian',
-                'penggunaanPembelian.user'
+                'penggunaanPembelian.user',
+                'pengembalianUang.kasBank',
+                'pengembalianUang.user'
             ])->findOrFail($id);
 
             return view('uang-muka-supplier.show', compact('uangMuka'));
@@ -327,6 +329,165 @@ class UangMukaSupplierController extends Controller
             'keterangan' => "Uang muka supplier {$uangMuka->no_uang_muka} - {$uangMuka->supplier->nama}",
             'user_id' => Auth::id(),
         ]);
+    }
+
+    /**
+     * Return uang muka (pengembalian sisa uang muka)
+     */
+    public function return($encryptedId, Request $request)
+    {
+        // Clean jumlah_kembali dari format currency (jika ada)
+        $request->merge([
+            'jumlah_kembali' => preg_replace('/[^\d]/', '', $request->jumlah_kembali ?? '0')
+        ]);
+
+        $validated = $request->validate([
+            'jumlah_kembali' => 'required|numeric|min:1',
+            'kas_bank_id' => 'required|exists:kas_bank,id',
+            'tanggal' => 'required|date',
+            'keterangan' => 'nullable|string|max:500',
+        ], [
+            'jumlah_kembali.required' => 'Masukkan jumlah yang akan dikembalikan.',
+            'jumlah_kembali.numeric' => 'Jumlah harus berupa angka.',
+            'jumlah_kembali.min' => 'Jumlah minimal 1.',
+            'kas_bank_id.required' => 'Pilih kas/bank terlebih dahulu.',
+            'kas_bank_id.exists' => 'Kas/bank yang dipilih tidak valid.',
+            'tanggal.required' => 'Pilih tanggal terlebih dahulu.',
+            'tanggal.date' => 'Format tanggal tidak valid.',
+            'keterangan.max' => 'Keterangan maksimal 500 karakter.',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $id = decrypt($encryptedId);
+            $uangMuka = UangMukaSupplier::findOrFail($id);
+
+            // Cek apakah status aktif
+            if ($uangMuka->status !== 'aktif') {
+                return back()->with('error', 'Uang muka tidak aktif atau sudah habis.');
+            }
+
+            // Cek apakah ada sisa uang muka
+            if ($uangMuka->sisa_uang_muka <= 0) {
+                return back()->with('error', 'Tidak ada sisa uang muka yang dapat dikembalikan.');
+            }
+
+            // Cek apakah jumlah yang dikembalikan tidak melebihi sisa
+            if ($validated['jumlah_kembali'] > $uangMuka->sisa_uang_muka) {
+                return back()->with('error', 'Jumlah yang dikembalikan tidak boleh melebihi sisa uang muka.');
+            }
+
+            // Update sisa uang muka
+            $sisaBaru = $uangMuka->sisa_uang_muka - $validated['jumlah_kembali'];
+            $uangMuka->update([
+                'sisa_uang_muka' => $sisaBaru,
+                'status' => $sisaBaru <= 0 ? 'habis' : 'aktif'
+            ]);
+
+            // Update saldo kas/bank (Debet = menambah saldo)
+            $kasBank = KasBank::find($validated['kas_bank_id']);
+            $kasBank->updateSaldo($validated['jumlah_kembali'], 'D');
+
+            // Catat transaksi kas/bank untuk pengembalian
+            $this->catatTransaksiKasBankReturn($uangMuka, $kasBank, $validated);
+
+            DB::commit();
+
+            return redirect()->route('uang-muka-supplier.show', $encryptedId)
+                ->with('success', 'Pengembalian uang muka berhasil dicatat.');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return back()->withInput()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Catat transaksi kas/bank untuk pengembalian uang muka
+     */
+    private function catatTransaksiKasBankReturn(UangMukaSupplier $uangMuka, KasBank $kasBank, array $data)
+    {
+        // Generate nomor bukti
+        $prefix = 'RT-UM-SUP';
+        $date = date('Ymd', strtotime($data['tanggal']));
+        $lastTransaksi = TransaksiKasBank::where('no_bukti', 'like', "{$prefix}{$date}%")
+            ->orderBy('no_bukti', 'desc')
+            ->first();
+
+        if ($lastTransaksi) {
+            $lastNumber = intval(substr($lastTransaksi->no_bukti, -4));
+            $newNumber = $lastNumber + 1;
+        } else {
+            $newNumber = 1;
+        }
+
+        $noBukti = $prefix . $date . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+
+        // Buat transaksi kas/bank
+        TransaksiKasBank::create([
+            'kas_bank_id' => $kasBank->id,
+            'tanggal' => $data['tanggal'],
+            'no_bukti' => $noBukti,
+            'jenis_transaksi' => 'D', // Debet = pemasukan (uang kembali)
+            'kategori_transaksi' => 'PB', // Pembelian
+            'referensi_id' => $uangMuka->id,
+            'referensi_tipe' => 'UMS', // Uang Muka Supplier
+            'jumlah' => $data['jumlah_kembali'],
+            'keterangan' => "Pengembalian uang muka supplier {$uangMuka->no_uang_muka} - {$uangMuka->supplier->nama}" . 
+                ($data['keterangan'] ? " - {$data['keterangan']}" : ''),
+            'user_id' => Auth::id(),
+        ]);
+    }
+
+    /**
+     * Delete pengembalian uang muka
+     */
+    public function deleteReturn($encryptedId, $transaksiId)
+    {
+        DB::beginTransaction();
+        try {
+            $id = decrypt($encryptedId);
+            $uangMuka = UangMukaSupplier::findOrFail($id);
+            
+            // Cari transaksi pengembalian
+            $transaksi = TransaksiKasBank::where('id', $transaksiId)
+                ->where('referensi_id', $uangMuka->id)
+                ->where('referensi_tipe', 'UMS')
+                ->where('jenis_transaksi', 'D')
+                ->where('no_bukti', 'like', 'RT-UM-SUP%')
+                ->firstOrFail();
+
+            // Validasi: pastikan ini adalah transaksi pengembalian
+            if (!$transaksi) {
+                return redirect()->route('uang-muka-supplier.show', $encryptedId)
+                    ->with('error', 'Transaksi pengembalian tidak ditemukan.');
+            }
+
+            // Kembalikan saldo kas/bank (Kredit = mengurangi saldo karena menghapus Debet)
+            $kasBank = $transaksi->kasBank;
+            if ($kasBank) {
+                $kasBank->updateSaldo($transaksi->jumlah, 'K');
+            }
+
+            // Update sisa uang muka (tambah kembali jumlah yang dikembalikan)
+            $sisaBaru = $uangMuka->sisa_uang_muka + $transaksi->jumlah;
+            $uangMuka->update([
+                'sisa_uang_muka' => $sisaBaru,
+                'status' => 'aktif' // Kembalikan status ke aktif jika sebelumnya habis
+            ]);
+
+            // Hapus transaksi
+            $transaksi->delete();
+
+            DB::commit();
+
+            return redirect()->route('uang-muka-supplier.show', $encryptedId)
+                ->with('success', 'Pengembalian uang muka berhasil dihapus.');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return redirect()->route('uang-muka-supplier.show', $encryptedId)
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 
     /**

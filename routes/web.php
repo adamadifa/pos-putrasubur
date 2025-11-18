@@ -220,6 +220,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/', [UangMukaSupplierController::class, 'store'])->name('store');
         Route::get('/get-available', [UangMukaSupplierController::class, 'getAvailableUangMuka'])->name('get-available');
         Route::get('/{encryptedId}', [UangMukaSupplierController::class, 'show'])->name('show');
+        Route::post('/{encryptedId}/return', [UangMukaSupplierController::class, 'return'])->name('return');
+        Route::delete('/{encryptedId}/return/{transaksiId}', [UangMukaSupplierController::class, 'deleteReturn'])->name('return.delete');
         Route::delete('/{encryptedId}/cancel', [UangMukaSupplierController::class, 'cancel'])->name('cancel');
         Route::delete('/{encryptedId}', [UangMukaSupplierController::class, 'destroy'])->name('destroy');
     });

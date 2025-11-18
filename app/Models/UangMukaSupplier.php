@@ -53,6 +53,16 @@ class UangMukaSupplier extends Model
         return $this->hasMany(PenggunaanUangMukaPembelian::class, 'uang_muka_supplier_id');
     }
 
+    public function pengembalianUang()
+    {
+        return $this->hasMany(TransaksiKasBank::class, 'referensi_id')
+            ->where('referensi_tipe', 'UMS')
+            ->where('jenis_transaksi', 'D')
+            ->where('no_bukti', 'like', 'RT-UM-SUP%')
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('created_at', 'desc');
+    }
+
     // Accessors
     public function getEncryptedIdAttribute()
     {
