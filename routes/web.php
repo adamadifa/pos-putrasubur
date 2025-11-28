@@ -283,6 +283,7 @@ Route::middleware('auth')->group(function () {
         Route::prefix('stok')->name('stok.')->group(function () {
             Route::get('/', [LaporanStokController::class, 'index'])->name('index');
             Route::post('/export-pdf', [LaporanStokController::class, 'exportPdf'])->name('export-pdf');
+            Route::get('/print', [LaporanStokController::class, 'print'])->name('print');
         });
 
         Route::prefix('penjualan')->name('penjualan.')->group(function () {
@@ -306,11 +307,13 @@ Route::middleware('auth')->group(function () {
         Route::prefix('hutang')->name('hutang.')->group(function () {
             Route::get('/', [LaporanHutangController::class, 'index'])->name('index');
             Route::post('/export-pdf', [LaporanHutangController::class, 'exportPdf'])->name('export-pdf');
+            Route::get('/print', [LaporanHutangController::class, 'print'])->name('print');
         });
 
         Route::prefix('piutang')->name('piutang.')->group(function () {
             Route::get('/', [LaporanPiutangController::class, 'index'])->name('index');
             Route::post('/export-pdf', [LaporanPiutangController::class, 'exportPdf'])->name('export-pdf');
+            Route::get('/print', [LaporanPiutangController::class, 'print'])->name('print');
         });
     });
 

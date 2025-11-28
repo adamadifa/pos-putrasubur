@@ -42,11 +42,6 @@
                     class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 md:gap-4 mb-4 border-b border-gray-100 pb-3">
                     <div>
                         <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Periode Laporan</p>
-                        <div
-                            class="inline-flex items-center px-2.5 py-1 rounded-full bg-primary-50 text-primary-700 text-xs font-medium">
-                            <span class="w-2 h-2 rounded-full bg-primary-500 mr-2"></span>
-                            {{ $jenisPeriode === 'bulan' ? 'Per Bulan' : 'Periode Tanggal' }}
-                        </div>
                         <div class="mt-2 flex flex-wrap gap-3 text-xs md:text-sm text-gray-700">
                             <label class="inline-flex items-center gap-2 cursor-pointer">
                                 <input type="radio" name="jenis_periode" value="bulan"
@@ -877,9 +872,13 @@
 
             // Get form elements for clearing values
             const bulanSelect = document.getElementById('bulan');
+            const bulanMobileSelect = document.getElementById('bulan_mobile');
             const tahunSelect = document.getElementById('tahun');
+            const tahunMobileSelect = document.getElementById('tahun_mobile');
             const tanggalDariInput = document.getElementById('tanggal_dari');
+            const tanggalDariMobileInput = document.getElementById('tanggal_dari_mobile');
             const tanggalSampaiInput = document.getElementById('tanggal_sampai');
+            const tanggalSampaiMobileInput = document.getElementById('tanggal_sampai_mobile');
 
             if (jenisPeriode === 'bulan') {
                 // Show bulan/tahun filters, hide tanggal filters
@@ -892,8 +891,47 @@
                 if (tanggalFilterMobile) tanggalFilterMobile.style.display = 'none';
 
                 // Clear tanggal values
-                if (tanggalDariInput) tanggalDariInput.value = '';
-                if (tanggalSampaiInput) tanggalSampaiInput.value = '';
+                if (tanggalDariInput) {
+                    tanggalDariInput.value = '';
+                    if (tanggalDariInput._flatpickr) {
+                        tanggalDariInput._flatpickr.clear();
+                    }
+                }
+                if (tanggalDariMobileInput) {
+                    tanggalDariMobileInput.value = '';
+                    if (tanggalDariMobileInput._flatpickr) {
+                        tanggalDariMobileInput._flatpickr.clear();
+                    }
+                }
+                if (tanggalSampaiInput) {
+                    tanggalSampaiInput.value = '';
+                    if (tanggalSampaiInput._flatpickr) {
+                        tanggalSampaiInput._flatpickr.clear();
+                    }
+                }
+                if (tanggalSampaiMobileInput) {
+                    tanggalSampaiMobileInput.value = '';
+                    if (tanggalSampaiMobileInput._flatpickr) {
+                        tanggalSampaiMobileInput._flatpickr.clear();
+                    }
+                }
+
+                // Set default values for bulan and tahun if they are empty
+                const currentMonth = new Date().getMonth() + 1; // getMonth() returns 0-11
+                const currentYear = new Date().getFullYear();
+                
+                if (bulanSelect && !bulanSelect.value) {
+                    bulanSelect.value = currentMonth;
+                }
+                if (bulanMobileSelect && !bulanMobileSelect.value) {
+                    bulanMobileSelect.value = currentMonth;
+                }
+                if (tahunSelect && !tahunSelect.value) {
+                    tahunSelect.value = currentYear;
+                }
+                if (tahunMobileSelect && !tahunMobileSelect.value) {
+                    tahunMobileSelect.value = currentYear;
+                }
             } else {
                 // Hide bulan/tahun filters, show tanggal filters
                 if (bulanFilterDesktop) bulanFilterDesktop.classList.add('hidden');
@@ -904,10 +942,9 @@
                 if (bulanTahunFilterMobile) bulanTahunFilterMobile.style.display = 'none';
                 if (tanggalFilterMobile) tanggalFilterMobile.style.display = 'block';
 
-                // Clear bulan/tahun values
-                if (bulanSelect) bulanSelect.value = '';
-                if (tahunSelect) tahunSelect.value = '';
-
+                // Don't clear bulan/tahun values, just hide them
+                // This way when user switches back, the values are preserved
+                
                 // Re-initialize flatpickr for date inputs
                 setTimeout(() => {
                     initializeFlatpickr();

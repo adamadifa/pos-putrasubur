@@ -715,7 +715,7 @@
             <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
                 <div class="flex-1 flex justify-between sm:hidden">
                     @if ($pembelian->previousPageUrl())
-                        <a href="{{ $pembelian->previousPageUrl() }}"
+                        <a href="{{ $pembelian->appends(request()->query())->previousPageUrl() }}"
                             class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                             Sebelumnya
                         </a>
@@ -727,13 +727,13 @@
                     @endif
 
                     @if ($pembelian->nextPageUrl())
-                        <a href="{{ $pembelian->nextPageUrl() }}"
+                        <a href="{{ $pembelian->appends(request()->query())->nextPageUrl() }}"
                             class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                             Selanjutnya
                         </a>
                     @else
                         <span
-                            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-400 bg-gray-50 cursor-not-allowed">
                             Selanjutnya
                         </span>
                     @endif
@@ -747,7 +747,7 @@
                         </p>
                     </div>
                     <div>
-                        {{ $pembelian->links() }}
+                        {{ $pembelian->appends(request()->query())->links() }}
                     </div>
                 </div>
             </div>

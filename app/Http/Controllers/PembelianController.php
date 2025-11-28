@@ -64,10 +64,11 @@ class PembelianController extends Controller
             $query->where('jenis_transaksi', $request->jenis_transaksi);
         }
 
-        // Get paginated results
+        // Get paginated results with query string preservation
         $pembelian = $query->orderBy('tanggal', 'desc')
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
 
         // Calculate statistics for today
         $today = Carbon::today();

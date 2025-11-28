@@ -332,4 +332,129 @@ class LaporanPiutangController extends Controller
             return redirect()->back()->with('error', 'Terjadi kesalahan saat mengexport PDF.');
         }
     }
+
+    public function print(Request $request)
+    {
+        // Get filter values from request
+        $jenisPeriode = $request->get('jenis_periode', '');
+        $selectedBulan = $request->get('bulan', date('n'));
+        $selectedTahun = $request->get('tahun', date('Y'));
+        $tanggalDari = $request->get('tanggal_dari', '');
+        $tanggalSampai = $request->get('tanggal_sampai', '');
+        $pelangganId = $request->get('pelanggan_id', '');
+
+        // Set default period type
+        if ($jenisPeriode == '') {
+            $jenisPeriode = 'semua';
+        }
+
+        // Build query for penjualan with kredit transaction type
+        $query = Penjualan::with(['pelanggan', 'pembayaranPenjualan'])
+            ->where('jenis_transaksi', 'kredit')
+            ->where('status_pembayaran', '!=', 'batal');
+
+        // Apply period filter
+        if ($jenisPeriode == 'bulan') {
+            $query->whereYear('tanggal', $selectedTahun)
+                ->whereMonth('tanggal', $selectedBulan);
+        } elseif ($jenisPeriode == 'tanggal') {
+            if ($tanggalDari && $tanggalSampai) {
+                $query->whereBetween('tanggal', [$tanggalDari, $tanggalSampai]);
+            }
+        }
+
+        // Apply pelanggan filter
+        if ($pelangganId) {
+            $query->where('pelanggan_id', $pelangganId);
+        }
+
+        // Get penjualan data
+        $penjualanList = $query->orderBy('tanggal', 'asc')->get();
+
+        // Process data to calculate piutang
+        $piutangs = $penjualanList->map(function ($penjualan) {
+            $totalBayar = $penjualan->pembayaranPenjualan->sum('jumlah_bayar');
+            $sisaPiutang = $penjualan->total - $totalBayar;
+            $status = 'belum_bayar';
+            if ($sisaPiutang <= 0) {
+                $status = 'lunas';
+            } elseif ($totalBayar > 0 && $sisaPiutang > 0) {
+                $status = 'angsuran';
+            }
+            return [
+                'no_faktur' => $penjualan->no_faktur,
+                'tanggal' => $penjualan->tanggal,
+                'pelanggan' => $penjualan->pelanggan->nama ?? 'Tidak ada',
+                'total' => $penjualan->total,
+                'terbayar' => $totalBayar,
+                'sisa' => $sisaPiutang,
+                'status' => $status
+            ];
+        })->filter(function ($item) {
+            return $item['sisa'] > 0;
+        });
+
+        // Calculate summary
+        $totalPiutang = $piutangs->sum('sisa');
+        $totalTransaksi = $piutangs->count();
+        $belumBayar = $piutangs->where('status', 'belum_bayar')->count();
+        $dp = $piutangs->where('status', 'dp')->count();
+
+        // Group by pelanggan for rekap
+        $rekapPelanggan = $piutangs->groupBy('pelanggan')->map(function ($piutangGroup, $pelanggan) {
+            return [
+                'pelanggan' => $pelanggan,
+                'total_transaksi' => $piutangGroup->count(),
+                'total_piutang' => $piutangGroup->sum('total'),
+                'total_terbayar' => $piutangGroup->sum('terbayar'),
+                'sisa_piutang' => $piutangGroup->sum('sisa'),
+                'belum_bayar' => $piutangGroup->where('status', 'belum_bayar')->count(),
+                'dp' => $piutangGroup->where('status', 'dp')->count(),
+                'angsuran' => $piutangGroup->where('status', 'angsuran')->count()
+            ];
+        })->sortByDesc('sisa_piutang');
+
+        // Prepare periode info
+        $periode = [
+            'jenis' => $jenisPeriode,
+            'deskripsi' => 'Semua Waktu'
+        ];
+
+        if ($jenisPeriode === 'bulan') {
+            $bulanList = [
+                1 => 'Januari',
+                2 => 'Februari',
+                3 => 'Maret',
+                4 => 'April',
+                5 => 'Mei',
+                6 => 'Juni',
+                7 => 'Juli',
+                8 => 'Agustus',
+                9 => 'September',
+                10 => 'Oktober',
+                11 => 'November',
+                12 => 'Desember'
+            ];
+            $periode['bulan_nama'] = $bulanList[$selectedBulan];
+            $periode['bulan'] = $selectedBulan;
+            $periode['tahun'] = $selectedTahun;
+        } elseif ($jenisPeriode === 'tanggal') {
+            $periode['tanggal_dari'] = $tanggalDari;
+            $periode['tanggal_sampai'] = $tanggalSampai;
+        }
+
+        $laporanData = [
+            'piutangs' => $piutangs,
+            'summary' => [
+                'total_piutang' => $totalPiutang,
+                'total_transaksi' => $totalTransaksi,
+                'belum_bayar' => $belumBayar,
+                'dp' => $dp
+            ],
+            'rekap_pelanggan' => $rekapPelanggan,
+            'periode' => $periode
+        ];
+
+        return view('laporan.piutang.pdf', compact('laporanData'));
+    }
 }

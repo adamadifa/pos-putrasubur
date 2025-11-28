@@ -14,31 +14,58 @@
         </div>
 
         <!-- Filter Form -->
-        <div class="bg-white rounded-lg md:rounded-xl shadow-lg border border-gray-100 p-4 md:p-6">
+        <div class="bg-white rounded-lg md:rounded-xl shadow-lg border border-gray-100 p-4 md:p-6 no-print">
             <form method="GET" action="{{ route('laporan.stok.index') }}" id="laporanForm">
-                <!-- Periode Type Selection -->
-                <div class="mb-4 md:mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-3">Jenis Periode</label>
-                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-                        <label class="flex items-center">
-                            <input type="radio" name="jenis_periode" value="bulan"
-                                {{ $jenisPeriode == 'bulan' ? 'checked' : '' }}
-                                class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                                onchange="togglePeriodeType()">
-                            <span class="ml-2 text-sm text-gray-700">Per Bulan</span>
-                        </label>
-                        <label class="flex items-center">
-                            <input type="radio" name="jenis_periode" value="tanggal"
-                                {{ $jenisPeriode == 'tanggal' ? 'checked' : '' }}
-                                class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                                onchange="togglePeriodeType()">
-                            <span class="ml-2 text-sm text-gray-700">Periode Tanggal</span>
-                        </label>
+                <!-- Header: Periode + Actions (compact) -->
+                <div
+                    class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 md:gap-4 mb-4 border-b border-gray-100 pb-3">
+                    <div>
+                        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Periode Laporan</p>
+                        <div class="mt-2 flex flex-wrap gap-3 text-xs md:text-sm text-gray-700">
+                            <label class="inline-flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="jenis_periode" value="bulan"
+                                    {{ $jenisPeriode == 'bulan' ? 'checked' : '' }}
+                                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                                    onchange="togglePeriodeType()">
+                                <span>Per Bulan</span>
+                            </label>
+                            <label class="inline-flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="jenis_periode" value="tanggal"
+                                    {{ $jenisPeriode == 'tanggal' ? 'checked' : '' }}
+                                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                                    onchange="togglePeriodeType()">
+                                <span>Periode Tanggal</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 w-full lg:w-auto">
+                        <button type="submit"
+                            class="flex-1 lg:flex-none inline-flex items-center justify-center px-4 py-2.5 bg-primary-600 border border-transparent rounded-lg font-medium text-white text-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary-500 transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                            <span class="hidden sm:inline">Tampilkan</span>
+                            <span class="sm:hidden">Cari</span>
+                        </button>
+
+                        @if (isset($laporanData) && $laporanData)
+                            <button type="button" id="printBtn"
+                                class="flex-1 lg:flex-none inline-flex items-center justify-center px-4 py-2.5 bg-gray-800 border border-transparent rounded-lg font-medium text-white text-sm hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-600 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 9V2h12v7M6 18h12v4H6zM6 14h12a2 2 0 002-2V9H4v3a2 2 0 002 2z" />
+                                </svg>
+                                <span class="hidden sm:inline">Cetak</span>
+                                <span class="sm:hidden">Cetak</span>
+                            </button>
+                        @endif
                     </div>
                 </div>
 
-                <!-- Desktop Layout - All elements aligned with equal width -->
-                <div class="hidden lg:grid grid-cols-6 gap-4 mb-4">
+                <!-- Desktop Layout - Filters (full-width, dibagi rata per field) -->
+                <div class="hidden lg:grid grid-cols-3 gap-4 mb-4">
                     <!-- Produk Filter -->
                     <div>
                         <label for="produk_id" class="block text-sm font-medium text-gray-700 mb-1">Produk
@@ -107,27 +134,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Action Buttons -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">&nbsp;</label>
-                        <button type="submit"
-                            class="w-full inline-flex items-center justify-center px-4 py-2 bg-primary-600 border border-transparent rounded-lg font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
-                            <i class="ti ti-search text-lg mr-2"></i>
-                            Tampilkan
-                        </button>
-                    </div>
-
-                    @if (isset($laporanData) && $laporanData)
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">&nbsp;</label>
-                            <button type="button" onclick="exportToPdf()"
-                                class="w-full inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
-                                <i class="ti ti-file-download text-lg mr-2"></i>
-                                Export PDF
-                            </button>
-                        </div>
-                    @endif
                 </div>
 
                 <!-- Mobile/Tablet Layout - Responsive grid -->
@@ -150,7 +156,8 @@
                     </div>
 
                     <!-- Bulan/Tahun Filter (for bulan type) -->
-                    <div id="bulanTahunFilterMobile" class="sm:col-span-2 {{ $jenisPeriode == 'tanggal' ? 'hidden' : '' }}"
+                    <div id="bulanTahunFilterMobile"
+                        class="sm:col-span-2 {{ $jenisPeriode == 'tanggal' ? 'hidden' : '' }}"
                         style="display: {{ $jenisPeriode == 'tanggal' ? 'none' : 'block' }};">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <!-- Bulan Filter -->
@@ -221,23 +228,7 @@
                     </div>
                 </div>
 
-                <!-- Mobile Action Buttons -->
-                <div class="lg:hidden grid grid-cols-2 gap-2">
-                    <button type="submit"
-                        class="mobile-button inline-flex items-center justify-center px-4 py-2 bg-primary-600 border border-transparent rounded-lg font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
-                        <i class="ti ti-search text-lg mr-2"></i>
-                        <span class="hidden sm:inline">Tampilkan</span>
-                        <span class="sm:hidden">Cari</span>
-                    </button>
-                    @if (isset($laporanData) && $laporanData)
-                        <button type="button" onclick="exportToPdf()"
-                            class="mobile-button inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
-                            <i class="ti ti-file-download text-lg mr-2"></i>
-                            <span class="hidden sm:inline">Export PDF</span>
-                            <span class="sm:hidden">PDF</span>
-                        </button>
-                    @endif
-                </div>
+                <!-- Mobile Action Buttons diheader (lihat header di atas) -->
             </form>
         </div>
 
@@ -737,7 +728,7 @@
                                             -
                                         </td>
                                         <td class="px-4 py-4 text-right text-sm font-bold text-blue-600">
-                                            {{ number_format($runningSaldo, 0, ',', '.') }}
+                                            {{ number_format($runningSaldo, 2, ',', '.') }}
                                         </td>
                                     </tr>
 
@@ -834,6 +825,75 @@
                 @apply text-xs px-3 py-2;
             }
         }
+
+        /* Select2 Custom Styling for Clear Button */
+        .select2-container--default .select2-selection--single .select2-selection__clear {
+            margin-right: 25px;
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 1;
+            padding: 4px 6px;
+            cursor: pointer;
+            color: #999;
+            transition: all 0.2s;
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__clear:hover {
+            color: #dc2626;
+            background-color: #fee2e2;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__clear:active {
+            background-color: #fecaca;
+            transform: scale(0.95);
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: #ffffff !important;
+            }
+
+            /* Sembunyikan elemen yang tidak perlu saat cetak */
+            header,
+            footer,
+            nav,
+            .no-print,
+            #printBtn {
+                display: none !important;
+            }
+
+            /* Full width untuk konten laporan */
+            .print-container {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+
+            /* Hindari pemotongan aneh di dalam tabel */
+            table {
+                page-break-inside: auto;
+            }
+
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+
+            .page-break {
+                page-break-before: always;
+            }
+        }
     </style>
 
     <script>
@@ -841,40 +901,158 @@
         document.addEventListener('DOMContentLoaded', function() {
             togglePeriodeType();
             initializeFlatpickr();
+            initializeSelect2();
             setupFormSynchronization();
+
+            // Add event listener for print button
+            const printBtn = document.getElementById('printBtn');
+            if (printBtn) {
+                printBtn.addEventListener('click', function() {
+                    const form = document.getElementById('laporanForm');
+                    const formData = new FormData(form);
+
+                    // Get produk_id from Select2 (jika menggunakan Select2)
+                    const produkId = typeof jQuery !== 'undefined' && $('#produk_id').length ?
+                        $('#produk_id').val() : document.getElementById('produk_id').value;
+                    if (produkId) {
+                        formData.set('produk_id', produkId);
+                    }
+
+                    // Convert d/m/Y to Y-m-d format if jenis_periode is tanggal
+                    const jenisPeriode = document.querySelector('input[name="jenis_periode"]:checked')
+                    .value;
+                    if (jenisPeriode === 'tanggal') {
+                        const convertDate = (dateStr) => {
+                            if (!dateStr) return '';
+                            const parts = dateStr.split('/');
+                            if (parts.length === 3) {
+                                return `${parts[2]}-${parts[1]}-${parts[0]}`;
+                            }
+                            return dateStr;
+                        };
+
+                        const tanggalDari = document.getElementById('tanggal_dari').value;
+                        const tanggalSampai = document.getElementById('tanggal_sampai').value;
+
+                        formData.set('tanggal_dari', convertDate(tanggalDari));
+                        formData.set('tanggal_sampai', convertDate(tanggalSampai));
+                    }
+
+                    const params = new URLSearchParams(formData);
+                    const url = '{{ route('laporan.stok.print') }}' + '?' + params.toString();
+                    window.open(url, '_blank');
+                });
+            }
+
+            // Handle form submission - convert date format if needed
+            const form = document.getElementById('laporanForm');
+            form.addEventListener('submit', function(e) {
+                const jenisPeriode = document.querySelector('input[name="jenis_periode"]:checked').value;
+                if (jenisPeriode === 'tanggal') {
+                    const tanggalDari = document.getElementById('tanggal_dari').value;
+                    const tanggalSampai = document.getElementById('tanggal_sampai').value;
+
+                    if (tanggalDari && tanggalSampai) {
+                        // Convert d/m/Y to Y-m-d format
+                        const convertDate = (dateStr) => {
+                            if (!dateStr) return '';
+                            const parts = dateStr.split('/');
+                            if (parts.length === 3) {
+                                return `${parts[2]}-${parts[1]}-${parts[0]}`;
+                            }
+                            return dateStr;
+                        };
+
+                        // Create hidden inputs with converted dates
+                        let hiddenDari = document.getElementById('tanggal_dari_hidden');
+                        let hiddenSampai = document.getElementById('tanggal_sampai_hidden');
+
+                        if (!hiddenDari) {
+                            hiddenDari = document.createElement('input');
+                            hiddenDari.type = 'hidden';
+                            hiddenDari.name = 'tanggal_dari';
+                            hiddenDari.id = 'tanggal_dari_hidden';
+                            form.appendChild(hiddenDari);
+                        }
+
+                        if (!hiddenSampai) {
+                            hiddenSampai = document.createElement('input');
+                            hiddenSampai.type = 'hidden';
+                            hiddenSampai.name = 'tanggal_sampai';
+                            hiddenSampai.id = 'tanggal_sampai_hidden';
+                            form.appendChild(hiddenSampai);
+                        }
+
+                        hiddenDari.value = convertDate(tanggalDari);
+                        hiddenSampai.value = convertDate(tanggalSampai);
+
+                        // Remove original inputs from form submission
+                        document.getElementById('tanggal_dari').disabled = true;
+                        document.getElementById('tanggal_sampai').disabled = true;
+                    }
+                }
+            });
         });
 
         function initializeFlatpickr() {
             // Initialize flatpickr for desktop tanggal_dari
             flatpickr("#tanggal_dari", {
-                dateFormat: "Y-m-d",
+                dateFormat: "d/m/Y",
                 locale: "id",
                 allowInput: false,
-                clickOpens: true
+                clickOpens: true,
+                onChange: function(selectedDates, dateStr, instance) {
+                    // Update tanggal_sampai min date
+                    if (selectedDates.length > 0) {
+                        const tanggalSampaiInput = document.getElementById('tanggal_sampai');
+                        const tanggalSampaiMobileInput = document.getElementById('tanggal_sampai_mobile');
+                        if (tanggalSampaiInput._flatpickr) {
+                            tanggalSampaiInput._flatpickr.set('minDate', selectedDates[0]);
+                        }
+                        if (tanggalSampaiMobileInput && tanggalSampaiMobileInput._flatpickr) {
+                            tanggalSampaiMobileInput._flatpickr.set('minDate', selectedDates[0]);
+                        }
+                    }
+                }
             });
 
             // Initialize flatpickr for desktop tanggal_sampai
             flatpickr("#tanggal_sampai", {
-                dateFormat: "Y-m-d",
+                dateFormat: "d/m/Y",
                 locale: "id",
                 allowInput: false,
-                clickOpens: true
+                clickOpens: true,
+                minDate: document.getElementById('tanggal_dari').value || "today"
             });
 
             // Initialize flatpickr for mobile tanggal_dari
             flatpickr("#tanggal_dari_mobile", {
-                dateFormat: "Y-m-d",
+                dateFormat: "d/m/Y",
                 locale: "id",
                 allowInput: false,
-                clickOpens: true
+                clickOpens: true,
+                onChange: function(selectedDates, dateStr, instance) {
+                    // Update tanggal_sampai min date
+                    if (selectedDates.length > 0) {
+                        const tanggalSampaiInput = document.getElementById('tanggal_sampai');
+                        const tanggalSampaiMobileInput = document.getElementById('tanggal_sampai_mobile');
+                        if (tanggalSampaiInput._flatpickr) {
+                            tanggalSampaiInput._flatpickr.set('minDate', selectedDates[0]);
+                        }
+                        if (tanggalSampaiMobileInput && tanggalSampaiMobileInput._flatpickr) {
+                            tanggalSampaiMobileInput._flatpickr.set('minDate', selectedDates[0]);
+                        }
+                    }
+                }
             });
 
             // Initialize flatpickr for mobile tanggal_sampai
             flatpickr("#tanggal_sampai_mobile", {
-                dateFormat: "Y-m-d",
+                dateFormat: "d/m/Y",
                 locale: "id",
                 allowInput: false,
-                clickOpens: true
+                clickOpens: true,
+                minDate: document.getElementById('tanggal_dari_mobile').value || "today"
             });
         }
 
@@ -893,52 +1071,78 @@
 
             // Get form elements
             const bulanSelect = document.getElementById('bulan');
-            const bulanSelectMobile = document.getElementById('bulan_mobile');
+            const bulanMobileSelect = document.getElementById('bulan_mobile');
             const tahunSelect = document.getElementById('tahun');
-            const tahunSelectMobile = document.getElementById('tahun_mobile');
+            const tahunMobileSelect = document.getElementById('tahun_mobile');
             const tanggalDariInput = document.getElementById('tanggal_dari');
-            const tanggalDariInputMobile = document.getElementById('tanggal_dari_mobile');
+            const tanggalDariMobileInput = document.getElementById('tanggal_dari_mobile');
             const tanggalSampaiInput = document.getElementById('tanggal_sampai');
-            const tanggalSampaiInputMobile = document.getElementById('tanggal_sampai_mobile');
+            const tanggalSampaiMobileInput = document.getElementById('tanggal_sampai_mobile');
 
             if (jenisPeriode === 'bulan') {
-                // Show bulan/tahun filter, hide tanggal filter
-                if (bulanFilterDesktop) {
-                    bulanFilterDesktop.style.display = 'block';
-                    tahunFilterDesktop.style.display = 'block';
-                    tanggalDariFilterDesktop.style.display = 'none';
-                    tanggalSampaiFilterDesktop.style.display = 'none';
-                }
+                // Show bulan/tahun filters, hide tanggal filters
+                if (bulanFilterDesktop) bulanFilterDesktop.classList.remove('hidden');
+                if (tahunFilterDesktop) tahunFilterDesktop.classList.remove('hidden');
+                if (tanggalDariFilterDesktop) tanggalDariFilterDesktop.classList.add('hidden');
+                if (tanggalSampaiFilterDesktop) tanggalSampaiFilterDesktop.classList.add('hidden');
 
-                if (bulanTahunFilterMobile) {
-                    bulanTahunFilterMobile.style.display = 'block';
-                    tanggalFilterMobile.style.display = 'none';
-                }
+                if (bulanTahunFilterMobile) bulanTahunFilterMobile.style.display = 'block';
+                if (tanggalFilterMobile) tanggalFilterMobile.style.display = 'none';
 
                 // Clear tanggal values
-                if (tanggalDariInput) tanggalDariInput.value = '';
-                if (tanggalDariInputMobile) tanggalDariInputMobile.value = '';
-                if (tanggalSampaiInput) tanggalSampaiInput.value = '';
-                if (tanggalSampaiInputMobile) tanggalSampaiInputMobile.value = '';
+                if (tanggalDariInput) {
+                    tanggalDariInput.value = '';
+                    if (tanggalDariInput._flatpickr) {
+                        tanggalDariInput._flatpickr.clear();
+                    }
+                }
+                if (tanggalDariMobileInput) {
+                    tanggalDariMobileInput.value = '';
+                    if (tanggalDariMobileInput._flatpickr) {
+                        tanggalDariMobileInput._flatpickr.clear();
+                    }
+                }
+                if (tanggalSampaiInput) {
+                    tanggalSampaiInput.value = '';
+                    if (tanggalSampaiInput._flatpickr) {
+                        tanggalSampaiInput._flatpickr.clear();
+                    }
+                }
+                if (tanggalSampaiMobileInput) {
+                    tanggalSampaiMobileInput.value = '';
+                    if (tanggalSampaiMobileInput._flatpickr) {
+                        tanggalSampaiMobileInput._flatpickr.clear();
+                    }
+                }
+
+                // Set default values for bulan and tahun if they are empty
+                const currentMonth = new Date().getMonth() + 1; // getMonth() returns 0-11
+                const currentYear = new Date().getFullYear();
+
+                if (bulanSelect && !bulanSelect.value) {
+                    bulanSelect.value = currentMonth;
+                }
+                if (bulanMobileSelect && !bulanMobileSelect.value) {
+                    bulanMobileSelect.value = currentMonth;
+                }
+                if (tahunSelect && !tahunSelect.value) {
+                    tahunSelect.value = currentYear;
+                }
+                if (tahunMobileSelect && !tahunMobileSelect.value) {
+                    tahunMobileSelect.value = currentYear;
+                }
             } else {
-                // Hide bulan/tahun filter, show tanggal filter
-                if (bulanFilterDesktop) {
-                    bulanFilterDesktop.style.display = 'none';
-                    tahunFilterDesktop.style.display = 'none';
-                    tanggalDariFilterDesktop.style.display = 'block';
-                    tanggalSampaiFilterDesktop.style.display = 'block';
-                }
+                // Hide bulan/tahun filters, show tanggal filters
+                if (bulanFilterDesktop) bulanFilterDesktop.classList.add('hidden');
+                if (tahunFilterDesktop) tahunFilterDesktop.classList.add('hidden');
+                if (tanggalDariFilterDesktop) tanggalDariFilterDesktop.classList.remove('hidden');
+                if (tanggalSampaiFilterDesktop) tanggalSampaiFilterDesktop.classList.remove('hidden');
 
-                if (bulanTahunFilterMobile) {
-                    bulanTahunFilterMobile.style.display = 'none';
-                    tanggalFilterMobile.style.display = 'block';
-                }
+                if (bulanTahunFilterMobile) bulanTahunFilterMobile.style.display = 'none';
+                if (tanggalFilterMobile) tanggalFilterMobile.style.display = 'block';
 
-                // Clear bulan/tahun values
-                if (bulanSelect) bulanSelect.value = '';
-                if (bulanSelectMobile) bulanSelectMobile.value = '';
-                if (tahunSelect) tahunSelect.value = '';
-                if (tahunSelectMobile) tahunSelectMobile.value = '';
+                // Don't clear bulan/tahun values, just hide them
+                // This way when user switches back, the values are preserved
 
                 // Re-initialize flatpickr for date inputs
                 setTimeout(() => {
@@ -947,16 +1151,92 @@
             }
         }
 
-        function setupFormSynchronization() {
-            // Sync produk_id
-            const produkDesktop = document.getElementById('produk_id');
-            const produkMobile = document.getElementById('produk_id_mobile');
-            if (produkDesktop && produkMobile) {
-                produkDesktop.addEventListener('change', function() {
-                    produkMobile.value = this.value;
+        function initializeSelect2() {
+            // Wait for jQuery to be available
+            if (typeof jQuery === 'undefined') {
+                console.error('jQuery is required for Select2');
+                return;
+            }
+
+            // Initialize Select2 for desktop produk_id
+            const produkDesktop = $('#produk_id');
+            if (produkDesktop.length) {
+                produkDesktop.select2({
+                    placeholder: 'Pilih Produk',
+                    allowClear: true,
+                    width: '100%',
+                    closeOnSelect: true,
+                    language: {
+                        noResults: function() {
+                            return "Produk tidak ditemukan";
+                        },
+                        searching: function() {
+                            return "Mencari...";
+                        }
+                    }
+                }).on('select2:select', function() {
+                    // Close dropdown after selection
+                    $(this).trigger('blur');
                 });
-                produkMobile.addEventListener('change', function() {
-                    produkDesktop.value = this.value;
+            }
+
+            // Initialize Select2 for mobile produk_id_mobile
+            const produkMobile = $('#produk_id_mobile');
+            if (produkMobile.length) {
+                produkMobile.select2({
+                    placeholder: 'Pilih Produk',
+                    allowClear: true,
+                    width: '100%',
+                    closeOnSelect: true,
+                    language: {
+                        noResults: function() {
+                            return "Produk tidak ditemukan";
+                        },
+                        searching: function() {
+                            return "Mencari...";
+                        }
+                    }
+                }).on('select2:select', function() {
+                    // Close dropdown after selection
+                    $(this).trigger('blur');
+                });
+            }
+        }
+
+        function setupFormSynchronization() {
+            // Sync produk_id with Select2 (prevent infinite loop)
+            const produkDesktop = $('#produk_id');
+            const produkMobile = $('#produk_id_mobile');
+
+            if (produkDesktop.length && produkMobile.length) {
+                let isSyncing = false;
+
+                // Sync from desktop to mobile
+                produkDesktop.on('select2:select select2:clear', function() {
+                    if (isSyncing) return;
+
+                    isSyncing = true;
+                    const value = $(this).val();
+                    if (produkMobile.val() !== value) {
+                        produkMobile.val(value).trigger('change');
+                    }
+                    setTimeout(() => {
+                        isSyncing = false;
+                    }, 200);
+                });
+
+                // Sync from mobile to desktop
+                produkMobile.on('select2:select select2:clear', function() {
+                    if (isSyncing) return;
+
+                    isSyncing = true;
+                    const value = $(this).val();
+                    if (produkDesktop.val() !== value) {
+                        produkDesktop.val(value).trigger('change');
+                    }
+                    setTimeout(() => {
+                        isSyncing = false;
+                    }, 200);
                 });
             }
 
@@ -1007,71 +1287,6 @@
                     tanggalSampaiDesktop.value = this.value;
                 });
             }
-        }
-
-        function exportToPdf() {
-            // Show loading state
-            const button = event.target.closest('button');
-            const originalText = button.innerHTML;
-            button.innerHTML = '<i class="ti ti-loader-2 animate-spin text-lg mr-2"></i>Mengekspor...';
-            button.disabled = true;
-
-            // Get form data
-            const formData = new FormData();
-            formData.append('produk_id', document.getElementById('produk_id').value);
-            formData.append('jenis_periode', document.querySelector('input[name="jenis_periode"]:checked').value);
-            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-
-            // Add periode-specific data
-            const jenisPeriode = document.querySelector('input[name="jenis_periode"]:checked').value;
-            if (jenisPeriode === 'bulan') {
-                formData.append('bulan', document.getElementById('bulan').value);
-                formData.append('tahun', document.getElementById('tahun').value);
-            } else {
-                formData.append('tanggal_dari', document.getElementById('tanggal_dari').value);
-                formData.append('tanggal_sampai', document.getElementById('tanggal_sampai').value);
-            }
-
-            // Make request
-            fetch('{{ route('laporan.stok.export-pdf') }}', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => {
-                    if (response.ok) {
-                        // Check if response is PDF
-                        const contentType = response.headers.get('content-type');
-                        if (contentType && contentType.includes('application/pdf')) {
-                            // Handle PDF response
-                            return response.blob().then(blob => {
-                                // Create object URL and open in new tab
-                                const url = window.URL.createObjectURL(blob);
-                                window.open(url, '_blank');
-                                showNotification('PDF berhasil dibuka di tab baru!', 'success');
-                            });
-                        } else {
-                            // Handle JSON response (error case)
-                            return response.json().then(data => {
-                                if (data.success) {
-                                    showNotification('PDF berhasil diekspor!', 'success');
-                                } else {
-                                    showNotification('Gagal mengekspor PDF: ' + data.message, 'error');
-                                }
-                            });
-                        }
-                    } else {
-                        throw new Error('Network response was not ok');
-                    }
-                })
-                .catch(error => {
-                    console.error('Export PDF error:', error);
-                    showNotification('Terjadi kesalahan saat mengekspor PDF', 'error');
-                })
-                .finally(() => {
-                    // Restore button state
-                    button.innerHTML = originalText;
-                    button.disabled = false;
-                });
         }
 
         function showNotification(message, type = 'info') {

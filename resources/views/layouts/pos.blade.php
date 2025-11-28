@@ -608,14 +608,14 @@
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
         <aside
-            class="sidebar-slide fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-all duration-300 ease-in-out flex flex-col"
+            class="sidebar-slide fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-blue-600 via-blue-700 to-indigo-800 shadow-2xl transform transition-all duration-300 ease-in-out flex flex-col"
             :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" x-show="sidebarOpen"
             x-transition:enter="transition ease-out duration-300" x-transition:enter-start="-translate-x-full"
             x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-300"
             x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full"
             style="backdrop-filter: blur(10px);">
             <!-- Logo -->
-            <div class="flex items-center justify-center h-16 px-4 border-b border-gray-200 flex-shrink-0">
+            <div class="flex items-center justify-center h-16 px-4 border-b border-blue-500/30 flex-shrink-0">
                 <div class="flex items-center gap-3">
                     @if ($pengaturanUmum->logo_url)
                         <div class="h-10 w-10 rounded-lg overflow-hidden border-2 border-gray-100 shadow-sm">
@@ -629,11 +629,10 @@
                         </div>
                     @endif
                     <div class="flex flex-col">
-                        <span
-                            class="text-lg font-bold text-gray-900 leading-tight">{{ $pengaturanUmum->nama_toko }}</span>
+                        <span class="text-lg font-bold text-white leading-tight">{{ $pengaturanUmum->nama_toko }}</span>
                         @if ($pengaturanUmum->deskripsi)
                             <span
-                                class="text-xs text-gray-500 leading-tight">{{ Str::limit($pengaturanUmum->deskripsi, 20) }}</span>
+                                class="text-xs text-blue-100 leading-tight">{{ Str::limit($pengaturanUmum->deskripsi, 20) }}</span>
                         @endif
                     </div>
                 </div>
@@ -652,7 +651,7 @@
                             request()->routeIs($menus['dashboard']['route']) || request()->routeIs('dashboard.*');
                     @endphp
                     <a href="{{ route($menus['dashboard']['route']) }}"
-                        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ $isDashboardActive ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-700 hover:bg-gray-50' }}">
+                        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ $isDashboardActive ? 'bg-white/20 text-white border-r-2 border-white shadow-lg' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" class="w-5 h-5 mr-3">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -665,7 +664,7 @@
                 @foreach ($menus as $sectionKey => $section)
                     @if ($sectionKey !== 'dashboard' && isset($section['items']) && count($section['items']) > 0)
                         <div class="pt-4">
-                            <h3 class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                            <h3 class="px-3 text-xs font-semibold text-blue-200 uppercase tracking-wider">
                                 {{ $section['name'] }}</h3>
                             <div class="mt-2 space-y-1">
                                 @foreach ($section['items'] as $itemKey => $item)
@@ -680,7 +679,7 @@
                                             request()->routeIs($baseRoute . '.show');
                                     @endphp
                                     <a href="{{ route($item['route']) }}"
-                                        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ $isActive ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-700 hover:bg-gray-50' }}">
+                                        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ $isActive ? 'bg-white/20 text-white border-r-2 border-white shadow-lg' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -697,20 +696,20 @@
             </nav>
 
             <!-- User Section -->
-            <div class="p-4 border-t border-gray-200 flex-shrink-0">
+            <div class="p-4 border-t border-blue-500/30 flex-shrink-0">
                 <!-- Store Contact Info -->
                 @if ($pengaturanUmum->no_telepon || $pengaturanUmum->email)
-                    <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                    <div class="mb-4 p-3 bg-white/10 rounded-lg border border-white/20 backdrop-blur-sm">
                         <div class="space-y-2">
                             @if ($pengaturanUmum->no_telepon)
-                                <div class="flex items-center gap-2 text-xs text-gray-600">
-                                    <i class="ti ti-phone text-blue-500"></i>
+                                <div class="flex items-center gap-2 text-xs text-blue-100">
+                                    <i class="ti ti-phone text-white"></i>
                                     <span>{{ $pengaturanUmum->no_telepon }}</span>
                                 </div>
                             @endif
                             @if ($pengaturanUmum->email)
-                                <div class="flex items-center gap-2 text-xs text-gray-600">
-                                    <i class="ti ti-mail text-green-500"></i>
+                                <div class="flex items-center gap-2 text-xs text-blue-100">
+                                    <i class="ti ti-mail text-white"></i>
                                     <span>{{ $pengaturanUmum->email }}</span>
                                 </div>
                             @endif
@@ -720,19 +719,19 @@
 
                 <div class="flex items-center gap-3 mb-3">
                     <div
-                        class="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-sm font-medium text-gray-700">
+                        class="h-8 w-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-sm font-medium text-white border border-white/30">
                         {{ substr(Auth::user()->name, 0, 1) }}
                     </div>
                     <div class="flex-1 min-w-0">
-                        <div class="text-sm font-medium text-gray-900 truncate">{{ Auth::user()->name }}</div>
-                        <div class="text-xs text-gray-500 truncate">{{ Auth::user()->email }}</div>
+                        <div class="text-sm font-medium text-white truncate">{{ Auth::user()->name }}</div>
+                        <div class="text-xs text-blue-100 truncate">{{ Auth::user()->email }}</div>
                     </div>
                 </div>
 
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit"
-                        class="w-full flex items-center px-3 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors">
+                        class="w-full flex items-center px-3 py-2 text-sm font-medium text-white rounded-lg hover:bg-white/20 transition-colors border border-white/30 backdrop-blur-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" class="w-5 h-5 mr-3">
                             <path stroke-linecap="round" stroke-linejoin="round"

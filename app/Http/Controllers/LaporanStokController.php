@@ -472,4 +472,44 @@ class LaporanStokController extends Controller
             return back()->with('error', 'Terjadi kesalahan saat mengekspor PDF: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Tampilkan laporan stok dalam format yang sama dengan PDF,
+     * langsung di browser (tanpa DomPDF), untuk kebutuhan cetak manual.
+     */
+    public function print(Request $request)
+    {
+        $request->validate([
+            'produk_id' => 'required|exists:produk,id',
+            'jenis_periode' => 'required|in:bulan,tanggal',
+        ]);
+
+        $laporanData = null;
+
+        if ($request->jenis_periode === 'tanggal') {
+            $request->validate([
+                'tanggal_dari' => 'required|date',
+                'tanggal_sampai' => 'required|date|after_or_equal:tanggal_dari',
+            ]);
+
+            $laporanData = $this->generateLaporanByDateRange(
+                $request->produk_id,
+                $request->tanggal_dari,
+                $request->tanggal_sampai
+            );
+        } else {
+            $request->validate([
+                'bulan' => 'required|integer|between:1,12',
+                'tahun' => 'required|integer|min:2020',
+            ]);
+
+            $laporanData = $this->generateLaporan(
+                $request->produk_id,
+                $request->bulan,
+                $request->tahun
+            );
+        }
+
+        return view('laporan.stok.pdf', compact('laporanData'));
+    }
 }
