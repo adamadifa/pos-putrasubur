@@ -334,4 +334,25 @@ class LaporanPenjualanController extends Controller
             return back()->with('error', 'Terjadi kesalahan saat mengekspor PDF: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Tampilkan laporan penjualan dalam format yang sama dengan PDF
+     * langsung di browser (tanpa DomPDF), untuk cetak manual.
+     */
+    public function print(Request $request)
+    {
+        $jenisPeriode = $request->input('jenis_periode', 'bulan');
+        $bulan = $request->input('bulan', date('n'));
+        $tahun = $request->input('tahun', date('Y'));
+        $tanggalDari = $request->input('tanggal_dari', '');
+        $tanggalSampai = $request->input('tanggal_sampai', '');
+
+        if ($jenisPeriode === 'tanggal' && $tanggalDari && $tanggalSampai) {
+            $laporanData = $this->generateLaporanByDateRange($tanggalDari, $tanggalSampai);
+        } else {
+            $laporanData = $this->generateLaporan($bulan, $tahun);
+        }
+
+        return view('laporan.penjualan.pdf', compact('laporanData'));
+    }
 }

@@ -37,29 +37,62 @@
         <!-- Filter Form -->
         <div class="bg-white rounded-lg md:rounded-xl shadow-lg border border-gray-100 p-4 md:p-6">
             <form method="GET" action="{{ route('laporan.pembayaran.index') }}" id="laporanForm">
-                <!-- Periode Type Selection -->
-                <div class="mb-4 md:mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-3">Jenis Periode</label>
-                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-                        <label class="flex items-center">
-                            <input type="radio" name="jenis_periode" value="bulan"
-                                {{ $jenisPeriode == 'bulan' ? 'checked' : '' }}
-                                class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                                onchange="togglePeriodeType()">
-                            <span class="ml-2 text-sm text-gray-700">Per Bulan</span>
-                        </label>
-                        <label class="flex items-center">
-                            <input type="radio" name="jenis_periode" value="tanggal"
-                                {{ $jenisPeriode == 'tanggal' ? 'checked' : '' }}
-                                class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                                onchange="togglePeriodeType()">
-                            <span class="ml-2 text-sm text-gray-700">Periode Tanggal</span>
-                        </label>
+                <!-- Header: Periode + Actions (compact) -->
+                <div
+                    class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 md:gap-4 mb-4 border-b border-gray-100 pb-3">
+                    <div>
+                        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Periode Laporan</p>
+                        <div
+                            class="inline-flex items-center px-2.5 py-1 rounded-full bg-primary-50 text-primary-700 text-xs font-medium">
+                            <span class="w-2 h-2 rounded-full bg-primary-500 mr-2"></span>
+                            {{ $jenisPeriode === 'bulan' ? 'Per Bulan' : 'Periode Tanggal' }}
+                        </div>
+                        <div class="mt-2 flex flex-wrap gap-3 text-xs md:text-sm text-gray-700">
+                            <label class="inline-flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="jenis_periode" value="bulan"
+                                    {{ $jenisPeriode == 'bulan' ? 'checked' : '' }}
+                                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                                    onchange="togglePeriodeType()">
+                                <span>Per Bulan</span>
+                            </label>
+                            <label class="inline-flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="jenis_periode" value="tanggal"
+                                    {{ $jenisPeriode == 'tanggal' ? 'checked' : '' }}
+                                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                                    onchange="togglePeriodeType()">
+                                <span>Periode Tanggal</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 w-full lg:w-auto">
+                        <button type="submit"
+                            class="flex-1 lg:flex-none inline-flex items-center justify-center px-4 py-2.5 bg-primary-600 border border-transparent rounded-lg font-medium text-white text-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary-500 transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                            <span class="hidden sm:inline">Tampilkan</span>
+                            <span class="sm:hidden">Cari</span>
+                        </button>
+
+                        @if ($laporanData)
+                            <button type="button" id="exportPdfBtn"
+                                class="flex-1 lg:flex-none inline-flex items-center justify-center px-4 py-2.5 bg-red-600 border border-transparent rounded-lg font-medium text-white text-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-red-500 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                    </path>
+                                </svg>
+                                <span class="hidden sm:inline">Export PDF</span>
+                                <span class="sm:hidden">PDF</span>
+                            </button>
+                        @endif
                     </div>
                 </div>
 
-                <!-- Desktop Layout - All elements aligned with equal width -->
-                <div class="hidden lg:grid grid-cols-8 gap-4 mb-4">
+                <!-- Desktop Layout - Filters (full-width, dibagi rata per field) -->
+                <div class="hidden lg:grid grid-cols-5 gap-4 mb-4">
                     <!-- Jenis Transaksi Filter -->
                     <div>
                         <label for="jenis_transaksi" class="block text-sm font-medium text-gray-700 mb-1">Jenis Transaksi
@@ -160,36 +193,9 @@
                         </div>
                     </div>
 
-                    <!-- Action Buttons -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">&nbsp;</label>
-                        <button type="submit"
-                            class="w-full inline-flex items-center justify-center px-4 py-2 bg-primary-600 border border-transparent rounded-lg font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
-                            Tampilkan
-                        </button>
-                    </div>
-
-                    @if ($laporanData)
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">&nbsp;</label>
-                            <button type="button" id="exportPdfBtn"
-                                class="w-full inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                    </path>
-                                </svg>
-                                Export PDF
-                            </button>
-                        </div>
-                    @endif
                 </div>
 
-                <!-- Mobile/Tablet Layout - Responsive grid -->
+                <!-- Mobile/Tablet Layout - Responsive grid (filters only) -->
                 <div class="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3 mb-2 md:mb-3">
                     <!-- Jenis Transaksi Filter -->
                     <div class="sm:col-span-2">
@@ -282,7 +288,7 @@
                     <!-- Tanggal Filter (for tanggal type) -->
                     <div id="tanggalFilterMobile" class="sm:col-span-2 {{ $jenisPeriode == 'bulan' ? 'hidden' : '' }}"
                         style="display: {{ $jenisPeriode == 'bulan' ? 'none' : 'block' }};">
-                        <!-- Tanggal Dari -->
+                            <!-- Tanggal Dari -->
                         <div class="mb-2">
                             <label for="tanggal_dari_mobile" class="block text-sm font-medium text-gray-700 mb-1">Tanggal
                                 Dari</label>
@@ -297,7 +303,7 @@
                             </div>
                         </div>
 
-                        <!-- Tanggal Sampai -->
+                            <!-- Tanggal Sampai -->
                         <div>
                             <label for="tanggal_sampai_mobile"
                                 class="block text-sm font-medium text-gray-700 mb-1">Tanggal
@@ -316,30 +322,7 @@
                 </div>
 
 
-                <!-- Mobile Action Buttons -->
-                <div class="lg:hidden grid grid-cols-2 gap-2">
-                    <button type="submit"
-                        class="mobile-button inline-flex items-center justify-center px-4 py-2 bg-primary-600 border border-transparent rounded-lg font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                        <span class="hidden sm:inline">Tampilkan</span>
-                        <span class="sm:hidden">Cari</span>
-                    </button>
-                    @if ($laporanData)
-                        <button type="button" id="exportPdfBtn"
-                            class="mobile-button inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                </path>
-                            </svg>
-                            <span class="hidden sm:inline">Export PDF</span>
-                            <span class="sm:hidden">PDF</span>
-                        </button>
-                    @endif
-                </div>
+                <!-- Mobile Action Buttons diheader (lihat header di atas) -->
             </form>
         </div>
 

@@ -196,16 +196,15 @@
                                 <span class="hidden sm:inline">Generate</span>
                                 <span class="sm:hidden">Cari</span>
                             </button>
-
-                            <button type="button" id="exportPdfBtn"
-                                class="w-full inline-flex items-center justify-center px-3 py-2 bg-red-600 border border-transparent rounded-lg font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors text-sm mobile-button">
+                            <button type="button" id="printBtn"
+                                class="w-full inline-flex items-center justify-center px-3 py-2 bg-gray-700 border border-transparent rounded-lg font-medium text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600 transition-colors text-sm mobile-button">
                                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                        d="M6 9V2h12v7M6 18h12v4H6zM6 14h12a2 2 0 002-2V9H4v3a2 2 0 002 2z">
                                     </path>
                                 </svg>
-                                <span class="hidden sm:inline">Export PDF</span>
-                                <span class="sm:hidden">PDF</span>
+                                <span class="hidden sm:inline">Cetak</span>
+                                <span class="sm:hidden">Cetak</span>
                             </button>
                         </div>
                     </div>
@@ -877,70 +876,19 @@
                 dateFormat: "d/m/Y",
                 locale: "id"
             });
-        });
 
-        // Export PDF functionality
-        document.getElementById('exportPdfBtn').addEventListener('click', function() {
-            // Show loading state
-            const button = this;
-            const originalText = button.innerHTML;
-            button.innerHTML = '<i class="ti ti-loader-2 animate-spin text-lg mr-2"></i>Mengekspor...';
-            button.disabled = true;
+            // Tombol cetak ke halaman khusus (format sama dengan PDF, tapi di browser)
+            const printBtn = document.getElementById('printBtn');
+            if (printBtn) {
+                printBtn.addEventListener('click', function() {
+                    const form = document.getElementById('laporanForm');
+                    const formData = new FormData(form);
+                    const params = new URLSearchParams(formData);
 
-            const form = document.getElementById('laporanForm');
-            const formData = new FormData(form);
-
-            // Add export parameter
-            formData.append('export_pdf', '1');
-
-            fetch('{{ route('laporan.penjualan.export-pdf') }}', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                            'content')
-                    }
-                })
-                .then(response => {
-                    if (response.headers.get('Content-Type') === 'application/pdf') {
-                        return response.blob();
-                    } else {
-                        return response.json();
-                    }
-                })
-                .then(data => {
-                    if (data instanceof Blob) {
-                        // Handle PDF response - open in new tab for preview
-                        const url = window.URL.createObjectURL(data);
-                        window.open(url, '_blank');
-                        // Clean up the URL after a delay
-                        setTimeout(() => {
-                            window.URL.revokeObjectURL(url);
-                        }, 1000);
-                    } else {
-                        // Handle JSON response (error)
-                        if (data.success === false) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: data.message || 'Terjadi kesalahan dalam mengexport PDF'
-                            });
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Terjadi kesalahan dalam mengexport PDF'
-                    });
-                })
-                .finally(() => {
-                    // Restore button state
-                    button.innerHTML = originalText;
-                    button.disabled = false;
+                    const url = '{{ route('laporan.penjualan.print') }}' + '?' + params.toString();
+                    window.open(url, '_blank');
                 });
+            }
         });
 
         // Modal Detail Penjualan

@@ -288,11 +288,13 @@ Route::middleware('auth')->group(function () {
         Route::prefix('penjualan')->name('penjualan.')->group(function () {
             Route::get('/', [LaporanPenjualanController::class, 'index'])->name('index');
             Route::post('/export-pdf', [LaporanPenjualanController::class, 'exportPdf'])->name('export-pdf');
+            Route::get('/print', [LaporanPenjualanController::class, 'print'])->name('print');
         });
 
         Route::prefix('pembelian')->name('pembelian.')->group(function () {
             Route::get('/', [LaporanPembelianController::class, 'index'])->name('index');
             Route::post('/export-pdf', [LaporanPembelianController::class, 'exportPdf'])->name('export-pdf');
+            Route::get('/print', [LaporanPembelianController::class, 'print'])->name('print');
         });
 
         Route::prefix('pembayaran')->name('pembayaran.')->group(function () {

@@ -85,6 +85,46 @@
                 text-align: right !important;
             }
         }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: #ffffff !important;
+            }
+
+            /* Sembunyikan elemen yang tidak perlu saat cetak */
+            header,
+            footer,
+            nav,
+            .no-print,
+            #exportPdfBtn,
+            #printBtn {
+                display: none !important;
+            }
+
+            /* Full width untuk konten laporan */
+            .print-container {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+
+            /* Hindari pemotongan aneh di dalam tabel */
+            table {
+                page-break-inside: auto;
+            }
+
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+
+            .page-break {
+                page-break-before: always;
+            }
+        }
     </style>
 
     <div class="space-y-4 md:space-y-6">
@@ -97,37 +137,66 @@
         </div>
 
         <!-- Filter Form -->
-        <div class="bg-white rounded-lg md:rounded-xl shadow-lg border border-gray-100 p-4 md:p-6">
+        <div class="bg-white rounded-lg md:rounded-xl shadow-lg border border-gray-100 p-4 md:p-5 no-print">
             <form method="GET" action="{{ route('laporan.pembelian.index') }}" id="laporanForm">
-                <!-- Periode Type Selection -->
-                <div class="mb-4 md:mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-3">Jenis Periode</label>
-                    <div class="flex space-x-4">
-                        <label class="flex items-center">
-                            <input type="radio" name="jenis_periode" value="bulan"
-                                {{ $jenisPeriode == 'bulan' ? 'checked' : '' }}
-                                class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                                onchange="togglePeriodeType()">
-                            <span class="ml-2 text-sm text-gray-700">Per Bulan</span>
-                        </label>
-                        <label class="flex items-center">
-                            <input type="radio" name="jenis_periode" value="tanggal"
-                                {{ $jenisPeriode == 'tanggal' ? 'checked' : '' }}
-                                class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                                onchange="togglePeriodeType()">
-                            <span class="ml-2 text-sm text-gray-700">Per Tanggal</span>
-                        </label>
+                <!-- Header: Periode + Actions (lebih compact) -->
+                <div
+                    class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 md:gap-4 mb-3 md:mb-4 border-b border-gray-100 pb-3">
+                    <div>
+                        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Periode Laporan</p>
+                        <div class="inline-flex items-center px-2.5 py-1 rounded-full bg-orange-50 text-orange-700 text-xs font-medium">
+                            <span class="w-2 h-2 rounded-full bg-orange-500 mr-2"></span>
+                            {{ $jenisPeriode === 'bulan' ? 'Per Bulan' : 'Per Tanggal' }}
+                        </div>
+                        <div class="mt-2 flex flex-wrap gap-3 text-xs md:text-sm text-gray-700">
+                            <label class="inline-flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="jenis_periode" value="bulan"
+                                    {{ $jenisPeriode == 'bulan' ? 'checked' : '' }}
+                                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                                    onchange="togglePeriodeType()">
+                                <span>Per Bulan</span>
+                            </label>
+                            <label class="inline-flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="jenis_periode" value="tanggal"
+                                    {{ $jenisPeriode == 'tanggal' ? 'checked' : '' }}
+                                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                                    onchange="togglePeriodeType()">
+                                <span>Per Tanggal</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 w-full lg:w-auto">
+                        <button type="submit"
+                            class="flex-1 lg:flex-none inline-flex items-center justify-center px-4 py-2.5 bg-primary-600 border border-transparent rounded-lg font-medium text-white text-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary-500 transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                            <span class="hidden sm:inline">Generate</span>
+                            <span class="sm:hidden">Cari</span>
+                        </button>
+                        <button type="button" id="printBtn"
+                            class="flex-1 lg:flex-none inline-flex items-center justify-center px-4 py-2.5 bg-gray-800 border border-transparent rounded-lg font-medium text-white text-sm hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-600 transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 9V2h12v7M6 18h12v4H6zM6 14h12a2 2 0 002-2V9H4v3a2 2 0 002 2z" />
+                            </svg>
+                            <span class="hidden sm:inline">Cetak</span>
+                            <span class="sm:hidden">Cetak</span>
+                        </button>
                     </div>
                 </div>
 
                 <!-- Filter Controls -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-2 md:gap-3 mb-2 md:mb-3">
+                <div
+                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-2.5 md:gap-3 items-end text-xs md:text-sm">
                     <!-- Bulan/Tahun Filter -->
                     <div id="bulanTahunFilter" class="space-y-1"
                         style="display: {{ $jenisPeriode == 'bulan' ? 'block' : 'none' }};">
-                        <label for="bulan" class="block text-sm font-medium text-gray-700">Bulan</label>
+                        <label for="bulan" class="block text-xs font-medium text-gray-600">Bulan</label>
                         <select
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white"
                             id="bulan" name="bulan">
                             @foreach ($bulanList as $key => $bulan)
                                 <option value="{{ $key }}" {{ $selectedBulan == $key ? 'selected' : '' }}>
@@ -139,9 +208,9 @@
 
                     <div id="tahunFilter" class="space-y-1"
                         style="display: {{ $jenisPeriode == 'bulan' ? 'block' : 'none' }};">
-                        <label for="tahun" class="block text-sm font-medium text-gray-700">Tahun</label>
+                        <label for="tahun" class="block text-xs font-medium text-gray-600">Tahun</label>
                         <select
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white"
                             id="tahun" name="tahun">
                             @for ($year = date('Y'); $year >= 2020; $year--)
                                 <option value="{{ $year }}" {{ $selectedTahun == $year ? 'selected' : '' }}>
@@ -154,7 +223,7 @@
                     <!-- Date Range Filter -->
                     <div id="tanggalFilter" class="space-y-1"
                         style="display: {{ $jenisPeriode == 'tanggal' ? 'block' : 'none' }};">
-                        <label for="tanggal_dari" class="block text-sm font-medium text-gray-700">Tanggal Dari</label>
+                        <label for="tanggal_dari" class="block text-xs font-medium text-gray-600">Tanggal Dari</label>
                         <input type="text" id="tanggal_dari" name="tanggal_dari" value="{{ $tanggalDari }}"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                             placeholder="Pilih tanggal">
@@ -162,36 +231,10 @@
 
                     <div id="tanggalSampaiFilter" class="space-y-1"
                         style="display: {{ $jenisPeriode == 'tanggal' ? 'block' : 'none' }};">
-                        <label for="tanggal_sampai" class="block text-sm font-medium text-gray-700">Tanggal Sampai</label>
+                        <label for="tanggal_sampai" class="block text-xs font-medium text-gray-600">Tanggal Sampai</label>
                         <input type="text" id="tanggal_sampai" name="tanggal_sampai" value="{{ $tanggalSampai }}"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                             placeholder="Pilih tanggal">
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="sm:col-span-2 lg:col-span-2 xl:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 opacity-0">Action</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button type="submit"
-                                class="mobile-button inline-flex items-center justify-center px-4 py-2 bg-primary-600 border border-transparent rounded-lg font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                </svg>
-                                <span class="hidden sm:inline">Generate</span>
-                                <span class="sm:hidden">Cari</span>
-                            </button>
-                            <button type="button" id="exportPdfBtn"
-                                class="mobile-button inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                    </path>
-                                </svg>
-                                <span class="hidden sm:inline">Export PDF</span>
-                                <span class="sm:hidden">PDF</span>
-                            </button>
-                        </div>
                     </div>
                 </div>
             </form>
@@ -662,6 +705,19 @@
                 dateFormat: "d/m/Y",
                 locale: "id"
             });
+
+            // Tombol cetak ke halaman khusus (format sama dengan PDF, tapi di browser)
+            const printBtn = document.getElementById('printBtn');
+            if (printBtn) {
+                printBtn.addEventListener('click', function() {
+                    const form = document.getElementById('laporanForm');
+                    const formData = new FormData(form);
+                    const params = new URLSearchParams(formData);
+
+                    const url = '{{ route('laporan.pembelian.print') }}' + '?' + params.toString();
+                    window.open(url, '_blank');
+                });
+            }
         });
 
         // Export PDF functionality
