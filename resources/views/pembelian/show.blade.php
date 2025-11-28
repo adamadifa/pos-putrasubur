@@ -4,7 +4,7 @@
 @section('page-title', 'Detail Pembelian')
 
 @section('content')
-    <div class="max-w-6xl mx-auto space-y-6">
+    <div class="mx-4 xl:mx-6 2xl:mx-8 space-y-6">
         <!-- Success Alert -->
         @if (session('success'))
             <div class="bg-green-50 border border-green-200 rounded-lg p-4">

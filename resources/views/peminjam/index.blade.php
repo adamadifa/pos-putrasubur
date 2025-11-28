@@ -115,47 +115,99 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-gradient-to-r from-orange-50 to-red-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kode</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Telepon</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alamat</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center space-x-2">
+                                    <i class="ti ti-hash text-orange-600"></i>
+                                    <span>Kode</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center space-x-2">
+                                    <i class="ti ti-user text-orange-600"></i>
+                                    <span>Nama</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center space-x-2">
+                                    <i class="ti ti-phone text-orange-600"></i>
+                                    <span>Telepon</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center space-x-2">
+                                    <i class="ti ti-map-pin text-orange-600"></i>
+                                    <span>Alamat</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center justify-center space-x-2">
+                                    <i class="ti ti-info-circle text-orange-600"></i>
+                                    <span>Status</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center justify-center space-x-2">
+                                    <i class="ti ti-settings text-orange-600"></i>
+                                    <span>Aksi</span>
+                                </div>
+                            </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="bg-white divide-y divide-gray-100">
                         @forelse($peminjam as $item)
-                            <tr class="hover:bg-gray-50">
+                            <tr class="hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-red-50/50 transition-all duration-200 group">
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="text-sm font-medium text-gray-900">{{ $item->kode_peminjam }}</span>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-2 h-2 rounded-full bg-orange-500 group-hover:bg-orange-600 transition-colors"></div>
+                                        <span class="text-sm font-semibold text-gray-900">{{ $item->kode_peminjam }}</span>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="text-sm text-gray-900">{{ $item->nama }}</span>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-8 h-8 bg-gradient-to-br from-orange-100 to-red-100 rounded-lg flex items-center justify-center">
+                                            <i class="ti ti-user text-orange-600 text-sm"></i>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-900">{{ $item->nama }}</span>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="text-sm text-gray-500">{{ $item->nomor_telepon ?? '-' }}</span>
+                                    <div class="flex items-center space-x-2">
+                                        <i class="ti ti-phone text-gray-400 text-sm"></i>
+                                        <span class="text-sm text-gray-700">{{ $item->nomor_telepon ?? '-' }}</span>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span
-                                        class="text-sm text-gray-500">{{ $item->alamat ? \Illuminate\Support\Str::limit($item->alamat, 50) : '-' }}</span>
+                                    <div class="flex items-center space-x-2">
+                                        <i class="ti ti-map-pin text-gray-400 text-sm"></i>
+                                        <span class="text-sm text-gray-700">{{ $item->alamat ? \Illuminate\Support\Str::limit($item->alamat, 50) : '-' }}</span>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $item->status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                        {{ $item->status ? 'Aktif' : 'Nonaktif' }}
-                                    </span>
+                                    @if ($item->status)
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200">
+                                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                                            Aktif
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border border-red-200">
+                                            <i class="ti ti-x text-xs mr-1.5"></i>
+                                            Nonaktif
+                                        </span>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    <div class="flex items-center justify-center space-x-2">
+                                    <div class="flex items-center justify-center space-x-1">
                                         <a href="{{ route('peminjam.show', $item->encrypted_id) }}"
-                                            class="text-blue-600 hover:text-blue-900 p-2" title="Detail">
-                                            <i class="ti ti-eye text-lg"></i>
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 transition-all duration-200"
+                                            title="Detail">
+                                            <i class="ti ti-eye text-base"></i>
                                         </a>
                                         <a href="{{ route('peminjam.edit', $item->encrypted_id) }}"
-                                            class="text-orange-600 hover:text-orange-900 p-2" title="Edit">
-                                            <i class="ti ti-edit text-lg"></i>
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-orange-50 text-orange-600 hover:bg-orange-100 hover:text-orange-700 transition-all duration-200"
+                                            title="Edit">
+                                            <i class="ti ti-edit text-base"></i>
                                         </a>
                                         @if ($item->pinjaman->count() == 0)
                                             <form action="{{ route('peminjam.destroy', $item->encrypted_id) }}"
@@ -163,9 +215,10 @@
                                                 onsubmit="return confirm('Apakah Anda yakin ingin menghapus peminjam ini?');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-900 p-2"
+                                                <button type="submit" 
+                                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-all duration-200"
                                                     title="Hapus">
-                                                    <i class="ti ti-trash text-lg"></i>
+                                                    <i class="ti ti-trash text-base"></i>
                                                 </button>
                                             </form>
                                         @endif
@@ -174,10 +227,13 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-12 text-center">
-                                    <div class="text-gray-500">
-                                        <i class="ti ti-inbox text-4xl mb-2"></i>
-                                        <p class="text-sm">Tidak ada data peminjam</p>
+                                <td colspan="6" class="px-6 py-16 text-center">
+                                    <div class="flex flex-col items-center justify-center text-gray-400">
+                                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                            <i class="ti ti-inbox text-3xl"></i>
+                                        </div>
+                                        <p class="text-sm font-medium text-gray-500">Tidak ada data peminjam</p>
+                                        <p class="text-xs text-gray-400 mt-1">Klik tombol "Tambah Peminjam" untuk menambahkan data</p>
                                     </div>
                                 </td>
                             </tr>

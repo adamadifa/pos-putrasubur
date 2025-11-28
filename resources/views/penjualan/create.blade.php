@@ -4,6 +4,10 @@
 @section('page-title', 'Penjualan')
 
 @section('content')
+    @php
+        $defaultTransactionDate = old('tanggal', now()->format('Y-m-d'));
+        $defaultTransactionDateDisplay = \Carbon\Carbon::parse($defaultTransactionDate)->format('d/m/Y');
+    @endphp
     <div class="min-h-screen">
         <!-- Back Button -->
         <div class="px-2 md:px-6 pt-4 md:pt-6 pb-2">
@@ -218,12 +222,12 @@
                         <div class="mb-2">
                             <label class="block text-xs md:text-sm text-gray-700 mb-1">Tanggal</label>
                             <div class="date-input-wrapper">
-                                <input type="text" id="tanggal" value="{{ old('tanggal', date('d/m/Y')) }}"
+                                <input type="text" id="tanggalPickerMobile" value="{{ $defaultTransactionDateDisplay }}"
                                     class="flatpickr-input w-full text-sm md:text-base" placeholder="Pilih tanggal"
                                     required readonly>
                                 <i class="ti ti-calendar"></i>
                             </div>
-                            <input type="hidden" name="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}">
+                            <input type="hidden" name="tanggal" id="tanggalHidden" value="{{ $defaultTransactionDate }}">
                         </div>
 
                         <!-- Customer -->
@@ -294,11 +298,10 @@
                         <!-- Date -->
                         <div class="mb-2">
                             <div class="date-input-wrapper">
-                                <input type="text" id="tanggalDesktop" value="{{ old('tanggal', date('d/m/Y')) }}"
+                                <input type="text" id="tanggalPickerDesktop" value="{{ $defaultTransactionDateDisplay }}"
                                     class="flatpickr-input w-full" placeholder="Pilih tanggal" required readonly>
                                 <i class="ti ti-calendar"></i>
                             </div>
-                            <input type="hidden" name="tanggal_desktop" value="{{ old('tanggal', date('Y-m-d')) }}">
                         </div>
                         <!-- Customer -->
                         <div class="mb-2">
@@ -2833,39 +2836,47 @@
 
             updateProductCardStates();
 
-            // Initialize Flatpickr for date input
-            flatpickr("#tanggal", {
+            // Initialize Flatpickr for date inputs (mobile & desktop)
+            const hiddenDateInput = document.getElementById('tanggalHidden');
+            const defaultDateValue = hiddenDateInput?.value ?? null;
+            const defaultDateObject = defaultDateValue ? new Date(defaultDateValue) : null;
+            const flatpickrInstances = [];
+
+            const sharedFlatpickrOptions = () => ({
                 dateFormat: "d/m/Y",
                 locale: "id",
                 allowInput: false,
                 clickOpens: true,
                 todayHighlight: true,
                 maxDate: "today",
-                defaultDate: "today",
+                defaultDate: defaultDateObject || "today",
                 animate: "slideDown",
                 disableMobile: false,
                 enableTime: false,
                 time_24hr: true,
                 onChange: function(selectedDates, dateStr, instance) {
-                    // Update hidden input for form submission
-                    const dateInput = document.querySelector('input[name="tanggal"]');
-                    if (selectedDates[0]) {
+                    if (hiddenDateInput && selectedDates[0]) {
                         const year = selectedDates[0].getFullYear();
                         const month = String(selectedDates[0].getMonth() + 1).padStart(2, '0');
                         const day = String(selectedDates[0].getDate()).padStart(2, '0');
-                        dateInput.value = `${year}-${month}-${day}`;
+                        hiddenDateInput.value = `${year}-${month}-${day}`;
 
-                        // Add visual feedback
-                        const input = document.getElementById('tanggal');
-                        input.classList.add('ring-2', 'ring-blue-500', 'ring-opacity-50');
+                        // Sync other flatpickr instances without triggering loops
+                        flatpickrInstances.forEach(fpInstance => {
+                            if (fpInstance !== instance) {
+                                fpInstance.setDate(selectedDates[0], false);
+                            }
+                        });
+
+                        // Add visual feedback on the active input
+                        const targetInput = instance.input;
+                        targetInput.classList.add('ring-2', 'ring-blue-500', 'ring-opacity-50');
                         setTimeout(() => {
-                            input.classList.remove('ring-2', 'ring-blue-500',
-                                'ring-opacity-50');
+                            targetInput.classList.remove('ring-2', 'ring-blue-500', 'ring-opacity-50');
                         }, 300);
                     }
                 },
                 onOpen: function(selectedDates, dateStr, instance) {
-                    // Add smooth animation
                     const calendar = document.querySelector('.flatpickr-calendar');
                     if (calendar) {
                         calendar.style.opacity = '0';
@@ -2876,6 +2887,14 @@
                             calendar.style.transform = 'scale(1) translateY(0)';
                         }, 10);
                     }
+                }
+            });
+
+            ['tanggalPickerMobile', 'tanggalPickerDesktop'].forEach(function(selector) {
+                const element = document.getElementById(selector);
+                if (element) {
+                    const instance = flatpickr(element, sharedFlatpickrOptions());
+                    flatpickrInstances.push(instance);
                 }
             });
         });

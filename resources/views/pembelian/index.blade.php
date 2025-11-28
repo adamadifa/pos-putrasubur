@@ -533,20 +533,12 @@
                                             </button>
                                         @endif --}}
 
-                                        @if (!$isMoreThanOneDay)
-                                            <button type="button"
-                                                onclick="confirmDelete('{{ $item->encrypted_id }}', '{{ $item->no_faktur }}')"
-                                                class="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-red-600 hover:to-red-700 transform hover:scale-105 transition-all duration-200"
-                                                title="Hapus Pembelian">
-                                                <i class="ti ti-trash text-sm"></i>
-                                            </button>
-                                        @else
-                                            <button type="button" disabled
-                                                class="inline-flex items-center justify-center w-8 h-8 bg-gray-400 text-white rounded-lg cursor-not-allowed"
-                                                title="Tidak dapat dihapus setelah H+1">
-                                                <i class="ti ti-trash text-sm"></i>
-                                            </button>
-                                        @endif
+                                        <button type="button"
+                                            onclick="confirmDelete('{{ $item->encrypted_id }}', '{{ $item->no_faktur }}')"
+                                            class="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-red-600 hover:to-red-700 transform hover:scale-105 transition-all duration-200"
+                                            title="Hapus Pembelian">
+                                            <i class="ti ti-trash text-sm"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -697,24 +689,13 @@
                                         title="Edit Pembelian">
                                         <i class="ti ti-edit text-sm"></i>
                                     </a> --}}
-                                    <button type="button"
-                                        onclick="confirmDelete('{{ $item->encrypted_id }}', '{{ $item->no_faktur }}')"
-                                        class="inline-flex items-center justify-center w-9 h-9 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-red-600 hover:to-red-700 transform hover:scale-105 transition-all duration-200"
-                                        title="Hapus Pembelian">
-                                        <i class="ti ti-trash text-sm"></i>
-                                    </button>
-                                @else
-                                    {{-- <button type="button" disabled
-                                        class="inline-flex items-center justify-center w-9 h-9 bg-gray-400 text-white rounded-lg cursor-not-allowed"
-                                        title="Tidak dapat diedit setelah H+1">
-                                        <i class="ti ti-edit text-sm"></i>
-                                    </button> --}}
-                                    <button type="button" disabled
-                                        class="inline-flex items-center justify-center w-9 h-9 bg-gray-400 text-white rounded-lg cursor-not-allowed"
-                                        title="Tidak dapat dihapus setelah H+1">
-                                        <i class="ti ti-trash text-sm"></i>
-                                    </button>
                                 @endif
+                                <button type="button"
+                                    onclick="confirmDelete('{{ $item->encrypted_id }}', '{{ $item->no_faktur }}')"
+                                    class="inline-flex items-center justify-center w-9 h-9 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-red-600 hover:to-red-700 transform hover:scale-105 transition-all duration-200"
+                                    title="Hapus Pembelian">
+                                    <i class="ti ti-trash text-sm"></i>
+                                </button>
                             </div>
                         </div>
                     </div>

@@ -214,106 +214,170 @@
         <div class="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-gradient-to-r from-orange-50 to-red-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No.
-                                Pinjaman</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Peminjam</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Tanggal</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Jumlah Pinjaman</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Dibayar</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Sisa</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Status</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Aksi</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center space-x-2">
+                                    <i class="ti ti-receipt text-orange-600"></i>
+                                    <span>No. Pinjaman</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center space-x-2">
+                                    <i class="ti ti-user text-orange-600"></i>
+                                    <span>Peminjam</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center space-x-2">
+                                    <i class="ti ti-calendar text-orange-600"></i>
+                                    <span>Tanggal</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center justify-end space-x-2">
+                                    <i class="ti ti-currency-dollar text-orange-600"></i>
+                                    <span>Jumlah Pinjaman</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center justify-end space-x-2">
+                                    <i class="ti ti-arrow-down text-green-500"></i>
+                                    <span>Dibayar</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center justify-end space-x-2">
+                                    <i class="ti ti-arrow-up text-red-500"></i>
+                                    <span>Sisa</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center space-x-2">
+                                    <i class="ti ti-info-circle text-orange-600"></i>
+                                    <span>Status</span>
+                                </div>
+                            </th>
+                            <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center justify-center space-x-2">
+                                    <i class="ti ti-settings text-orange-600"></i>
+                                    <span>Aksi</span>
+                                </div>
+                            </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="bg-white divide-y divide-gray-100">
                         @forelse ($pinjaman as $item)
                             @php
                                 $totalDibayar = $item->pembayaranPinjaman->sum('jumlah_bayar');
                                 $sisaPinjaman = $item->total_pinjaman - $totalDibayar;
 
                                 $statusConfig = [
-                                    'lunas' => ['bg' => 'bg-green-100', 'text' => 'text-green-800', 'label' => 'Lunas'],
+                                    'lunas' => ['bg' => 'bg-gradient-to-r from-green-100 to-emerald-100', 'text' => 'text-green-800', 'border' => 'border-green-200', 'icon' => 'ti-check', 'label' => 'Lunas'],
                                     'sebagian' => [
-                                        'bg' => 'bg-yellow-100',
+                                        'bg' => 'bg-gradient-to-r from-yellow-100 to-amber-100',
                                         'text' => 'text-yellow-800',
+                                        'border' => 'border-yellow-200',
+                                        'icon' => 'ti-clock',
                                         'label' => 'Sebagian',
                                     ],
                                     'belum_bayar' => [
-                                        'bg' => 'bg-red-100',
+                                        'bg' => 'bg-gradient-to-r from-red-100 to-pink-100',
                                         'text' => 'text-red-800',
+                                        'border' => 'border-red-200',
+                                        'icon' => 'ti-x',
                                         'label' => 'Belum Bayar',
                                     ],
                                 ];
                                 $config = $statusConfig[$item->status_pembayaran] ?? $statusConfig['belum_bayar'];
                             @endphp
-                            <tr class="hover:bg-gray-50 transition-colors">
+                            <tr class="hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-red-50/50 transition-all duration-200 group">
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">{{ $item->no_pinjaman }}</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">{{ $item->peminjam->nama ?? '-' }}
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-2 h-2 rounded-full bg-orange-500 group-hover:bg-orange-600 transition-colors"></div>
+                                        <div class="text-sm font-semibold text-gray-900">{{ $item->no_pinjaman }}</div>
                                     </div>
-                                    <div class="text-xs text-gray-500">{{ $item->peminjam->kode_peminjam ?? '-' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ $item->tanggal->format('d/m/Y') }}</div>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-8 h-8 bg-gradient-to-br from-orange-100 to-red-100 rounded-lg flex items-center justify-center">
+                                            <i class="ti ti-user text-orange-600 text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900">{{ $item->peminjam->nama ?? '-' }}</div>
+                                            @if($item->peminjam && $item->peminjam->kode_peminjam)
+                                                <div class="text-xs text-gray-500">{{ $item->peminjam->kode_peminjam }}</div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="ti ti-calendar text-gray-400 text-sm"></i>
+                                        <div class="text-sm text-gray-700">{{ $item->tanggal->format('d/m/Y') }}</div>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right">
                                     <div class="text-sm font-semibold text-gray-900">Rp
                                         {{ number_format($item->total_pinjaman, 0, ',', '.') }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right">
-                                    <div class="text-sm font-medium text-green-600">Rp
-                                        {{ number_format($totalDibayar, 0, ',', '.') }}</div>
+                                    <div class="inline-flex items-center space-x-1 px-2 py-1 rounded-md bg-green-50">
+                                        <i class="ti ti-arrow-down text-green-500 text-xs"></i>
+                                        <span class="text-sm font-medium text-green-700">Rp
+                                            {{ number_format($totalDibayar, 0, ',', '.') }}</span>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right">
-                                    <div class="text-sm font-bold text-red-600">Rp
-                                        {{ number_format($sisaPinjaman, 0, ',', '.') }}</div>
+                                    <div class="inline-flex items-center space-x-1 px-2 py-1 rounded-md bg-red-50">
+                                        <i class="ti ti-arrow-up text-red-500 text-xs"></i>
+                                        <span class="text-sm font-semibold text-red-700">Rp
+                                            {{ number_format($sisaPinjaman, 0, ',', '.') }}</span>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $config['bg'] }} {{ $config['text'] }}">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {{ $config['bg'] }} {{ $config['text'] }} border {{ $config['border'] }}">
+                                        <i class="ti {{ $config['icon'] }} text-xs mr-1.5"></i>
                                         {{ $config['label'] }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                    <a href="{{ route('pinjaman.show', $item->encrypted_id) }}"
-                                        class="text-blue-600 hover:text-blue-900 mr-3" title="Detail">
-                                        <i class="ti ti-eye text-lg"></i>
-                                    </a>
-                                    <a href="{{ route('pinjaman.edit', $item->encrypted_id) }}"
-                                        class="text-orange-600 hover:text-orange-900 mr-3" title="Edit">
-                                        <i class="ti ti-edit text-lg"></i>
-                                    </a>
-                                    @if ($item->pembayaranPinjaman->count() == 0)
-                                        <form action="{{ route('pinjaman.destroy', $item->encrypted_id) }}"
-                                            method="POST" class="inline"
-                                            onsubmit="return confirm('Apakah Anda yakin ingin menghapus pinjaman ini?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900"
-                                                title="Hapus">
-                                                <i class="ti ti-trash text-lg"></i>
-                                            </button>
-                                        </form>
-                                    @endif
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <div class="flex items-center justify-center space-x-1">
+                                        <a href="{{ route('pinjaman.show', $item->encrypted_id) }}"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 transition-all duration-200"
+                                            title="Detail">
+                                            <i class="ti ti-eye text-base"></i>
+                                        </a>
+                                        <a href="{{ route('pinjaman.edit', $item->encrypted_id) }}"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-orange-50 text-orange-600 hover:bg-orange-100 hover:text-orange-700 transition-all duration-200"
+                                            title="Edit">
+                                            <i class="ti ti-edit text-base"></i>
+                                        </a>
+                                        @if ($item->pembayaranPinjaman->count() == 0)
+                                            <form action="{{ route('pinjaman.destroy', $item->encrypted_id) }}"
+                                                method="POST" class="inline"
+                                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus pinjaman ini?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" 
+                                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-all duration-200"
+                                                    title="Hapus">
+                                                    <i class="ti ti-trash text-base"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="px-6 py-12 text-center">
-                                    <div class="text-gray-500">
-                                        <i class="ti ti-inbox text-4xl mb-2"></i>
-                                        <p class="text-sm">Tidak ada data pinjaman</p>
+                                <td colspan="8" class="px-6 py-16 text-center">
+                                    <div class="flex flex-col items-center justify-center text-gray-400">
+                                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                            <i class="ti ti-inbox text-3xl"></i>
+                                        </div>
+                                        <p class="text-sm font-medium text-gray-500">Tidak ada data pinjaman</p>
+                                        <p class="text-xs text-gray-400 mt-1">Klik tombol "Pinjaman Baru" untuk menambahkan data</p>
                                     </div>
                                 </td>
                             </tr>

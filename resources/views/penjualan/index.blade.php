@@ -290,20 +290,6 @@
                         value="{{ request('tanggal_sampai') ? \Carbon\Carbon::parse(request('tanggal_sampai'))->format('Y-m-d') : '' }}">
                 </div>
 
-                <!-- Status Filter -->
-                <div class="lg:w-48">
-                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status Pembayaran</label>
-                    <select name="status" id="status"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
-                        <option value="">Semua Status</option>
-                        <option value="lunas" {{ request('status') == 'lunas' ? 'selected' : '' }}>Lunas</option>
-                        <option value="dp" {{ request('status') == 'dp' ? 'selected' : '' }}>DP</option>
-                        <option value="angsuran" {{ request('status') == 'angsuran' ? 'selected' : '' }}>Angsuran</option>
-                        <option value="belum_bayar" {{ request('status') == 'belum_bayar' ? 'selected' : '' }}>Belum Bayar
-                        </option>
-                    </select>
-                </div>
-
                 <!-- Jenis Transaksi Filter -->
                 <div class="lg:w-48">
                     <label for="jenis_transaksi" class="block text-sm font-medium text-gray-700 mb-2">Jenis
@@ -325,7 +311,7 @@
                         <i class="ti ti-filter text-lg mr-2"></i>
                         Filter
                     </button>
-                    @if (request()->hasAny(['search', 'tanggal_dari', 'tanggal_sampai', 'status', 'jenis_transaksi']))
+                    @if (request()->hasAny(['search', 'tanggal_dari', 'tanggal_sampai', 'jenis_transaksi']))
                         <a href="{{ route('penjualan.index') }}"
                             class="inline-flex items-center px-6 py-3 bg-gray-600 border border-transparent rounded-lg font-medium text-sm text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
                             <i class="ti ti-x text-lg mr-2"></i>
@@ -407,12 +393,12 @@
                                     class="hidden items-center justify-center w-7 h-7 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg shadow-sm">
                                     <i class="ti ti-edit text-xs"></i>
                                 </a>
-                                <button type="button"
-                                    onclick="confirmDelete('{{ $item->encrypted_id }}', '{{ $item->no_faktur }}')"
-                                    class="inline-flex items-center justify-center w-7 h-7 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg shadow-sm">
-                                    <i class="ti ti-trash text-xs"></i>
-                                </button>
                             @endif
+                            <button type="button"
+                                onclick="confirmDelete('{{ $item->encrypted_id }}', '{{ $item->no_faktur }}')"
+                                class="inline-flex items-center justify-center w-7 h-7 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg shadow-sm">
+                                <i class="ti ti-trash text-xs"></i>
+                            </button>
                             <a href="{{ route('penjualan.show', $item->encrypted_id) }}"
                                 class="inline-flex items-center justify-center w-7 h-7 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-sm">
                                 <i class="ti ti-eye text-xs"></i>
@@ -690,20 +676,12 @@
                                         @endif
 
                                         <!-- Delete Button -->
-                                        @if (!$isMoreThanOneDay)
-                                            <button type="button"
-                                                onclick="confirmDelete('{{ $item->encrypted_id }}', '{{ $item->no_faktur }}')"
-                                                class="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-red-600 hover:to-red-700 transform hover:scale-105 transition-all duration-200"
-                                                title="Hapus Penjualan">
-                                                <i class="ti ti-trash text-sm"></i>
-                                            </button>
-                                        @else
-                                            <button type="button" disabled
-                                                class="inline-flex items-center justify-center w-8 h-8 bg-gray-400 text-white rounded-lg cursor-not-allowed"
-                                                title="Tidak dapat dihapus setelah H+1">
-                                                <i class="ti ti-trash text-sm"></i>
-                                            </button>
-                                        @endif
+                                        <button type="button"
+                                            onclick="confirmDelete('{{ $item->encrypted_id }}', '{{ $item->no_faktur }}')"
+                                            class="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-red-600 hover:to-red-700 transform hover:scale-105 transition-all duration-200"
+                                            title="Hapus Penjualan">
+                                            <i class="ti ti-trash text-sm"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -725,10 +703,13 @@
 
         <!-- Pagination -->
         @if (isset($penjualan) && $penjualan->hasPages())
+            @php
+                $penjualanWithQuery = $penjualan->appends(request()->query());
+            @endphp
             <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
                 <div class="flex-1 flex justify-between sm:hidden">
-                    @if ($penjualan->previousPageUrl())
-                        <a href="{{ $penjualan->previousPageUrl() }}"
+                    @if ($penjualanWithQuery->previousPageUrl())
+                        <a href="{{ $penjualanWithQuery->previousPageUrl() }}"
                             class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                             Sebelumnya
                         </a>
@@ -739,8 +720,8 @@
                         </span>
                     @endif
 
-                    @if ($penjualan->nextPageUrl())
-                        <a href="{{ $penjualan->nextPageUrl() }}"
+                    @if ($penjualanWithQuery->nextPageUrl())
+                        <a href="{{ $penjualanWithQuery->nextPageUrl() }}"
                             class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                             Selanjutnya
                         </a>
@@ -760,7 +741,7 @@
                         </p>
                     </div>
                     <div>
-                        {{ $penjualan->links() }}
+                        {{ $penjualanWithQuery->links() }}
                     </div>
                 </div>
             </div>
@@ -956,8 +937,8 @@
                 dateFormat: "d/m/Y",
                 allowInput: false,
                 clickOpens: true,
-                @if(request('tanggal_dari'))
-                defaultDate: "{{ \Carbon\Carbon::parse(request('tanggal_dari'))->format('d/m/Y') }}",
+                @if (request('tanggal_dari'))
+                    defaultDate: "{{ \Carbon\Carbon::parse(request('tanggal_dari'))->format('d/m/Y') }}",
                 @endif
                 onChange: function(selectedDates, dateStr, instance) {
                     if (selectedDates[0]) {
@@ -967,7 +948,7 @@
                         const month = String(date.getMonth() + 1).padStart(2, '0');
                         const day = String(date.getDate()).padStart(2, '0');
                         const isoDate = `${year}-${month}-${day}`;
-                        
+
                         document.getElementById('tanggal_dari_hidden').value = isoDate;
 
                         // Update visible input with formatted date
@@ -982,8 +963,8 @@
                 dateFormat: "d/m/Y",
                 allowInput: false,
                 clickOpens: true,
-                @if(request('tanggal_sampai'))
-                defaultDate: "{{ \Carbon\Carbon::parse(request('tanggal_sampai'))->format('d/m/Y') }}",
+                @if (request('tanggal_sampai'))
+                    defaultDate: "{{ \Carbon\Carbon::parse(request('tanggal_sampai'))->format('d/m/Y') }}",
                 @endif
                 onChange: function(selectedDates, dateStr, instance) {
                     if (selectedDates[0]) {
@@ -993,7 +974,7 @@
                         const month = String(date.getMonth() + 1).padStart(2, '0');
                         const day = String(date.getDate()).padStart(2, '0');
                         const isoDate = `${year}-${month}-${day}`;
-                        
+
                         document.getElementById('tanggal_sampai_hidden').value = isoDate;
 
                         // Update visible input with formatted date
@@ -1010,14 +991,15 @@
             });
 
             // Initialize hidden inputs with ISO format if defaultDate is set
-            @if(request('tanggal_dari'))
-            const tanggalDariValue = "{{ \Carbon\Carbon::parse(request('tanggal_dari'))->format('Y-m-d') }}";
-            document.getElementById('tanggal_dari_hidden').value = tanggalDariValue;
+            @if (request('tanggal_dari'))
+                const tanggalDariValue = "{{ \Carbon\Carbon::parse(request('tanggal_dari'))->format('Y-m-d') }}";
+                document.getElementById('tanggal_dari_hidden').value = tanggalDariValue;
             @endif
 
-            @if(request('tanggal_sampai'))
-            const tanggalSampaiValue = "{{ \Carbon\Carbon::parse(request('tanggal_sampai'))->format('Y-m-d') }}";
-            document.getElementById('tanggal_sampai_hidden').value = tanggalSampaiValue;
+            @if (request('tanggal_sampai'))
+                const tanggalSampaiValue =
+                    "{{ \Carbon\Carbon::parse(request('tanggal_sampai'))->format('Y-m-d') }}";
+                document.getElementById('tanggal_sampai_hidden').value = tanggalSampaiValue;
             @endif
         });
 

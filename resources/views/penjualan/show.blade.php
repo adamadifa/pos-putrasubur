@@ -4,7 +4,7 @@
 @section('page-title', 'Detail Penjualan')
 
 @section('content')
-    <div class="max-w-6xl mx-auto space-y-4 md:space-y-6 px-2 md:px-0">
+    <div class="mx-4 xl:mx-6 2xl:mx-8 space-y-4 md:space-y-6">
         <!-- Success Alert -->
         @if (session('success'))
             <div class="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -159,7 +159,8 @@
 
                             <!-- Customer Basic Info -->
                             <div class="flex-1 text-center md:text-left">
-                                <h4 class="text-lg md:text-xl font-bold text-gray-900 mb-1">{{ $penjualan->pelanggan->nama ?? 'N/A' }}
+                                <h4 class="text-lg md:text-xl font-bold text-gray-900 mb-1">
+                                    {{ $penjualan->pelanggan->nama ?? 'N/A' }}
                                 </h4>
                                 <div class="flex items-center justify-center md:justify-start text-sm text-gray-500 mb-2">
                                     <i class="ti ti-id-badge mr-1"></i>
@@ -372,10 +373,10 @@
                                         // Check if this is the latest payment (by ID)
                                         $isLatestPayment = $pembayaran->id == $latestPaymentId;
                                         $paymentDate = \Carbon\Carbon::parse($pembayaran->created_at)->startOfDay();
-                                        
+
                                         // Payment can only be deleted if:
                                         // 1. It's created today AND
-                                        // 2. It's the latest payment (highest ID)
+// 2. It's the latest payment (highest ID)
                                         $canDelete = $today->equalTo($paymentDate) && $isLatestPayment;
                                     @endphp
                                     <div
@@ -388,32 +389,32 @@
                                                     $color = 'from-purple-400 to-pink-500';
                                                     $icon = 'ti-wallet';
                                                 } else {
-                                                // Get payment method from database
-                                                $metodePembayaranData = \App\Models\MetodePembayaran::where(
-                                                    'kode',
-                                                    $pembayaran->metode_pembayaran,
-                                                )->first();
+                                                    // Get payment method from database
+                                                    $metodePembayaranData = \App\Models\MetodePembayaran::where(
+                                                        'kode',
+                                                        $pembayaran->metode_pembayaran,
+                                                    )->first();
 
-                                                // Default icon and color if not found
-                                                $icon = $metodePembayaranData
-                                                    ? $metodePembayaranData->icon_display
-                                                    : 'ti-credit-card';
-                                                $color = 'from-blue-400 to-indigo-500'; // Default color
+                                                    // Default icon and color if not found
+                                                    $icon = $metodePembayaranData
+                                                        ? $metodePembayaranData->icon_display
+                                                        : 'ti-credit-card';
+                                                    $color = 'from-blue-400 to-indigo-500'; // Default color
 
-                                                // Color mapping based on common payment methods
-                                                $colorMap = [
-                                                    'tunai' => 'from-green-400 to-emerald-500',
-                                                    'transfer' => 'from-blue-400 to-indigo-500',
-                                                    'qris' => 'from-purple-400 to-pink-500',
-                                                    'kartu' => 'from-orange-400 to-red-500',
-                                                    'ewallet' => 'from-cyan-400 to-blue-500',
-                                                ];
+                                                    // Color mapping based on common payment methods
+                                                    $colorMap = [
+                                                        'tunai' => 'from-green-400 to-emerald-500',
+                                                        'transfer' => 'from-blue-400 to-indigo-500',
+                                                        'qris' => 'from-purple-400 to-pink-500',
+                                                        'kartu' => 'from-orange-400 to-red-500',
+                                                        'ewallet' => 'from-cyan-400 to-blue-500',
+                                                    ];
 
-                                                if (
-                                                    $metodePembayaranData &&
-                                                    isset($colorMap[strtolower($metodePembayaranData->kode)])
-                                                ) {
-                                                    $color = $colorMap[strtolower($metodePembayaranData->kode)];
+                                                    if (
+                                                        $metodePembayaranData &&
+                                                        isset($colorMap[strtolower($metodePembayaranData->kode)])
+                                                    ) {
+                                                        $color = $colorMap[strtolower($metodePembayaranData->kode)];
                                                     }
                                                 }
                                             @endphp
@@ -427,7 +428,8 @@
                                         <div class="flex-1 min-w-0">
                                             <!-- Transaction ID -->
                                             <div class="mb-2">
-                                                <h5 class="font-semibold text-gray-900 text-sm md:text-base mb-1.5 break-words">
+                                                <h5
+                                                    class="font-semibold text-gray-900 text-sm md:text-base mb-1.5 break-words">
                                                     {{ $pembayaran->no_bukti }}
                                                 </h5>
                                                 <!-- Badges -->
@@ -454,7 +456,8 @@
                                                             ],
                                                         ];
                                                         $status =
-                                                            $statusConfig[$pembayaran->status_bayar] ?? $statusConfig['D'];
+                                                            $statusConfig[$pembayaran->status_bayar] ??
+                                                            $statusConfig['D'];
                                                     @endphp
                                                     <span
                                                         class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $status['bg'] }} {{ $status['text'] }}">
@@ -462,7 +465,8 @@
                                                         {{ $status['label'] }}
                                                     </span>
                                                     @if (($pembayaran->status_uang_muka ?? 0) == 1)
-                                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                        <span
+                                                            class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                                                             <i class="ti ti-wallet mr-1 text-xs"></i>
                                                             Uang Muka
                                                         </span>
@@ -477,7 +481,8 @@
 
                                             <!-- Date and Method Info -->
                                             <div class="space-y-1 mb-2">
-                                                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs md:text-sm text-gray-600">
+                                                <div
+                                                    class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs md:text-sm text-gray-600">
                                                     <div class="flex items-center">
                                                         <i class="ti ti-calendar text-blue-500 mr-1.5 text-xs"></i>
                                                         <span>{{ $pembayaran->tanggal->format('d M Y') }}</span>
@@ -497,20 +502,23 @@
                                                 </div>
                                                 <div class="flex items-center text-xs text-gray-500">
                                                     <i class="ti ti-clock mr-1.5 text-xs"></i>
-                                                    <span>Dibuat: {{ $pembayaran->created_at->format('d M Y, H:i') }}</span>
+                                                    <span>Dibuat:
+                                                        {{ $pembayaran->created_at->format('d M Y, H:i') }}</span>
                                                 </div>
                                             </div>
 
                                             @if ($pembayaran->keterangan)
                                                 <div class="flex items-start mt-2 mb-2">
                                                     <i class="ti ti-note text-gray-400 mr-1.5 mt-0.5 text-xs"></i>
-                                                    <span class="text-xs text-gray-500 break-words">{{ $pembayaran->keterangan }}</span>
+                                                    <span
+                                                        class="text-xs text-gray-500 break-words">{{ $pembayaran->keterangan }}</span>
                                                 </div>
                                             @endif
                                         </div>
 
                                         <!-- Amount and Action -->
-                                        <div class="flex flex-col items-end justify-between md:justify-start gap-2 flex-shrink-0">
+                                        <div
+                                            class="flex flex-col items-end justify-between md:justify-start gap-2 flex-shrink-0">
                                             <div class="text-right md:text-left">
                                                 <div class="text-base md:text-lg font-bold text-gray-900">
                                                     Rp {{ number_format($pembayaran->jumlah_bayar, 0, ',', '.') }}

@@ -69,19 +69,33 @@ class PeminjamController extends Controller
 
     public function show($encryptedId): View
     {
-        $peminjam = Peminjam::with('pinjaman')->findByEncryptedId($encryptedId);
-        return view('peminjam.show', compact('peminjam'));
+        try {
+            $id = decrypt($encryptedId);
+            $peminjam = Peminjam::with('pinjaman')->findOrFail($id);
+            return view('peminjam.show', compact('peminjam'));
+        } catch (\Exception $e) {
+            return redirect()->route('peminjam.index')
+                ->with('error', 'Peminjam tidak ditemukan.');
+        }
     }
 
     public function edit($encryptedId): View
     {
-        $peminjam = Peminjam::findByEncryptedId($encryptedId);
-        return view('peminjam.edit', compact('peminjam'));
+        try {
+            $id = decrypt($encryptedId);
+            $peminjam = Peminjam::findOrFail($id);
+            return view('peminjam.edit', compact('peminjam'));
+        } catch (\Exception $e) {
+            return redirect()->route('peminjam.index')
+                ->with('error', 'Peminjam tidak ditemukan.');
+        }
     }
 
     public function update(Request $request, $encryptedId): RedirectResponse
     {
-        $peminjam = Peminjam::findByEncryptedId($encryptedId);
+        try {
+            $id = decrypt($encryptedId);
+            $peminjam = Peminjam::findOrFail($id);
 
         $validated = $request->validate([
             'kode_peminjam' => 'nullable|string|max:50|unique:peminjam,kode_peminjam,' . $peminjam->id,
@@ -101,20 +115,30 @@ class PeminjamController extends Controller
 
         return redirect()->route('peminjam.show', $peminjam->encrypted_id)
             ->with('success', 'Data peminjam berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return redirect()->route('peminjam.index')
+                ->with('error', 'Peminjam tidak ditemukan.');
+        }
     }
 
     public function destroy($encryptedId): RedirectResponse
     {
-        $peminjam = Peminjam::findByEncryptedId($encryptedId);
+        try {
+            $id = decrypt($encryptedId);
+            $peminjam = Peminjam::with('pinjaman')->findOrFail($id);
 
-        // Check if peminjam has pinjaman
-        if ($peminjam->pinjaman->count() > 0) {
-            return back()->withErrors(['error' => 'Peminjam tidak dapat dihapus karena sudah memiliki pinjaman.']);
+            // Check if peminjam has pinjaman
+            if ($peminjam->pinjaman->count() > 0) {
+                return back()->withErrors(['error' => 'Peminjam tidak dapat dihapus karena sudah memiliki pinjaman.']);
+            }
+
+            $peminjam->delete();
+
+            return redirect()->route('peminjam.index')
+                ->with('success', 'Peminjam berhasil dihapus.');
+        } catch (\Exception $e) {
+            return redirect()->route('peminjam.index')
+                ->with('error', 'Peminjam tidak ditemukan.');
         }
-
-        $peminjam->delete();
-
-        return redirect()->route('peminjam.index')
-            ->with('success', 'Peminjam berhasil dihapus.');
     }
 }

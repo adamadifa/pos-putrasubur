@@ -283,15 +283,19 @@ class TransactionService
      */
     private function validatePembelianDeletion(Pembelian $pembelian): array
     {
-        // Cek apakah pembelian masih dalam hari yang sama
-        $createdAt = $pembelian->created_at;
-        $isSameDay = $createdAt->isSameDay(now());
+        $restrictDeletion = config('features.restrict_pembelian_delete_same_day', false);
 
-        if (!$isSameDay) {
-            return [
-                'success' => false,
-                'message' => 'Tidak dapat menghapus pembelian yang sudah bukan hari yang sama. Hanya pembelian hari ini yang dapat dihapus.'
-            ];
+        if ($restrictDeletion) {
+            // Cek apakah pembelian masih dalam hari yang sama
+            $createdAt = $pembelian->created_at;
+            $isSameDay = $createdAt->isSameDay(now());
+
+            if (!$isSameDay) {
+                return [
+                    'success' => false,
+                    'message' => 'Tidak dapat menghapus pembelian yang sudah bukan hari yang sama. Hanya pembelian hari ini yang dapat dihapus.'
+                ];
+            }
         }
 
         // Cek apakah ada penggunaan uang muka

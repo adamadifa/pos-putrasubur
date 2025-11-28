@@ -49,11 +49,6 @@ class PenjualanController extends Controller
             $query->whereDate('tanggal', '<=', $request->tanggal_sampai);
         }
 
-        // Handle status filter
-        if ($request->filled('status')) {
-            $query->where('status_pembayaran', $request->status);
-        }
-
         // Handle jenis transaksi filter
         if ($request->filled('jenis_transaksi')) {
             $query->where('jenis_transaksi', $request->jenis_transaksi);
