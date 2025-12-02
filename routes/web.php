@@ -24,6 +24,7 @@ use App\Http\Controllers\LaporanPiutangController;
 use App\Http\Controllers\LaporanHutangController;
 use App\Http\Controllers\PenyesuaianStokController;
 use App\Http\Controllers\PengaturanUmumController;
+use App\Http\Controllers\MenuVisibilityController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UangMukaSupplierController;
 use App\Http\Controllers\UangMukaPelangganController;
@@ -327,6 +328,13 @@ Route::middleware('auth')->group(function () {
         Route::put('/{pengaturanUmum}', [PengaturanUmumController::class, 'update'])->name('update');
         Route::delete('/{pengaturanUmum}', [PengaturanUmumController::class, 'destroy'])->name('destroy');
         Route::post('/{pengaturanUmum}/set-active', [PengaturanUmumController::class, 'setActive'])->name('set-active');
+    });
+
+    // Menu Visibility (All authenticated users)
+    Route::prefix('menu-visibility')->name('menu-visibility.')->group(function () {
+        Route::get('/', [MenuVisibilityController::class, 'index'])->name('index');
+        Route::post('/toggle', [MenuVisibilityController::class, 'toggle'])->name('toggle');
+        Route::put('/', [MenuVisibilityController::class, 'update'])->name('update');
     });
 });
 

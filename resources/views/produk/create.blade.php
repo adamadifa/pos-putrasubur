@@ -67,7 +67,7 @@
                                 <!-- Kode Produk -->
                                 <div class="space-y-2">
                                     <label for="kode_produk" class="block text-sm font-semibold text-gray-700">
-                                        Kode Produk <span class="text-red-500">*</span>
+                                        Kode Produk
                                     </label>
                                     <div class="relative group">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -80,18 +80,18 @@
                                                     d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75H16.5v-.75ZM13.5 13.5h4.5v4.5h-4.5v-4.5Z" />
                                             </svg>
                                         </div>
-                                        <input type="text" name="kode_produk" id="kode_produk"
-                                            value="{{ old('kode_produk') }}"
-                                            class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('kode_produk') border-red-500 @enderror"
-                                            placeholder="Contoh: CEN001">
+                                        <input type="text" id="kode_produk"
+                                            value=""
+                                            class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-100 cursor-not-allowed @error('kode_produk') border-red-500 @enderror"
+                                            placeholder="Akan dibuat otomatis" readonly disabled>
                                     </div>
-                                    <p class="text-xs text-gray-500 flex items-center">
+                                    <p class="text-xs text-blue-600 flex items-center">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="w-3 h-3 mr-1">
                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                 d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.847a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.847.813a4.5 4.5 0 0 0-3.09 3.09Z" />
                                         </svg>
-                                        Akan otomatis terisi berdasarkan nama produk
+                                        Kode produk akan dibuat otomatis (format: PRD000001, PRD000002, dll)
                                     </p>
                                     @error('kode_produk')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -399,7 +399,7 @@
             // Frontend Validation Rules and Messages
             const validationRules = {
                 kode_produk: {
-                    required: true,
+                    required: false,
                     maxLength: 50
                 },
                 nama_produk: {
@@ -709,33 +709,8 @@
                 }
             }
 
-            // Auto-generate kode produk based on nama produk
-            const namaProdukInput = document.getElementById('nama_produk');
-            const kodeProdukInput = document.getElementById('kode_produk');
-
-            namaProdukInput.addEventListener('input', function() {
-                if (!kodeProdukInput.value) {
-                    const nama = this.value.toUpperCase();
-                    let kode = '';
-
-                    // Take first 3 characters of each word
-                    const words = nama.split(' ');
-                    words.forEach((word, index) => {
-                        if (index < 2 && word.length > 0) {
-                            kode += word.substring(0, 3);
-                        }
-                    });
-
-                    // Add random number
-                    kode += String(Math.floor(Math.random() * 100)).padStart(2, '0');
-
-                    if (kode.length > 3) {
-                        kodeProdukInput.value = kode;
-                        // Trigger validation for auto-generated code
-                        validateField('kode_produk', kode);
-                    }
-                }
-            });
+            // Kode produk akan dibuat otomatis di backend
+            // Tidak perlu auto-generate di frontend
 
 
             // Advanced format number input for stok fields (same as penyesuaian stok)

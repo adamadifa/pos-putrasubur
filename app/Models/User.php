@@ -43,4 +43,12 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /**
+     * Relasi ke MenuVisibility
+     */
+    public function menuVisibilities()
+    {
+        return $this->hasMany(MenuVisibility::class);
+    }
 }

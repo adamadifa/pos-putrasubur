@@ -91,6 +91,13 @@ class ProdukController extends Controller
             'harga_beli' => $this->convertIndonesianNumber($request->harga_beli),
         ]);
 
+        // Generate kode produk otomatis jika tidak diisi
+        if (empty($request->kode_produk)) {
+            $request->merge([
+                'kode_produk' => $this->generateKodeProduk($request->nama_produk)
+            ]);
+        }
+
         $validated = $request->validate(
             $this->getValidationRules(),
             $this->getValidationMessages()
@@ -184,8 +191,8 @@ class ProdukController extends Controller
     {
         return [
             'kode_produk' => $produkId ?
-                'required|string|max:50|unique:produk,kode_produk,' . $produkId :
-                'required|string|max:50|unique:produk',
+                'nullable|string|max:50|unique:produk,kode_produk,' . $produkId :
+                'nullable|string|max:50|unique:produk',
             'nama_produk' => 'required|string|max:100',
             'kategori_id' => 'required|exists:kategori_produk,id',
             'satuan_id' => 'required|exists:satuan,id',
@@ -203,7 +210,7 @@ class ProdukController extends Controller
     private function getValidationMessages(): array
     {
         return [
-            'kode_produk.required' => 'Kode produk wajib diisi.',
+            'kode_produk.nullable' => 'Kode produk akan otomatis dibuat jika tidak diisi.',
             'kode_produk.string' => 'Kode produk harus berupa teks.',
             'kode_produk.max' => 'Kode produk maksimal 50 karakter.',
             'kode_produk.unique' => 'Kode produk sudah digunakan.',
@@ -257,5 +264,32 @@ class ProdukController extends Controller
         $value = str_replace(',', '.', $value); // Replace decimal comma with dot
 
         return $value;
+    }
+
+    /**
+     * Generate kode produk otomatis
+     * Format: PRD000001, PRD000002, dll (incremental dengan 6 digit)
+     * Support hingga 999.999 produk
+     */
+    private function generateKodeProduk($namaProduk = null): string
+    {
+        // Get all produk dengan kode PRD untuk mencari nomor terbesar
+        $produkWithPRD = Produk::where('kode_produk', 'like', 'PRD%')
+            ->get();
+
+        $maxNumber = 0;
+        
+        foreach ($produkWithPRD as $produk) {
+            // Extract number from kode produk (ambil angka setelah "PRD")
+            $number = (int) preg_replace('/[^0-9]/', '', substr($produk->kode_produk, 3));
+            if ($number > $maxNumber) {
+                $maxNumber = $number;
+            }
+        }
+
+        $newNumber = $maxNumber + 1;
+
+        // Format: PRD000001, PRD000002, etc. (6 digit untuk support hingga 999.999 produk)
+        return 'PRD' . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
     }
 }
