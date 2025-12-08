@@ -136,10 +136,15 @@ class LaporanStokController extends Controller
         $tanggalAkhirBulan = \Carbon\Carbon::create($tahun, $bulan, 1)->endOfMonth();
         $transaksiBulanIni = $this->getTransaksiProduk($produkId, $tanggalAwalBulanFilter, $tanggalAkhirBulan);
 
-        // Calculate summary
+        // Calculate summary (kuantitas)
         $totalPembelian = $transaksiBulanIni->where('jenis', 'pembelian')->sum('jumlah');
         $totalPenjualan = $transaksiBulanIni->where('jenis', 'penjualan')->sum('jumlah');
         $totalPenyesuaian = $transaksiBulanIni->where('jenis', 'penyesuaian')->sum('jumlah');
+
+        // Calculate summary (nominal)
+        $totalPembelianUang = $transaksiBulanIni->where('jenis', 'pembelian')->sum('total_harga');
+        $totalPenjualanUang = $transaksiBulanIni->where('jenis', 'penjualan')->sum('total_harga');
+        $totalPenyesuaianUang = $transaksiBulanIni->where('jenis', 'penyesuaian')->sum('total_harga');
         $saldoAkhir = $saldoAwal + $totalPembelian - $totalPenjualan + $totalPenyesuaian;
 
         return [
@@ -173,6 +178,9 @@ class LaporanStokController extends Controller
                 'total_pembelian' => $totalPembelian,
                 'total_penjualan' => $totalPenjualan,
                 'total_penyesuaian' => $totalPenyesuaian,
+                'total_pembelian_uang' => $totalPembelianUang,
+                'total_penjualan_uang' => $totalPenjualanUang,
+                'total_penyesuaian_uang' => $totalPenyesuaianUang,
                 'saldo_akhir' => $saldoAkhir,
                 'nilai_stok' => $saldoAkhir * $produk->harga_beli,
             ],
@@ -258,10 +266,15 @@ class LaporanStokController extends Controller
         // Get transaksi dalam periode yang dipilih
         $transaksi = $this->getTransaksiProduk($produkId, $tanggalDari, $tanggalSampai);
 
-        // Calculate summary
+        // Calculate summary (kuantitas)
         $totalPembelian = $transaksi->where('jenis', 'pembelian')->sum('jumlah');
         $totalPenjualan = $transaksi->where('jenis', 'penjualan')->sum('jumlah');
         $totalPenyesuaian = $transaksi->where('jenis', 'penyesuaian')->sum('jumlah');
+
+        // Calculate summary (nominal)
+        $totalPembelianUang = $transaksi->where('jenis', 'pembelian')->sum('total_harga');
+        $totalPenjualanUang = $transaksi->where('jenis', 'penjualan')->sum('total_harga');
+        $totalPenyesuaianUang = $transaksi->where('jenis', 'penyesuaian')->sum('total_harga');
         $saldoAkhir = $saldoAwalPeriode + $totalPembelian - $totalPenjualan + $totalPenyesuaian;
 
         return [
@@ -294,6 +307,9 @@ class LaporanStokController extends Controller
                 'total_pembelian' => $totalPembelian,
                 'total_penjualan' => $totalPenjualan,
                 'total_penyesuaian' => $totalPenyesuaian,
+                'total_pembelian_uang' => $totalPembelianUang,
+                'total_penjualan_uang' => $totalPenjualanUang,
+                'total_penyesuaian_uang' => $totalPenyesuaianUang,
                 'saldo_akhir' => $saldoAkhir,
                 'nilai_stok' => $saldoAkhir * $produk->harga_beli,
             ],
@@ -338,6 +354,8 @@ class LaporanStokController extends Controller
                 'pembelian' as jenis,
                 pb.tanggal,
                 (dpb.qty - COALESCE(dpb.qty_discount, 0)) as jumlah,
+                dpb.harga_beli as harga_satuan,
+                dpb.subtotal as total_harga,
                 CONCAT('Pembelian dari ', COALESCE(s.nama, 'Supplier')) COLLATE utf8mb4_unicode_ci as keterangan,
                 pb.no_faktur COLLATE utf8mb4_unicode_ci as no_transaksi
             FROM detail_pembelian dpb
@@ -352,6 +370,8 @@ class LaporanStokController extends Controller
                 'penjualan' as jenis,
                 pj.tanggal,
                 dpj.qty as jumlah,
+                dpj.harga as harga_satuan,
+                dpj.subtotal as total_harga,
                 CONCAT('Penjualan ke ', COALESCE(p.nama, 'Pelanggan')) COLLATE utf8mb4_unicode_ci as keterangan,
                 pj.no_faktur COLLATE utf8mb4_unicode_ci as no_transaksi
             FROM detail_penjualan dpj
@@ -366,6 +386,8 @@ class LaporanStokController extends Controller
                 'penyesuaian' as jenis,
                 ps.tanggal_penyesuaian as tanggal,
                 ps.jumlah_penyesuaian as jumlah,
+                NULL as harga_satuan,
+                0 as total_harga,
                 COALESCE(ps.keterangan, 'Penyesuaian Stok') COLLATE utf8mb4_unicode_ci as keterangan,
                 ps.kode_penyesuaian COLLATE utf8mb4_unicode_ci as no_transaksi
             FROM penyesuaian_stok ps

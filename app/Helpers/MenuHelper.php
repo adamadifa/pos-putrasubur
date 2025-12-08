@@ -367,7 +367,7 @@ class MenuHelper
             $filteredMenus['pengaturan'] = [
                 'name' => 'Pengaturan',
                 'items' => $filteredPengaturan
-            ];
+        ];
         }
 
         return $filteredMenus;

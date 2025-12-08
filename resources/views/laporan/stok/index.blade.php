@@ -17,23 +17,18 @@
         <div class="bg-white rounded-lg md:rounded-xl shadow-lg border border-gray-100 p-4 md:p-6 no-print">
             <form method="GET" action="{{ route('laporan.stok.index') }}" id="laporanForm">
                 <!-- Header: Periode + Actions (compact) -->
-                <div
-                    class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 md:gap-4 mb-4 border-b border-gray-100 pb-3">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 md:gap-4 mb-4 border-b border-gray-100 pb-3">
                     <div>
                         <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Periode Laporan</p>
                         <div class="mt-2 flex flex-wrap gap-3 text-xs md:text-sm text-gray-700">
                             <label class="inline-flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="jenis_periode" value="bulan"
-                                    {{ $jenisPeriode == 'bulan' ? 'checked' : '' }}
-                                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                                    onchange="togglePeriodeType()">
+                                <input type="radio" name="jenis_periode" value="bulan" {{ $jenisPeriode == 'bulan' ? 'checked' : '' }}
+                                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300" onchange="togglePeriodeType()">
                                 <span>Per Bulan</span>
                             </label>
                             <label class="inline-flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="jenis_periode" value="tanggal"
-                                    {{ $jenisPeriode == 'tanggal' ? 'checked' : '' }}
-                                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                                    onchange="togglePeriodeType()">
+                                <input type="radio" name="jenis_periode" value="tanggal" {{ $jenisPeriode == 'tanggal' ? 'checked' : '' }}
+                                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300" onchange="togglePeriodeType()">
                                 <span>Periode Tanggal</span>
                             </label>
                         </div>
@@ -43,8 +38,8 @@
                         <button type="submit"
                             class="flex-1 lg:flex-none inline-flex items-center justify-center px-4 py-2.5 bg-primary-600 border border-transparent rounded-lg font-medium text-white text-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary-500 transition-colors">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z">
+                                </path>
                             </svg>
                             <span class="hidden sm:inline">Tampilkan</span>
                             <span class="sm:hidden">Cari</span>
@@ -112,9 +107,12 @@
                     <div id="tanggalDariFilterDesktop" class="{{ $jenisPeriode == 'bulan' ? 'hidden' : '' }}">
                         <label for="tanggal_dari" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Dari</label>
                         <div class="relative">
-                            <input type="text" name="tanggal_dari" id="tanggal_dari" value="{{ $tanggalDari }}"
-                                class="w-full px-3 py-2 pl-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                                placeholder="Pilih tanggal dari" readonly>
+                            <input type="text" id="tanggal_dari" readonly
+                                value="{{ request('tanggal_dari') ? \Carbon\Carbon::parse(request('tanggal_dari'))->format('d/m/Y') : '' }}"
+                                placeholder="Pilih tanggal"
+                                class="w-full px-3 py-2 pl-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 cursor-pointer bg-white hover:bg-gray-50">
+                            <input type="hidden" name="tanggal_dari" id="tanggal_dari_hidden"
+                                value="{{ request('tanggal_dari') ? \Carbon\Carbon::parse(request('tanggal_dari'))->format('Y-m-d') : '' }}">
                             <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
                                 <i class="ti ti-calendar text-gray-400 text-sm"></i>
                             </div>
@@ -123,12 +121,14 @@
 
                     <!-- Tanggal Sampai (for tanggal type) -->
                     <div id="tanggalSampaiFilterDesktop" class="{{ $jenisPeriode == 'bulan' ? 'hidden' : '' }}">
-                        <label for="tanggal_sampai" class="block text-sm font-medium text-gray-700 mb-1">Tanggal
-                            Sampai</label>
+                        <label for="tanggal_sampai" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Sampai</label>
                         <div class="relative">
-                            <input type="text" name="tanggal_sampai" id="tanggal_sampai" value="{{ $tanggalSampai }}"
-                                class="w-full px-3 py-2 pl-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                                placeholder="Pilih tanggal sampai" readonly>
+                            <input type="text" id="tanggal_sampai" readonly
+                                value="{{ request('tanggal_sampai') ? \Carbon\Carbon::parse(request('tanggal_sampai'))->format('d/m/Y') : '' }}"
+                                placeholder="Pilih tanggal"
+                                class="w-full px-3 py-2 pl-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 cursor-pointer bg-white hover:bg-gray-50">
+                            <input type="hidden" name="tanggal_sampai" id="tanggal_sampai_hidden"
+                                value="{{ request('tanggal_sampai') ? \Carbon\Carbon::parse(request('tanggal_sampai'))->format('Y-m-d') : '' }}">
                             <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
                                 <i class="ti ti-calendar text-gray-400 text-sm"></i>
                             </div>
@@ -142,13 +142,12 @@
                     <div class="sm:col-span-2">
                         <label for="produk_id_mobile" class="block text-sm font-medium text-gray-700 mb-1">Produk
                             <span class="text-red-500">*</span></label>
-                        <select name="produk_id" id="produk_id_mobile"
+                        <select id="produk_id_mobile"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                             required>
                             <option value="">Pilih Produk</option>
                             @foreach ($produkList as $produk)
-                                <option value="{{ $produk->id }}"
-                                    {{ $selectedProduk == $produk->id ? 'selected' : '' }}>
+                                <option value="{{ $produk->id }}" {{ $selectedProduk == $produk->id ? 'selected' : '' }}>
                                     {{ $produk->nama_produk }} ({{ $produk->kategori->nama ?? '-' }})
                                 </option>
                             @endforeach
@@ -156,19 +155,16 @@
                     </div>
 
                     <!-- Bulan/Tahun Filter (for bulan type) -->
-                    <div id="bulanTahunFilterMobile"
-                        class="sm:col-span-2 {{ $jenisPeriode == 'tanggal' ? 'hidden' : '' }}"
+                    <div id="bulanTahunFilterMobile" class="sm:col-span-2 {{ $jenisPeriode == 'tanggal' ? 'hidden' : '' }}"
                         style="display: {{ $jenisPeriode == 'tanggal' ? 'none' : 'block' }};">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <!-- Bulan Filter -->
                             <div>
-                                <label for="bulan_mobile"
-                                    class="block text-sm font-medium text-gray-700 mb-1">Bulan</label>
-                                <select name="bulan" id="bulan_mobile"
+                                <label for="bulan_mobile" class="block text-sm font-medium text-gray-700 mb-1">Bulan</label>
+                                <select id="bulan_mobile"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
                                     @foreach ($bulanList as $key => $bulan)
-                                        <option value="{{ $key }}"
-                                            {{ $selectedBulan == $key ? 'selected' : '' }}>
+                                        <option value="{{ $key }}" {{ $selectedBulan == $key ? 'selected' : '' }}>
                                             {{ $bulan }}
                                         </option>
                                     @endforeach
@@ -177,13 +173,11 @@
 
                             <!-- Tahun Filter -->
                             <div>
-                                <label for="tahun_mobile"
-                                    class="block text-sm font-medium text-gray-700 mb-1">Tahun</label>
-                                <select name="tahun" id="tahun_mobile"
+                                <label for="tahun_mobile" class="block text-sm font-medium text-gray-700 mb-1">Tahun</label>
+                                <select id="tahun_mobile"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
                                     @foreach ($tahunList as $tahun)
-                                        <option value="{{ $tahun }}"
-                                            {{ $selectedTahun == $tahun ? 'selected' : '' }}>
+                                        <option value="{{ $tahun }}" {{ $selectedTahun == $tahun ? 'selected' : '' }}>
                                             {{ $tahun }}
                                         </option>
                                     @endforeach
@@ -197,13 +191,14 @@
                         style="display: {{ $jenisPeriode == 'bulan' ? 'none' : 'block' }};">
                         <!-- Tanggal Dari -->
                         <div class="mb-2">
-                            <label for="tanggal_dari_mobile" class="block text-sm font-medium text-gray-700 mb-1">Tanggal
-                                Dari</label>
+                            <label for="tanggal_dari_mobile" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Dari</label>
                             <div class="relative">
-                                <input type="text" name="tanggal_dari" id="tanggal_dari_mobile"
-                                    value="{{ $tanggalDari }}"
-                                    class="w-full px-3 py-2 pl-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                                    placeholder="Pilih tanggal dari" readonly>
+                                <input type="text" id="tanggal_dari_mobile" readonly
+                                    value="{{ request('tanggal_dari') ? \Carbon\Carbon::parse(request('tanggal_dari'))->format('d/m/Y') : '' }}"
+                                    placeholder="Pilih tanggal"
+                                    class="w-full px-3 py-2 pl-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 cursor-pointer bg-white hover:bg-gray-50">
+                                <input type="hidden" id="tanggal_dari_mobile_hidden"
+                                    value="{{ request('tanggal_dari') ? \Carbon\Carbon::parse(request('tanggal_dari'))->format('Y-m-d') : '' }}">
                                 <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
                                     <i class="ti ti-calendar text-gray-400 text-sm"></i>
                                 </div>
@@ -212,14 +207,14 @@
 
                         <!-- Tanggal Sampai -->
                         <div>
-                            <label for="tanggal_sampai_mobile"
-                                class="block text-sm font-medium text-gray-700 mb-1">Tanggal
-                                Sampai</label>
+                            <label for="tanggal_sampai_mobile" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Sampai</label>
                             <div class="relative">
-                                <input type="text" name="tanggal_sampai" id="tanggal_sampai_mobile"
-                                    value="{{ $tanggalSampai }}"
-                                    class="w-full px-3 py-2 pl-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                                    placeholder="Pilih tanggal sampai" readonly>
+                                <input type="text" id="tanggal_sampai_mobile" readonly
+                                    value="{{ request('tanggal_sampai') ? \Carbon\Carbon::parse(request('tanggal_sampai'))->format('d/m/Y') : '' }}"
+                                    placeholder="Pilih tanggal"
+                                    class="w-full px-3 py-2 pl-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 cursor-pointer bg-white hover:bg-gray-50">
+                                <input type="hidden" id="tanggal_sampai_mobile_hidden"
+                                    value="{{ request('tanggal_sampai') ? \Carbon\Carbon::parse(request('tanggal_sampai'))->format('Y-m-d') : '' }}">
                                 <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
                                     <i class="ti ti-calendar text-gray-400 text-sm"></i>
                                 </div>
@@ -235,7 +230,7 @@
         <!-- Laporan Data -->
         @if (isset($laporanData) && $laporanData)
             <!-- Summary Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
                 <!-- Saldo Awal -->
                 <div class="bg-white rounded-lg md:rounded-xl shadow-lg border border-gray-100 p-4 md:p-6">
                     <div class="flex items-center">
@@ -257,8 +252,7 @@
                 <div class="bg-white rounded-lg md:rounded-xl shadow-lg border border-gray-100 p-4 md:p-6">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <div
-                                class="w-10 h-10 md:w-12 md:h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-green-100 rounded-lg flex items-center justify-center">
                                 <i class="ti ti-trending-up text-green-600 text-lg md:text-xl"></i>
                             </div>
                         </div>
@@ -292,8 +286,7 @@
                 <div class="bg-white rounded-lg md:rounded-xl shadow-lg border border-gray-100 p-4 md:p-6">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <div
-                                class="w-10 h-10 md:w-12 md:h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
                                 <i class="ti ti-adjustments text-yellow-600 text-lg md:text-xl"></i>
                             </div>
                         </div>
@@ -310,8 +303,7 @@
                 <div class="bg-white rounded-lg md:rounded-xl shadow-lg border border-gray-100 p-4 md:p-6">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <div
-                                class="w-10 h-10 md:w-12 md:h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                                 <i class="ti ti-currency-dollar text-purple-600 text-lg md:text-xl"></i>
                             </div>
                         </div>
@@ -319,6 +311,40 @@
                             <p class="text-xs md:text-sm font-medium text-gray-500">Saldo Akhir</p>
                             <p class="text-lg md:text-2xl font-bold text-gray-900">
                                 {{ number_format($laporanData['summary']['saldo_akhir'], 2, ',', '.') }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Cards Row 2 (Rp) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-4">
+                <div class="bg-red-50 border border-red-200 rounded-lg md:rounded-xl shadow-lg p-4 md:p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                                <i class="ti ti-cash text-red-600 text-lg md:text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="ml-3 md:ml-4">
+                            <p class="text-xs md:text-sm font-medium text-red-800">Total Pembelian (Rp)</p>
+                            <p class="text-lg md:text-2xl font-bold text-red-900">
+                                {{ number_format($laporanData['summary']['total_pembelian_uang'] ?? 0, 0, ',', '.') }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-green-50 border border-green-200 rounded-lg md:rounded-xl shadow-lg p-4 md:p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="ti ti-currency-dollar text-green-700 text-lg md:text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="ml-3 md:ml-4">
+                            <p class="text-xs md:text-sm font-medium text-green-800">Total Penjualan (Rp)</p>
+                            <p class="text-lg md:text-2xl font-bold text-green-900">
+                                {{ number_format($laporanData['summary']['total_penjualan_uang'] ?? 0, 0, ',', '.') }}
                             </p>
                         </div>
                     </div>
@@ -409,12 +435,10 @@
                 <!-- Product Photo -->
                 <div class="flex justify-center mb-4 md:mb-6">
                     @if ($laporanData['produk']['foto'])
-                        <img src="{{ asset('storage/' . $laporanData['produk']['foto']) }}"
-                            alt="{{ $laporanData['produk']['nama_produk'] }}"
+                        <img src="{{ asset('storage/' . $laporanData['produk']['foto']) }}" alt="{{ $laporanData['produk']['nama_produk'] }}"
                             class="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-4 border-gray-200">
                     @else
-                        <div
-                            class="w-24 h-24 md:w-32 md:h-32 bg-gray-200 rounded-lg flex items-center justify-center border-4 border-gray-200">
+                        <div class="w-24 h-24 md:w-32 md:h-32 bg-gray-200 rounded-lg flex items-center justify-center border-4 border-gray-200">
                             <i class="ti ti-photo text-gray-400 text-3xl md:text-4xl"></i>
                         </div>
                     @endif
@@ -442,12 +466,32 @@
                         </div>
                     </div>
 
+                    <!-- Total Pembelian (Rp) Card -->
+                    <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                        <div class="flex justify-between items-center">
+                            <div class="text-sm font-medium text-gray-700">Total Pembelian (Rp)</div>
+                            <div class="text-lg font-bold text-gray-900">
+                                {{ number_format($laporanData['summary']['total_pembelian_uang'] ?? 0, 0, ',', '.') }}
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Total Penjualan Card -->
                     <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                         <div class="flex justify-between items-center">
                             <div class="text-sm font-medium text-gray-700">Total Penjualan</div>
                             <div class="text-lg font-bold text-gray-900">
                                 {{ number_format($laporanData['summary']['total_penjualan'], 2, ',', '.') }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Penjualan (Rp) Card -->
+                    <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                        <div class="flex justify-between items-center">
+                            <div class="text-sm font-medium text-gray-700">Total Penjualan (Rp)</div>
+                            <div class="text-lg font-bold text-gray-900">
+                                {{ number_format($laporanData['summary']['total_penjualan_uang'] ?? 0, 0, ',', '.') }}
                             </div>
                         </div>
                     </div>
@@ -481,9 +525,11 @@
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Keterangan
                                 </th>
-                                <th
-                                    class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Jumlah
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Qty
+                                </th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Total Harga
                                 </th>
 
                             </tr>
@@ -496,7 +542,9 @@
                                 <td class="px-4 py-4 text-right text-sm font-bold text-gray-900">
                                     {{ number_format($laporanData['saldo_awal'], 2, ',', '.') }}
                                 </td>
-
+                                <td class="px-4 py-4 text-right text-sm text-gray-500">
+                                    -
+                                </td>
                             </tr>
                             <tr>
                                 <td class="px-4 py-4 text-sm text-gray-900">
@@ -505,7 +553,9 @@
                                 <td class="px-4 py-4 text-right text-sm font-medium text-gray-900">
                                     {{ number_format($laporanData['summary']['total_pembelian'], 2, ',', '.') }}
                                 </td>
-
+                                <td class="px-4 py-4 text-right text-sm font-medium text-gray-900">
+                                    {{ number_format($laporanData['summary']['total_pembelian_uang'] ?? 0, 0, ',', '.') }}
+                                </td>
                             </tr>
                             <tr>
                                 <td class="px-4 py-4 text-sm text-gray-900">
@@ -514,7 +564,9 @@
                                 <td class="px-4 py-4 text-right text-sm font-medium text-gray-900">
                                     {{ number_format($laporanData['summary']['total_penjualan'], 2, ',', '.') }}
                                 </td>
-
+                                <td class="px-4 py-4 text-right text-sm font-medium text-gray-900">
+                                    {{ number_format($laporanData['summary']['total_penjualan_uang'] ?? 0, 0, ',', '.') }}
+                                </td>
                             </tr>
                             <tr>
                                 <td class="px-4 py-4 text-sm text-gray-900">
@@ -523,16 +575,20 @@
                                 <td class="px-4 py-4 text-right text-sm font-medium text-gray-900">
                                     {{ number_format($laporanData['summary']['total_penyesuaian'], 2, ',', '.') }}
                                 </td>
-
+                                <td class="px-4 py-4 text-right text-sm font-medium text-gray-900">
+                                    {{ number_format($laporanData['summary']['total_penyesuaian_uang'] ?? 0, 0, ',', '.') }}
+                                </td>
                             </tr>
                             <tr class="bg-purple-50 border-t-2 border-purple-200">
                                 <td class="px-4 py-4 text-sm font-bold text-gray-900">
-                                    Saldo Akhir
+                                    Saldo Akhir (Qty)
                                 </td>
                                 <td class="px-4 py-4 text-right text-sm font-bold text-gray-900">
                                     {{ number_format($laporanData['summary']['saldo_akhir'], 2, ',', '.') }}
                                 </td>
-
+                                <td class="px-4 py-4 text-right text-sm font-bold text-gray-900">
+                                    {{ number_format($laporanData['summary']['nilai_stok'] ?? 0, 0, ',', '.') }}
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -649,6 +705,12 @@
                                                 @endif
                                             </span>
                                         </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-xs text-gray-600">Total Harga:</span>
+                                            <span class="text-sm font-semibold text-gray-900">
+                                                Rp {{ number_format($transaksi->total_harga ?? 0, 0, ',', '.') }}
+                                            </span>
+                                        </div>
                                         <div class="flex justify-between border-t border-gray-200 pt-2">
                                             <span class="text-xs font-semibold text-gray-800">Saldo:</span>
                                             <span class="text-sm font-bold text-gray-900">
@@ -665,32 +727,28 @@
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Tanggal
                                         </th>
-                                        <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Keterangan
                                         </th>
-                                        <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Kategori
                                         </th>
-                                        <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             No. Transaksi
                                         </th>
-                                        <th
-                                            class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             In
                                         </th>
-                                        <th
-                                            class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Out
                                         </th>
-                                        <th
-                                            class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Total Harga
+                                        </th>
+                                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Saldo
                                         </th>
                                     </tr>
@@ -719,6 +777,9 @@
                                             </span>
                                         </td>
                                         <td class="px-4 py-4 text-sm text-gray-900">
+                                            -
+                                        </td>
+                                        <td class="px-4 py-4 text-right text-sm font-medium text-gray-900">
                                             -
                                         </td>
                                         <td class="px-4 py-4 text-right text-sm font-medium text-gray-900">
@@ -787,6 +848,9 @@
                                                 @else
                                                     -
                                                 @endif
+                                            </td>
+                                            <td class="px-4 py-4 text-right text-sm font-medium text-gray-900">
+                                                {{ number_format($transaksi->total_harga ?? 0, 0, ',', '.') }}
                                             </td>
                                             <td class="px-4 py-4 text-right text-sm font-bold text-gray-900">
                                                 {{ number_format($runningSaldo, 2, ',', '.') }}
@@ -900,9 +964,11 @@
         // Initialize form on page load
         document.addEventListener('DOMContentLoaded', function() {
             togglePeriodeType();
+            // Initialize Flatpickr dan Select2
             initializeFlatpickr();
             initializeSelect2();
             setupFormSynchronization();
+
 
             // Add event listener for print button
             const printBtn = document.getElementById('printBtn');
@@ -918,24 +984,19 @@
                         formData.set('produk_id', produkId);
                     }
 
-                    // Convert d/m/Y to Y-m-d format if jenis_periode is tanggal
+                    // Use hidden inputs for date format if jenis_periode is tanggal
                     const jenisPeriode = document.querySelector('input[name="jenis_periode"]:checked')
-                    .value;
+                        .value;
                     if (jenisPeriode === 'tanggal') {
-                        const convertDate = (dateStr) => {
-                            if (!dateStr) return '';
-                            const parts = dateStr.split('/');
-                            if (parts.length === 3) {
-                                return `${parts[2]}-${parts[1]}-${parts[0]}`;
-                            }
-                            return dateStr;
-                        };
+                        const tanggalDariHidden = document.getElementById('tanggal_dari_hidden');
+                        const tanggalSampaiHidden = document.getElementById('tanggal_sampai_hidden');
 
-                        const tanggalDari = document.getElementById('tanggal_dari').value;
-                        const tanggalSampai = document.getElementById('tanggal_sampai').value;
-
-                        formData.set('tanggal_dari', convertDate(tanggalDari));
-                        formData.set('tanggal_sampai', convertDate(tanggalSampai));
+                        if (tanggalDariHidden && tanggalDariHidden.value) {
+                            formData.set('tanggal_dari', tanggalDariHidden.value);
+                        }
+                        if (tanggalSampaiHidden && tanggalSampaiHidden.value) {
+                            formData.set('tanggal_sampai', tanggalSampaiHidden.value);
+                        }
                     }
 
                     const params = new URLSearchParams(formData);
@@ -944,116 +1005,229 @@
                 });
             }
 
-            // Handle form submission - convert date format if needed
+            // Handle form submission - sync mobile to desktop sebelum submit
             const form = document.getElementById('laporanForm');
             form.addEventListener('submit', function(e) {
+                // Sync mobile values to desktop (karena mobile tidak punya name attribute)
+                const produkIdMobile = document.getElementById('produk_id_mobile');
+                const produkIdDesktop = document.getElementById('produk_id');
+                if (produkIdMobile && produkIdDesktop && produkIdMobile.value) {
+                    produkIdDesktop.value = produkIdMobile.value;
+                }
+
+                const bulanMobile = document.getElementById('bulan_mobile');
+                const bulanDesktop = document.getElementById('bulan');
+                if (bulanMobile && bulanDesktop && bulanMobile.value) {
+                    bulanDesktop.value = bulanMobile.value;
+                }
+
+                const tahunMobile = document.getElementById('tahun_mobile');
+                const tahunDesktop = document.getElementById('tahun');
+                if (tahunMobile && tahunDesktop && tahunMobile.value) {
+                    tahunDesktop.value = tahunMobile.value;
+                }
+
+                // Sync tanggal mobile hidden ke desktop hidden (desktop yang punya name attribute untuk submit)
                 const jenisPeriode = document.querySelector('input[name="jenis_periode"]:checked').value;
                 if (jenisPeriode === 'tanggal') {
-                    const tanggalDari = document.getElementById('tanggal_dari').value;
-                    const tanggalSampai = document.getElementById('tanggal_sampai').value;
+                    const tanggalDariMobileHidden = document.getElementById('tanggal_dari_mobile_hidden');
+                    const tanggalSampaiMobileHidden = document.getElementById('tanggal_sampai_mobile_hidden');
+                    const tanggalDariHidden = document.getElementById('tanggal_dari_hidden');
+                    const tanggalSampaiHidden = document.getElementById('tanggal_sampai_hidden');
 
-                    if (tanggalDari && tanggalSampai) {
-                        // Convert d/m/Y to Y-m-d format
-                        const convertDate = (dateStr) => {
-                            if (!dateStr) return '';
-                            const parts = dateStr.split('/');
-                            if (parts.length === 3) {
-                                return `${parts[2]}-${parts[1]}-${parts[0]}`;
-                            }
-                            return dateStr;
-                        };
-
-                        // Create hidden inputs with converted dates
-                        let hiddenDari = document.getElementById('tanggal_dari_hidden');
-                        let hiddenSampai = document.getElementById('tanggal_sampai_hidden');
-
-                        if (!hiddenDari) {
-                            hiddenDari = document.createElement('input');
-                            hiddenDari.type = 'hidden';
-                            hiddenDari.name = 'tanggal_dari';
-                            hiddenDari.id = 'tanggal_dari_hidden';
-                            form.appendChild(hiddenDari);
+                    // Sync mobile ke desktop (prioritaskan desktop jika sudah ada nilai)
+                    if (tanggalDariHidden) {
+                        // Jika desktop kosong tapi mobile ada nilai, ambil dari mobile
+                        if (!tanggalDariHidden.value && tanggalDariMobileHidden && tanggalDariMobileHidden.value) {
+                            tanggalDariHidden.value = tanggalDariMobileHidden.value;
                         }
+                        // Jika desktop ada nilai, tetap gunakan desktop (tidak di-overwrite)
+                    }
 
-                        if (!hiddenSampai) {
-                            hiddenSampai = document.createElement('input');
-                            hiddenSampai.type = 'hidden';
-                            hiddenSampai.name = 'tanggal_sampai';
-                            hiddenSampai.id = 'tanggal_sampai_hidden';
-                            form.appendChild(hiddenSampai);
+                    if (tanggalSampaiHidden) {
+                        // Jika desktop kosong tapi mobile ada nilai, ambil dari mobile
+                        if (!tanggalSampaiHidden.value && tanggalSampaiMobileHidden && tanggalSampaiMobileHidden.value) {
+                            tanggalSampaiHidden.value = tanggalSampaiMobileHidden.value;
                         }
-
-                        hiddenDari.value = convertDate(tanggalDari);
-                        hiddenSampai.value = convertDate(tanggalSampai);
-
-                        // Remove original inputs from form submission
-                        document.getElementById('tanggal_dari').disabled = true;
-                        document.getElementById('tanggal_sampai').disabled = true;
+                        // Jika desktop ada nilai, tetap gunakan desktop (tidak di-overwrite)
                     }
                 }
             });
         });
 
         function initializeFlatpickr() {
-            // Initialize flatpickr for desktop tanggal_dari
-            flatpickr("#tanggal_dari", {
-                dateFormat: "d/m/Y",
-                locale: "id",
-                allowInput: false,
-                clickOpens: true,
-                onChange: function(selectedDates, dateStr, instance) {
-                    // Update tanggal_sampai min date
-                    if (selectedDates.length > 0) {
-                        const tanggalSampaiInput = document.getElementById('tanggal_sampai');
-                        const tanggalSampaiMobileInput = document.getElementById('tanggal_sampai_mobile');
-                        if (tanggalSampaiInput._flatpickr) {
-                            tanggalSampaiInput._flatpickr.set('minDate', selectedDates[0]);
-                        }
-                        if (tanggalSampaiMobileInput && tanggalSampaiMobileInput._flatpickr) {
-                            tanggalSampaiMobileInput._flatpickr.set('minDate', selectedDates[0]);
+            // Date From Picker (Desktop)
+            const tanggalDariInput = document.getElementById('tanggal_dari');
+            if (tanggalDariInput) {
+                const dateFromPicker = flatpickr(tanggalDariInput, {
+                    locale: "id",
+                    dateFormat: "d/m/Y",
+                    allowInput: false,
+                    clickOpens: true,
+                    @if (request('tanggal_dari'))
+                        defaultDate: "{{ \Carbon\Carbon::parse(request('tanggal_dari'))->format('d/m/Y') }}",
+                    @endif
+                    onChange: function(selectedDates, dateStr, instance) {
+                        if (selectedDates[0]) {
+                            // Format tanggal ke Y-m-d tanpa terpengaruh timezone
+                            const date = selectedDates[0];
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            const isoDate = `${year}-${month}-${day}`;
+
+                            document.getElementById('tanggal_dari_hidden').value = isoDate;
+                            instance.input.value = dateStr;
+
+                            // Update tanggal_sampai min date
+                            const tanggalSampaiInput = document.getElementById('tanggal_sampai');
+                            if (tanggalSampaiInput && tanggalSampaiInput._flatpickr) {
+                                tanggalSampaiInput._flatpickr.set('minDate', date);
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
 
-            // Initialize flatpickr for desktop tanggal_sampai
-            flatpickr("#tanggal_sampai", {
-                dateFormat: "d/m/Y",
-                locale: "id",
-                allowInput: false,
-                clickOpens: true,
-                minDate: document.getElementById('tanggal_dari').value || "today"
-            });
+            // Date To Picker (Desktop)
+            const tanggalSampaiInput = document.getElementById('tanggal_sampai');
+            if (tanggalSampaiInput) {
+                const dateToPicker = flatpickr(tanggalSampaiInput, {
+                    locale: "id",
+                    dateFormat: "d/m/Y",
+                    allowInput: false,
+                    clickOpens: true,
+                    @if (request('tanggal_sampai'))
+                        defaultDate: "{{ \Carbon\Carbon::parse(request('tanggal_sampai'))->format('d/m/Y') }}",
+                    @endif
+                    onChange: function(selectedDates, dateStr, instance) {
+                        if (selectedDates[0]) {
+                            // Format tanggal ke Y-m-d tanpa terpengaruh timezone
+                            const date = selectedDates[0];
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            const isoDate = `${year}-${month}-${day}`;
 
-            // Initialize flatpickr for mobile tanggal_dari
-            flatpickr("#tanggal_dari_mobile", {
-                dateFormat: "d/m/Y",
-                locale: "id",
-                allowInput: false,
-                clickOpens: true,
-                onChange: function(selectedDates, dateStr, instance) {
-                    // Update tanggal_sampai min date
-                    if (selectedDates.length > 0) {
-                        const tanggalSampaiInput = document.getElementById('tanggal_sampai');
-                        const tanggalSampaiMobileInput = document.getElementById('tanggal_sampai_mobile');
-                        if (tanggalSampaiInput._flatpickr) {
-                            tanggalSampaiInput._flatpickr.set('minDate', selectedDates[0]);
-                        }
-                        if (tanggalSampaiMobileInput && tanggalSampaiMobileInput._flatpickr) {
-                            tanggalSampaiMobileInput._flatpickr.set('minDate', selectedDates[0]);
+                            document.getElementById('tanggal_sampai_hidden').value = isoDate;
+                            instance.input.value = dateStr;
                         }
                     }
-                }
-            });
+                });
 
-            // Initialize flatpickr for mobile tanggal_sampai
-            flatpickr("#tanggal_sampai_mobile", {
-                dateFormat: "d/m/Y",
-                locale: "id",
-                allowInput: false,
-                clickOpens: true,
-                minDate: document.getElementById('tanggal_dari_mobile').value || "today"
-            });
+                // Set min date for date_to based on date_from
+                if (tanggalDariInput && tanggalDariInput._flatpickr) {
+                    tanggalDariInput._flatpickr.config.onChange.push(function(selectedDates) {
+                        if (selectedDates[0]) {
+                            dateToPicker.set('minDate', selectedDates[0]);
+                        }
+                    });
+                }
+            }
+
+            // Date From Picker (Mobile)
+            const tanggalDariMobileInput = document.getElementById('tanggal_dari_mobile');
+            if (tanggalDariMobileInput) {
+                const dateFromPickerMobile = flatpickr(tanggalDariMobileInput, {
+                    locale: "id",
+                    dateFormat: "d/m/Y",
+                    allowInput: false,
+                    clickOpens: true,
+                    @if (request('tanggal_dari'))
+                        defaultDate: "{{ \Carbon\Carbon::parse(request('tanggal_dari'))->format('d/m/Y') }}",
+                    @endif
+                    onChange: function(selectedDates, dateStr, instance) {
+                        if (selectedDates[0]) {
+                            // Format tanggal ke Y-m-d tanpa terpengaruh timezone
+                            const date = selectedDates[0];
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            const isoDate = `${year}-${month}-${day}`;
+
+                            const tanggalDariMobileHidden = document.getElementById('tanggal_dari_mobile_hidden');
+                            const tanggalDariHidden = document.getElementById('tanggal_dari_hidden');
+                            if (tanggalDariMobileHidden) {
+                                tanggalDariMobileHidden.value = isoDate;
+                            }
+                            // Sync dengan desktop hidden (yang punya name attribute)
+                            if (tanggalDariHidden) {
+                                tanggalDariHidden.value = isoDate;
+                            }
+                            instance.input.value = dateStr;
+
+                            // Update tanggal_sampai min date
+                            const tanggalSampaiMobileInput = document.getElementById('tanggal_sampai_mobile');
+                            if (tanggalSampaiMobileInput && tanggalSampaiMobileInput._flatpickr) {
+                                tanggalSampaiMobileInput._flatpickr.set('minDate', date);
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Date To Picker (Mobile)
+            const tanggalSampaiMobileInput = document.getElementById('tanggal_sampai_mobile');
+            if (tanggalSampaiMobileInput) {
+                const dateToPickerMobile = flatpickr(tanggalSampaiMobileInput, {
+                    locale: "id",
+                    dateFormat: "d/m/Y",
+                    allowInput: false,
+                    clickOpens: true,
+                    @if (request('tanggal_sampai'))
+                        defaultDate: "{{ \Carbon\Carbon::parse(request('tanggal_sampai'))->format('d/m/Y') }}",
+                    @endif
+                    onChange: function(selectedDates, dateStr, instance) {
+                        if (selectedDates[0]) {
+                            // Format tanggal ke Y-m-d tanpa terpengaruh timezone
+                            const date = selectedDates[0];
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            const isoDate = `${year}-${month}-${day}`;
+
+                            const tanggalSampaiMobileHidden = document.getElementById('tanggal_sampai_mobile_hidden');
+                            const tanggalSampaiHidden = document.getElementById('tanggal_sampai_hidden');
+                            if (tanggalSampaiMobileHidden) {
+                                tanggalSampaiMobileHidden.value = isoDate;
+                            }
+                            // Sync dengan desktop hidden (yang punya name attribute)
+                            if (tanggalSampaiHidden) {
+                                tanggalSampaiHidden.value = isoDate;
+                            }
+                            instance.input.value = dateStr;
+                        }
+                    }
+                });
+
+                // Set min date for date_to based on date_from
+                if (tanggalDariMobileInput && tanggalDariMobileInput._flatpickr) {
+                    tanggalDariMobileInput._flatpickr.config.onChange.push(function(selectedDates) {
+                        if (selectedDates[0]) {
+                            dateToPickerMobile.set('minDate', selectedDates[0]);
+                        }
+                    });
+                }
+            }
+
+            // Initialize hidden inputs with ISO format if defaultDate is set
+            @if (request('tanggal_dari'))
+                const tanggalDariValue = "{{ \Carbon\Carbon::parse(request('tanggal_dari'))->format('Y-m-d') }}";
+                document.getElementById('tanggal_dari_hidden').value = tanggalDariValue;
+                const tanggalDariMobileHidden = document.getElementById('tanggal_dari_mobile_hidden');
+                if (tanggalDariMobileHidden) {
+                    tanggalDariMobileHidden.value = tanggalDariValue;
+                }
+            @endif
+
+            @if (request('tanggal_sampai'))
+                const tanggalSampaiValue = "{{ \Carbon\Carbon::parse(request('tanggal_sampai'))->format('Y-m-d') }}";
+                document.getElementById('tanggal_sampai_hidden').value = tanggalSampaiValue;
+                const tanggalSampaiMobileHidden = document.getElementById('tanggal_sampai_mobile_hidden');
+                if (tanggalSampaiMobileHidden) {
+                    tanggalSampaiMobileHidden.value = tanggalSampaiValue;
+                }
+            @endif
         }
 
         function togglePeriodeType() {
@@ -1089,12 +1263,16 @@
                 if (bulanTahunFilterMobile) bulanTahunFilterMobile.style.display = 'block';
                 if (tanggalFilterMobile) tanggalFilterMobile.style.display = 'none';
 
-                // Clear tanggal values
+                // Clear tanggal values (both display and hidden)
                 if (tanggalDariInput) {
                     tanggalDariInput.value = '';
                     if (tanggalDariInput._flatpickr) {
                         tanggalDariInput._flatpickr.clear();
                     }
+                }
+                const tanggalDariHidden = document.getElementById('tanggal_dari_hidden');
+                if (tanggalDariHidden) {
+                    tanggalDariHidden.value = '';
                 }
                 if (tanggalDariMobileInput) {
                     tanggalDariMobileInput.value = '';
@@ -1102,17 +1280,29 @@
                         tanggalDariMobileInput._flatpickr.clear();
                     }
                 }
+                const tanggalDariMobileHidden = document.getElementById('tanggal_dari_mobile_hidden');
+                if (tanggalDariMobileHidden) {
+                    tanggalDariMobileHidden.value = '';
+                }
                 if (tanggalSampaiInput) {
                     tanggalSampaiInput.value = '';
                     if (tanggalSampaiInput._flatpickr) {
                         tanggalSampaiInput._flatpickr.clear();
                     }
                 }
+                const tanggalSampaiHidden = document.getElementById('tanggal_sampai_hidden');
+                if (tanggalSampaiHidden) {
+                    tanggalSampaiHidden.value = '';
+                }
                 if (tanggalSampaiMobileInput) {
                     tanggalSampaiMobileInput.value = '';
                     if (tanggalSampaiMobileInput._flatpickr) {
                         tanggalSampaiMobileInput._flatpickr.clear();
                     }
+                }
+                const tanggalSampaiMobileHidden = document.getElementById('tanggal_sampai_mobile_hidden');
+                if (tanggalSampaiMobileHidden) {
+                    tanggalSampaiMobileHidden.value = '';
                 }
 
                 // Set default values for bulan and tahun if they are empty
@@ -1204,17 +1394,15 @@
         }
 
         function setupFormSynchronization() {
-            // Sync produk_id with Select2 (prevent infinite loop)
+            // Sync produk_id dengan Select2
             const produkDesktop = $('#produk_id');
             const produkMobile = $('#produk_id_mobile');
 
             if (produkDesktop.length && produkMobile.length) {
                 let isSyncing = false;
 
-                // Sync from desktop to mobile
                 produkDesktop.on('select2:select select2:clear', function() {
                     if (isSyncing) return;
-
                     isSyncing = true;
                     const value = $(this).val();
                     if (produkMobile.val() !== value) {
@@ -1225,10 +1413,8 @@
                     }, 200);
                 });
 
-                // Sync from mobile to desktop
                 produkMobile.on('select2:select select2:clear', function() {
                     if (isSyncing) return;
-
                     isSyncing = true;
                     const value = $(this).val();
                     if (produkDesktop.val() !== value) {
@@ -1264,29 +1450,7 @@
                 });
             }
 
-            // Sync tanggal_dari
-            const tanggalDariDesktop = document.getElementById('tanggal_dari');
-            const tanggalDariMobile = document.getElementById('tanggal_dari_mobile');
-            if (tanggalDariDesktop && tanggalDariMobile) {
-                tanggalDariDesktop.addEventListener('change', function() {
-                    tanggalDariMobile.value = this.value;
-                });
-                tanggalDariMobile.addEventListener('change', function() {
-                    tanggalDariDesktop.value = this.value;
-                });
-            }
-
-            // Sync tanggal_sampai
-            const tanggalSampaiDesktop = document.getElementById('tanggal_sampai');
-            const tanggalSampaiMobile = document.getElementById('tanggal_sampai_mobile');
-            if (tanggalSampaiDesktop && tanggalSampaiMobile) {
-                tanggalSampaiDesktop.addEventListener('change', function() {
-                    tanggalSampaiMobile.value = this.value;
-                });
-                tanggalSampaiMobile.addEventListener('change', function() {
-                    tanggalSampaiDesktop.value = this.value;
-                });
-            }
+            // Tanggal sync sudah ditangani oleh Flatpickr onChange handler
         }
 
         function showNotification(message, type = 'info') {
