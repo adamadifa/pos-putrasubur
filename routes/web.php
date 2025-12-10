@@ -234,6 +234,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/', [UangMukaPelangganController::class, 'store'])->name('store');
         Route::get('/get-available', [UangMukaPelangganController::class, 'getAvailableUangMuka'])->name('get-available');
         Route::get('/{encryptedId}', [UangMukaPelangganController::class, 'show'])->name('show');
+        Route::post('/{encryptedId}/return', [UangMukaPelangganController::class, 'return'])->name('return');
+        Route::delete('/{encryptedId}/return/{transaksiId}', [UangMukaPelangganController::class, 'deleteReturn'])->name('return.delete');
         Route::delete('/{encryptedId}/cancel', [UangMukaPelangganController::class, 'cancel'])->name('cancel');
         Route::delete('/{encryptedId}', [UangMukaPelangganController::class, 'destroy'])->name('destroy');
     });

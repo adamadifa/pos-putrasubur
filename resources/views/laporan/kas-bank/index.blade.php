@@ -839,14 +839,14 @@
             const tanggalDariInput = document.getElementById('tanggal_dari');
             if (tanggalDariInput) {
                 const dateFromPicker = flatpickr(tanggalDariInput, {
-                    locale: "id",
+                locale: "id",
                     dateFormat: "d/m/Y",
-                    allowInput: false,
-                    clickOpens: true,
+                allowInput: false,
+                clickOpens: true,
                     @if (request('tanggal_dari'))
                         defaultDate: "{{ \Carbon\Carbon::parse(request('tanggal_dari'))->format('d/m/Y') }}",
                     @endif
-                    onChange: function(selectedDates, dateStr, instance) {
+                onChange: function(selectedDates, dateStr, instance) {
                         if (selectedDates[0]) {
                             const date = selectedDates[0];
                             const year = date.getFullYear();
@@ -857,24 +857,24 @@
                             document.getElementById('tanggal_dari_hidden').value = isoDate;
                             instance.input.value = dateStr;
 
-                            // Update tanggal_sampai min date
-                            const tanggalSampaiInput = document.getElementById('tanggal_sampai');
+                    // Update tanggal_sampai min date
+                        const tanggalSampaiInput = document.getElementById('tanggal_sampai');
                             if (tanggalSampaiInput && tanggalSampaiInput._flatpickr) {
                                 tanggalSampaiInput._flatpickr.set('minDate', date);
-                            }
                         }
                     }
-                });
+                }
+            });
             }
 
             // Date To Picker (Desktop)
             const tanggalSampaiInput = document.getElementById('tanggal_sampai');
             if (tanggalSampaiInput) {
                 const dateToPicker = flatpickr(tanggalSampaiInput, {
-                    locale: "id",
+                locale: "id",
                     dateFormat: "d/m/Y",
-                    allowInput: false,
-                    clickOpens: true,
+                allowInput: false,
+                clickOpens: true,
                     @if (request('tanggal_sampai'))
                         defaultDate: "{{ \Carbon\Carbon::parse(request('tanggal_sampai'))->format('d/m/Y') }}",
                     @endif
@@ -890,7 +890,7 @@
                             instance.input.value = dateStr;
                         }
                     }
-                });
+            });
 
                 // Set min date for date_to based on date_from
                 if (tanggalDariInput && tanggalDariInput._flatpickr) {
@@ -906,14 +906,14 @@
             const tanggalDariMobileInput = document.getElementById('tanggal_dari_mobile');
             if (tanggalDariMobileInput) {
                 const dateFromPickerMobile = flatpickr(tanggalDariMobileInput, {
-                    locale: "id",
+                locale: "id",
                     dateFormat: "d/m/Y",
-                    allowInput: false,
-                    clickOpens: true,
+                allowInput: false,
+                clickOpens: true,
                     @if (request('tanggal_dari'))
                         defaultDate: "{{ \Carbon\Carbon::parse(request('tanggal_dari'))->format('d/m/Y') }}",
                     @endif
-                    onChange: function(selectedDates, dateStr, instance) {
+                onChange: function(selectedDates, dateStr, instance) {
                         if (selectedDates[0]) {
                             const date = selectedDates[0];
                             const year = date.getFullYear();
@@ -931,24 +931,24 @@
                             }
                             instance.input.value = dateStr;
 
-                            // Update tanggal_sampai min date
-                            const tanggalSampaiMobileInput = document.getElementById('tanggal_sampai_mobile');
-                            if (tanggalSampaiMobileInput && tanggalSampaiMobileInput._flatpickr) {
+                    // Update tanggal_sampai min date
+                        const tanggalSampaiMobileInput = document.getElementById('tanggal_sampai_mobile');
+                        if (tanggalSampaiMobileInput && tanggalSampaiMobileInput._flatpickr) {
                                 tanggalSampaiMobileInput._flatpickr.set('minDate', date);
-                            }
                         }
                     }
-                });
+                }
+            });
             }
 
             // Date To Picker (Mobile)
             const tanggalSampaiMobileInput = document.getElementById('tanggal_sampai_mobile');
             if (tanggalSampaiMobileInput) {
                 const dateToPickerMobile = flatpickr(tanggalSampaiMobileInput, {
-                    locale: "id",
+                locale: "id",
                     dateFormat: "d/m/Y",
-                    allowInput: false,
-                    clickOpens: true,
+                allowInput: false,
+                clickOpens: true,
                     @if (request('tanggal_sampai'))
                         defaultDate: "{{ \Carbon\Carbon::parse(request('tanggal_sampai'))->format('d/m/Y') }}",
                     @endif

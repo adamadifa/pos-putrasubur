@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\TransaksiKasBank;
 
 class UangMukaPelanggan extends Model
 {
@@ -51,6 +52,16 @@ class UangMukaPelanggan extends Model
     public function penggunaanPenjualan()
     {
         return $this->hasMany(PenggunaanUangMukaPenjualan::class, 'uang_muka_pelanggan_id');
+    }
+
+    public function pengembalianUang()
+    {
+        return $this->hasMany(TransaksiKasBank::class, 'referensi_id')
+            ->where('referensi_tipe', 'UMP')
+            ->where('jenis_transaksi', 'K')
+            ->where('no_bukti', 'like', 'RT-UM-PEL%')
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('created_at', 'desc');
     }
 
     // Accessors
