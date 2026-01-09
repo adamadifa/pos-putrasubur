@@ -27,9 +27,8 @@
                         <div class="md:col-span-3 space-y-1">
                             <label for="produk_id" class="block text-xs font-bold text-gray-700">Produk <span class="text-red-500">*</span></label>
                             <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><i class="ti ti-box text-sm"></i></span>
                                 <select name="produk_id" id="produk_id"
-                                    class="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-500 bg-gray-50/30 cursor-pointer appearance-none"
+                                    class="w-full border border-gray-200 rounded-lg focus:ring-1 focus:ring-primary-500 bg-white cursor-pointer select2"
                                     required>
                                     <option value="">Pilih Produk</option>
                                     @foreach ($produkList as $produk)
@@ -380,8 +379,14 @@
             }
         }
 
-        // Initialize Flatpickr for date inputs
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Select2
+            $('#produk_id').select2({
+                placeholder: 'Cari Produk...',
+                allowClear: true,
+                width: '100%'
+            });
+
             flatpickr("#tanggal_dari", {
                 dateFormat: "d/m/Y",
                 locale: "id",
@@ -401,7 +406,7 @@
                     const formData = new FormData(form);
                     const params = new URLSearchParams(formData);
 
-                    const url = '{{ route('laporan.stok.print') }}' + '?' + params.toString();
+                    const url = "{{ route('laporan.stok.print') }}" + "?" + params.toString();
                     window.open(url, '_blank');
                 });
             }
