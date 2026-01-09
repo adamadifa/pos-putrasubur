@@ -94,7 +94,7 @@ class LaporanPembelianController extends Controller
 
         // Status pembelian
         $status_lunas = $pembelians->where('status_pembayaran', 'lunas')->count();
-        $status_belum_lunas = $pembelians->where('status_pembayaran', 'belum_lunas')->count();
+        $status_belum_lunas = $pembelians->whereIn('status_pembayaran', ['belum_bayar', 'dp'])->count();
 
         // Top supplier
         $top_suppliers = $pembelians->groupBy('supplier_id')
@@ -182,7 +182,7 @@ class LaporanPembelianController extends Controller
 
         // Status pembelian
         $status_lunas = $pembelians->where('status_pembayaran', 'lunas')->count();
-        $status_belum_lunas = $pembelians->where('status_pembayaran', 'belum_lunas')->count();
+        $status_belum_lunas = $pembelians->whereIn('status_pembayaran', ['belum_bayar', 'dp'])->count();
 
         // Top supplier
         $top_suppliers = $pembelians->groupBy('supplier_id')
