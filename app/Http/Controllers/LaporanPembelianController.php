@@ -105,8 +105,7 @@ class LaporanPembelianController extends Controller
                     'total_nilai' => $group->sum('total')
                 ];
             })
-            ->sortByDesc('total_nilai')
-            ->take(5);
+            ->sortByDesc('total_nilai');
 
         // Top produk
         $top_produks_array = [];
@@ -125,7 +124,7 @@ class LaporanPembelianController extends Controller
                 }
             }
         }
-        $top_produks = collect($top_produks_array)->sortByDesc('total_nilai')->take(5);
+        $top_produks = collect($top_produks_array)->sortByDesc('total_nilai');
 
         return [
             'periode' => [
@@ -193,8 +192,7 @@ class LaporanPembelianController extends Controller
                     'total_nilai' => $group->sum('total')
                 ];
             })
-            ->sortByDesc('total_nilai')
-            ->take(5);
+            ->sortByDesc('total_nilai');
 
         // Top produk
         $top_produks_array = [];
@@ -213,7 +211,7 @@ class LaporanPembelianController extends Controller
                 }
             }
         }
-        $top_produks = collect($top_produks_array)->sortByDesc('total_nilai')->take(5);
+        $top_produks = collect($top_produks_array)->sortByDesc('total_nilai');
 
         return [
             'periode' => [

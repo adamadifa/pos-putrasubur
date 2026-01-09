@@ -192,7 +192,7 @@
                     <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
                         <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
                             <i class="ti ti-trophy text-amber-500"></i>
-                            Top 5 Produk
+                            Rekap Produk
                         </h3>
                         <span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-100">Terlaris</span>
                     </div>
@@ -200,32 +200,32 @@
                         <table class="w-full text-sm text-left">
                             <thead class="bg-gray-50 text-gray-500 font-semibold border-b border-gray-100">
                                 <tr>
-                                    <th class="px-5 py-3 w-12 text-center">#</th>
-                                    <th class="px-5 py-3">Produk</th>
-                                    <th class="px-5 py-3 text-right">Qty</th>
-                                    <th class="px-5 py-3 text-right">Nilai</th>
+                                    <th class="px-3 py-2 w-12 text-center">#</th>
+                                    <th class="px-3 py-2">Produk</th>
+                                    <th class="px-3 py-2 text-right">Qty</th>
+                                    <th class="px-3 py-2 text-right">Nilai</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
                                 @forelse ($laporanData['top_products'] as $index => $product)
                                     <tr class="hover:bg-gray-50/50 transition-colors">
-                                        <td class="px-5 py-3 text-center">
+                                        <td class="px-3 py-2 text-center">
                                             @if($index < 3)
                                                 <i class="ti ti-medal text-{{ $index === 0 ? 'yellow-500' : ($index === 1 ? 'gray-400' : 'amber-700') }}"></i>
                                             @else
                                                 <span class="text-gray-400 text-xs">{{ $index + 1 }}</span>
                                             @endif
                                         </td>
-                                        <td class="px-5 py-3">
+                                        <td class="px-3 py-2">
                                             <div class="font-medium text-gray-900 truncate max-w-[150px]" title="{{ $product->nama_produk }}">
                                                 {{ strtoupper($product->nama_produk) }}
                                             </div>
                                         </td>
-                                        <td class="px-5 py-3 text-right">
+                                        <td class="px-3 py-2 text-right">
                                             <div class="font-medium text-gray-900">{{ number_format($product->total_qty, 0, ',', '.') }}</div>
                                             <div class="text-[10px] text-gray-400">{{ $product->nama_satuan ?? 'unit' }}</div>
                                         </td>
-                                        <td class="px-5 py-3 text-right font-medium text-gray-900">
+                                        <td class="px-3 py-2 text-right font-medium text-gray-900">
                                             {{ number_format($product->total_nilai, 0, ',', '.') }}
                                         </td>
                                     </tr>
@@ -233,6 +233,17 @@
                                     <tr><td colspan="4" class="px-5 py-4 text-center text-gray-500 text-xs">Belum ada data</td></tr>
                                 @endforelse
                             </tbody>
+                            <tfoot class="bg-gray-50 border-t border-gray-100">
+                                <tr>
+                                    <td colspan="2" class="px-3 py-2 text-right font-bold text-gray-900">Total</td>
+                                    <td class="px-3 py-2 text-right font-bold text-gray-900">
+                                        {{ number_format($laporanData['top_products']->sum('total_qty'), 0, ',', '.') }}
+                                    </td>
+                                    <td class="px-3 py-2 text-right font-bold text-gray-900">
+                                        Rp {{ number_format($laporanData['top_products']->sum('total_nilai'), 0, ',', '.') }}
+                                    </td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>
@@ -242,7 +253,7 @@
                     <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
                         <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
                             <i class="ti ti-users text-blue-500"></i>
-                            Top 5 Pelanggan
+                            Rekap Pelanggan
                         </h3>
                         <span class="bg-blue-50 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-100">Setia</span>
                     </div>
@@ -250,29 +261,29 @@
                         <table class="w-full text-sm text-left">
                             <thead class="bg-gray-50 text-gray-500 font-semibold border-b border-gray-100">
                                 <tr>
-                                    <th class="px-5 py-3 w-12 text-center">#</th>
-                                    <th class="px-5 py-3">Pelanggan</th>
-                                    <th class="px-5 py-3 text-right">Trx</th>
-                                    <th class="px-5 py-3 text-right">Nilai</th>
+                                    <th class="px-3 py-2 w-12 text-center">#</th>
+                                    <th class="px-3 py-2">Pelanggan</th>
+                                    <th class="px-3 py-2 text-right">Trx</th>
+                                    <th class="px-3 py-2 text-right">Nilai</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
                                 @forelse ($laporanData['top_customers'] as $index => $customer)
                                     <tr class="hover:bg-gray-50/50 transition-colors">
-                                        <td class="px-5 py-3 text-center">
+                                        <td class="px-3 py-2 text-center">
                                             <div class="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xs font-bold mx-auto">
                                                 {{ $index + 1 }}
                                             </div>
                                         </td>
-                                        <td class="px-5 py-3">
+                                        <td class="px-3 py-2">
                                             <div class="font-medium text-gray-900 truncate max-w-[150px]" title="{{ $customer->nama }}">
                                                 {{ strtoupper($customer->nama) }}
                                             </div>
                                         </td>
-                                        <td class="px-5 py-3 text-right font-medium text-gray-600">
+                                        <td class="px-3 py-2 text-right font-medium text-gray-600">
                                             {{ $customer->total_transaksi }}
                                         </td>
-                                        <td class="px-5 py-3 text-right font-medium text-gray-900">
+                                        <td class="px-3 py-2 text-right font-medium text-gray-900">
                                             {{ number_format($customer->total_nilai, 0, ',', '.') }}
                                         </td>
                                     </tr>
@@ -280,6 +291,17 @@
                                     <tr><td colspan="4" class="px-5 py-4 text-center text-gray-500 text-xs">Belum ada data</td></tr>
                                 @endforelse
                             </tbody>
+                            <tfoot class="bg-gray-50 border-t border-gray-100">
+                                <tr>
+                                    <td colspan="2" class="px-3 py-2 text-right font-bold text-gray-900">Total</td>
+                                    <td class="px-3 py-2 text-right font-bold text-gray-900">
+                                        {{ number_format($laporanData['top_customers']->sum('total_transaksi'), 0, ',', '.') }}
+                                    </td>
+                                    <td class="px-3 py-2 text-right font-bold text-gray-900">
+                                        Rp {{ number_format($laporanData['top_customers']->sum('total_nilai'), 0, ',', '.') }}
+                                    </td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>
@@ -297,18 +319,18 @@
                     <table class="w-full text-sm text-left">
                         <thead class="bg-gray-50 text-gray-500 font-bold border-b border-gray-100 uppercase text-xs tracking-wider">
                             <tr>
-                                <th class="px-5 py-3">No Faktur</th>
-                                <th class="px-5 py-3">Tanggal</th>
-                                <th class="px-5 py-3">Pelanggan</th>
-                                <th class="px-5 py-3 text-center">Status</th>
-                                <th class="px-5 py-3 text-center">Jenis</th>
-                                <th class="px-5 py-3 text-right">Total</th>
+                                <th class="px-3 py-2">No Faktur</th>
+                                <th class="px-3 py-2">Tanggal</th>
+                                <th class="px-3 py-2">Pelanggan</th>
+                                <th class="px-3 py-2 text-center">Status</th>
+                                <th class="px-3 py-2 text-center">Jenis</th>
+                                <th class="px-3 py-2 text-right">Total</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50">
                             @forelse ($laporanData['penjualan'] as $transaksi)
                                 <tr class="hover:bg-gray-50/50 transition-colors">
-                                    <td class="px-5 py-3">
+                                    <td class="px-3 py-2">
                                         <button onclick="showDetailPenjualan({{ $transaksi->id }})" 
                                             class="flex items-center gap-2 group text-left">
                                             <div class="w-8 h-8 rounded bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-100 group-hover:text-blue-700 transition">
@@ -320,11 +342,11 @@
                                             </div>
                                         </button>
                                     </td>
-                                    <td class="px-5 py-3">
+                                    <td class="px-3 py-2">
                                         <div class="text-xs font-medium text-gray-900">{{ \Carbon\Carbon::parse($transaksi->tanggal)->format('d/m/Y') }}</div>
                                         <div class="text-[10px] text-gray-500">{{ \Carbon\Carbon::parse($transaksi->created_at)->format('H:i') }}</div>
                                     </td>
-                                    <td class="px-5 py-3">
+                                    <td class="px-3 py-2">
                                         <div class="flex items-center gap-2">
                                             <div class="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs text-gray-500 font-bold">
                                                 {{ strtoupper(substr($transaksi->pelanggan->nama ?? 'U', 0, 1)) }}
@@ -332,7 +354,7 @@
                                             <span class="text-xs text-gray-700 font-medium">{{ strtoupper($transaksi->pelanggan->nama ?? 'UMUM') }}</span>
                                         </div>
                                     </td>
-                                    <td class="px-5 py-3 text-center">
+                                    <td class="px-3 py-2 text-center">
                                         @if($transaksi->status_pembayaran == 'lunas')
                                             <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-50 text-green-700 border border-green-100">
                                                 LUNAS
@@ -343,7 +365,7 @@
                                             </span>
                                         @endif
                                     </td>
-                                    <td class="px-5 py-3 text-center">
+                                    <td class="px-3 py-2 text-center">
                                          @if($transaksi->jenis_transaksi == 'tunai')
                                             <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-600 border border-gray-200">
                                                 TUNAI
@@ -354,7 +376,7 @@
                                             </span>
                                         @endif
                                     </td>
-                                    <td class="px-5 py-3 text-right">
+                                    <td class="px-3 py-2 text-right">
                                         <div class="font-bold text-gray-900 text-sm">Rp {{ number_format($transaksi->total_setelah_diskon, 0, ',', '.') }}</div>
                                     </td>
                                 </tr>
@@ -369,6 +391,14 @@
                                 </tr>
                             @endforelse
                         </tbody>
+                        <tfoot class="bg-gray-50 border-t border-gray-100">
+                            <tr>
+                                <td colspan="5" class="px-3 py-2 text-right font-bold text-gray-900">Total</td>
+                                <td class="px-3 py-2 text-right font-bold text-gray-900">
+                                    Rp {{ number_format($laporanData['summary']['total_nilai'], 0, ',', '.') }}
+                                </td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>

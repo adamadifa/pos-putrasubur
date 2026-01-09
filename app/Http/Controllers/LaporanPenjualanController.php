@@ -115,7 +115,6 @@ class LaporanPenjualanController extends Controller
             ->select('pr.nama_produk', 's.nama as nama_satuan', DB::raw('SUM(dp.qty) as total_qty'), DB::raw('SUM(dp.subtotal) as total_nilai'))
             ->groupBy('pr.id', 'pr.nama_produk', 's.nama')
             ->orderBy('total_qty', 'desc')
-            ->limit(10)
             ->get();
 
         // Top customers
@@ -125,7 +124,6 @@ class LaporanPenjualanController extends Controller
             ->select('pl.nama', DB::raw('COUNT(p.id) as total_transaksi'), DB::raw('SUM(p.total - p.diskon) as total_nilai'))
             ->groupBy('pl.id', 'pl.nama')
             ->orderBy('total_nilai', 'desc')
-            ->limit(10)
             ->get();
 
         return [
@@ -205,7 +203,6 @@ class LaporanPenjualanController extends Controller
             ->select('pr.nama_produk', 's.nama as nama_satuan', DB::raw('SUM(dp.qty) as total_qty'), DB::raw('SUM(dp.subtotal) as total_nilai'))
             ->groupBy('pr.id', 'pr.nama_produk', 's.nama')
             ->orderBy('total_qty', 'desc')
-            ->limit(10)
             ->get();
 
         // Top customers
@@ -215,7 +212,6 @@ class LaporanPenjualanController extends Controller
             ->select('pl.nama', DB::raw('COUNT(p.id) as total_transaksi'), DB::raw('SUM(p.total - p.diskon) as total_nilai'))
             ->groupBy('pl.id', 'pl.nama')
             ->orderBy('total_nilai', 'desc')
-            ->limit(10)
             ->get();
 
         return [
