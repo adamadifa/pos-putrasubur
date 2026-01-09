@@ -273,6 +273,10 @@ class LaporanPenjualanController extends Controller
      */
     public function exportPdf(Request $request)
     {
+        // Increase limits for large PDF generation
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '512M');
+
         try {
             $request->validate([
                 'jenis_periode' => 'required|in:bulan,tanggal',
@@ -341,18 +345,29 @@ class LaporanPenjualanController extends Controller
      */
     public function print(Request $request)
     {
-        $jenisPeriode = $request->input('jenis_periode', 'bulan');
-        $bulan = $request->input('bulan', date('n'));
-        $tahun = $request->input('tahun', date('Y'));
-        $tanggalDari = $request->input('tanggal_dari', '');
-        $tanggalSampai = $request->input('tanggal_sampai', '');
+        // Increase limits for large PDF generation
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '512M');
 
-        if ($jenisPeriode === 'tanggal' && $tanggalDari && $tanggalSampai) {
-            $laporanData = $this->generateLaporanByDateRange($tanggalDari, $tanggalSampai);
-        } else {
-            $laporanData = $this->generateLaporan($bulan, $tahun);
+        try {
+            $jenisPeriode = $request->input('jenis_periode', 'bulan');
+            $bulan = $request->input('bulan', date('n'));
+            $tahun = $request->input('tahun', date('Y'));
+            $tanggalDari = $request->input('tanggal_dari', '');
+            $tanggalSampai = $request->input('tanggal_sampai', '');
+
+            if ($jenisPeriode === 'tanggal' && $tanggalDari && $tanggalSampai) {
+                $laporanData = $this->generateLaporanByDateRange($tanggalDari, $tanggalSampai);
+            } else {
+                $laporanData = $this->generateLaporan($bulan, $tahun);
+            }
+
+            // Return view for HTML print preview
+            return view('laporan.penjualan.pdf', compact('laporanData'));
+
+        } catch (\Exception $e) {
+            Log::error('PDF Print Error: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat mencetak: ' . $e->getMessage());
         }
-
-        return view('laporan.penjualan.pdf', compact('laporanData'));
     }
 }

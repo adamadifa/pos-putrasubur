@@ -639,7 +639,7 @@
             </div>
 
             <!-- Navigation -->
-            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto min-h-0">
+            <nav id="sidebar-nav" class="flex-1 px-4 py-6 space-y-2 overflow-y-auto min-h-0">
                 @php
                     $menus = \App\Helpers\MenuHelper::getMenuItems();
                 @endphp
@@ -946,6 +946,21 @@
                         }, 300);
 
                     }
+                });
+            }
+                });
+            }
+
+            // Persistence Sidebar Scroll
+            const sidebar = document.getElementById('sidebar-nav');
+            if (sidebar) {
+                const savedPosition = localStorage.getItem('sidebar_scroll_position');
+                if (savedPosition) {
+                    sidebar.scrollTop = parseInt(savedPosition);
+                }
+
+                sidebar.addEventListener('scroll', () => {
+                   localStorage.setItem('sidebar_scroll_position', sidebar.scrollTop);
                 });
             }
         });

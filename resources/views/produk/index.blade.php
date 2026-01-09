@@ -6,74 +6,37 @@
 @section('content')
     <div class="space-y-6">
         <!-- Header Actions -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-                <h2 class="text-xl font-semibold text-gray-900">Daftar Produk</h2>
-                <p class="text-sm text-gray-600">Kelola semua produk dalam sistem POS Anda</p>
+                <h2 class="text-xl font-bold text-gray-900">Daftar Produk</h2>
+                <p class="text-sm text-gray-500">Kelola inventaris dan stok produk</p>
             </div>
-            <div class="mt-4 sm:mt-0 flex items-center space-x-3">
+            <div class="flex items-center gap-3">
                 <button
-                    class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-lg font-medium text-sm text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                    class="inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-xl font-medium text-sm text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm">
                     <i class="ti ti-download text-lg mr-2"></i>
-                    Import Excel
+                    Import
                 </button>
                 <a href="{{ route('produk.create') }}"
-                    class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-lg font-medium text-sm text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                    class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-xl font-medium text-sm text-white hover:bg-blue-700 shadow-sm shadow-blue-200 transition-all">
                     <i class="ti ti-plus text-lg mr-2"></i>
                     Tambah Produk
                 </a>
             </div>
         </div>
 
-        <!-- Success Alert -->
+        <!-- Success/Error Alerts -->
         @if (session('success'))
-            <div class="bg-green-50 border border-green-200 rounded-xl p-4 shadow-sm">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <i class="ti ti-check-circle text-lg text-green-400"></i>
+            <div class="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between shadow-sm">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-green-100 rounded-lg text-green-600">
+                        <i class="ti ti-check text-lg"></i>
                     </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium text-green-800">
-                            {{ session('success') }}
-                        </p>
-                    </div>
-                    <div class="ml-auto pl-3">
-                        <div class="-mx-1.5 -my-1.5">
-                            <button type="button"
-                                class="inline-flex bg-green-50 rounded-lg p-1.5 text-green-500 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-green-50"
-                                onclick="this.parentElement.parentElement.parentElement.parentElement.remove()">
-                                <span class="sr-only">Dismiss</span>
-                                <i class="ti ti-x text-lg"></i>
-                            </button>
-                        </div>
-                    </div>
+                    <p class="text-sm font-medium text-green-900">{{ session('success') }}</p>
                 </div>
-            </div>
-        @endif
-
-        <!-- Error Alert -->
-        @if (session('error'))
-            <div class="bg-red-50 border border-red-200 rounded-xl p-4 shadow-sm">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <i class="ti ti-alert-circle text-lg text-red-400"></i>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium text-red-800">
-                            {{ session('error') }}
-                        </p>
-                    </div>
-                    <div class="ml-auto pl-3">
-                        <div class="-mx-1.5 -my-1.5">
-                            <button type="button"
-                                class="inline-flex bg-red-50 rounded-lg p-1.5 text-red-500 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 focus:ring-offset-red-50"
-                                onclick="this.parentElement.parentElement.parentElement.parentElement.remove()">
-                                <span class="sr-only">Dismiss</span>
-                                <i class="ti ti-x text-lg"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <button onclick="this.parentElement.remove()" class="text-green-500 hover:text-green-700">
+                    <i class="ti ti-x"></i>
+                </button>
             </div>
         @endif
 
@@ -190,8 +153,8 @@
             </div>
         </div>
 
-        <!-- Products Table -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <!-- Main Content -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <!-- Table Header -->
             <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
                 <div class="flex items-center justify-between">
@@ -277,282 +240,125 @@
                 </form>
             </div>
 
-            <div>
-                <table class="w-full table-fixed divide-y divide-gray-200">
-                    <thead class="bg-gradient-to-r from-gray-50 to-gray-100/50">
+            <!-- Compact Table -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-3 py-4 text-center w-12">
-                                <input type="checkbox"
-                                    class="rounded border-gray-300 text-primary-600 focus:ring-primary-500 focus:ring-offset-0">
-                            </th>
-                            <th class="px-2 py-4 text-center w-16">
-                                <span class="text-xs font-bold text-gray-700 uppercase tracking-wider">No.</span>
-                            </th>
-                            <th class="px-3 py-4 text-left w-64">
-                                <div class="flex items-center space-x-1">
-                                    <span class="text-xs font-bold text-gray-700 uppercase tracking-wider">Produk</span>
-                                    <i
-                                        class="ti ti-arrows-sort text-lg text-gray-400 cursor-pointer hover:text-primary-600 transition-colors"></i>
-                                </div>
-                            </th>
-                            <th class="px-3 py-4 text-left w-32">
-                                <div class="flex items-center space-x-1">
-                                    <span class="text-xs font-bold text-gray-700 uppercase tracking-wider">Kategori</span>
-                                    <i
-                                        class="ti ti-arrows-sort text-lg text-gray-400 cursor-pointer hover:text-primary-600 transition-colors"></i>
-                                </div>
-                            </th>
-                            <th class="px-3 py-4 text-right w-28">
-                                <div class="flex items-center justify-end space-x-1">
-                                    <span class="text-xs font-bold text-gray-700 uppercase tracking-wider">Harga
-                                        Jual</span>
-                                    <i
-                                        class="ti ti-arrows-sort text-lg text-gray-400 cursor-pointer hover:text-primary-600 transition-colors"></i>
-                                </div>
-                            </th>
-                            <th class="px-3 py-4 text-right w-28">
-                                <div class="flex items-center justify-end space-x-1">
-                                    <span class="text-xs font-bold text-gray-700 uppercase tracking-wider">Harga
-                                        Beli</span>
-                                    <i
-                                        class="ti ti-arrows-sort text-lg text-gray-400 cursor-pointer hover:text-primary-600 transition-colors"></i>
-                                </div>
-                            </th>
-                            <th class="px-2 py-4 text-center w-20">
-                                <div class="flex items-center justify-center space-x-1">
-                                    <span class="text-xs font-bold text-gray-700 uppercase tracking-wider">Stok</span>
-                                    <i
-                                        class="ti ti-arrows-sort text-lg text-gray-400 cursor-pointer hover:text-primary-600 transition-colors"></i>
-                                </div>
-                            </th>
-                            <th class="px-2 py-4 text-center w-20">
-                                <span class="text-xs font-bold text-gray-700 uppercase tracking-wider">Min. Stok</span>
-                            </th>
-                            <th class="px-2 py-4 text-center w-24">
-                                <span class="text-xs font-bold text-gray-700 uppercase tracking-wider">Status</span>
-                            </th>
-                            <th class="px-3 py-4 text-center w-32">
-                                <span class="text-xs font-bold text-gray-700 uppercase tracking-wider">Aksi</span>
-                            </th>
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-12">No</th>
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Produk</th>
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Kategori</th>
+                            <th scope="col" class="px-3 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Harga</th>
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Stok</th>
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Status</th>
+                            <th scope="col" class="px-3 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider pl-6">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-100">
                         @forelse($produk as $index => $item)
-                            <tr
-                                class="hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-indigo-50/30 transition-all duration-200 group">
-                                <td class="px-3 py-5 whitespace-nowrap w-12">
-                                    <input type="checkbox" value="{{ $item->id }}"
-                                        class="rounded border-gray-300 text-primary-600 focus:ring-primary-500 focus:ring-2">
-                                </td>
-                                <td class="px-2 py-5 whitespace-nowrap w-16">
-                                    <div
-                                        class="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full">
-                                        <span class="text-xs font-bold text-primary-700">
-                                            {{ ($produk->currentPage() - 1) * $produk->perPage() + $index + 1 }}
-                                        </span>
-                                    </div>
-                                </td>
-                                <td class="px-3 py-5 whitespace-nowrap w-64">
-                                    <div class="flex items-center">
-                                        <div
-                                            class="h-14 w-14 flex-shrink-0 relative group-hover:scale-105 transition-transform duration-200">
-                                            @if ($item->foto)
-                                                <img src="{{ asset('storage/' . $item->foto) }}"
-                                                    alt="{{ $item->nama_produk }}"
-                                                    class="h-14 w-14 rounded-xl object-cover shadow-sm ring-1 ring-gray-200">
-                                            @else
-                                                <div
-                                                    class="h-14 w-14 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shadow-sm ring-1 ring-gray-200">
-                                                    <i class="ti ti-photo text-2xl text-gray-400"></i>
-                                                </div>
-                                            @endif
-                                        </div>
-                                        <div class="ml-4 flex-1">
-                                            <div
-                                                class="text-sm font-semibold text-gray-900 group-hover:text-primary-700 transition-colors">
-                                                {{ $item->nama_produk }}
-                                            </div>
-                                            <div class="text-xs text-gray-500 mt-1 flex items-center space-x-2">
-                                                <span
-                                                    class="px-2 py-1 bg-gray-100 rounded-md font-mono text-xs">{{ $item->kode_produk }}</span>
-                                                <span class="text-gray-300">•</span>
-                                                <span class="font-medium">{{ $item->satuan->nama }}</span>
-                                            </div>
+                        <tr class="hover:bg-gray-50/80 transition-colors group">
+                           <!-- Number -->
+                            <td class="px-3 py-3 whitespace-nowrap text-xs text-center text-gray-400">
+                                {{ ($produk->currentPage() - 1) * $produk->perPage() + $index + 1 }}
+                            </td>
+                            
+                            <!-- Product Info -->
+                            <td class="px-3 py-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="h-10 w-10 flex-shrink-0 relative rounded-lg border border-gray-100 overflow-hidden bg-gray-50">
+                                        @if ($item->foto)
+                                            <img src="{{ asset('storage/' . $item->foto) }}" 
+                                                alt="{{ $item->nama_produk }}" 
+                                                class="h-full w-full object-cover"
+                                                onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
+                                        @endif
+                                        <div class="absolute inset-0 flex items-center justify-center text-gray-300 {{ $item->foto ? 'hidden' : '' }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 opacity-70">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                                            </svg>
                                         </div>
                                     </div>
-                                </td>
-                                <td class="px-3 py-5 whitespace-nowrap w-32">
-                                    @php
-                                        $kategoriColors = [
-                                            'Rempah-Rempah' => 'bg-orange-100 text-orange-800 border-orange-200',
-                                            'Hasil Perkebunan' => 'bg-green-100 text-green-800 border-green-200',
-                                            'Biji-Bijian' => 'bg-amber-100 text-amber-800 border-amber-200',
-                                            'Umbi-Umbian' => 'bg-purple-100 text-purple-800 border-purple-200',
-                                            'Buah Kering' => 'bg-red-100 text-red-800 border-red-200',
-                                        ];
-                                        $kategoriColor =
-                                            $kategoriColors[$item->kategori->nama] ??
-                                            'bg-blue-100 text-blue-800 border-blue-200';
-                                    @endphp
-                                    <span
-                                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border {{ $kategoriColor }}">
-                                        {{ $item->kategori->nama }}
+                                    <div>
+                                        <div class="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1">
+                                            {{ $item->nama_produk }}
+                                        </div>
+                                        <div class="text-[10px] text-gray-500 font-mono">{{ $item->kode_produk }}</div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Category -->
+                            <td class="px-3 py-3 whitespace-nowrap hidden md:table-cell">
+                                <span class="px-2 py-0.5 inline-flex text-[10px] leading-5 font-semibold rounded-full bg-gray-100 text-gray-600 border border-gray-200">
+                                    {{ $item->kategori->nama }}
+                                </span>
+                            </td>
+
+                            <!-- Price -->
+                            <td class="px-3 py-3 whitespace-nowrap text-right">
+                                <div class="text-sm font-bold text-gray-900">{{ number_format($item->harga_jual, 0, ',', '.') }}</div>
+                                <div class="text-[10px] text-gray-400">Beli: {{ number_format($item->harga_beli, 0, ',', '.') }}</div>
+                            </td>
+
+                            <!-- Stock -->
+                            <td class="px-3 py-3 whitespace-nowrap text-center">
+                                <div class="flex flex-col items-center">
+                                    <span class="text-sm font-bold {{ $item->stok <= $item->stok_minimal ? 'text-red-500' : 'text-gray-700' }}">
+                                        {{ number_format($item->stok, 0, ',', '.') }}
                                     </span>
-                                </td>
-                                <td class="px-3 py-5 whitespace-nowrap text-right w-28">
-                                    <div class="text-sm font-bold text-gray-900">{{ $item->harga_format }}</div>
-                                </td>
-                                <td class="px-3 py-5 whitespace-nowrap text-right w-28">
-                                    <div class="text-sm font-bold text-blue-600">{{ $item->harga_beli_format }}</div>
-                                </td>
-                                <td class="px-2 py-5 whitespace-nowrap text-end w-20">
-                                    <div class="flex flex-col items-end">
-                                        <div class="relative">
-                                            <div
-                                                class="text-sm font-bold {{ $item->stok <= $item->stok_minimal ? 'text-red-600 animate-pulse' : ($item->stok <= $item->stok_minimal * 2 ? 'text-yellow-600' : 'text-green-600') }} transition-all duration-300">
-                                                {{ formatQuantity($item->stok) }}
-                                            </div>
-                                            <!-- Stock level indicator -->
-                                            <div
-                                                class="absolute -bottom-1 left-0 right-0 h-1 rounded-full overflow-hidden">
-                                                @php
-                                                    $stockPercentage =
-                                                        $item->stok_minimal > 0
-                                                            ? min(($item->stok / ($item->stok_minimal * 3)) * 100, 100)
-                                                            : 100;
-                                                    $barColor =
-                                                        $item->stok <= $item->stok_minimal
-                                                            ? 'bg-red-500'
-                                                            : ($item->stok <= $item->stok_minimal * 2
-                                                                ? 'bg-yellow-500'
-                                                                : 'bg-green-500');
-                                                @endphp
-                                                <div class="h-full bg-gray-200 rounded-full">
-                                                    <div class="h-full {{ $barColor }} rounded-full stock-bar transition-all duration-1000 ease-out"
-                                                        style="width: {{ $stockPercentage }}%; --stock-percentage: {{ $stockPercentage }}%">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        @if ($item->stok <= $item->stok_minimal)
-                                            <div class="flex items-center mt-2 animate-bounce stock-indicator">
-                                                <i class="ti ti-alert-triangle text-xs text-red-500 mr-1"></i>
-                                                <span class="text-xs text-red-600 font-bold">Low Stock</span>
-                                            </div>
-                                        @elseif ($item->stok <= $item->stok_minimal * 2)
-                                            <div class="flex items-center mt-2 stock-indicator">
-                                                <i class="ti ti-alert-circle text-xs text-yellow-500 mr-1"></i>
-                                                <span class="text-xs text-yellow-600 font-medium">Warning</span>
-                                            </div>
-                                        @else
-                                            <div class="flex items-center mt-2 stock-indicator">
-                                                <i class="ti ti-check-circle text-xs text-green-500 mr-1"></i>
-                                                <span class="text-xs text-green-600 font-medium">Good</span>
-                                            </div>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td class="px-2 py-5 whitespace-nowrap text-end w-20">
-                                    <div class="text-sm font-semibold text-gray-700">
-                                        {{ formatQuantity($item->stok_minimal) }}
-                                    </div>
-                                </td>
-                                <td class="px-2 py-5 whitespace-nowrap text-center w-24">
-                                    @php
-                                        $statusConfig = match ($item->status_stok) {
-                                            'habis' => [
-                                                'class' =>
-                                                    'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300 shadow-red-100',
-                                                'text' => 'Habis',
-                                                'icon' => '<i class="ti ti-x text-xs animate-pulse"></i>',
-                                                'pulse' => 'animate-pulse',
-                                                'glow' => 'shadow-lg shadow-red-200/50',
-                                            ],
-                                            'menipis' => [
-                                                'class' =>
-                                                    'bg-gradient-to-r from-amber-100 to-yellow-200 text-amber-800 border-amber-300 shadow-amber-100',
-                                                'text' => 'Menipis',
-                                                'icon' => '<i class="ti ti-alert-triangle text-xs animate-bounce"></i>',
-                                                'pulse' => 'animate-pulse',
-                                                'glow' => 'shadow-lg shadow-amber-200/50',
-                                            ],
-                                            'tersedia' => [
-                                                'class' =>
-                                                    'bg-gradient-to-r from-emerald-100 to-green-200 text-emerald-800 border-emerald-300 shadow-emerald-100',
-                                                'text' => 'Tersedia',
-                                                'icon' => '<i class="ti ti-check text-xs"></i>',
-                                                'pulse' => '',
-                                                'glow' => 'shadow-lg shadow-emerald-200/50',
-                                            ],
-                                            default => [
-                                                'class' =>
-                                                    'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border-gray-300 shadow-gray-100',
-                                                'text' => 'Unknown',
-                                                'icon' => '',
-                                                'pulse' => '',
-                                                'glow' => 'shadow-lg shadow-gray-200/50',
-                                            ],
-                                        };
-                                    @endphp
-                                    <div class="relative inline-block">
-                                        <span
-                                            class="status-badge inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold border-2 {{ $statusConfig['class'] }} {{ $statusConfig['glow'] }} {{ $statusConfig['pulse'] }} transition-all duration-300 hover:scale-105 hover:shadow-xl group {{ $item->status_stok === 'habis' ? 'status-habis critical-status' : ($item->status_stok === 'menipis' ? 'status-menipis' : 'status-tersedia') }}">
-                                            <span class="relative">
-                                                {!! $statusConfig['icon'] !!}
-                                                <span class="ml-1.5">{{ $statusConfig['text'] }}</span>
-                                            </span>
-                                            <!-- Animated background effect -->
-                                            <div
-                                                class="absolute inset-0 rounded-full bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                            </div>
-                                        </span>
-                                        <!-- Status indicator dot -->
-                                        @if ($item->status_stok === 'habis')
-                                            <div
-                                                class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping">
-                                            </div>
-                                            <div class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
-                                        @elseif($item->status_stok === 'menipis')
-                                            <div
-                                                class="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full animate-ping">
-                                            </div>
-                                            <div class="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full"></div>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td class="px-3 py-5 whitespace-nowrap text-center w-32">
-                                    <div class="flex items-center justify-center space-x-1">
-                                        <!-- View Button -->
-                                        <a href="{{ route('produk.show', $item->id) }}"
-                                            class="inline-flex items-center justify-center w-6 h-6 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-md shadow-md hover:shadow-lg hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition-all duration-200 ease-out">
-                                            <i class="ti ti-eye text-xs"></i>
-                                        </a>
+                                    <span class="text-[10px] text-gray-400">{{ $item->satuan->nama }}</span>
+                                </div>
+                            </td>
 
-                                        <!-- Edit Button -->
-                                        <a href="{{ route('produk.edit', $item->id) }}"
-                                            class="inline-flex items-center justify-center w-6 h-6 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-md shadow-md hover:shadow-lg hover:from-emerald-600 hover:to-emerald-700 transform hover:scale-105 transition-all duration-200 ease-out">
-                                            <i class="ti ti-edit text-xs"></i>
-                                        </a>
+                            <!-- Status -->
+                            <td class="px-3 py-3 whitespace-nowrap text-center hidden sm:table-cell">
+                                @php
+                                    $statusClass = match ($item->status_stok) {
+                                        'habis' => 'bg-red-50 text-red-700 border-red-100',
+                                        'menipis' => 'bg-amber-50 text-amber-700 border-amber-100',
+                                        'tersedia' => 'bg-emerald-50 text-emerald-700 border-emerald-100',
+                                        default => 'bg-gray-50 text-gray-700 border-gray-100',
+                                    };
+                                @endphp
+                                <span class="px-2.5 py-1 inline-flex text-[10px] uppercase font-bold tracking-wide rounded-md border {{ $statusClass }}">
+                                    {{ $item->status_stok }}
+                                </span>
+                            </td>
 
-                                        <!-- Delete Button -->
-                                        <button type="button"
-                                            onclick="confirmDelete({{ $item->id }}, '{{ $item->nama_produk }}')"
-                                            class="inline-flex items-center justify-center w-6 h-6 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-md shadow-md hover:shadow-lg hover:from-red-600 hover:to-red-700 transform hover:scale-105 transition-all duration-200 ease-out">
-                                            <i class="ti ti-trash text-xs"></i>
+                                <!-- Actions -->
+                                <td class="px-3 py-3 whitespace-nowrap text-right pl-6">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="{{ route('produk.show', $item->id) }}" 
+                                           class="p-1.5 rounded-lg text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 transition-all font-medium"
+                                           title="Detail">
+                                            <i class="ti ti-eye"></i>
+                                        </a>
+                                        <a href="{{ route('produk.edit', $item->id) }}" 
+                                           class="p-1.5 rounded-lg text-amber-600 bg-amber-50 hover:bg-amber-100 hover:text-amber-700 transition-all font-medium"
+                                           title="Edit">
+                                            <i class="ti ti-edit"></i>
+                                        </a>
+                                        <button type="button" 
+                                                onclick="confirmDelete({{ $item->id }}, '{{ $item->nama_produk }}')"
+                                                class="p-1.5 rounded-lg text-red-600 bg-red-50 hover:bg-red-100 hover:text-red-700 transition-all font-medium"
+                                                title="Hapus">
+                                            <i class="ti ti-trash"></i>
                                         </button>
                                     </div>
                                 </td>
-                            </tr>
+                        </tr>
                         @empty
-                            <tr>
-                                <td colspan="10" class="px-6 py-12 text-center">
-                                    <div class="text-gray-500">
-                                        <i class="ti ti-package-off text-5xl mx-auto mb-4 text-gray-400"></i>
-                                        <p class="text-lg font-medium">Tidak ada produk ditemukan</p>
-                                        <p class="text-sm">Coba ubah filter pencarian atau tambah produk baru</p>
+                        <tr>
+                             <td colspan="7" class="px-6 py-12 text-center text-gray-500 bg-gray-50/50">
+                                <div class="flex flex-col items-center justify-center">
+                                    <div class="p-3 bg-gray-100 rounded-full mb-3">
+                                        <i class="ti ti-package-off text-2xl text-gray-400"></i>
                                     </div>
-                                </td>
-                            </tr>
+                                    <p class="text-sm font-medium">Tidak ada produk ditemukan</p>
+                                    <p class="text-xs text-gray-400 mt-1">Coba sesuaikan filter pencarian Anda</p>
+                                </div>
+                            </td>
+                        </tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -560,220 +366,13 @@
 
             <!-- Pagination -->
             @if ($produk->hasPages())
-                <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                    <div class="flex-1 flex justify-between sm:hidden">
-                        @if ($produk->previousPageUrl())
-                            <a href="{{ $produk->previousPageUrl() }}"
-                                class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                                Sebelumnya
-                            </a>
-                        @else
-                            <span
-                                class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-400 bg-gray-50 cursor-not-allowed">
-                                Sebelumnya
-                            </span>
-                        @endif
-
-                        @if ($produk->nextPageUrl())
-                            <a href="{{ $produk->nextPageUrl() }}"
-                                class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                                Selanjutnya
-                            </a>
-                        @else
-                            <span
-                                class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-400 bg-gray-50 cursor-not-allowed">
-                                Selanjutnya
-                            </span>
-                        @endif
-                    </div>
-                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                        <div>
-                            <p class="text-sm text-gray-700">
-                                Menampilkan <span class="font-medium">{{ $produk->firstItem() ?? 0 }}</span> sampai
-                                <span class="font-medium">{{ $produk->lastItem() ?? 0 }}</span> dari
-                                <span class="font-medium">{{ $produk->total() }}</span> produk
-                            </p>
-                        </div>
-                        <div>
-                            {{ $produk->links() }}
-                        </div>
-                    </div>
-                </div>
+            <div class="px-4 py-3 border-t border-gray-100 bg-gray-50">
+                {{ $produk->links() }}
+            </div>
             @endif
         </div>
     </div>
 @endsection
-
-@push('styles')
-    <style>
-        /* Custom SweetAlert Styling */
-        .swal2-popup {
-            border-radius: 16px !important;
-            font-family: 'Inter', sans-serif !important;
-        }
-
-        .swal2-title {
-            color: #1f2937 !important;
-            font-weight: 700 !important;
-            font-size: 1.5rem !important;
-        }
-
-        .swal2-content {
-            color: #6b7280 !important;
-            font-size: 1rem !important;
-        }
-
-        .swal2-confirm-delete {
-            background: linear-gradient(135deg, #ef4444, #dc2626) !important;
-            border-radius: 8px !important;
-            font-weight: 600 !important;
-            padding: 12px 24px !important;
-            transition: all 0.2s ease !important;
-        }
-
-        .swal2-confirm-delete:hover {
-            transform: translateY(-1px) !important;
-            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3) !important;
-        }
-
-        .swal2-cancel-delete {
-            background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
-            border-radius: 8px !important;
-            font-weight: 600 !important;
-            padding: 12px 24px !important;
-            transition: all 0.2s ease !important;
-        }
-
-        .swal2-cancel-delete:hover {
-            transform: translateY(-1px) !important;
-            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3) !important;
-        }
-
-        .swal2-icon {
-            border-width: 3px !important;
-        }
-
-        /* Custom Animations for Product Status */
-        @keyframes statusGlow {
-
-            0%,
-            100% {
-                box-shadow: 0 0 5px rgba(239, 68, 68, 0.3);
-            }
-
-            50% {
-                box-shadow: 0 0 20px rgba(239, 68, 68, 0.6), 0 0 30px rgba(239, 68, 68, 0.4);
-            }
-        }
-
-        @keyframes statusGlowYellow {
-
-            0%,
-            100% {
-                box-shadow: 0 0 5px rgba(245, 158, 11, 0.3);
-            }
-
-            50% {
-                box-shadow: 0 0 20px rgba(245, 158, 11, 0.6), 0 0 30px rgba(245, 158, 11, 0.4);
-            }
-        }
-
-        @keyframes statusGlowGreen {
-
-            0%,
-            100% {
-                box-shadow: 0 0 5px rgba(16, 185, 129, 0.3);
-            }
-
-            50% {
-                box-shadow: 0 0 20px rgba(16, 185, 129, 0.6), 0 0 30px rgba(16, 185, 129, 0.4);
-            }
-        }
-
-        @keyframes stockBarFill {
-            from {
-                width: 0%;
-            }
-
-            to {
-                width: var(--stock-percentage);
-            }
-        }
-
-        .status-habis {
-            animation: statusGlow 2s ease-in-out infinite;
-        }
-
-        .status-menipis {
-            animation: statusGlowYellow 2s ease-in-out infinite;
-        }
-
-        .status-tersedia {
-            animation: statusGlowGreen 2s ease-in-out infinite;
-        }
-
-        .stock-bar {
-            animation: stockBarFill 1.5s ease-out forwards;
-        }
-
-        /* Hover effects for status badges */
-        .status-badge {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .status-badge::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-            transition: left 0.5s;
-        }
-
-        .status-badge:hover::before {
-            left: 100%;
-        }
-
-        /* Pulse animation for critical status */
-        @keyframes criticalPulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
-
-            50% {
-                transform: scale(1.05);
-                opacity: 0.8;
-            }
-        }
-
-        .critical-status {
-            animation: criticalPulse 1.5s ease-in-out infinite;
-        }
-
-        /* Floating animation for stock indicators */
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-3px);
-            }
-        }
-
-        .stock-indicator {
-            animation: float 3s ease-in-out infinite;
-        }
-    </style>
-@endpush
 
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -785,39 +384,38 @@
             document.querySelector('form[action="{{ route('produk.index') }}"]').submit();
         }
 
-        // Confirm delete function with SweetAlert
-        function confirmDelete(productId, productName) {
+        function confirmDelete(id, name) {
             Swal.fire({
-                title: 'Konfirmasi Hapus',
-                text: `Apakah Anda yakin ingin menghapus produk "${productName}"?`,
+                title: 'Hapus Produk?',
+                text: `Hapus "${name}"? Data tidak bisa dikembalikan.`,
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Ya, Hapus!',
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#9ca3af',
+                confirmButtonText: 'Ya, Hapus',
                 cancelButtonText: 'Batal',
                 reverseButtons: true,
                 customClass: {
-                    confirmButton: 'swal2-confirm-delete',
-                    cancelButton: 'swal2-cancel-delete'
+                    popup: 'rounded-xl',
+                    confirmButton: 'px-4 py-2 rounded-lg',
+                    cancelButton: 'px-4 py-2 rounded-lg'
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Create and submit delete form
                     const form = document.createElement('form');
                     form.method = 'POST';
-                    form.action = `{{ route('produk.destroy', '') }}/${productId}`;
-
+                    form.action = `{{ route('produk.destroy', '') }}/${id}`;
+                    
                     const csrfToken = document.createElement('input');
                     csrfToken.type = 'hidden';
                     csrfToken.name = '_token';
                     csrfToken.value = '{{ csrf_token() }}';
-
+                    
                     const methodField = document.createElement('input');
                     methodField.type = 'hidden';
                     methodField.name = '_method';
                     methodField.value = 'DELETE';
-
+                    
                     form.appendChild(csrfToken);
                     form.appendChild(methodField);
                     document.body.appendChild(form);
@@ -825,93 +423,5 @@
                 }
             });
         }
-
-        // Show notification function
-        function showNotification(message, type = 'info') {
-            let bgColor, icon;
-
-            switch (type) {
-                case 'error':
-                    bgColor = 'bg-red-500';
-                    icon = `<i class="ti ti-alert-circle text-lg mr-2"></i>`;
-                    break;
-                case 'success':
-                    bgColor = 'bg-green-500';
-                    icon = `<i class="ti ti-check text-lg mr-2"></i>`;
-                    break;
-                case 'info':
-                    bgColor = 'bg-blue-500';
-                    icon = `<i class="ti ti-loader text-lg mr-2 animate-spin"></i>`;
-                    break;
-                default:
-                    bgColor = 'bg-blue-500';
-                    icon = `<i class="ti ti-info-circle text-lg mr-2"></i>`;
-            }
-
-            // Create notification element
-            const notification = $(`
-                <div class="fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-xl z-50 notification transform transition-all duration-300 translate-x-full">
-                    <div class="flex items-center">
-                        ${icon}
-                        ${message}
-                    </div>
-                </div>
-            `);
-
-            // Add to body
-            $('body').append(notification);
-
-            // Animate in
-            setTimeout(() => {
-                notification.removeClass('translate-x-full');
-            }, 100);
-
-            // Animate out and remove
-            setTimeout(function() {
-                notification.addClass('translate-x-full');
-                setTimeout(function() {
-                    notification.remove();
-                }, 300);
-            }, 4000);
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Select all checkbox functionality
-            const selectAllCheckbox = document.querySelector('thead input[type="checkbox"]');
-            const rowCheckboxes = document.querySelectorAll('tbody input[type="checkbox"]');
-
-            if (selectAllCheckbox) {
-                selectAllCheckbox.addEventListener('change', function() {
-                    rowCheckboxes.forEach(checkbox => {
-                        checkbox.checked = this.checked;
-                    });
-                });
-            }
-
-            // Individual checkbox change
-            rowCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const checkedCount = document.querySelectorAll(
-                        'tbody input[type="checkbox"]:checked').length;
-                    selectAllCheckbox.checked = checkedCount === rowCheckboxes.length;
-                    selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount <
-                        rowCheckboxes.length;
-                });
-            });
-
-            // Show success toast notification after page load
-            @if (session('success'))
-                setTimeout(function() {
-                    showNotification('{{ session('success') }}', 'success');
-                }, 500); // Small delay to ensure DOM is ready
-            @endif
-
-            // Show error toast notification after page load
-            @if (session('error'))
-                setTimeout(function() {
-                    showNotification('{{ session('error') }}', 'error');
-                }, 500); // Small delay to ensure DOM is ready
-            @endif
-        });
     </script>
 @endpush

@@ -23,6 +23,14 @@ class KasBank extends Model
         'status_card_payment'
     ];
 
+    /**
+     * Get the encrypted ID.
+     */
+    public function getEncryptedIdAttribute()
+    {
+        return \Illuminate\Support\Facades\Crypt::encryptString($this->id);
+    }
+
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

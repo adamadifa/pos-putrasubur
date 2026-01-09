@@ -6,40 +6,17 @@
     <div class="min-h-screen py-8">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Header -->
-            <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-8">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                        <a href="{{ route('pembayaran.index') }}"
-                            class="group p-2 text-gray-500 hover:text-white hover:bg-gradient-to-r hover:from-blue-500 hover:to-indigo-600 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                                stroke="currentColor" class="w-6 h-6">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-                            </svg>
-                        </a>
-                        <div class="flex items-center space-x-4">
-                            <div class="p-3 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl shadow-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                                    stroke="currentColor" class="w-6 h-6 text-white">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h1
-                                    class="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                                    Buat Pembayaran Baru
-                                </h1>
-                                <p class="text-gray-500 mt-1">Input pembayaran untuk transaksi yang belum lunas</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="hidden sm:flex items-center space-x-2 text-sm text-gray-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-4 h-4">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-                        </svg>
-                        <span>Fields bertanda <span class="text-red-500 font-medium">*</span> wajib diisi</span>
-                    </div>
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Buat Pembayaran Baru</h1>
+                    <p class="text-sm text-gray-600 mt-1">Input pembayaran untuk transaksi yang belum lunas</p>
+                </div>
+                <div class="mt-4 md:mt-0 flex items-center space-x-3">
+                    <a href="{{ route('pembayaran.index') }}"
+                        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                        <i class="ti ti-arrow-left mr-2"></i>
+                        Kembali
+                    </a>
                 </div>
             </div>
 
@@ -84,48 +61,35 @@
             @endif
 
             <!-- Form Card -->
-            <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-                <div class="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-gray-100">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
                     <div class="flex items-center space-x-3">
-                        <div class="p-2 bg-green-100 rounded-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-5 h-5 text-green-600">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-                            </svg>
+                        <div class="p-2 bg-blue-100 rounded-lg">
+                            <i class="ti ti-file-invoice text-blue-600"></i>
                         </div>
                         <h2 class="text-lg font-semibold text-gray-800">Form Pembayaran</h2>
                     </div>
                 </div>
 
-                <form action="{{ route('pembayaran.store') }}" method="POST" class="p-8">
+                <form action="{{ route('pembayaran.store') }}" method="POST" class="p-6 md:p-8">
                     @csrf
                     <div class="space-y-8">
                         <!-- Pilihan Transaksi -->
                         <div class="space-y-2">
-                            <label for="penjualan_id" class="block text-sm font-semibold text-gray-700">
+                            <label for="penjualan_id" class="block text-sm font-medium text-gray-700">
                                 Pilih Transaksi <span class="text-red-500">*</span>
                             </label>
                             <div class="relative group">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor"
-                                        class="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                                    </svg>
+                                    <i class="ti ti-search text-gray-400 group-hover:text-blue-500 transition-colors"></i>
                                 </div>
                                 <input type="text" id="penjualan_display" readonly
-                                    class="w-full pl-11 pr-20 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('penjualan_id') border-red-500 @enderror"
-                                    placeholder="Klik tombol cari untuk memilih transaksi...">
+                                    class="w-full pl-10 pr-20 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white cursor-pointer"
+                                    placeholder="Klik untuk mencari transaksi...">
                                 <input type="hidden" id="penjualan_id" name="penjualan_id" value="">
                                 <button type="button" id="search_transaction_btn"
-                                    class="absolute inset-y-0 right-0 px-4 flex items-center bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-r-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 group-hover:shadow-md">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                                    </svg>
+                                    class="absolute inset-y-0 right-0 px-4 flex items-center bg-blue-600 text-white rounded-r-xl hover:bg-blue-700 transition-colors">
+                                    <i class="ti ti-search text-lg"></i>
                                 </button>
                             </div>
                             @error('penjualan_id')
@@ -134,66 +98,43 @@
                         </div>
 
                         <!-- Detail Transaksi (akan muncul setelah transaksi dipilih) -->
-                        <div id="transaction-details"
-                            class="hidden bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
-                            <div class="flex items-center space-x-3 mb-4">
-                                <div class="p-2 bg-blue-100 rounded-lg">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-blue-600">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                                    </svg>
-                                </div>
-                                <h4 class="text-lg font-semibold text-gray-800">Detail Transaksi</h4>
-                            </div>
+                        <div id="transaction-details" class="hidden">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Ringkasan Transaksi</h3>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div class="bg-white rounded-lg p-4 border border-blue-200">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="p-2 bg-blue-100 rounded-lg">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-blue-600">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm text-gray-600">Total Transaksi</p>
-                                            <p id="total-transaksi" class="text-lg font-bold text-gray-900"></p>
-                                        </div>
+                                <!-- Total Transaksi Card -->
+                                <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg relative overflow-hidden group">
+                                    <div class="absolute right-0 top-0 opacity-10 transform translate-x-2 -translate-y-2 group-hover:scale-110 transition-transform duration-300">
+                                        <i class="ti ti-receipt text-6xl"></i>
+                                    </div>
+                                    <div class="relative z-10">
+                                        <p class="text-blue-100 text-sm font-medium mb-1">Total Transaksi</p>
+                                        <p id="total-transaksi" class="text-2xl font-bold"></p>
                                     </div>
                                 </div>
-                                <div class="bg-white rounded-lg p-4 border border-green-200">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="p-2 bg-green-100 rounded-lg">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-green-600">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm text-gray-600">Sudah Dibayar</p>
-                                            <p id="sudah-dibayar" class="text-lg font-bold text-gray-900"></p>
-                                        </div>
+
+                                <!-- Sudah Dibayar Card -->
+                                <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-6 text-white shadow-lg relative overflow-hidden group">
+                                    <div class="absolute right-0 top-0 opacity-10 transform translate-x-2 -translate-y-2 group-hover:scale-110 transition-transform duration-300">
+                                        <i class="ti ti-check-circle text-6xl"></i>
+                                    </div>
+                                    <div class="relative z-10">
+                                        <p class="text-emerald-100 text-sm font-medium mb-1">Sudah Dibayar</p>
+                                        <p id="sudah-dibayar" class="text-2xl font-bold"></p>
                                     </div>
                                 </div>
-                                <div class="bg-white rounded-lg p-4 border border-red-200">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="p-2 bg-red-100 rounded-lg">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-red-600">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm text-gray-600">Sisa Bayar</p>
-                                            <p id="sisa-bayar" class="text-lg font-bold text-red-600"></p>
-                                        </div>
+
+                                <!-- Sisa Tagihan Card -->
+                                <div class="bg-gradient-to-br from-rose-500 to-rose-600 rounded-xl p-6 text-white shadow-lg relative overflow-hidden group">
+                                    <div class="absolute right-0 top-0 opacity-10 transform translate-x-2 -translate-y-2 group-hover:scale-110 transition-transform duration-300">
+                                        <i class="ti ti-alert-circle text-6xl"></i>
+                                    </div>
+                                    <div class="relative z-10">
+                                        <p class="text-rose-100 text-sm font-medium mb-1">Sisa Tagihan</p>
+                                        <p id="sisa-bayar" class="text-2xl font-bold"></p>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> 
 
                         <!-- Form Pembayaran -->
                         <div id="payment-form" class="hidden space-y-6">
@@ -201,16 +142,15 @@
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <!-- Payment Amount -->
                                 <div class="space-y-2">
-                                    <label for="jumlah" class="block text-sm font-semibold text-gray-700">
+                                    <label for="jumlah" class="block text-sm font-medium text-gray-700">
                                         Jumlah Bayar <span class="text-red-500">*</span>
                                     </label>
                                     <div class="relative group">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <span
-                                                class="text-gray-500 font-medium group-hover:text-green-500 transition-colors">Rp</span>
+                                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                            <span class="text-gray-500 font-semibold group-focus-within:text-blue-600 transition-colors">Rp</span>
                                         </div>
                                         <input type="text" id="jumlah" name="jumlah"
-                                            class="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('jumlah') border-red-500 @enderror text-right text-lg font-semibold"
+                                            class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 text-right text-lg font-semibold"
                                             placeholder="0">
                                         <input type="hidden" id="jumlah_raw" name="jumlah_raw" value="">
                                     </div>
@@ -221,21 +161,16 @@
 
                                 <!-- Payment Date -->
                                 <div class="space-y-2">
-                                    <label for="tanggal" class="block text-sm font-semibold text-gray-700">
+                                    <label for="tanggal" class="block text-sm font-medium text-gray-700">
                                         Tanggal Pembayaran <span class="text-red-500">*</span>
                                     </label>
                                     <div class="relative group">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                stroke-width="1.5" stroke="currentColor"
-                                                class="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-                                            </svg>
+                                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                            <i class="ti ti-calendar text-gray-400 group-focus-within:text-blue-600 transition-colors"></i>
                                         </div>
                                         <input type="datetime-local" id="tanggal" name="tanggal"
                                             value="{{ now()->format('Y-m-d\TH:i') }}"
-                                            class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('tanggal') border-red-500 @enderror">
+                                            class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200">
                                     </div>
                                     @error('tanggal')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -244,28 +179,34 @@
                             </div>
 
                             <!-- Metode Pembayaran -->
-                            <div class="space-y-2">
-                                <label class="block text-sm font-semibold text-gray-700">
+                            <div class="space-y-3">
+                                <label class="block text-sm font-medium text-gray-700">
                                     Metode Pembayaran <span class="text-red-500">*</span>
                                 </label>
-                                <div class="grid grid-cols-2 gap-3">
+                                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                                     @foreach ($metodePembayaran as $metode)
-                                        <label class="relative cursor-pointer payment-method-option">
+                                        <label class="relative cursor-pointer payment-method-option group">
                                             <input type="radio" name="metode_pembayaran"
                                                 id="metode_pembayaran_{{ $metode->kode }}" value="{{ $metode->kode }}"
                                                 {{ old('metode_pembayaran') == $metode->kode ? 'checked' : '' }}
                                                 class="sr-only payment-method-radio">
                                             <div
-                                                class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 payment-method-card">
-                                                <div class="flex flex-col items-center text-center">
-                                                    <div
-                                                        class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-2">
-                                                        <i
-                                                            class="ti {{ $metode->icon_display }} text-blue-600 text-lg"></i>
+                                                class="h-full p-4 border border-gray-200 rounded-xl hover:border-blue-400 hover:shadow-md transition-all duration-200 payment-method-card bg-white relative overflow-hidden">
+                                                <div class="absolute inset-0 bg-blue-50/0 group-hover:bg-blue-50/30 transition-colors duration-200"></div>
+                                                <div class="relative flex flex-col items-center text-center space-y-3">
+                                                    <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                                                        <i class="ti {{ $metode->icon_display }} text-blue-600 text-xl"></i>
                                                     </div>
-                                                    <span
-                                                        class="text-sm font-medium text-gray-900">{{ $metode->nama }}</span>
-                                                    <span class="text-xs text-gray-500">{{ $metode->kode }}</span>
+                                                    <div>
+                                                        <span class="block text-sm font-semibold text-gray-900 mb-1">{{ $metode->nama }}</span>
+                                                        <span class="block text-xs text-blue-500 font-medium bg-blue-50 px-2 py-1 rounded-full">{{ $metode->kode }}</span>
+                                                    </div>
+                                                </div>
+                                                <!-- Checkmark indicator -->
+                                                <div class="absolute top-2 right-2 opacity-0 check-indicator transition-opacity duration-200">
+                                                    <div class="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+                                                        <i class="ti ti-check text-white text-xs"></i>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </label>
@@ -277,53 +218,53 @@
                             </div>
 
                             <!-- Kas & Bank Selection -->
-                            <div id="kas-bank-selection" class="space-y-4 hidden">
+                            <div id="kas-bank-selection" class="space-y-3 hidden">
                                 <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">
+                                    <label class="block text-sm font-medium text-gray-700">
                                         Pilih Kas/Bank <span class="text-red-500">*</span>
                                     </label>
                                     <div id="kas-bank-container"
                                         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         @foreach ($kasBanks as $kasBank)
                                             @php
-                                                $jenis = str_contains(strtoupper($kasBank->nama), 'KAS')
-                                                    ? 'KAS'
-                                                    : 'BANK';
+                                                $jenis = str_contains(strtoupper($kasBank->nama), 'KAS') ? 'KAS' : 'BANK';
                                                 $image = $kasBank->gambar ? asset('storage/' . $kasBank->gambar) : null;
                                             @endphp
-                                            <label class="relative cursor-pointer kas-bank-option">
+                                            <label class="relative cursor-pointer kas-bank-option group">
                                                 <input type="radio" name="kas_bank_id"
                                                     id="kas_bank_{{ $kasBank->id }}" value="{{ $kasBank->id }}"
                                                     data-jenis="{{ $jenis }}" data-image="{{ $image }}"
                                                     class="sr-only kas-bank-radio">
                                                 <div
-                                                    class="kas-bank-card p-4 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200">
-                                                    <div class="flex items-center space-x-3">
+                                                    class="kas-bank-card p-4 border border-gray-200 rounded-xl hover:border-blue-400 hover:shadow-md transition-all duration-200 bg-white relative overflow-hidden">
+                                                    <div class="absolute inset-0 bg-blue-50/0 group-hover:bg-blue-50/30 transition-colors duration-200"></div>
+                                                    <div class="relative flex items-center space-x-4">
                                                         <div class="flex-shrink-0">
                                                             @if ($kasBank->gambar)
                                                                 <img src="{{ asset('storage/' . $kasBank->gambar) }}"
                                                                     alt="{{ $kasBank->nama }}"
-                                                                    class="w-10 h-10 rounded-lg object-cover border border-gray-200">
+                                                                    class="w-12 h-12 rounded-lg object-cover border border-gray-100 shadow-sm">
                                                             @else
-                                                                <div
-                                                                    class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                                        viewBox="0 0 24 24" stroke-width="1.5"
-                                                                        stroke="currentColor" class="w-5 h-5 text-white">
-                                                                        <path stroke-linecap="round"
-                                                                            stroke-linejoin="round"
-                                                                            d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-                                                                    </svg>
+                                                                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg transform group-hover:scale-105 transition-transform">
+                                                                    <i class="ti ti-building-bank text-white text-xl"></i>
                                                                 </div>
                                                             @endif
                                                         </div>
                                                         <div class="flex-1 min-w-0">
-                                                            <p class="text-sm font-medium text-gray-900 truncate">
-                                                                {{ $kasBank->nama }}</p>
+                                                            <p class="text-sm font-bold text-gray-900 truncate mb-0.5">
+                                                                {{ $kasBank->nama }}
+                                                            </p>
                                                             @if ($kasBank->no_rekening)
-                                                                <p class="text-xs text-gray-500">No. Rek:
-                                                                    {{ $kasBank->no_rekening }}</p>
+                                                                <p class="text-xs text-gray-500 font-mono bg-gray-50 inline-block px-1.5 py-0.5 rounded">
+                                                                    {{ $kasBank->no_rekening }}
+                                                                </p>
                                                             @endif
+                                                        </div>
+                                                        <!-- Checkmark indicator -->
+                                                        <div class="opacity-0 check-indicator transition-opacity duration-200">
+                                                            <div class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                                                                <i class="ti ti-check text-white text-sm"></i>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -338,30 +279,17 @@
 
                             <!-- Notes -->
                             <div class="space-y-2">
-                                <label for="keterangan" class="block text-sm font-semibold text-gray-700">
+                                <label for="keterangan" class="block text-sm font-medium text-gray-700">
                                     Keterangan
                                 </label>
                                 <div class="relative group">
-                                    <div class="absolute inset-y-0 left-0 pl-3 pt-3 flex items-start pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor"
-                                            class="w-5 h-5 text-gray-400 group-hover:text-purple-500 transition-colors">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-                                        </svg>
+                                    <div class="absolute inset-y-0 left-0 pl-4 pt-3.5 flex items-start pointer-events-none">
+                                        <i class="ti ti-notes text-gray-400 group-focus-within:text-blue-600 transition-colors"></i>
                                     </div>
                                     <textarea id="keterangan" name="keterangan" rows="3"
-                                        class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('keterangan') border-red-500 @enderror"
-                                        placeholder="Catatan tambahan (opsional)"></textarea>
+                                        class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 resize-none"
+                                        placeholder="Tambahkan catatan untuk pembayaran ini (opsional)..."></textarea>
                                 </div>
-                                <p class="text-xs text-gray-500 flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="w-3 h-3 mr-1">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.847a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.847.813a4.5 4.5 0 0 0-3.09 3.09Z" />
-                                    </svg>
-                                    Catatan tambahan untuk pembayaran ini
-                                </p>
                                 @error('keterangan')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -370,34 +298,22 @@
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="flex items-center justify-between pt-8 mt-8 border-t border-gray-200">
+                    <div class="flex items-center justify-between pt-6 mt-8 border-t border-gray-100">
                         <a href="{{ route('pembayaran.index') }}"
-                            class="inline-flex items-center px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold text-base rounded-xl hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 group">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-3 group-hover:text-gray-600">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
+                            class="inline-flex items-center px-6 py-3 border border-gray-300 text-gray-700 font-medium text-base rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200">
+                            <i class="ti ti-arrow-left mr-2"></i>
                             Batal
                         </a>
 
-                        <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-3">
                             <button type="reset" id="resetBtn"
-                                class="inline-flex items-center px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold text-base rounded-xl hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 group">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor"
-                                    class="w-6 h-6 mr-3 group-hover:text-gray-600">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-                                </svg>
-                                Reset Form
+                                class="inline-flex items-center px-6 py-3 border border-gray-300 text-gray-700 font-medium text-base rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200">
+                                <i class="ti ti-refresh mr-2"></i>
+                                Reset
                             </button>
                             <button type="submit" id="submitBtn"
-                                class="inline-flex items-center px-10 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold text-base rounded-xl shadow-lg hover:from-green-700 hover:to-emerald-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transform hover:scale-[1.02] transition-all duration-200">
-                                <svg id="submitIcon" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-3">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-                                </svg>
+                                class="inline-flex items-center px-8 py-3 bg-blue-600 text-white font-bold text-base rounded-xl shadow-lg hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform hover:scale-[1.02] transition-all duration-200">
+                                <i id="submitIcon" class="ti ti-device-floppy mr-2"></i>
                                 <span id="submitBtnText">Simpan Pembayaran</span>
                             </button>
                         </div>
@@ -639,10 +555,8 @@
                     filterKasBankByPaymentMethod();
                 } else {
                     kasBankSelection.classList.add('hidden');
-                    // Clear kas/bank selection
+                    // Clear kas/bank selection (optional, depending on UX preference)
                     $('input[name="kas_bank_id"]').prop('checked', false);
-                    $('.kas-bank-card').removeClass('border-blue-500 bg-blue-50').addClass(
-                        'border-gray-200');
                 }
             });
 
@@ -653,7 +567,7 @@
                 const kasBankRadios = $('.kas-bank-radio');
 
                 if (!selectedPaymentMethod) {
-                    kasBankCards.addClass('hidden');
+                    kasBankCards.parent().addClass('hidden'); // Hide the label wrapper
                     return;
                 }
 
@@ -670,62 +584,53 @@
 
                 let visibleCount = 0;
 
-                kasBankCards.each(function(index) {
-                    const card = $(this);
-                    const radio = kasBankRadios.eq(index);
+                kasBankRadios.each(function(index) {
+                    const radio = $(this);
+                    const label = radio.closest('.kas-bank-option');
                     const kasBankJenis = radio.attr('data-jenis');
 
+                    let shouldShow = false;
+
                     if (isTransfer && kasBankJenis === 'BANK') {
-                        card.removeClass('hidden');
-                        visibleCount++;
+                        shouldShow = true;
                     } else if (isCash && kasBankJenis === 'KAS') {
-                        card.removeClass('hidden');
-                        visibleCount++;
+                        shouldShow = true;
                     } else if (!isTransfer && !isCash) {
                         // For QRIS or other methods, show all
-                        card.removeClass('hidden');
+                        shouldShow = true;
+                    }
+
+                    if (shouldShow) {
+                        label.removeClass('hidden');
                         visibleCount++;
                     } else {
-                        card.addClass('hidden');
+                        label.addClass('hidden');
+                        // Uncheck if hidden
+                        if (radio.is(':checked')) {
+                            radio.prop('checked', false);
+                        }
                     }
                 });
 
                 // Update grid columns based on visible count
                 const container = $('#kas-bank-container');
+                container.removeClass('grid-cols-1 grid-cols-2 grid-cols-3');
+                
                 if (visibleCount === 1) {
-                    container.removeClass().addClass('grid gap-4 grid-cols-1');
+                    container.addClass('grid-cols-1');
                 } else if (visibleCount === 2) {
-                    container.removeClass().addClass('grid gap-4 grid-cols-2');
-                } else if (visibleCount >= 3) {
-                    container.removeClass().addClass('grid gap-4 grid-cols-3');
+                    container.addClass('grid-cols-1 md:grid-cols-2');
+                } else {
+                    container.addClass('grid-cols-1 md:grid-cols-2 lg:grid-cols-3');
                 }
-
-                // Uncheck hidden selections
-                kasBankRadios.each(function(index) {
-                    const radio = $(this);
-                    const card = kasBankCards.eq(index);
-                    if (card.hasClass('hidden') && radio.is(':checked')) {
-                        radio.prop('checked', false);
-                        card.removeClass('border-blue-500 bg-blue-50').addClass('border-gray-200');
-                    }
-                });
 
                 // Show notification
                 if (isTransfer) {
-                    showNotification('Menampilkan kas/bank jenis BANK untuk metode transfer', 'info');
+                    showNotification('Menampilkan daftar Bank untuk metode Transfer', 'info');
                 } else if (isCash) {
-                    showNotification('Menampilkan kas/bank jenis KAS untuk metode tunai', 'info');
+                    showNotification('Menampilkan daftar Kas untuk metode Tunai', 'info');
                 }
             }
-
-            // Kas/Bank selection
-            $('.kas-bank-radio').on('change', function() {
-                $('.kas-bank-card').removeClass('border-blue-500 bg-blue-50').addClass('border-gray-200');
-                if (this.checked) {
-                    $(this).closest('.kas-bank-option').find('.kas-bank-card')
-                        .removeClass('border-gray-200').addClass('border-blue-500 bg-blue-50');
-                }
-            });
 
             // Number formatting for payment amount
             let isFormatting = false;
@@ -1152,98 +1057,83 @@
     </script>
 
     <style>
-        .payment-method-card {
-            transition: all 0.2s ease-in-out;
+    <style>
+        .payment-method-card, .kas-bank-card {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .payment-method-card:hover {
+        .payment-method-card:hover, .kas-bank-card:hover {
             transform: translateY(-2px);
         }
 
-        .payment-method-radio:checked+.payment-method-card {
+        /* Selection States */
+        .payment-method-radio:checked + .payment-method-card,
+        .kas-bank-radio:checked + .kas-bank-card {
             border-color: #3b82f6;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -1px rgba(59, 130, 246, 0.06);
+            --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+            --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+            box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+            --tw-ring-color: rgb(59 130 246 / 0.2);
             background-color: #eff6ff;
-            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
         }
 
-        .payment-method-radio:checked+.payment-method-card .text-blue-600 {
+        .payment-method-radio:checked + .payment-method-card .check-indicator,
+        .kas-bank-radio:checked + .kas-bank-card .check-indicator {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .payment-method-radio:checked + .payment-method-card i,
+        .payment-method-radio:checked + .payment-method-card span.text-gray-900 {
             color: #2563eb;
         }
 
-        .kas-bank-card {
-            transition: all 0.2s ease-in-out;
-        }
-
-        .kas-bank-card:hover {
-            transform: translateY(-2px);
-        }
-
-        .kas-bank-radio:checked+.kas-bank-card {
-            border-color: #3b82f6;
-            background-color: #eff6ff;
-            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
+        .check-indicator {
+            transform: scale(0.8);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         /* Error state styling */
         .border-red-500 {
             border-color: #ef4444 !important;
-            box-shadow: 0 0 0 1px #ef4444;
+            box-shadow: 0 0 0 1px #ef4444 !important;
         }
 
-        .payment-method-card.border-red-500 {
-            border-color: #ef4444 !important;
-            background-color: #fef2f2;
-        }
-
+        .payment-method-card.border-red-500,
         .kas-bank-card.border-red-500 {
-            border-color: #ef4444 !important;
             background-color: #fef2f2;
         }
 
         .error-message {
-            animation: fadeIn 0.3s ease-in-out;
+            animation: slideDown 0.3s ease-out forwards;
         }
 
-        @keyframes fadeIn {
+        @keyframes slideDown {
             from {
                 opacity: 0;
                 transform: translateY(-10px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
 
-        /* Loading animation */
+        /* Animations */
         .animate-spin {
             animation: spin 1s linear infinite;
         }
 
         @keyframes spin {
-            from {
-                transform: rotate(0deg);
-            }
-
-            to {
-                transform: rotate(360deg);
-            }
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
-        /* Disabled button styles */
-        .opacity-50 {
-            opacity: 0.5;
-        }
-
-        .cursor-not-allowed {
-            cursor: not-allowed;
-        }
-
-        /* Backdrop blur support */
         .backdrop-blur-sm {
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
         }
+    </style>
     </style>
 @endsection

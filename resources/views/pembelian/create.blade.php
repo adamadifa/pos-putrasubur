@@ -156,7 +156,8 @@
                                     @if ($product->foto)
                                         <img src="{{ asset('storage/' . $product->foto) }}"
                                             alt="{{ $product->nama_produk }}"
-                                            class="w-full h-full object-cover rounded-lg">
+                                            class="w-full h-full object-cover rounded-lg"
+                                            onerror="this.parentElement.innerHTML='<i class=\'ti ti-package text-2xl text-orange-600\'></i>'">
                                     @else
                                         <i class="ti ti-package text-2xl text-orange-600"></i>
                                     @endif

@@ -125,10 +125,10 @@ class LaporanStokController extends Controller
         // Calculate saldo awal periode
         $saldoAwal = $saldoAwalTerakhir ?: $saldoAwalBulan;
         foreach ($transaksiSebelumPeriode as $transaksi) {
-            if ($transaksi['jenis'] == 'pembelian') {
-                $saldoAwal += $transaksi['jumlah'];
+            if ($transaksi->jenis == 'pembelian') {
+                $saldoAwal += $transaksi->jumlah;
             } else {
-                $saldoAwal -= $transaksi['jumlah'];
+                $saldoAwal -= $transaksi->jumlah;
             }
         }
 
@@ -201,8 +201,15 @@ class LaporanStokController extends Controller
         $produk = Produk::with(['kategori', 'satuan'])->findOrFail($produkId);
 
         // Parse dates
-        $tanggalDari = \Carbon\Carbon::parse($tanggalDari);
-        $tanggalSampai = \Carbon\Carbon::parse($tanggalSampai);
+        // Parse dates using specific format d/m/Y
+        try {
+            $tanggalDari = \Carbon\Carbon::createFromFormat('d/m/Y', $tanggalDari);
+            $tanggalSampai = \Carbon\Carbon::createFromFormat('d/m/Y', $tanggalSampai);
+        } catch (\Exception $e) {
+            // Fallback for Y-m-d if needed, or re-throw
+            $tanggalDari = \Carbon\Carbon::parse($tanggalDari);
+            $tanggalSampai = \Carbon\Carbon::parse($tanggalSampai);
+        }
 
         // Get saldo awal bulan dari tanggal "dari"
         $bulanDari = $tanggalDari->month;
@@ -424,75 +431,12 @@ class LaporanStokController extends Controller
     }
 
     /**
-     * Export laporan stok to PDF
+     * Export laporan stok to PDF (Now HTML Print Preview)
      */
     public function exportPdf(Request $request)
     {
-        try {
-            $request->validate([
-                'produk_id' => 'required|exists:produk,id',
-                'jenis_periode' => 'required|in:bulan,tanggal',
-            ]);
-
-            $laporanData = null;
-
-            if ($request->jenis_periode === 'tanggal') {
-                $request->validate([
-                    'tanggal_dari' => 'required|date',
-                    'tanggal_sampai' => 'required|date|after_or_equal:tanggal_dari',
-                ]);
-
-                $laporanData = $this->generateLaporanByDateRange(
-                    $request->produk_id,
-                    $request->tanggal_dari,
-                    $request->tanggal_sampai
-                );
-            } else {
-                $request->validate([
-                    'bulan' => 'required|integer|between:1,12',
-                    'tahun' => 'required|integer|min:2020',
-                ]);
-
-                $laporanData = $this->generateLaporan(
-                    $request->produk_id,
-                    $request->bulan,
-                    $request->tahun
-                );
-            }
-
-            // Generate PDF using DomPDF
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan.stok.pdf', compact('laporanData'));
-
-            // Set paper size and orientation
-            $pdf->setPaper('A4', 'landscape');
-
-            // Generate filename
-            $produkName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $laporanData['produk']['nama_produk']);
-
-            if ($laporanData['periode']['jenis'] == 'tanggal') {
-                $tanggalDari = str_replace('/', '-', $laporanData['periode']['tanggal_dari']);
-                $tanggalSampai = str_replace('/', '-', $laporanData['periode']['tanggal_sampai']);
-                $filename = 'Laporan_Stok_' . $produkName . '_' . $tanggalDari . '_sampai_' . $tanggalSampai . '.pdf';
-            } else {
-                $filename = 'Laporan_Stok_' . $produkName . '_' . $laporanData['periode']['bulan_nama'] . '_' . $laporanData['periode']['tahun'] . '.pdf';
-            }
-
-            // Return PDF as stream (preview in browser)
-            return $pdf->stream($filename);
-        } catch (\Exception $e) {
-            Log::error('PDF Export Error: ' . $e->getMessage());
-
-            // Return JSON error response for AJAX requests
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Terjadi kesalahan saat mengekspor PDF: ' . $e->getMessage()
-                ], 500);
-            }
-
-            // For non-AJAX requests, redirect back with error
-            return back()->with('error', 'Terjadi kesalahan saat mengekspor PDF: ' . $e->getMessage());
-        }
+        // Redirect to print method for consistency
+        return $this->print($request);
     }
 
     /**
@@ -501,6 +445,10 @@ class LaporanStokController extends Controller
      */
     public function print(Request $request)
     {
+        // Increase limits for large data
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '512M');
+
         $request->validate([
             'produk_id' => 'required|exists:produk,id',
             'jenis_periode' => 'required|in:bulan,tanggal',
@@ -510,8 +458,8 @@ class LaporanStokController extends Controller
 
         if ($request->jenis_periode === 'tanggal') {
             $request->validate([
-                'tanggal_dari' => 'required|date',
-                'tanggal_sampai' => 'required|date|after_or_equal:tanggal_dari',
+                'tanggal_dari' => 'required',
+                'tanggal_sampai' => 'required',
             ]);
 
             $laporanData = $this->generateLaporanByDateRange(

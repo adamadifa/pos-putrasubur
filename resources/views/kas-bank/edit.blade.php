@@ -3,446 +3,238 @@
 @section('title', 'Edit Kas & Bank')
 
 @section('content')
-    <div class="min-h-screen py-8">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <!-- Header -->
-            <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-8">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                        <a href="{{ route('kas-bank.index') }}"
-                            class="group p-2 text-gray-500 hover:text-white hover:bg-gradient-to-r hover:from-blue-500 hover:to-indigo-600 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                class="w-6 h-6">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-                            </svg>
-                        </a>
-                        <div class="flex items-center space-x-4">
-                            <div class="p-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                    class="w-6 h-6 text-white">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h1 class="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                                    Edit Kas & Bank</h1>
-                                <p class="text-gray-500 mt-1">Perbarui informasi kas atau bank yang sudah ada</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="hidden sm:flex items-center space-x-2 text-sm text-gray-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                            class="w-4 h-4">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-                        </svg>
-                        <span>Fields bertanda <span class="text-red-500 font-medium">*</span> wajib diisi</span>
+    <div class="max-w-4xl mx-auto px-4 py-6">
+        <!-- Compact Header -->
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-3">
+                <a href="{{ route('kas-bank.index') }}"
+                   class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                         stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                    </svg>
+                </a>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-800">Edit Akun</h1>
+                    <p class="text-xs text-gray-500">Perbarui informasi akun kas atau bank</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerts -->
+        @if (session('error'))
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 shadow-sm flex items-center">
+                <svg class="w-5 h-5 text-red-400 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+                <p class="text-sm font-medium text-red-800">{{ session('error') }}</p>
+                <button type="button" class="ml-auto text-red-500 hover:bg-red-100 p-1.5 rounded-lg" onclick="this.parentElement.remove()">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                </button>
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 shadow-sm">
+                <div class="flex">
+                    <svg class="w-5 h-5 text-red-400 mr-3 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    <div>
+                        <p class="text-sm font-medium text-red-800">Terdapat kesalahan pada form:</p>
+                        <ul class="mt-1 text-xs text-red-700 list-disc list-inside">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
                     </div>
                 </div>
             </div>
+        @endif
 
-            <!-- Success Alert -->
-            @if (session('success'))
-                <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-6 shadow-sm">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                class="w-5 h-5 text-green-400">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm font-medium text-green-800">
-                                {{ session('success') }}
-                            </p>
-                        </div>
-                        <div class="ml-auto pl-3">
-                            <div class="-mx-1.5 -my-1.5">
-                                <button type="button"
-                                    class="inline-flex bg-green-50 rounded-lg p-1.5 text-green-500 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-green-50"
-                                    onclick="this.parentElement.parentElement.parentElement.parentElement.remove()">
-                                    <span class="sr-only">Dismiss</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                        class="w-5 h-5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+        <!-- Instruction Card -->
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 shadow-sm">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <svg class="w-5 h-5 text-blue-400 mt-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    </svg>
                 </div>
-            @endif
-
-            <!-- Error Alert -->
-            @if ($errors->any())
-                <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 shadow-sm">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                class="w-5 h-5 text-red-400">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                            </svg>
-                        </div>
-                        <div class="ml-3">
-                            <h3 class="text-sm font-medium text-red-800">
-                                Terdapat {{ $errors->count() }} kesalahan yang perlu diperbaiki:
-                            </h3>
-                            <div class="mt-2 text-sm text-red-700">
-                                <ul class="list-disc pl-5 space-y-1">
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="ml-auto pl-3">
-                            <div class="-mx-1.5 -my-1.5">
-                                <button type="button"
-                                    class="inline-flex bg-red-50 rounded-lg p-1.5 text-red-500 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 focus:ring-offset-red-50"
-                                    onclick="this.parentElement.parentElement.parentElement.parentElement.remove()">
-                                    <span class="sr-only">Dismiss</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                        class="w-5 h-5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @endif
-
-            <!-- Form Card -->
-            <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
-                    <div class="flex items-center space-x-3">
-                        <div class="p-2 bg-blue-100 rounded-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                class="w-5 h-5 text-blue-600">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-                            </svg>
-                        </div>
-                        <h2 class="text-lg font-semibold text-gray-800">Form Edit Kas & Bank</h2>
-                    </div>
-                </div>
-
-                <form action="{{ route('kas-bank.update', $kasBank->id) }}" method="POST" enctype="multipart/form-data" class="p-8"
-                    id="editKasBankForm">
-                    @csrf
-                    @method('PUT')
-
-                    <div class="space-y-8">
-                        <!-- Kode -->
-                        <div class="space-y-2">
-                            <label for="kode" class="block text-sm font-semibold text-gray-700">
-                                Kode <span class="text-red-500">*</span>
-                            </label>
-                            <div class="relative group">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="ti ti-tag text-gray-400 group-hover:text-blue-500 transition-colors text-lg"></i>
-                                </div>
-                                <input type="text" name="kode" id="kode" value="{{ old('kode', $kasBank->kode) }}"
-                                    class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('kode') border-red-500 @enderror"
-                                    placeholder="Contoh: KAS001, BANK001, dll" maxlength="20" required>
-                            </div>
-                            <p class="text-xs text-gray-500 flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                    class="w-3 h-3 mr-1">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.847a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.847.813a4.5 4.5 0 0 0-3.09 3.09Z" />
-                                </svg>
-                                Gunakan format KAS untuk kas tunai atau BANK untuk rekening bank
-                            </p>
-                            @error('kode')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Nama -->
-                        <div class="space-y-2">
-                            <label for="nama" class="block text-sm font-semibold text-gray-700">
-                                Nama <span class="text-red-500">*</span>
-                            </label>
-                            <div class="relative group">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="ti ti-user text-gray-400 group-hover:text-blue-500 transition-colors text-lg"></i>
-                                </div>
-                                <input type="text" name="nama" id="nama" value="{{ old('nama', $kasBank->nama) }}"
-                                    class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('nama') border-red-500 @enderror"
-                                    placeholder="Contoh: Kas Utama, Bank BCA, dll" maxlength="100" required>
-                            </div>
-                            <p class="text-xs text-gray-500 flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                    class="w-3 h-3 mr-1">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.847a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.847.813a4.5 4.5 0 0 0-3.09 3.09Z" />
-                                </svg>
-                                Berikan nama yang jelas untuk kas atau bank ini
-                            </p>
-                            @error('nama')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Jenis -->
-                        <div class="space-y-2">
-                            <label class="block text-sm font-semibold text-gray-700">
-                                Jenis <span class="text-red-500">*</span>
-                            </label>
-                            <div class="grid grid-cols-2 gap-3">
-                                <label class="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                                    <input type="radio" name="jenis" value="KAS"
-                                        {{ old('jenis', $kasBank->jenis ?? 'KAS') === 'KAS' ? 'checked' : '' }}
-                                        class="mr-3 text-blue-600 focus:ring-blue-500" required>
-                                    <div class="flex items-center">
-                                        <i class="ti ti-cash text-lg text-green-600 mr-2"></i>
-                                        <span class="text-sm font-medium">KAS</span>
-                                    </div>
-                                </label>
-                                <label class="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                                    <input type="radio" name="jenis" value="BANK"
-                                        {{ old('jenis', $kasBank->jenis) === 'BANK' ? 'checked' : '' }} class="mr-3 text-blue-600 focus:ring-blue-500"
-                                        required>
-                                    <div class="flex items-center">
-                                        <i class="ti ti-building-bank text-lg text-blue-600 mr-2"></i>
-                                        <span class="text-sm font-medium">BANK</span>
-                                    </div>
-                                </label>
-                            </div>
-                            @error('jenis')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                            <p class="text-xs text-gray-500 flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                    class="w-3 h-3 mr-1">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.847a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.847.813a4.5 4.5 0 0 0-3.09 3.09Z" />
-                                </svg>
-                                Pilih jenis kas atau bank
-                            </p>
-                        </div>
-
-                        <!-- No Rekening -->
-                        <div class="space-y-2">
-                            <label for="no_rekening" class="block text-sm font-semibold text-gray-700">
-                                No. Rekening
-                            </label>
-                            <div class="relative group">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="ti ti-credit-card text-gray-400 group-hover:text-blue-500 transition-colors text-lg"></i>
-                                </div>
-                                <input type="text" name="no_rekening" id="no_rekening" value="{{ old('no_rekening', $kasBank->no_rekening) }}"
-                                    class="w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none transition-all duration-200 bg-gray-50 focus:bg-white @error('no_rekening') border-red-500 @enderror"
-                                    placeholder="Contoh: 1234567890 (opsional)" maxlength="50">
-                            </div>
-                            <p class="text-xs text-gray-500 flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                    class="w-3 h-3 mr-1">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.847a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.847.813a4.5 4.5 0 0 0-3.09 3.09Z" />
-                                </svg>
-                                Nomor rekening bank (kosongkan jika kas tunai)
-                            </p>
-                            @error('no_rekening')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Status Card Payment -->
-                        <div class="space-y-2">
-                            <label class="block text-sm font-semibold text-gray-700">
-                                Status Card Payment
-                            </label>
-                            <div class="flex items-center space-x-4">
-                                <label class="flex items-center cursor-pointer">
-                                    <input type="checkbox" name="status_card_payment" value="1"
-                                        {{ old('status_card_payment', $kasBank->status_card_payment) ? 'checked' : '' }} class="sr-only"
-                                        id="status_card_payment">
-                                    <div class="relative">
-                                        <div class="w-12 h-6 bg-gray-200 rounded-full shadow-inner transition-colors duration-200 ease-in-out"
-                                            id="toggle-bg"></div>
-                                        <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ease-in-out"
-                                            id="toggle-dot"></div>
-                                    </div>
-                                    <span class="ml-3 text-sm font-medium text-gray-700" id="toggle-label">Nonaktif</span>
-                                </label>
-                            </div>
-                            <p class="text-xs text-gray-500 flex items-center">
-                                <i class="ti ti-info-circle text-gray-400 mr-1"></i>
-                                Hanya satu bank yang dapat diaktifkan untuk card payment. Mengaktifkan bank ini akan menonaktifkan bank lain.
-                            </p>
-                            @error('status_card_payment')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Image -->
-                        <div class="space-y-2">
-                            <label for="image" class="block text-sm font-semibold text-gray-700">
-                                Logo Bank
-                            </label>
-                            <div class="flex items-center space-x-4">
-                                <div class="flex-1">
-                                    <input type="file" name="image" id="image" accept="image/*"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('image') border-red-500 @enderror">
-                                    @error('image')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                    @enderror
-                                    <p class="text-xs text-gray-500 flex items-center mt-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                            stroke="currentColor" class="w-3 h-3 mr-1">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.847a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.847.813a4.5 4.5 0 0 0-3.09 3.09Z" />
-                                        </svg>
-                                        Upload logo bank (opsional, maksimal 2MB, format: jpeg, png, jpg, gif, svg)
-                                    </p>
-                                </div>
-                                <div id="imagePreview" class="{{ $kasBank->image ? '' : 'hidden' }}">
-                                    <img id="previewImg" src="{{ $kasBank->image_url ?? '' }}" alt="Preview"
-                                        class="w-16 h-16 object-cover rounded-lg border">
-                                </div>
-                            </div>
-                            @if ($kasBank->image)
-                                <p class="mt-2 text-xs text-gray-500 flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                        stroke="currentColor" class="w-3 h-3 mr-1">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.847a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.847.813a4.5 4.5 0 0 0-3.09 3.09Z" />
-                                    </svg>
-                                    Logo saat ini: {{ basename($kasBank->image) }}
-                                </p>
-                            @endif
-                        </div>
-
-                        <!-- Preview Card -->
-                        <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                            <h4 class="text-sm font-semibold text-gray-700 mb-4">Preview Kas & Bank</h4>
-                            <div class="flex items-center">
-                                <div class="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center mr-4">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                        stroke="currentColor" class="w-6 h-6 text-blue-600">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <div class="text-base font-medium text-gray-900" id="preview-nama">
-                                        {{ old('nama', $kasBank->nama) ?: 'Nama Kas & Bank' }}
-                                    </div>
-                                    <div class="text-sm text-gray-500">
-                                        <span id="preview-kode">{{ old('kode', $kasBank->kode) ?: 'Kode' }}</span>
-                                        @if (old('no_rekening', $kasBank->no_rekening))
-                                            • <span id="preview-rekening">{{ old('no_rekening', $kasBank->no_rekening) }}</span>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="flex items-center justify-between pt-8 mt-8 border-t border-gray-200">
-                        <a href="{{ route('kas-bank.index') }}"
-                            class="inline-flex items-center px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold text-base rounded-xl hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 group">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                class="w-6 h-6 mr-3 group-hover:text-gray-600">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                            Batal
-                        </a>
-
-                        <div class="flex items-center space-x-4">
-                            <button type="reset"
-                                class="inline-flex items-center px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold text-base rounded-xl hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 group">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                    class="w-6 h-6 mr-3 group-hover:text-gray-600">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-                                </svg>
-                                Reset Form
-                            </button>
-                            <button type="submit" id="submitBtn"
-                                class="inline-flex items-center px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-base rounded-xl shadow-lg hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform hover:scale-[1.02] transition-all duration-200">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                    class="w-6 h-6 mr-3">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-                                </svg>
-                                Perbarui Kas & Bank
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Tips Card -->
-            <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 mt-8">
-                <div class="flex items-start">
-                    <div class="flex-shrink-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                            class="w-5 h-5 text-blue-400">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-                        </svg>
-                    </div>
-                    <div class="ml-3">
-                        <h3 class="text-sm font-medium text-blue-800">Tips Mengedit Kas & Bank</h3>
-                        <div class="mt-2 text-sm text-blue-700">
-                            <ul class="list-disc pl-5 space-y-1">
-                                <li>Pastikan kode tetap konsisten dengan sistem yang ada</li>
-                                <li>Hindari perubahan yang dapat membingungkan pengguna</li>
-                                <li>Pertimbangkan dampak perubahan pada transaksi yang terkait</li>
-                                <li>Simpan perubahan hanya jika benar-benar diperlukan</li>
-                            </ul>
-                        </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-blue-800">Petunjuk Edit Akun</h3>
+                    <div class="mt-2 text-sm text-blue-700">
+                        <ul class="list-disc pl-5 space-y-1">
+                            <li><strong>Kode</strong> dapat diubah jika belum digunakan.</li>
+                            <li><strong>Saldo Awal</strong> tidak dapat diubah setelah ada transaksi (untuk menjaga konsistensi).</li>
+                            <li>Pastikan nomor rekening valid untuk akun BANK.</li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
+        <!-- Form Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <form action="{{ route('kas-bank.update', $kasBank->encrypted_id) }}" method="POST" enctype="multipart/form-data" id="editKasBankForm">
+                @csrf
+                @method('PUT')
+                
+                <div class="p-6 space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Kode -->
+                        <div class="field-wrapper">
+                            <label for="kode" class="block text-xs font-bold text-gray-700 mb-1">
+                                Kode <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="kode" id="kode" value="{{ old('kode', $kasBank->kode) }}"
+                                   class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50/30 font-mono uppercase @error('kode') border-red-500 @enderror"
+                                    onkeyup="this.value = this.value.toUpperCase().replace(/\s/g, '')">
+                            @error('kode') <p class="mt-1 text-xs text-red-500 error-message">{{ $message }}</p> @enderror
+                        </div>
+
+                        <!-- Nama -->
+                        <div class="field-wrapper">
+                            <label for="nama" class="block text-xs font-bold text-gray-700 mb-1">
+                                Nama Akun <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="nama" id="nama" value="{{ old('nama', $kasBank->nama) }}"
+                                   class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50/30 @error('nama') border-red-500 @enderror">
+                            @error('nama') <p class="mt-1 text-xs text-red-500 error-message">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Jenis -->
+                        <div class="field-wrapper">
+                            <label for="jenis" class="block text-xs font-bold text-gray-700 mb-1">
+                                Jenis <span class="text-red-500">*</span>
+                            </label>
+                            <select name="jenis" id="jenis" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50/30">
+                                <option value="KAS" {{ old('jenis', $kasBank->jenis) == 'KAS' ? 'selected' : '' }}>KAS (Tunai)</option>
+                                <option value="BANK" {{ old('jenis', $kasBank->jenis) == 'BANK' ? 'selected' : '' }}>BANK (Rekening)</option>
+                            </select>
+                        </div>
+
+                         <!-- No Rekening -->
+                        <div class="field-wrapper" id="rekening-wrapper" style="{{ old('jenis', $kasBank->jenis) == 'BANK' ? '' : 'display: none;' }}">
+                            <label for="no_rekening" class="block text-xs font-bold text-gray-700 mb-1">
+                                Nomor Rekening
+                            </label>
+                            <input type="text" name="no_rekening" id="no_rekening" value="{{ old('no_rekening', $kasBank->no_rekening) }}"
+                                   class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50/30 @error('no_rekening') border-red-500 @enderror">
+                            @error('no_rekening') <p class="mt-1 text-xs text-red-500 error-message">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Saldo Awal (Disabled in edit is safer, but user requirement might be different. usually we don't edit opening balance lightly) -->
+                        <!-- But controller allows it via request->all(). I will leave it editable but warn user -->
+                        <div class="field-wrapper">
+                            <label for="saldo_awal" class="block text-xs font-bold text-gray-700 mb-1">
+                                Saldo Awal
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 sm:text-sm">Rp</span>
+                                </div>
+                                <input type="number" name="saldo_awal" id="saldo_awal" value="{{ old('saldo_awal', $kasBank->saldo_awal) }}"
+                                       class="w-full pl-10 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-100 text-gray-500"
+                                       readonly title="Saldo awal tidak dapat diedit secara langsung di sini untuk menjaga konsistensi pembukuan.">
+                            </div>
+                            <p class="mt-1 text-[10px] text-gray-400">Saldo awal hanya diset saat pembuatan.</p>
+                        </div>
+
+                         <!-- Logo / Image -->
+                        <div class="field-wrapper">
+                            <label for="image" class="block text-xs font-bold text-gray-700 mb-1">
+                                Logo Bank / Icon
+                            </label>
+                            @if($kasBank->image_url)
+                                <div class="mb-2">
+                                    <img src="{{ $kasBank->image_url }}" alt="Current Logo" class="h-12 w-auto rounded-lg border border-gray-200">
+                                </div>
+                            @endif
+                             <input type="file" name="image" id="image" accept="image/*"
+                                   class="block w-full text-xs text-slate-500
+                                          file:mr-4 file:py-2 file:px-4
+                                          file:rounded-lg file:border-0
+                                          file:text-xs file:font-semibold
+                                          file:bg-blue-50 file:text-blue-700
+                                          file:hover:bg-blue-100
+                                          border border-gray-200 rounded-lg cursor-pointer bg-gray-50/30
+                                   "/>
+                             <p class="mt-1 text-[10px] text-gray-500">Upload baru untuk mengganti. Maksimal 2MB.</p>
+                             @error('image') <p class="mt-1 text-xs text-red-500 error-message">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+
+                    <!-- Status Card Payment -->
+                     <div class="field-wrapper flex items-center mt-2">
+                        <input type="checkbox" name="status_card_payment" id="status_card_payment" value="1" {{ old('status_card_payment', $kasBank->status_card_payment) ? 'checked' : '' }}
+                               class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                        <label for="status_card_payment" class="ml-2 block text-sm text-gray-700">
+                            Gunakan sebagai akun utama untuk pembayaran kartu
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3 rounded-b-xl">
+                    <a href="{{ route('kas-bank.index') }}" class="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                        Batal
+                    </a>
+                    <button type="submit" id="submitBtn" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+@endsection
+
+@push('scripts')
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script>
         $(document).ready(function() {
-            // Frontend Validation Rules and Messages
+             // Handle initial state of No Rekening
+            function toggleRekening() {
+                if ($('#jenis').val() === 'BANK') {
+                    $('#rekening-wrapper').slideDown();
+                } else {
+                    $('#rekening-wrapper').slideUp();
+                }
+            }
+            toggleRekening();
+            $('#jenis').change(toggleRekening);
+
+            // Validation Rules
             const validationRules = {
                 kode: {
                     required: true,
-                    maxLength: 20,
-                    minLength: 3
+                    maxLength: 20
                 },
                 nama: {
                     required: true,
-                    maxLength: 100,
-                    minLength: 2
-                },
-                no_rekening: {
-                    required: false,
-                    maxLength: 50
+                    maxLength: 100
                 }
             };
 
             const validationMessages = {
                 kode: {
                     required: 'Kode wajib diisi.',
-                    maxLength: 'Kode maksimal 20 karakter.',
-                    minLength: 'Kode minimal 3 karakter.'
+                    maxLength: 'Kode maksimal 20 karakter.'
                 },
                 nama: {
-                    required: 'Nama wajib diisi.',
-                    maxLength: 'Nama maksimal 100 karakter.',
-                    minLength: 'Nama minimal 2 karakter.'
-                },
-                no_rekening: {
-                    maxLength: 'No. rekening maksimal 50 karakter.'
+                    required: 'Nama akun wajib diisi.',
+                    maxLength: 'Nama maksimal 100 karakter.'
                 }
             };
 
-            // Real-time validation for form fields
-            const fieldsToValidate = ['kode', 'nama', 'no_rekening'];
+            // Real-time validation
+            const fieldsToValidate = ['kode', 'nama'];
 
             fieldsToValidate.forEach(function(fieldName) {
                 const field = $(`#${fieldName}`);
@@ -450,275 +242,91 @@
 
                 field.on('input change blur', function() {
                     const value = $(this).val();
-
-                    // Clear previous timeout
                     clearTimeout(validationTimeout);
 
-                    // Don't validate empty fields on input (only on blur)
-                    if (!value && $(this)[0].type !== 'blur') {
+                    // Skip validation if empty and not required
+                    if (!value && !validationRules[fieldName]?.required) {
                         return;
                     }
 
-                    // Set timeout to avoid too many validations
                     validationTimeout = setTimeout(function() {
                         validateField(fieldName, value);
                     }, 300);
                 });
-
-                // Immediate validation on blur for required fields
-                field.on('blur', function() {
-                    const value = $(this).val();
-                    clearTimeout(validationTimeout);
-                    validateField(fieldName, value);
-                });
             });
 
-            // Frontend Validate field function
             function validateField(fieldName, value) {
                 const field = $(`#${fieldName}`);
-                const fieldContainer = field.closest('.space-y-2');
+                const fieldContainer = field.closest('.field-wrapper');
                 const rules = validationRules[fieldName];
                 const messages = validationMessages[fieldName];
 
-                // Remove existing error and success states
+                // Reset state
                 field.removeClass('border-red-500 border-green-500').addClass('border-gray-300');
                 fieldContainer.find('.error-message').remove();
 
-                // Skip validation for empty optional fields
-                if (!value && !rules.required) {
-                    return;
-                }
+                if (!rules) return;
+                if (!value && !rules.required) return;
 
                 let isValid = true;
                 let errorMessage = '';
 
-                // Required validation
                 if (rules.required && (!value || value.toString().trim() === '')) {
                     isValid = false;
                     errorMessage = messages.required;
-                }
-                // Min length validation
-                else if (rules.minLength && value && value.trim().length < rules.minLength) {
-                    isValid = false;
-                    errorMessage = messages.minLength;
-                }
-                // Max length validation
-                else if (rules.maxLength && value && value.length > rules.maxLength) {
+                } else if (rules.maxLength && value.length > rules.maxLength) {
                     isValid = false;
                     errorMessage = messages.maxLength;
                 }
 
                 if (!isValid) {
-                    // Add error styling
-                    field.removeClass('border-gray-300 border-green-500').addClass('border-red-500');
-
-                    // Add error message
+                    field.removeClass('border-gray-200 border-green-500 focus:border-blue-500').addClass('border-red-500');
+                    
                     const errorHtml = `
-                        <p class="mt-2 text-sm text-red-600 flex items-center error-message">
-                            <i class="ti ti-alert-circle text-red-500 mr-2"></i>
+                        <p class="mt-1 text-xs text-red-600 flex items-center error-message">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3 h-3 mr-1 flex-shrink-0">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                            </svg>
                             ${errorMessage}
                         </p>
                     `;
                     fieldContainer.append(errorHtml);
                 } else {
-                    // Add success styling (green border only)
-                    field.removeClass('border-gray-300 border-red-500').addClass('border-green-500');
+                    field.removeClass('border-gray-200 border-red-500').addClass('border-green-500');
                 }
             }
 
-            // Live preview functionality
-            $('#nama').on('input', function() {
-                const previewNama = $('#preview-nama');
-                previewNama.text(this.value || 'Nama Kas & Bank');
-            });
-
-            $('#kode').on('input', function() {
-                const previewKode = $('#preview-kode');
-                previewKode.text(this.value || 'Kode');
-            });
-
-            $('#no_rekening').on('input', function() {
-                const previewRekening = $('#preview-rekening');
-                if (this.value) {
-                    if ($('#preview-rekening').length === 0) {
-                        $('#preview-kode').after(' • <span id="preview-rekening">' + this.value +
-                            '</span>');
-                    } else {
-                        previewRekening.text(this.value);
-                    }
-                } else {
-                    $('#preview-rekening').remove();
-                }
-            });
-
-            // Form submission validation
+            // Form Submit
             $('#editKasBankForm').on('submit', function(e) {
                 let hasErrors = false;
 
-                // Check for any visible error messages
-                if ($('.error-message').length > 0) {
-                    hasErrors = true;
-                }
+                if ($('.error-message').length > 0) hasErrors = true;
 
-                // Check for empty required fields
-                fieldsToValidate.forEach(function(fieldName) {
-                    const field = $(`#${fieldName}`);
-                    const rules = validationRules[fieldName];
-                    if (rules.required && !field.val()) {
-                        hasErrors = true;
-                        validateField(fieldName, field.val());
-                    }
-                });
+                // Validate required fields
+                 if (!$('#nama').val()) {
+                    hasErrors = true;
+                    validateField('nama', '');
+                }
+                if (!$('#kode').val()) {
+                    hasErrors = true;
+                    validateField('kode', '');
+                }
 
                 if (hasErrors) {
                     e.preventDefault();
-
-                    // Scroll to first error
-                    const firstError = $('.error-message').first();
-                    if (firstError.length) {
-                        $('html, body').animate({
-                            scrollTop: firstError.offset().top - 100
-                        }, 500);
-                    }
-
-                    // Show notification
-                    showNotification('Harap perbaiki kesalahan pada form sebelum melanjutkan.', 'error');
+                    const firstError = $('.error-message').first().parent().find('input');
+                    firstError.focus();
                 } else {
-                    // Disable submit button and show loading state
-                    const submitButton = $('#submitBtn');
-                    const originalText = submitButton.html();
-
-                    submitButton.prop('disabled', true);
-                    submitButton.removeClass(
-                        'hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl hover:scale-[1.02]');
-                    submitButton.addClass('opacity-75 cursor-not-allowed');
-
-                    // Change button content to loading state
-                    submitButton.html(`
-                        <i class="ti ti-loader-2 animate-spin text-lg mr-2"></i>
-                        Memperbarui...
+                    const submitBtn = $('#submitBtn');
+                    submitBtn.prop('disabled', true).html(`
+                        <svg class="animate-spin w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Mengupdate...
                     `);
-
-                    // Show notification
-                    showNotification('Sedang memperbarui data Kas & Bank...', 'info');
-
-                    // Re-enable button if form submission fails (fallback)
-                    setTimeout(function() {
-                        if (submitButton.prop('disabled')) {
-                            submitButton.prop('disabled', false);
-                            submitButton.removeClass('opacity-75 cursor-not-allowed');
-                            submitButton.addClass(
-                                'hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl hover:scale-[1.02]'
-                            );
-                            submitButton.html(originalText);
-                        }
-                    }, 10000); // 10 seconds fallback
                 }
             });
-
-            // Show notification function
-            function showNotification(message, type = 'info') {
-                let bgColor, icon;
-
-                switch (type) {
-                    case 'error':
-                        bgColor = 'bg-red-500';
-                        icon = `<i class="ti ti-alert-circle text-lg mr-2"></i>`;
-                        break;
-                    case 'success':
-                        bgColor = 'bg-green-500';
-                        icon = `<i class="ti ti-check text-lg mr-2"></i>`;
-                        break;
-                    case 'info':
-                        bgColor = 'bg-blue-500';
-                        icon = `<i class="ti ti-loader-2 animate-spin text-lg mr-2"></i>`;
-                        break;
-                    default:
-                        bgColor = 'bg-blue-500';
-                        icon = `<i class="ti ti-info-circle text-lg mr-2"></i>`;
-                }
-
-                const notification = $(`
-                    <div class="fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-xl z-50 notification transform transition-all duration-300 translate-x-full">
-                        <div class="flex items-center">
-                            ${icon}
-                            ${message}
-                        </div>
-                    </div>
-                `);
-
-                $('body').append(notification);
-
-                // Animate in
-                setTimeout(function() {
-                    notification.removeClass('translate-x-full');
-                }, 100);
-
-                // Animate out and remove
-                setTimeout(function() {
-                    notification.addClass('translate-x-full');
-                    setTimeout(function() {
-                        notification.remove();
-                    }, 300);
-                }, 4000);
-            }
-
-            // Show success toast notification after page load
-            @if (session('success'))
-                setTimeout(function() {
-                    showNotification('{{ session('success') }}', 'success');
-                }, 500);
-            @endif
-
-            // Image preview functionality
-            document.getElementById('image').addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                const preview = document.getElementById('imagePreview');
-                const previewImg = document.getElementById('previewImg');
-
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        previewImg.src = e.target.result;
-                        preview.classList.remove('hidden');
-                    }
-                    reader.readAsDataURL(file);
-                } else {
-                    preview.classList.add('hidden');
-                }
-            });
-
-            // Toggle switch functionality for status card payment
-            const toggleCheckbox = document.getElementById('status_card_payment');
-            const toggleBg = document.getElementById('toggle-bg');
-            const toggleDot = document.getElementById('toggle-dot');
-            const toggleLabel = document.getElementById('toggle-label');
-
-            function updateToggle() {
-                if (toggleCheckbox.checked) {
-                    toggleBg.classList.remove('bg-gray-200');
-                    toggleBg.classList.add('bg-blue-600');
-                    toggleDot.classList.remove('left-1');
-                    toggleDot.classList.add('left-7');
-                    toggleLabel.textContent = 'Aktif';
-                    toggleLabel.classList.remove('text-gray-700');
-                    toggleLabel.classList.add('text-blue-600');
-                } else {
-                    toggleBg.classList.remove('bg-blue-600');
-                    toggleBg.classList.add('bg-gray-200');
-                    toggleDot.classList.remove('left-7');
-                    toggleDot.classList.add('left-1');
-                    toggleLabel.textContent = 'Nonaktif';
-                    toggleLabel.classList.remove('text-blue-600');
-                    toggleLabel.classList.add('text-gray-700');
-                }
-            }
-
-            // Initialize toggle state
-            updateToggle();
-
-            // Add event listener
-            toggleCheckbox.addEventListener('change', updateToggle);
         });
     </script>
-@endsection
+@endpush

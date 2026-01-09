@@ -74,7 +74,7 @@
             </div>
         @endif
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div
                 class="relative bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
@@ -88,7 +88,7 @@
                                 </div>
                             </div>
                             <div class="ml-4">
-                                <h3 class="text-sm font-medium text-orange-100">Pembelian Hari Ini</h3>
+                                <h3 class="text-sm font-medium text-orange-100">Jumlah Transaksi</h3>
                                 <p class="text-3xl font-bold text-white">{{ $pembelianHariIni ?? 0 }}</p>
                                 <div class="flex items-center mt-1">
                                     @if (($perubahanPembelian ?? 0) > 0)
@@ -124,7 +124,7 @@
                                 </div>
                             </div>
                             <div class="ml-4">
-                                <h3 class="text-sm font-medium text-red-100">Pembelian Hari Ini</h3>
+                                <h3 class="text-sm font-medium text-red-100">Total Nominal Pembelian</h3>
                                 <p class="text-2xl font-bold text-white">Rp
                                     {{ number_format($nilaiHariIni ?? 0, 0, ',', '.') }}</p>
                                 <div class="flex items-center mt-1">
@@ -146,85 +146,9 @@
                     </div>
                 </div>
             </div>
-
-            <div
-                class="relative bg-gradient-to-br from-green-500 via-green-600 to-green-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
-                <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-                <div class="relative p-6">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div
-                                class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                <i class="ti ti-check-circle text-2xl text-white"></i>
-                            </div>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-sm font-medium text-green-100">Lunas Hari Ini</h3>
-                            <p class="text-3xl font-bold text-white">{{ $statusCountsHariIni['lunas'] ?? 0 }}</p>
-                            <p class="text-sm text-green-200 flex items-center mt-1">
-                                <i class="ti ti-circle-check text-lg mr-1"></i>
-                                dari {{ $pembelianHariIni ?? 0 }} transaksi
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div
-                class="relative bg-gradient-to-br from-yellow-500 via-yellow-600 to-yellow-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
-                <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-                <div class="relative p-6">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div
-                                class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                <i class="ti ti-clock text-2xl text-white"></i>
-                            </div>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-sm font-medium text-yellow-100">Belum Bayar</h3>
-                            <p class="text-3xl font-bold text-white">{{ $statusCountsHariIni['belum_bayar'] ?? 0 }}</p>
-                            <p class="text-sm text-yellow-200 flex items-center mt-1">
-                                <i class="ti ti-alert-circle text-lg mr-1"></i>
-                                perlu tindak lanjut
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div
-                class="relative bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden">
-                <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-                <div class="relative p-6">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div
-                                class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                <i class="ti ti-cash text-2xl text-white"></i>
-                            </div>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-sm font-medium text-purple-100">Jenis Transaksi</h3>
-                            <div class="flex items-center space-x-3 mt-2">
-                                <div class="text-center">
-                                    <p class="text-lg font-bold text-white">
-                                        {{ $jenisTransaksiCountsHariIni['tunai'] ?? 0 }}</p>
-                                    <p class="text-xs text-purple-200">Tunai</p>
-                                </div>
-                                <div class="text-center">
-                                    <p class="text-lg font-bold text-white">
-                                        {{ $jenisTransaksiCountsHariIni['kredit'] ?? 0 }}</p>
-                                    <p class="text-xs text-purple-200">Kredit</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <form method="GET" action="{{ route('pembelian.index') }}"
                 class="space-y-4 lg:space-y-0 lg:flex lg:items-end lg:space-x-4">
                 <div class="flex-1">
@@ -314,120 +238,81 @@
         </div>
 
         <!-- Desktop Table View -->
-        <div class="hidden md:block bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div class="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
+                    <thead class="bg-gray-50">
                         <tr>
-                            <th scope="col"
-                                class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                <div class="flex items-center justify-center space-x-2">
-                                    <i class="ti ti-hash text-orange-600"></i>
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pl-4">
+                                <div class="flex items-center gap-1.5">
+                                    <i class="ti ti-hash text-blue-600"></i>
                                     <span>No</span>
                                 </div>
                             </th>
-                            <th scope="col"
-                                class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                <div class="flex items-center space-x-2">
-                                    <i class="ti ti-receipt text-orange-600"></i>
-                                    <span>Faktur & User</span>
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                <div class="flex items-center gap-1.5">
+                                    <i class="ti ti-calendar text-blue-600"></i>
+                                    <span>Tanggal</span>
                                 </div>
                             </th>
-                            <th scope="col"
-                                class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                <div class="flex items-center space-x-2">
-                                    <i class="ti ti-calendar text-orange-600"></i>
-                                    <span>Tanggal & Waktu</span>
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                <div class="flex items-center gap-1.5">
+                                    <i class="ti ti-receipt text-blue-600"></i>
+                                    <span>Faktur</span>
                                 </div>
                             </th>
-                            <th scope="col"
-                                class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                <div class="flex items-center space-x-2">
-                                    <i class="ti ti-building-store text-orange-600"></i>
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                <div class="flex items-center gap-1.5">
+                                    <i class="ti ti-building-store text-blue-600"></i>
                                     <span>Supplier</span>
                                 </div>
                             </th>
-                            <th scope="col"
-                                class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                <div class="flex items-center justify-center space-x-2">
-                                    <i class="ti ti-shopping-bag text-orange-600"></i>
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <i class="ti ti-shopping-bag text-blue-600"></i>
                                     <span>Items</span>
                                 </div>
                             </th>
-                            <th scope="col"
-                                class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                <div class="flex items-center justify-end space-x-2">
-                                    <i class="ti ti-currency-dollar text-orange-600"></i>
+                            <th scope="col" class="px-3 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                <div class="flex items-center justify-end gap-1.5">
+                                    <i class="ti ti-currency-dollar text-blue-600"></i>
                                     <span>Total</span>
                                 </div>
                             </th>
-                            <th scope="col"
-                                class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                <div class="flex items-center justify-center space-x-2">
-                                    <i class="ti ti-credit-card text-orange-600"></i>
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <i class="ti ti-credit-card text-blue-600"></i>
                                     <span>Status</span>
                                 </div>
                             </th>
-                            <th scope="col"
-                                class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                <div class="flex items-center justify-center space-x-2">
-                                    <i class="ti ti-cash text-orange-600"></i>
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <i class="ti ti-cash text-blue-600"></i>
                                     <span>Jenis</span>
                                 </div>
                             </th>
-                            <th scope="col"
-                                class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                <div class="flex items-center justify-center space-x-2">
-                                    <i class="ti ti-settings text-orange-600"></i>
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider pr-4">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <i class="ti ti-settings text-blue-600"></i>
                                     <span>Aksi</span>
                                 </div>
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="bg-white divide-y divide-gray-100">
                         @forelse ($pembelian as $item)
                             @php
                                 $statusConfig = [
-                                    'lunas' => [
-                                        'bg' => 'bg-gradient-to-r from-green-500 to-green-600',
-                                        'text' => 'text-white',
-                                        'icon' => 'ti-check-circle',
-                                        'label' => 'Lunas',
-                                    ],
-                                    'dp' => [
-                                        'bg' => 'bg-gradient-to-r from-red-500 to-red-600',
-                                        'text' => 'text-white',
-                                        'icon' => 'ti-x-circle',
-                                        'label' => 'Belum Lunas',
-                                    ],
-                                    'angsuran' => [
-                                        'bg' => 'bg-gradient-to-r from-red-500 to-red-600',
-                                        'text' => 'text-white',
-                                        'icon' => 'ti-x-circle',
-                                        'label' => 'Belum Lunas',
-                                    ],
-                                    'belum_bayar' => [
-                                        'bg' => 'bg-gradient-to-r from-red-500 to-red-600',
-                                        'text' => 'text-white',
-                                        'icon' => 'ti-x-circle',
-                                        'label' => 'Belum Lunas',
-                                    ],
+                                    'lunas' => ['bg' => 'bg-green-50 text-green-700 ring-1 ring-green-600/20', 'icon' => 'ti-circle-check', 'label' => 'Lunas'],
+                                    'dp' => ['bg' => 'bg-yellow-50 text-yellow-700 ring-1 ring-yellow-600/20', 'icon' => 'ti-clock', 'label' => 'DP'],
+                                    'angsuran' => ['bg' => 'bg-blue-50 text-blue-700 ring-1 ring-blue-600/20', 'icon' => 'ti-clock-edit', 'label' => 'Angsuran'],
+                                    'belum_bayar' => ['bg' => 'bg-red-50 text-red-700 ring-1 ring-red-600/20', 'icon' => 'ti-alert-circle', 'label' => 'Belum Bayar'],
                                 ];
                                 $config = $statusConfig[$item->status_pembayaran] ?? $statusConfig['belum_bayar'];
 
                                 $jenisConfig = [
-                                    'tunai' => [
-                                        'bg' => 'bg-gradient-to-r from-green-500 to-green-600',
-                                        'text' => 'text-white',
-                                        'icon' => 'ti-cash',
-                                        'label' => 'Tunai',
-                                    ],
-                                    'kredit' => [
-                                        'bg' => 'bg-gradient-to-r from-purple-500 to-purple-600',
-                                        'text' => 'text-white',
-                                        'icon' => 'ti-credit-card',
-                                        'label' => 'Kredit',
-                                    ],
+                                    'tunai' => ['bg' => 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20', 'icon' => 'ti-cash', 'label' => 'Tunai'],
+                                    'kredit' => ['bg' => 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-600/20', 'icon' => 'ti-credit-card', 'label' => 'Kredit'],
                                 ];
                                 $jenisTransaksiConfig = $jenisConfig[$item->jenis_transaksi] ?? $jenisConfig['tunai'];
 
@@ -435,120 +320,104 @@
                                 $transactionDate = \Carbon\Carbon::parse($item->created_at)->startOfDay();
                                 $isMoreThanOneDay = $today->diffInDays($transactionDate) > 1;
                             @endphp
-                            <tr class="hover:bg-gray-50 transition-colors duration-200 group">
-                                <td class="px-4 py-3 whitespace-nowrap text-center">
-                                    <div class="flex items-center justify-center">
-                                        <div
-                                            class="w-8 h-8 bg-gradient-to-r from-gray-500 to-gray-600 rounded-lg flex items-center justify-center">
-                                            <span
-                                                class="text-white text-sm font-semibold">{{ ($pembelian->currentPage() - 1) * $pembelian->perPage() + $loop->iteration }}</span>
+                            <tr class="hover:bg-gray-50/80 transition-colors duration-200">
+                                <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500 pl-4">
+                                    {{ ($pembelian->currentPage() - 1) * $pembelian->perPage() + $loop->iteration }}
+                                </td>
+                                <td class="px-3 py-3 whitespace-nowrap">
+                                    <div class="flex items-center gap-2">
+                                        <i class="ti ti-calendar text-blue-600 text-lg"></i>
+                                        <div class="flex flex-col">
+                                            <span class="text-sm font-medium text-gray-900">{{ $item->tanggal->format('d/m/Y') }}</span>
+                                            <span class="text-xs text-gray-500">{{ $item->created_at->format('H:i') }}</span>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap">
-                                    <div class="flex items-center space-x-3">
-                                        <div
-                                            class="w-8 h-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
-                                            <i class="ti ti-receipt text-white text-sm"></i>
+                                <td class="px-3 py-3 whitespace-nowrap">
+                                    <div class="flex items-center gap-3">
+                                        <div class="h-9 w-9 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600 flex-shrink-0">
+                                            <i class="ti ti-receipt"></i>
                                         </div>
-                                        <div>
-                                            <div class="text-sm font-semibold text-gray-900">{{ $item->no_faktur }}</div>
-                                            <div class="text-xs text-gray-500">{{ $item->user->name ?? 'N/A' }}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3 whitespace-nowrap">
-                                    <div class="flex items-center space-x-3">
-                                        <div
-                                            class="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                                            <i class="ti ti-calendar text-white text-sm"></i>
-                                        </div>
-                                        <div>
-                                            <div class="text-sm font-medium text-gray-900">
-                                                {{ $item->tanggal->format('d M Y') }}</div>
-                                            <div class="text-xs text-gray-500">{{ $item->created_at->format('H:i') }}
-                                            </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-sm font-bold text-gray-900">{{ $item->no_faktur }}</span>
+                                            <span class="text-xs text-gray-500 flex items-center gap-1">
+                                                <i class="ti ti-user text-[10px]"></i> {{ $item->user->name ?? '-' }}
+                                            </span>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap">
-                                    <div class="flex items-center space-x-3">
-                                        <div
-                                            class="w-8 h-8 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
-                                            <i class="ti ti-building-store text-white text-sm"></i>
+                                <td class="px-3 py-3 whitespace-nowrap">
+                                    <div class="flex items-center gap-3">
+                                        <div class="h-9 w-9 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 flex-shrink-0">
+                                            <i class="ti ti-building-store"></i>
                                         </div>
-                                        <div>
-                                            <div class="text-sm font-medium text-gray-900">
-                                                {{ $item->supplier->nama ?? 'N/A' }}</div>
-                                            <div class="text-xs text-gray-500">
-                                                {{ $item->supplier->kode_supplier ?? 'N/A' }}</div>
+                                        <div class="flex flex-col">
+                                            <span class="text-sm font-medium text-gray-900 uppercase">{{ $item->supplier->nama ?? '-' }}</span>
+                                            @if($item->supplier->kode_supplier)
+                                                <span class="text-xs text-gray-500">{{ $item->supplier->kode_supplier }}</span>
+                                            @endif
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap text-center">
-                                    <div
-                                        class="inline-flex items-center px-3 py-2 rounded-lg bg-orange-50 text-orange-700">
-                                        <i class="ti ti-shopping-bag text-sm mr-2"></i>
-                                        <span class="text-sm font-semibold">{{ $item->detailPembelian->count() }}</span>
-                                        <span class="text-xs ml-1">item</span>
-                                    </div>
+                                <td class="px-3 py-3 whitespace-nowrap text-center text-sm text-gray-600">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-orange-50 text-orange-700 border border-orange-100">
+                                        <i class="ti ti-shopping-bag mr-1.5"></i>
+                                        {{ $item->detailPembelian->count() }} item
+                                    </span>
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap text-right">
-                                    <div class="text-lg font-bold text-gray-900">Rp
-                                        {{ number_format($item->total, 0, ',', '.') }}</div>
+                                <td class="px-3 py-3 whitespace-nowrap text-right">
+                                    <span class="text-sm font-bold text-gray-900">
+                                        Rp {{ number_format($item->total, 0, ',', '.') }}
+                                    </span>
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap text-center">
-                                    <span
-                                        class="inline-flex items-center px-3 py-2 rounded-full text-xs font-medium {{ $config['bg'] }} {{ $config['text'] }} shadow-sm">
-                                        <i class="ti {{ $config['icon'] }} text-xs mr-1"></i>
+                                <td class="px-3 py-3 whitespace-nowrap text-center">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $config['bg'] }}">
+                                        <i class="ti {{ $config['icon'] }} mr-1"></i>
                                         {{ $config['label'] }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap text-center">
-                                    <span
-                                        class="inline-flex items-center px-3 py-2 rounded-full text-xs font-medium {{ $jenisTransaksiConfig['bg'] }} {{ $jenisTransaksiConfig['text'] }} shadow-sm">
-                                        <i class="ti {{ $jenisTransaksiConfig['icon'] }} text-xs mr-1"></i>
+                                <td class="px-3 py-3 whitespace-nowrap text-center">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $jenisTransaksiConfig['bg'] }}">
+                                        <i class="ti {{ $jenisTransaksiConfig['icon'] }} mr-1"></i>
                                         {{ $jenisTransaksiConfig['label'] }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap text-center">
-                                    <div class="flex items-center justify-center space-x-2">
-                                        <a href="{{ route('pembelian.show', $item->encrypted_id) }}"
-                                            class="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition-all duration-200">
-                                            <i class="ti ti-eye text-sm"></i>
+                                <td class="px-3 py-3 whitespace-nowrap text-center pr-4">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <a href="{{ route('pembelian.show', $item->encrypted_id) }}" 
+                                           class="p-1.5 rounded-lg text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 transition-all shadow-sm"
+                                           title="Lihat Detail">
+                                            <i class="ti ti-eye"></i>
                                         </a>
 
-                                        {{-- Edit button hidden --}}
-                                        {{-- @if (!$isMoreThanOneDay)
-                                            <a href="{{ route('pembelian.edit', $item->encrypted_id) }}"
-                                                class="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-emerald-600 hover:to-emerald-700 transform hover:scale-105 transition-all duration-200"
-                                                title="Edit Pembelian">
-                                                <i class="ti ti-edit text-sm"></i>
+                                        @if (!$isMoreThanOneDay)
+                                        {{-- 
+                                            <a href="{{ route('pembelian.edit', $item->encrypted_id) }}" 
+                                               class="p-1.5 rounded-lg text-amber-600 bg-amber-50 hover:bg-amber-100 hover:text-amber-700 transition-all shadow-sm"
+                                               title="Edit">
+                                                <i class="ti ti-edit"></i>
                                             </a>
-                                        @else
-                                            <button type="button" disabled
-                                                class="inline-flex items-center justify-center w-8 h-8 bg-gray-400 text-white rounded-lg cursor-not-allowed"
-                                                title="Tidak dapat diedit setelah H+1">
-                                                <i class="ti ti-edit text-sm"></i>
-                                            </button>
-                                        @endif --}}
+                                        --}}
+                                        @endif
 
-                                        <button type="button"
-                                            onclick="confirmDelete('{{ $item->encrypted_id }}', '{{ $item->no_faktur }}')"
-                                            class="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-red-600 hover:to-red-700 transform hover:scale-105 transition-all duration-200"
-                                            title="Hapus Pembelian">
-                                            <i class="ti ti-trash text-sm"></i>
+                                        <button type="button" 
+                                                onclick="confirmDelete('{{ $item->encrypted_id }}', '{{ $item->no_faktur }}')"
+                                                class="p-1.5 rounded-lg text-red-600 bg-red-50 hover:bg-red-100 hover:text-red-700 transition-all shadow-sm"
+                                                title="Hapus">
+                                            <i class="ti ti-trash"></i>
                                         </button>
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="px-6 py-12 text-center">
-                                    <div class="text-gray-500">
-                                        <i class="ti ti-shopping-cart-off text-5xl mx-auto mb-4 text-gray-400"></i>
-                                        <p class="text-lg font-medium">Tidak ada transaksi ditemukan</p>
-                                        <p class="text-sm">Coba ubah filter pencarian atau buat transaksi baru</p>
+                                <td colspan="9" class="px-6 py-12 text-center text-gray-500">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                            <i class="ti ti-shopping-cart-off text-3xl text-gray-400"></i>
+                                        </div>
+                                        <p class="text-base font-medium text-gray-900">Tidak ada transaksi ditemukan</p>
+                                        <p class="text-sm text-gray-500 mt-1">Coba sesuaikan filter atau buat pembelian baru.</p>
                                     </div>
                                 </td>
                             </tr>

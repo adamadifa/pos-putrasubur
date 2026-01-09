@@ -305,6 +305,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [LaporanPembayaranController::class, 'index'])->name('index');
             Route::post('/generate', [LaporanPembayaranController::class, 'index'])->name('generate');
             Route::post('/export-pdf', [LaporanPembayaranController::class, 'exportPdf'])->name('export-pdf');
+            Route::get('/print', [LaporanPembayaranController::class, 'exportPdf'])->name('print');
         });
 
         Route::prefix('hutang')->name('hutang.')->group(function () {

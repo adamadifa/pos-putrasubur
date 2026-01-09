@@ -282,54 +282,101 @@
 
         <!-- Desktop Table View -->
         <div class="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <!-- Table Header -->
+            <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2 bg-orange-50 rounded-lg">
+                            <i class="ti ti-receipt text-xl text-orange-600"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">Daftar Uang Muka</h3>
+                            <p class="text-sm text-gray-500">Menampilkan {{ $uangMuka->count() }} dari
+                                {{ $uangMuka->total() }} data</p>
+                        </div>
+                    </div>
+
+                    <!-- Table Actions -->
+                    <div class="flex items-center space-x-3">
+                        <!-- View Options -->
+                        <div class="flex bg-gray-100 rounded-lg p-1">
+                            <button class="px-3 py-1.5 bg-white text-gray-900 rounded-md shadow-sm text-sm font-medium">
+                                <i class="ti ti-table text-lg inline mr-1"></i>
+                                Tabel
+                            </button>
+                            <button
+                                class="px-3 py-1.5 text-gray-600 rounded-md text-sm font-medium hover:bg-white hover:text-gray-900 transition-all">
+                                <i class="ti ti-layout-grid text-lg inline mr-1"></i>
+                                Grid
+                            </button>
+                        </div>
+
+                        <!-- Export & Print -->
+                        <div class="flex items-center space-x-2">
+                            <button
+                                class="p-2.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"
+                                title="Export Excel">
+                                <i class="ti ti-download text-lg"></i>
+                            </button>
+                            <button
+                                class="p-2.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                title="Print">
+                                <i class="ti ti-printer text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compact Table -->
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gradient-to-r from-orange-50 to-red-50">
+                    <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider pl-6">
                                 <div class="flex items-center space-x-2">
                                     <i class="ti ti-receipt text-orange-600"></i>
                                     <span>No. Uang Muka</span>
                                 </div>
                             </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                 <div class="flex items-center space-x-2">
                                     <i class="ti ti-user text-orange-600"></i>
                                     <span>Pelanggan</span>
                                 </div>
                             </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                 <div class="flex items-center space-x-2">
                                     <i class="ti ti-calendar text-orange-600"></i>
                                     <span>Tanggal</span>
                                 </div>
                             </th>
-                            <th class="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            <th scope="col" class="px-3 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                 <div class="flex items-center justify-end space-x-2">
                                     <i class="ti ti-currency-dollar text-orange-600"></i>
                                     <span>Jumlah</span>
                                 </div>
                             </th>
-                            <th class="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            <th scope="col" class="px-3 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                 <div class="flex items-center justify-end space-x-2">
                                     <i class="ti ti-arrow-down text-red-500"></i>
                                     <span>Digunakan</span>
                                 </div>
                             </th>
-                            <th class="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            <th scope="col" class="px-3 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                 <div class="flex items-center justify-end space-x-2">
                                     <i class="ti ti-arrow-up text-green-500"></i>
                                     <span>Sisa</span>
                                 </div>
                             </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                <div class="flex items-center space-x-2">
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                <div class="flex items-center justify-center space-x-2">
                                     <i class="ti ti-info-circle text-orange-600"></i>
                                     <span>Status</span>
                                 </div>
                             </th>
-                            <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                <div class="flex items-center justify-center space-x-2">
+                            <th scope="col" class="px-3 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider pr-6">
+                                <div class="flex items-center justify-end space-x-2">
                                     <i class="ti ti-settings text-orange-600"></i>
                                     <span>Aksi</span>
                                 </div>
@@ -338,85 +385,101 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-100">
                         @forelse ($uangMuka as $um)
-                            <tr class="hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-red-50/50 transition-all duration-200 group">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center space-x-2">
-                                        <div class="w-2 h-2 rounded-full bg-orange-500 group-hover:bg-orange-600 transition-colors"></div>
-                                        <div class="text-sm font-semibold text-gray-900">{{ $um->no_uang_muka }}</div>
+                            <tr class="hover:bg-gray-50/80 transition-colors group">
+                                <!-- No Uang Muka -->
+                                <td class="px-3 py-3 whitespace-nowrap pl-6">
+                                    <div class="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                                        {{ $um->no_uang_muka }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center space-x-2">
-                                        <div class="w-8 h-8 bg-gradient-to-br from-orange-100 to-red-100 rounded-lg flex items-center justify-center">
-                                            <i class="ti ti-user text-orange-600 text-sm"></i>
+
+                                <!-- Pelanggan -->
+                                <td class="px-3 py-3 whitespace-nowrap">
+                                    <div class="flex items-center gap-3">
+                                        <div class="h-8 w-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600 flex-shrink-0">
+                                            <i class="ti ti-user text-sm"></i>
                                         </div>
                                         <div>
-                                            <div class="text-sm font-medium text-gray-900">{{ $um->pelanggan->nama ?? '-' }}</div>
+                                            <div class="text-sm font-bold text-gray-900 uppercase">{{ $um->pelanggan->nama ?? '-' }}</div>
                                             @if($um->pelanggan && $um->pelanggan->kode_pelanggan)
-                                                <div class="text-xs text-gray-500">{{ $um->pelanggan->kode_pelanggan }}</div>
+                                                <div class="text-[10px] text-gray-500 font-mono">{{ $um->pelanggan->kode_pelanggan }}</div>
                                             @endif
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+
+                                <!-- Tanggal -->
+                                <td class="px-3 py-3 whitespace-nowrap">
                                     <div class="flex items-center space-x-2">
                                         <i class="ti ti-calendar text-gray-400 text-sm"></i>
                                         <div class="text-sm text-gray-700">{{ $um->tanggal->format('d/m/Y') }}</div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right">
-                                    <div class="text-sm font-semibold text-gray-900">Rp {{ number_format($um->jumlah_uang_muka, 0, ',', '.') }}</div>
+
+                                <!-- Jumlah -->
+                                <td class="px-3 py-3 whitespace-nowrap text-right">
+                                    <div class="text-sm font-bold text-gray-900">Rp {{ number_format($um->jumlah_uang_muka, 0, ',', '.') }}</div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right">
-                                    <div class="inline-flex items-center space-x-1 px-2 py-1 rounded-md bg-red-50">
-                                        <i class="ti ti-arrow-down text-red-500 text-xs"></i>
-                                        <span class="text-sm font-medium text-red-700">Rp {{ number_format($um->penggunaan_penjualan_sum_jumlah_digunakan ?? 0, 0, ',', '.') }}</span>
+
+                                <!-- Digunakan -->
+                                <td class="px-3 py-3 whitespace-nowrap text-right">
+                                    <div class="flex items-center justify-end gap-1 text-red-600">
+                                        <i class="ti ti-arrow-down text-xs"></i>
+                                        <span class="text-sm font-medium">Rp {{ number_format($um->penggunaan_penjualan_sum_jumlah_digunakan ?? 0, 0, ',', '.') }}</span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right">
-                                    <div class="inline-flex items-center space-x-1 px-2 py-1 rounded-md bg-green-50">
-                                        <i class="ti ti-arrow-up text-green-500 text-xs"></i>
-                                        <span class="text-sm font-semibold text-green-700">Rp {{ number_format($um->sisa_uang_muka, 0, ',', '.') }}</span>
+
+                                <!-- Sisa -->
+                                <td class="px-3 py-3 whitespace-nowrap text-right">
+                                    <div class="flex items-center justify-end gap-1 text-green-600">
+                                        <i class="ti ti-arrow-up text-xs"></i>
+                                        <span class="text-sm font-bold">Rp {{ number_format($um->sisa_uang_muka, 0, ',', '.') }}</span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @if ($um->status == 'aktif')
-                                        <span
-                                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200">
-                                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full mr-2 animate-pulse"></span>
-                                            Aktif
-                                        </span>
-                                    @elseif ($um->status == 'habis')
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border border-gray-200">
-                                            <i class="ti ti-check text-xs mr-1.5"></i>
-                                            Habis
-                                        </span>
-                                    @else
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border border-red-200">
-                                            <i class="ti ti-x text-xs mr-1.5"></i>
-                                            Dibatalkan
-                                        </span>
-                                    @endif
+
+                                <!-- Status -->
+                                <td class="px-3 py-3 whitespace-nowrap text-center">
+                                    @php
+                                        $statusClass = match ($um->status) {
+                                            'habis' => 'bg-gray-50 text-gray-700 border-gray-100',
+                                            'dibatalkan' => 'bg-red-50 text-red-700 border-red-100',
+                                            'aktif' => 'bg-emerald-50 text-emerald-700 border-emerald-100',
+                                            default => 'bg-gray-50 text-gray-700 border-gray-100',
+                                        };
+                                        $statusLabel = match ($um->status) {
+                                            'habis' => 'Habis',
+                                            'dibatalkan' => 'Dibatalkan',
+                                            'aktif' => 'Aktif',
+                                            default => ucfirst($um->status),
+                                        };
+                                    @endphp
+                                    <span class="px-2.5 py-1 inline-flex text-[10px] uppercase font-bold tracking-wide rounded-md border {{ $statusClass }}">
+                                        {{ $statusLabel }}
+                                    </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    <div class="flex items-center justify-center space-x-1">
-                                        <a href="{{ route('uang-muka-pelanggan.show', $um->encrypted_id) }}"
-                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 transition-all duration-200"
-                                            title="Detail">
-                                            <i class="ti ti-eye text-base"></i>
+
+                                <!-- Aksi -->
+                                <td class="px-3 py-3 whitespace-nowrap text-right pr-6">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="{{ route('uang-muka-pelanggan.show', $um->encrypted_id) }}" 
+                                           class="p-1.5 rounded-lg text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 transition-all font-medium"
+                                           title="Detail">
+                                            <i class="ti ti-eye"></i>
                                         </a>
+
                                         @if ($um->status == 'aktif' && (!$um->penggunaan_penjualan_sum_jumlah_digunakan || $um->penggunaan_penjualan_sum_jumlah_digunakan == 0))
                                             <form action="{{ route('uang-muka-pelanggan.cancel', $um->encrypted_id) }}" method="POST" class="inline"
                                                 onsubmit="return confirm('Apakah Anda yakin ingin membatalkan uang muka ini?');">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" 
-                                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-orange-50 text-orange-600 hover:bg-orange-100 hover:text-orange-700 transition-all duration-200"
-                                                    title="Batalkan">
-                                                    <i class="ti ti-x text-base"></i>
+                                                        class="p-1.5 rounded-lg text-orange-600 bg-orange-50 hover:bg-orange-100 hover:text-orange-700 transition-all font-medium"
+                                                        title="Batalkan">
+                                                    <i class="ti ti-x"></i>
                                                 </button>
                                             </form>
                                         @endif
+
                                         @if (!$um->penggunaan_penjualan_sum_jumlah_digunakan || $um->penggunaan_penjualan_sum_jumlah_digunakan == 0)
                                             <form action="{{ route('uang-muka-pelanggan.destroy', $um->encrypted_id) }}"
                                                 method="POST" class="inline"
@@ -424,9 +487,9 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" 
-                                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-all duration-200"
-                                                    title="Hapus">
-                                                    <i class="ti ti-trash text-base"></i>
+                                                        class="p-1.5 rounded-lg text-red-600 bg-red-50 hover:bg-red-100 hover:text-red-700 transition-all font-medium"
+                                                        title="Hapus">
+                                                    <i class="ti ti-trash"></i>
                                                 </button>
                                             </form>
                                         @endif
@@ -435,12 +498,12 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="px-6 py-16 text-center">
-                                    <div class="flex flex-col items-center justify-center text-gray-400">
-                                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                                            <i class="ti ti-inbox text-3xl"></i>
+                                <td colspan="8" class="px-6 py-12 text-center text-gray-500 bg-gray-50/50">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <div class="p-3 bg-gray-100 rounded-full mb-3">
+                                            <i class="ti ti-inbox text-2xl text-gray-400"></i>
                                         </div>
-                                        <p class="text-sm font-medium text-gray-500">Tidak ada data uang muka pelanggan</p>
+                                        <p class="text-sm font-medium">Tidak ada data uang muka pelanggan</p>
                                         <p class="text-xs text-gray-400 mt-1">Klik tombol "Uang Muka Baru" untuk menambahkan data</p>
                                     </div>
                                 </td>
@@ -452,7 +515,7 @@
 
             <!-- Pagination -->
             @if ($uangMuka->hasPages())
-                <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                <div class="px-4 py-3 border-t border-gray-100 bg-gray-50">
                     {{ $uangMuka->links() }}
                 </div>
             @endif

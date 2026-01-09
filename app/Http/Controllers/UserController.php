@@ -16,7 +16,14 @@ class UserController extends Controller
     public function index()
     {
         $users = User::latest()->paginate(10);
-        return view('users.index', compact('users'));
+        
+        // Statistics
+        $totalUsers = User::count();
+        $totalAdmin = User::where('role', 'admin')->count();
+        $totalKasir = User::where('role', 'kasir')->count();
+        $totalManager = User::where('role', 'manager')->count();
+
+        return view('users.index', compact('users', 'totalUsers', 'totalAdmin', 'totalKasir', 'totalManager'));
     }
 
     /**
@@ -55,7 +62,7 @@ class UserController extends Controller
     public function show($encryptedId)
     {
         try {
-            $id = Crypt::decrypt($encryptedId);
+            $id = Crypt::decryptString($encryptedId);
             $user = User::findOrFail($id);
             return view('users.show', compact('user'));
         } catch (\Exception $e) {
@@ -69,7 +76,7 @@ class UserController extends Controller
     public function edit($encryptedId)
     {
         try {
-            $id = Crypt::decrypt($encryptedId);
+            $id = Crypt::decryptString($encryptedId);
             $user = User::findOrFail($id);
             return view('users.edit', compact('user'));
         } catch (\Exception $e) {
@@ -83,7 +90,7 @@ class UserController extends Controller
     public function update(Request $request, $encryptedId)
     {
         try {
-            $id = Crypt::decrypt($encryptedId);
+            $id = Crypt::decryptString($encryptedId);
             $user = User::findOrFail($id);
 
             $request->validate([
@@ -117,7 +124,7 @@ class UserController extends Controller
     public function destroy($encryptedId)
     {
         try {
-            $id = Crypt::decrypt($encryptedId);
+            $id = Crypt::decryptString($encryptedId);
             $user = User::findOrFail($id);
 
             // Prevent deleting current user

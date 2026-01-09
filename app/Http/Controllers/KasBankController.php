@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Crypt;
 use Exception;
 
 class KasBankController extends Controller
@@ -36,7 +37,12 @@ class KasBankController extends Controller
 
         $kasBank = $query->paginate(10)->withQueryString();
 
-        return view('kas-bank.index', compact('kasBank'));
+        // Statistics
+        $totalSaldo = KasBank::sum('saldo_terkini');
+        $totalKas = KasBank::where('jenis', 'KAS')->count();
+        $totalBank = KasBank::where('jenis', 'BANK')->count();
+
+        return view('kas-bank.index', compact('kasBank', 'totalSaldo', 'totalKas', 'totalBank'));
     }
 
     /**
@@ -92,24 +98,36 @@ class KasBankController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(KasBank $kasBank): View
+    /**
+     * Display the specified resource.
+     */
+    public function show($id): View
     {
+        $kasBank = KasBank::findOrFail(Crypt::decryptString($id));
         return view('kas-bank.show', compact('kasBank'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(KasBank $kasBank): View
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id): View
     {
+        $kasBank = KasBank::findOrFail(Crypt::decryptString($id));
         return view('kas-bank.edit', compact('kasBank'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, KasBank $kasBank): RedirectResponse
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, $id): RedirectResponse
     {
+        $kasBank = KasBank::findOrFail(Crypt::decryptString($id));
         $rules = KasBank::$updateRules;
         $rules['kode'] = 'required|string|max:20|unique:kas_bank,kode,' . $kasBank->id;
 
@@ -160,9 +178,13 @@ class KasBankController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(KasBank $kasBank): RedirectResponse
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy($id): RedirectResponse
     {
         try {
+            $kasBank = KasBank::findOrFail(Crypt::decryptString($id));
             // Delete image if exists
             if ($kasBank->image && Storage::disk('public')->exists($kasBank->image)) {
                 Storage::disk('public')->delete($kasBank->image);

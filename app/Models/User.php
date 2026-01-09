@@ -13,6 +13,14 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     /**
+     * Get the encrypted ID.
+     */
+    public function getEncryptedIdAttribute()
+    {
+        return \Illuminate\Support\Facades\Crypt::encryptString($this->id);
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>

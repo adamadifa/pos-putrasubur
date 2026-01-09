@@ -1,366 +1,315 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Pembelian</title>
+    <title>Laporan Pembelian - Toko Putra Subur</title>
     <style>
+        @page {
+            margin: 0;
+            size: A4 landscape;
+        }
+        
         body {
-            font-family: 'Arial', sans-serif;
-            font-size: 12px;
-            line-height: 1.4;
-            color: #333;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 10pt;
+            line-height: 1.3;
+            color: #000;
+            background: #525659; /* Preview background */
             margin: 0;
-            padding: 20px;
+            padding: 20px 0;
         }
 
-        .header {
+        .sheet {
+            background: white;
+            width: 297mm; /* A4 Landscape width */
+            min-height: 210mm; /* A4 Landscape height */
+            margin: auto;
+            padding: 1.5cm;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* Header / Letterhead */
+        .page-header {
             text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 20px;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 24px;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-
-        .header h2 {
-            margin: 5px 0 0 0;
-            font-size: 18px;
-            color: #7f8c8d;
-        }
-
-        .info-section {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .info-card {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            flex: 1;
-            min-width: 200px;
-            margin-right: 10px;
-        }
-
-        .info-card:last-child {
-            margin-right: 0;
-        }
-
-        .info-card h3 {
-            margin: 0 0 10px 0;
-            font-size: 14px;
-            font-weight: bold;
-            color: #495057;
-            border-bottom: 1px solid #dee2e6;
-            padding-bottom: 5px;
-        }
-
-        .info-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-        }
-
-        .info-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .info-label {
-            font-weight: 600;
-            color: #6c757d;
-        }
-
-        .info-value {
-            color: #495057;
-        }
-
-        .summary-section {
-            margin-bottom: 30px;
-        }
-
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            border-bottom: 3px double #000;
+            padding-bottom: 10px;
             margin-bottom: 20px;
         }
 
-        .summary-card {
-            background-color: #e3f2fd;
-            border: 1px solid #bbdefb;
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-        }
-
-        .summary-card h4 {
-            margin: 0 0 8px 0;
-            font-size: 12px;
+        .page-header h1 {
+            font-size: 16pt;
             font-weight: bold;
-            color: #1976d2;
             text-transform: uppercase;
+            margin: 0;
+            letter-spacing: 1px;
         }
 
-        .summary-value {
-            font-size: 18px;
+        .page-header p {
+            font-size: 10pt;
+            margin: 2px 0;
+        }
+
+        /* Report Meta */
+        .report-title {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .report-title h2 {
+            font-size: 14pt;
             font-weight: bold;
-            color: #0d47a1;
+            text-transform: uppercase;
+            margin: 0 0 5px 0;
+            text-decoration: underline;
         }
 
-        .transactions-table {
+        .report-meta {
+            width: 100%;
+            margin-bottom: 15px;
+            font-size: 10pt;
+        }
+
+        .report-meta td {
+            padding: 2px 0;
+            vertical-align: top;
+        }
+
+        /* Tables */
+        table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 30px;
-            font-size: 10px;
+            font-size: 9pt;
+            margin-bottom: 20px;
         }
 
-        .transactions-table th,
-        .transactions-table td {
-            border: 1px solid #dee2e6;
-            padding: 6px;
-            text-align: left;
+        th, td {
+            border: 1px solid #000;
+            padding: 6px 8px;
+            vertical-align: middle;
         }
 
-        .transactions-table th {
-            background-color: #f8f9fa;
+        th {
+            background-color: #f0f0f0;
             font-weight: bold;
-            color: #495057;
             text-align: center;
+            text-transform: uppercase;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
 
-        .transactions-table .text-right {
-            text-align: right;
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-bold { font-weight: bold; }
+        
+        /* Summary Section */
+        .summary-container {
+            width: 40%;
+            margin-left: auto;
+            margin-bottom: 40px;
+            page-break-inside: avoid;
         }
-
-        .transactions-table .text-center {
-            text-align: center;
-        }
-
-        .summary-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            font-size: 12px;
-        }
-
-        .summary-table th,
+        
         .summary-table td {
-            border: 1px solid #dee2e6;
-            padding: 10px;
-            text-align: left;
-        }
-
-        .summary-table th {
-            background-color: #343a40;
-            color: white;
-            font-weight: bold;
-            text-align: center;
-        }
-
-        .summary-table .text-right {
-            text-align: right;
-        }
-
-        .summary-table .text-center {
-            text-align: center;
-        }
-
-        .text-right {
-            text-align: right;
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
-        .status-badge {
-            display: inline-block;
             padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 10px;
+        }
+
+        /* Signatures */
+        .signature-section {
+            display: table;
+            width: 100%;
+            margin-top: 50px;
+            page-break-inside: avoid;
+        }
+
+        .signature-box {
+            display: table-cell;
+            width: 33%;
+            text-align: center;
+            vertical-align: top;
+        }
+
+        .signature-space {
+            height: 70px;
+        }
+
+        .signature-name {
             font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .status-lunas {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .status-belum-lunas {
-            background-color: #f8d7da;
-            color: #721c24;
+            text-decoration: underline;
         }
 
         .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #dee2e6;
-            text-align: center;
-            color: #6c757d;
-            font-size: 10px;
+            margin-top: 30px;
+            font-size: 8pt;
+            text-align: right;
+            font-style: italic;
+            border-top: 1px solid #ccc;
+            padding-top: 5px;
         }
 
-        .page-break {
-            page-break-before: always;
-        }
-
+        /* Print Specifics */
         @media print {
-            body {
+            body { 
+                background: none;
                 margin: 0;
-                padding: 15px;
+                padding: 0;
             }
-
-            .page-break {
-                page-break-before: always;
+            .sheet {
+                box-shadow: none;
+                width: 100%;
+                margin: 0;
+                padding: 0; /* Let @page handle margins if supported, or use body padding */
+            }
+            @page {
+                size: A4 landscape;
+                margin: 1cm;
             }
         }
     </style>
 </head>
-
 <body>
-    <!-- Header -->
-    <div class="header">
-        <h1>LAPORAN PEMBELIAN</h1>
-    </div>
-
-
-
-
-
-    <!-- Detail Transaksi -->
-    <h3>Detail Transaksi Pembelian</h3>
-    @if ($laporanData['pembelian']->count() > 0)
-        <table class="transactions-table">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Tanggal</th>
-                    <th>No. Faktur</th>
-                    <th>Supplier</th>
-                    <th>Jenis</th>
-                    <th>Status</th>
-                    <th>Produk</th>
-                    <th>Qty</th>
-                    <th>Harga</th>
-                    <th>Diskon</th>
-                    <th>Subtotal</th>
-                    <th>Diskon Faktur</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($laporanData['pembelian'] as $index => $pembelian)
-                    @if ($pembelian->detailPembelian->count() > 0)
-                        @foreach ($pembelian->detailPembelian as $detailIndex => $detail)
-                            <tr>
-                                @if ($detailIndex === 0)
-                                    <td class="text-center" rowspan="{{ $pembelian->detailPembelian->count() }}">
-                                        {{ $index + 1 }}</td>
-                                    <td rowspan="{{ $pembelian->detailPembelian->count() }}">
-                                        {{ \Carbon\Carbon::parse($pembelian->tanggal)->format('d/m/Y') }}</td>
-                                    <td rowspan="{{ $pembelian->detailPembelian->count() }}">
-                                        {{ $pembelian->no_faktur }}</td>
-                                    <td rowspan="{{ $pembelian->detailPembelian->count() }}">
-                                        {{ $pembelian->supplier->nama ?? '-' }}</td>
-                                    <td class="text-center" rowspan="{{ $pembelian->detailPembelian->count() }}">
-                                        <span class="status-badge jenis-{{ $pembelian->jenis_transaksi }}">
-                                            {{ $pembelian->jenis_transaksi == 'tunai' ? 'T' : 'K' }}
-                                        </span>
-                                    </td>
-                                    <td class="text-center" rowspan="{{ $pembelian->detailPembelian->count() }}">
-                                        <span class="status-badge status-{{ $pembelian->status_pembayaran }}">
-                                            {{ $pembelian->status_pembayaran == 'lunas' ? 'L' : 'BL' }}
-                                        </span>
-                                    </td>
-                                @endif
-                                <td>{{ $detail->produk->nama_produk ?? '-' }}</td>
-                                <td class="text-right">{{ number_format($detail->qty, 2, ',', '.') }}</td>
-                                <td class="text-right">Rp {{ number_format($detail->harga_beli, 0, ',', '.') }}</td>
-                                <td class="text-right">Rp {{ number_format($detail->discount ?? 0, 0, ',', '.') }}</td>
-                                <td class="text-right">Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td>
-                                @if ($detailIndex === 0)
-                                    <td class="text-right" rowspan="{{ $pembelian->detailPembelian->count() }}">Rp
-                                        {{ number_format($pembelian->diskon, 0, ',', '.') }}</td>
-                                    <td class="text-right" rowspan="{{ $pembelian->detailPembelian->count() }}">Rp
-                                        {{ number_format($pembelian->subtotal - $pembelian->diskon, 0, ',', '.') }}
-                                    </td>
-                                @endif
-                            </tr>
-                        @endforeach
-                    @else
-                        <tr>
-                            <td class="text-center">{{ $index + 1 }}</td>
-                            <td>{{ \Carbon\Carbon::parse($pembelian->tanggal)->format('d/m/Y') }}</td>
-                            <td>{{ $pembelian->no_faktur }}</td>
-                            <td>{{ $pembelian->supplier->nama ?? '-' }}</td>
-                            <td class="text-center">
-                                <span class="status-badge jenis-{{ $pembelian->jenis_transaksi }}">
-                                    {{ $pembelian->jenis_transaksi == 'tunai' ? 'T' : 'K' }}
-                                </span>
-                            </td>
-                            <td class="text-center">
-                                <span class="status-badge status-{{ $pembelian->status_pembayaran }}">
-                                    {{ $pembelian->status_pembayaran == 'lunas' ? 'L' : 'BL' }}
-                                </span>
-                            </td>
-                            <td colspan="5" class="text-center">-</td>
-                            <td class="text-right">Rp {{ number_format($pembelian->diskon, 0, ',', '.') }}</td>
-                            <td class="text-right">Rp
-                                {{ number_format($pembelian->subtotal - $pembelian->diskon, 0, ',', '.') }}</td>
-                        </tr>
-                    @endif
-                @endforeach
-            </tbody>
-        </table>
-    @else
-        <div class="no-data">
-            <p>Tidak ada transaksi dalam periode yang dipilih.</p>
+    <div class="sheet">
+        <!-- Letterhead -->
+        <div class="page-header">
+            <h1>TOKO PUTRA SUBUR</h1>
+            <p>Jl. Contoh No. 123, Kelurahan Contoh, Kecamatan Contoh, Kota Contoh</p>
+            <p>Telp: (021) 123-4567 | Email: info@putrasubur.com</p>
         </div>
-    @endif
 
-    <!-- Summary Total -->
-    @if ($laporanData['pembelian']->count() > 0)
-        <table class="summary-table">
-            <thead>
-                <tr>
-                    <th colspan="2">RINGKASAN TOTAL</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr class="summary-row">
-                    <td>Total Transaksi</td>
-                    <td class="text-right">{{ number_format($laporanData['summary']['total_pembelian']) }}</td>
-                </tr>
-                <tr class="summary-row">
-                    <td>Total Nilai</td>
-                    <td class="text-right">Rp {{ number_format($laporanData['summary']['total_nilai'], 0, ',', '.') }}
-                    </td>
-                </tr>
-                <tr class="summary-row">
-                    <td>Total Qty</td>
-                    <td class="text-right">{{ number_format($laporanData['summary']['total_qty'], 2, ',', '.') }}</td>
-                </tr>
-            </tbody>
+        <!-- Report Title -->
+        <div class="report-title">
+            <h2>Laporan Pembelian</h2>
+        </div>
+
+        <!-- Meta Info -->
+        <table class="report-meta" style="width: auto; border: none; margin-bottom: 20px;">
+            <tr style="border: none;">
+                <td style="border: none; width: 100px;">Periode</td>
+                <td style="border: none; width: 10px;">:</td>
+                <td style="border: none; font-weight: bold;">
+                    {{ strtoupper($laporanData['periode']['label']) }}
+                </td>
+            </tr>
+            <tr style="border: none;">
+                <td style="border: none;">Dicetak Oleh</td>
+                <td style="border: none;">:</td>
+                <td style="border: none;">{{ Auth::user()->name ?? 'Admin' }}</td>
+            </tr>
+            <tr style="border: none;">
+                <td style="border: none;">Tanggal Cetak</td>
+                <td style="border: none;">:</td>
+                <td style="border: none;">{{ date('d/m/Y H:i') }}</td>
+            </tr>
         </table>
-    @endif
 
-    <!-- Footer -->
-    <div class="footer">
-        <p>Laporan ini dibuat secara otomatis pada {{ date('d/m/Y H:i:s') }}</p>
-        <p>Sistem Point of Sale (POS) - {{ config('app.name') }}</p>
+        <!-- Data Table -->
+        @if ($laporanData['pembelian']->count() > 0)
+            <table>
+                <thead>
+                    <tr>
+                        <th width="4%">No</th>
+                        <th width="10%">Tanggal</th>
+                        <th width="12%">No. Faktur</th>
+                        <th width="15%">Supplier</th>
+                        <th width="8%">Status</th>
+                        <th width="20%">Produk</th>
+                        <th width="5%">Qty</th>
+                        <th width="12%">Harga Beli</th>
+                        <th width="14%">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($laporanData['pembelian'] as $index => $pembelian)
+                        @php 
+                             $rowCount = $pembelian->detailPembelian->count();
+                             if($rowCount == 0) $rowCount = 1;
+                        @endphp
+                        
+                        @if ($pembelian->detailPembelian->count() > 0)
+                            @foreach ($pembelian->detailPembelian as $detailIndex => $detail)
+                                <tr>
+                                    @if ($detailIndex === 0)
+                                        <td class="text-center" rowspan="{{ $rowCount }}">{{ $index + 1 }}</td>
+                                        <td class="text-center" rowspan="{{ $rowCount }}">{{ \Carbon\Carbon::parse($pembelian->tanggal)->format('d/m/Y') }}</td>
+                                        <td class="text-center" rowspan="{{ $rowCount }}">{{ $pembelian->no_faktur }}</td>
+                                        <td rowspan="{{ $rowCount }}">{{ strtoupper($pembelian->supplier->nama ?? 'SUPPLIER N/A') }}</td>
+                                        <td class="text-center" rowspan="{{ $rowCount }}">{{ strtoupper($pembelian->status_pembayaran) }}</td>
+                                    @endif
+                                    
+                                    <td>{{ strtoupper($detail->produk->nama_produk ?? 'PRODUK DIHAPUS') }}</td>
+                                    <td class="text-center">{{ fmod($detail->qty, 1) !== 0.00 ? number_format($detail->qty, 2, ',', '.') : number_format($detail->qty, 0, ',', '.') }}</td>
+                                    <td class="text-right">{{ number_format($detail->harga_beli, 0, ',', '.') }}</td>
+                                    <td class="text-right">{{ number_format($detail->subtotal, 0, ',', '.') }}</td>
+                                </tr>
+                            @endforeach
+                        @else
+                            <tr>
+                                <td class="text-center">{{ $index + 1 }}</td>
+                                <td class="text-center">{{ \Carbon\Carbon::parse($pembelian->tanggal)->format('d/m/Y') }}</td>
+                                <td class="text-center">{{ $pembelian->no_faktur }}</td>
+                                <td>{{ strtoupper($pembelian->supplier->nama ?? 'SUPPLIER N/A') }}</td>
+                                <td class="text-center">{{ strtoupper($pembelian->status_pembayaran) }}</td>
+                                <td colspan="4" class="text-center" style="font-style: italic;">Tidak ada detail item</td>
+                            </tr>
+                        @endif
+                    @endforeach
+                </tbody>
+            </table>
+
+            <!-- Summary -->
+            <div class="summary-container">
+                <table class="summary-table">
+                    <tr>
+                        <td class="text-bold" style="background-color: #f0f0f0;">Grand Total Pembelian</td>
+                        <td class="text-right text-bold" style="font-size: 11pt;">Rp {{ number_format($laporanData['summary']['total_nilai'], 0, ',', '.') }}</td>
+                    </tr>
+                    <tr>
+                        <td>Total Transaksi</td>
+                        <td class="text-right">{{ number_format($laporanData['summary']['total_pembelian']) }}</td>
+                    </tr>
+                    <tr>
+                        <td>Total Item Terbeli</td>
+                        <td class="text-right">{{ fmod($laporanData['summary']['total_qty'], 1) !== 0.00 ? number_format($laporanData['summary']['total_qty'], 2, ',', '.') : number_format($laporanData['summary']['total_qty'], 0, ',', '.') }}</td>
+                    </tr>
+                </table>
+            </div>
+
+        @else
+            <div style="text-align: center; padding: 40px; border: 1px dashed #ccc;">
+                <p>Data tidak ditemukan untuk periode ini.</p>
+            </div>
+        @endif
+
+        <!-- Signatures -->
+        <div class="signature-section">
+            <div class="signature-box">
+                <p>Mengetahui,</p>
+                <p>Manager</p>
+                <div class="signature-space"></div>
+                <p class="signature-name">( ........................................ )</p>
+            </div>
+            <div class="signature-box">
+                <!-- Space for middle signature if needed -->
+            </div>
+            <div class="signature-box">
+                <p>Dibuat Oleh,</p>
+                <p>Admin / Purchasing</p>
+                <div class="signature-space"></div>
+                <p class="signature-name">( {{ strtoupper(Auth::user()->name ?? '........................................') }} )</p>
+            </div>
+        </div>
+
+        <!-- Footer Page Info -->
+        <div class="footer">
+            Dicetak pada tanggal: {{ date('d F Y') }} oleh sistem aplikasi POS Putra Subur.
+        </div>
     </div>
+    <script>
+        window.onload = function() {
+            window.print();
+        }
+    </script>
 </body>
-
 </html>

@@ -150,12 +150,17 @@
                                 data-category="{{ $product->kategori->nama ?? '' }}">
 
                                 <!-- Product Image Placeholder -->
-                                <div
-                                    class="w-full h-20 md:h-24 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg mb-2 md:mb-3 flex items-center justify-center group-hover:from-blue-200 group-hover:to-blue-300 transition-all duration-200">
+                                <div class="w-full h-20 md:h-24 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg mb-2 md:mb-3 flex items-center justify-center group-hover:from-blue-200 group-hover:to-blue-300 transition-all duration-200 overflow-hidden relative">
                                     @if ($product->foto)
                                         <img src="{{ asset('storage/' . $product->foto) }}"
                                             alt="{{ $product->nama_produk }}"
-                                            class="w-full h-full object-cover rounded-lg">
+                                            class="w-full h-full object-cover rounded-lg absolute inset-0 z-10"
+                                            onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
+                                        
+                                        <!-- Fallback Icon (Hidden by default, shown on error) -->
+                                        <div class="hidden w-full h-full flex items-center justify-center bg-blue-50">
+                                            <i class="ti ti-package text-2xl text-blue-600"></i>
+                                        </div>
                                     @else
                                         <i class="ti ti-package text-2xl text-blue-600"></i>
                                     @endif

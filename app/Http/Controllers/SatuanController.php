@@ -90,7 +90,13 @@ class SatuanController extends Controller
         $satuan = Satuan::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'nama' => 'required|string|max:50|min:2|unique:satuan,nama,' . $id,
+            'nama' => [
+                'required',
+                'string',
+                'max:50',
+                'min:2',
+                \Illuminate\Validation\Rule::unique('satuan', 'nama')->ignore($id)
+            ],
         ], [
             'nama.required' => 'Nama satuan wajib diisi.',
             'nama.string' => 'Nama satuan harus berupa teks.',

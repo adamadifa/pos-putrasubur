@@ -251,6 +251,10 @@ class LaporanPembelianController extends Controller
 
     public function exportPdf(Request $request)
     {
+        // Increase limits for large PDF generation
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '512M');
+
         try {
             $periode = $request->input('jenis_periode');
             $bulan = $request->input('bulan');
@@ -289,19 +293,30 @@ class LaporanPembelianController extends Controller
      */
     public function print(Request $request)
     {
-        $periode = $request->input('jenis_periode', 'bulan');
-        $bulan = $request->input('bulan', date('n'));
-        $tahun = $request->input('tahun', date('Y'));
-        $tanggal_mulai = $request->input('tanggal_dari', date('01/m/Y'));
-        $tanggal_selesai = $request->input('tanggal_sampai', date('d/m/Y'));
+        // Increase limits for large PDF generation
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '512M');
 
-        if ($periode === 'bulan') {
-            $laporanData = $this->generateLaporanByMonth($bulan, $tahun);
-        } else {
-            $laporanData = $this->generateLaporanByDateRange($tanggal_mulai, $tanggal_selesai);
+        try {
+            $periode = $request->input('jenis_periode', 'bulan');
+            $bulan = $request->input('bulan', date('n'));
+            $tahun = $request->input('tahun', date('Y'));
+            $tanggal_mulai = $request->input('tanggal_dari', date('01/m/Y'));
+            $tanggal_selesai = $request->input('tanggal_sampai', date('d/m/Y'));
+
+            if ($periode === 'bulan') {
+                $laporanData = $this->generateLaporanByMonth($bulan, $tahun);
+            } else {
+                $laporanData = $this->generateLaporanByDateRange($tanggal_mulai, $tanggal_selesai);
+            }
+
+            // Return view for HTML print preview
+            return view('laporan.pembelian.pdf', compact('laporanData'));
+            
+        } catch (\Exception $e) {
+            Log::error('Error printing PDF laporan pembelian: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat mencetak');
         }
-
-        return view('laporan.pembelian.pdf', compact('laporanData'));
     }
 
     private function getMonthName($month)

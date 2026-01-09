@@ -233,27 +233,30 @@
                 class="space-y-4 lg:space-y-0 lg:flex lg:items-end lg:space-x-4">
                 <!-- Search -->
                 <div class="flex-1">
-                    <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
+                <!-- Search -->
+                <div class="flex-1">
+                    <label for="search" class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Pencarian</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="ti ti-search text-lg text-gray-400"></i>
+                            <i class="ti ti-search text-gray-400"></i>
                         </div>
                         <input type="text" name="search" id="search" value="{{ request('search') }}"
-                            class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                            class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
                             placeholder="Cari no. bukti, no. faktur, nama pelanggan...">
                     </div>
+                </div>
                 </div>
 
                 <!-- Date From -->
                 <div class="lg:w-48">
-                    <label for="tanggal_dari" class="block text-sm font-medium text-gray-700 mb-2">Tanggal Dari</label>
+                    <label for="tanggal_dari" class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Tanggal Dari</label>
                     <div class="relative">
                         <input type="text" id="tanggal_dari" readonly
                             value="{{ request('tanggal_dari') ? \Carbon\Carbon::parse(request('tanggal_dari'))->format('d/m/Y') : '' }}"
                             placeholder="Pilih tanggal"
-                            class="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 cursor-pointer bg-white hover:bg-gray-50">
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <i class="ti ti-calendar text-gray-400 text-lg"></i>
+                            class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white">
+                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                            <i class="ti ti-calendar text-gray-400"></i>
                         </div>
                     </div>
                     <input type="hidden" name="tanggal_dari" id="tanggal_dari_hidden"
@@ -262,15 +265,14 @@
 
                 <!-- Date To -->
                 <div class="lg:w-48">
-                    <label for="tanggal_sampai" class="block text-sm font-medium text-gray-700 mb-2">Tanggal
-                        Sampai</label>
+                    <label for="tanggal_sampai" class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Tanggal Sampai</label>
                     <div class="relative">
-                        <input type="text" id="tanggal_sampai" readonly
+                         <input type="text" id="tanggal_sampai" readonly
                             value="{{ request('tanggal_sampai') ? \Carbon\Carbon::parse(request('tanggal_sampai'))->format('d/m/Y') : '' }}"
                             placeholder="Pilih tanggal"
-                            class="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 cursor-pointer bg-white hover:bg-gray-50">
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <i class="ti ti-calendar text-gray-400 text-lg"></i>
+                            class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white">
+                         <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                            <i class="ti ti-calendar text-gray-400"></i>
                         </div>
                     </div>
                     <input type="hidden" name="tanggal_sampai" id="tanggal_sampai_hidden"
@@ -279,9 +281,9 @@
 
                 <!-- Status Filter -->
                 <div class="lg:w-48">
-                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status Pembayaran</label>
+                    <label for="status" class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Status Pembayaran</label>
                     <select name="status" id="status"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm">
                         <option value="">Semua Status</option>
                         <option value="P" {{ request('status') == 'P' ? 'selected' : '' }}>Pelunasan</option>
                         <option value="D" {{ request('status') == 'D' ? 'selected' : '' }}>DP</option>
@@ -291,10 +293,9 @@
 
                 <!-- Metode Pembayaran Filter -->
                 <div class="lg:w-48">
-                    <label for="metode_pembayaran" class="block text-sm font-medium text-gray-700 mb-2">Metode
-                        Pembayaran</label>
+                    <label for="metode_pembayaran" class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Metode Pembayaran</label>
                     <select name="metode_pembayaran" id="metode_pembayaran"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm">
                         <option value="">Semua Metode</option>
                         <option value="tunai" {{ request('metode_pembayaran') == 'tunai' ? 'selected' : '' }}>Tunai
                         </option>
@@ -307,16 +308,16 @@
                 </div>
 
                 <!-- Filter Buttons -->
-                <div class="flex space-x-3">
+                <div class="flex space-x-2 pb-0.5">
                     <button type="submit"
-                        class="inline-flex items-center px-6 py-3 bg-primary-600 border border-transparent rounded-lg font-medium text-sm text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
-                        <i class="ti ti-filter text-lg mr-2"></i>
+                        class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-lg font-medium text-sm text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                        <i class="ti ti-filter mr-2"></i>
                         Filter
                     </button>
                     @if (request()->hasAny(['search', 'tanggal_dari', 'tanggal_sampai', 'status', 'metode_pembayaran']))
                         <a href="{{ route('pembayaran.index') }}"
-                            class="inline-flex items-center px-6 py-3 bg-gray-600 border border-transparent rounded-lg font-medium text-sm text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
-                            <i class="ti ti-x text-lg mr-2"></i>
+                            class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-lg font-medium text-sm text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
+                            <i class="ti ti-x mr-2"></i>
                             Reset
                         </a>
                     @endif
@@ -331,188 +332,106 @@
                     <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
                         <tr>
                             <th scope="col"
-                                class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                <div class="flex items-center justify-center space-x-2">
-                                    <i class="ti ti-hash text-blue-600"></i>
-                                    <span>No</span>
-                                </div>
+                                class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                No
                             </th>
                             <th scope="col"
-                                class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                <div class="flex items-center space-x-2">
-                                    <i class="ti ti-receipt text-blue-600"></i>
-                                    <span>No. Bukti</span>
-                                </div>
+                                class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                No. Bukti
                             </th>
                             <th scope="col"
-                                class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                <div class="flex items-center space-x-2">
-                                    <i class="ti ti-calendar text-blue-600"></i>
-                                    <span>Tanggal</span>
-                                </div>
+                                class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                Tanggal
                             </th>
                             <th scope="col"
-                                class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                <div class="flex items-center space-x-2">
-                                    <i class="ti ti-file-invoice text-blue-600"></i>
-                                    <span>No. Faktur</span>
-                                </div>
+                                class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                Faktur
                             </th>
                             <th scope="col"
-                                class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                <div class="flex items-center space-x-2">
-                                    <i class="ti ti-user text-blue-600"></i>
-                                    <span>Pelanggan</span>
-                                </div>
+                                class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                Pelanggan
                             </th>
                             <th scope="col"
-                                class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                <div class="flex items-center justify-end space-x-2">
-                                    <i class="ti ti-cash text-blue-600"></i>
-                                    <span>Jumlah</span>
-                                </div>
+                                class="px-3 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                Jumlah
                             </th>
                             <th scope="col"
-                                class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                <div class="flex items-center justify-center space-x-2">
-                                    <i class="ti ti-credit-card text-blue-600"></i>
-                                    <span>Metode</span>
-                                </div>
+                                class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                Metode
                             </th>
                             <th scope="col"
-                                class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                <div class="flex items-center justify-center space-x-2">
-                                    <i class="ti ti-status-change text-blue-600"></i>
-                                    <span>Status</span>
-                                </div>
+                                class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                Status
                             </th>
                             <th scope="col"
-                                class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                <div class="flex items-center space-x-2">
-                                    <i class="ti ti-user-check text-blue-600"></i>
-                                    <span>Kasir</span>
-                                </div>
-                            </th>
-                            <th scope="col"
-                                class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                <div class="flex items-center justify-center space-x-2">
-                                    <i class="ti ti-settings text-blue-600"></i>
-                                    <span>Aksi</span>
-                                </div>
+                                class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                Aksi
                             </th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse ($pembayaran as $index => $p)
                             <tr class="hover:bg-gray-50 transition-colors duration-200 {{ ($p->status_uang_muka ?? 0) == 1 ? 'bg-purple-50 border-l-4 border-purple-500' : '' }}">
-                                <td class="px-4 py-4 whitespace-nowrap text-center">
-                                    <div class="flex items-center justify-center">
-                                        <div
-                                            class="w-8 h-8 bg-gradient-to-r from-gray-500 to-gray-600 rounded-lg flex items-center justify-center">
-                                            <span
-                                                class="text-white text-sm font-semibold">{{ ($pembayaran->currentPage() - 1) * $pembayaran->perPage() + $loop->iteration }}</span>
+                                <td class="px-3 py-2 whitespace-nowrap text-center text-xs font-medium text-gray-500">
+                                    {{ ($pembayaran->currentPage() - 1) * $pembayaran->perPage() + $loop->iteration }}
+                                </td>
+                                <td class="px-3 py-2 whitespace-nowrap">
+                                    <div class="text-xs font-bold text-gray-900">{{ $p->no_bukti }}</div>
+                                    @if (($p->status_uang_muka ?? 0) == 1)
+                                        <div class="text-[10px] text-purple-600 font-medium mt-0.5">
+                                            <i class="ti ti-wallet mr-0.5"></i>Uang Muka
                                         </div>
+                                    @endif
+                                </td>
+                                <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                    <div class="flex flex-col">
+                                        <span class="font-medium text-gray-900">{{ \Carbon\Carbon::parse($p->tanggal)->format('d/m/Y') }}</span>
+                                        <span class="text-[10px] text-gray-500">{{ \Carbon\Carbon::parse($p->tanggal)->format('H:i') }}</span>
                                     </div>
                                 </td>
-                                <td class="px-4 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="w-8 h-8 {{ ($p->status_uang_muka ?? 0) == 1 ? 'bg-purple-100' : 'bg-blue-100' }} rounded-lg flex items-center justify-center mr-3">
-                                            <i class="ti ti-receipt {{ ($p->status_uang_muka ?? 0) == 1 ? 'text-purple-600' : 'text-blue-600' }} text-sm"></i>
-                                        </div>
-                                        <div>
-                                            <div class="text-sm font-medium text-gray-900">{{ $p->no_bukti }}</div>
-                                            @if (($p->status_uang_muka ?? 0) == 1)
-                                                <div class="text-xs text-purple-600 font-medium mt-0.5">
-                                                    <i class="ti ti-wallet text-xs mr-1"></i>Uang Muka
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ \Carbon\Carbon::parse($p->tanggal)->format('d/m/Y') }}
-                                </td>
-                                <td class="px-4 py-4 whitespace-nowrap">
+                                <td class="px-3 py-2 whitespace-nowrap">
                                     <a href="{{ route('penjualan.show', $p->penjualan->encrypted_id) }}"
-                                        class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium hover:bg-blue-200 transition-colors">
-                                        <i class="ti ti-file-invoice text-xs mr-1"></i>
+                                        class="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline transition-colors">
                                         {{ $p->penjualan->no_faktur }}
                                     </a>
                                 </td>
-                                <td class="px-4 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                                            <i class="ti ti-user text-green-600 text-sm"></i>
-                                        </div>
-                                        <div>
-                                            <div class="text-sm font-medium text-gray-900">
-                                                {{ $p->penjualan->pelanggan->nama }}</div>
-                                        </div>
-                                    </div>
+                                <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                                    <div class="font-medium">{{ $p->penjualan->pelanggan->nama }}</div>
                                 </td>
-                                <td class="px-4 py-4 whitespace-nowrap text-right">
-                                    <div class="text-sm font-bold text-gray-900">
+                                <td class="px-3 py-2 whitespace-nowrap text-right">
+                                    <span class="text-xs font-bold text-emerald-600">
                                         Rp {{ number_format($p->jumlah_bayar, 0, ',', '.') }}
-                                    </div>
+                                    </span>
                                 </td>
-                                <td class="px-4 py-4 whitespace-nowrap text-center">
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                        @if ($p->metode_pembayaran === 'tunai') bg-green-100 text-green-800
-                                        @elseif($p->metode_pembayaran === 'transfer') bg-blue-100 text-blue-800
-                                        @elseif($p->metode_pembayaran === 'qris') bg-purple-100 text-purple-800
-                                        @elseif($p->metode_pembayaran === 'edc') bg-yellow-100 text-yellow-800
-                                        @else bg-gray-100 text-gray-800 @endif">
-                                        <i class="ti ti-credit-card text-xs mr-1"></i>
+                                <td class="px-3 py-2 whitespace-nowrap text-center">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase
+                                        @if ($p->metode_pembayaran === 'tunai') bg-green-100 text-green-700
+                                        @elseif($p->metode_pembayaran === 'transfer') bg-blue-100 text-blue-700
+                                        @elseif($p->metode_pembayaran === 'qris') bg-purple-100 text-purple-700
+                                        @elseif($p->metode_pembayaran === 'edc') bg-yellow-100 text-yellow-700
+                                        @else bg-gray-100 text-gray-700 @endif">
                                         {{ ucfirst($p->metode_pembayaran) }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-4 whitespace-nowrap text-center">
-                                    <div class="flex flex-col items-center space-y-1">
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                        @if ($p->status_bayar === 'P') bg-green-100 text-green-800
-                                        @elseif($p->status_bayar === 'D') bg-blue-100 text-blue-800
-                                        @elseif($p->status_bayar === 'A') bg-orange-100 text-orange-800
-                                        @else bg-gray-100 text-gray-800 @endif">
-                                        <i class="ti ti-status-change text-xs mr-1"></i>
-                                        @if ($p->status_bayar === 'P')
-                                            Pelunasan
-                                        @elseif($p->status_bayar === 'D')
-                                            DP
-                                        @elseif($p->status_bayar === 'A')
-                                            Angsuran
-                                        @elseif($p->status_bayar === 'B')
-                                            Bayar Sebagian
-                                        @else
-                                            {{ $p->status_bayar }}
-                                        @endif
+                                <td class="px-3 py-2 whitespace-nowrap text-center">
+                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase
+                                        @if ($p->status_bayar === 'P') bg-emerald-100 text-emerald-700
+                                        @elseif($p->status_bayar === 'D') bg-blue-100 text-blue-700
+                                        @elseif($p->status_bayar === 'A') bg-amber-100 text-amber-700
+                                        @else bg-gray-100 text-gray-700 @endif">
+                                        @if ($p->status_bayar === 'P') Lunas
+                                        @elseif($p->status_bayar === 'D') DP
+                                        @elseif($p->status_bayar === 'A') Cicilan
+                                        @else {{ $p->status_bayar }} @endif
                                     </span>
-                                        @if (($p->status_uang_muka ?? 0) == 1)
-                                            <span class="inline-flex items-center px-2 py-0.5 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
-                                                <i class="ti ti-wallet text-xs mr-1"></i>Uang Muka
-                                            </span>
-                                        @endif
-                                    </div>
                                 </td>
-                                <td class="px-4 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div
-                                            class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
-                                            <i class="ti ti-user-check text-indigo-600 text-sm"></i>
-                                        </div>
-                                        <div>
-                                            <div class="text-sm font-medium text-gray-900">{{ $p->user->name }}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-4 whitespace-nowrap text-center">
+                                <td class="px-3 py-2 whitespace-nowrap text-center">
                                     <div class="flex items-center justify-center space-x-2">
                                         <!-- View Button -->
                                         <button type="button"
-                                            class="view-detail-btn inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition-all duration-200"
+                                            class="view-detail-btn inline-flex items-center justify-center p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                             title="Lihat Detail" data-pembayaran-id="{{ $p->id }}">
-                                            <i class="ti ti-eye text-sm"></i>
+                                            <i class="ti ti-eye text-lg"></i>
                                         </button>
 
                                         <!-- Delete Button - Disabled if payment date is not today -->
@@ -521,10 +440,10 @@
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
-                                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg shadow-sm transition-all duration-200 {{ $p->tanggal->format('Y-m-d') === date('Y-m-d') ? 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:shadow-lg hover:from-red-600 hover:to-red-700 transform hover:scale-105' : 'bg-gray-300 text-gray-500 cursor-not-allowed' }}"
+                                                class="inline-flex items-center justify-center p-1.5 rounded-lg transition-colors {{ $p->tanggal->format('Y-m-d') === date('Y-m-d') ? 'text-red-500 hover:bg-red-50' : 'text-gray-300 cursor-not-allowed' }}"
                                                 title="{{ $p->tanggal->format('Y-m-d') === date('Y-m-d') ? 'Hapus Pembayaran' : 'Hanya bisa dihapus pada hari yang sama' }}"
                                                 {{ $p->tanggal->format('Y-m-d') !== date('Y-m-d') ? 'disabled' : '' }}>
-                                                <i class="ti ti-trash text-sm"></i>
+                                                <i class="ti ti-trash text-lg"></i>
                                             </button>
                                         </form>
                                     </div>
@@ -532,7 +451,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="10" class="px-4 py-12 text-center">
+                                <td colspan="9" class="px-4 py-12 text-center">
                                     <div class="flex flex-col items-center">
                                         <div
                                             class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">

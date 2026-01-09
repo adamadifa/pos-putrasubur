@@ -1,321 +1,351 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Pembayaran</title>
+    <title>Laporan Pembayaran - Toko Putra Subur</title>
     <style>
         @page {
+            margin: 0;
             size: A4 landscape;
-            margin: 15mm;
         }
-
+        
         body {
-            font-family: 'DejaVu Sans', sans-serif;
-            font-size: 10px;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 10pt;
             line-height: 1.3;
-            color: #333;
+            color: #000;
+            background: #525659; /* Preview background */
             margin: 0;
-            padding: 0;
+            padding: 20px 0;
         }
 
-        .header {
+        .sheet {
+            background: white;
+            width: 297mm; /* A4 Landscape width */
+            min-height: 210mm; /* A4 Landscape height */
+            margin: auto;
+            padding: 1.5cm;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* Header / Letterhead */
+        .page-header {
             text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #3b82f6;
-            padding-bottom: 20px;
+            border-bottom: 3px double #000;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
         }
 
-        .header h1 {
-            font-size: 24px;
+        .page-header h1 {
+            font-size: 16pt;
             font-weight: bold;
-            color: #1f2937;
-            margin: 0 0 10px 0;
-        }
-
-        .header p {
-            font-size: 14px;
-            color: #6b7280;
+            text-transform: uppercase;
             margin: 0;
+            letter-spacing: 1px;
         }
 
-        .info-section {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
+        .page-header p {
+            font-size: 10pt;
+            margin: 2px 0;
         }
 
-        .info-card {
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 15px;
+        /* Report Meta */
+        .report-title {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .report-title h2 {
+            font-size: 14pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 0 0 5px 0;
+            text-decoration: underline;
+        }
+
+        .report-meta {
+            width: 100%;
             margin-bottom: 15px;
-            flex: 1;
-            min-width: 200px;
-            margin-right: 15px;
+            font-size: 10pt;
         }
 
-        .info-card:last-child {
-            margin-right: 0;
+        .report-meta td {
+            padding: 2px 0;
+            vertical-align: top;
         }
 
-        .info-card h3 {
-            font-size: 14px;
-            font-weight: bold;
-            color: #374151;
-            margin: 0 0 10px 0;
-            border-bottom: 1px solid #d1d5db;
-            padding-bottom: 5px;
-        }
-
-        .info-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-        }
-
-        .info-label {
-            font-weight: 500;
-            color: #6b7280;
-        }
-
-        .info-value {
-            font-weight: 600;
-            color: #111827;
-        }
-
-        .summary-table {
+        /* Tables */
+        table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 30px;
+            font-size: 9pt;
+            margin-bottom: 20px;
         }
 
-        .summary-table th,
-        .summary-table td {
-            padding: 12px;
-            border: 1px solid #cbd5e1;
+        th, td {
+            border: 1px solid #000;
+            padding: 6px 8px;
+            vertical-align: middle;
         }
 
-        .summary-table th {
-            background-color: #f1f5f9;
-            color: #475569;
+        th {
+            background-color: #f0f0f0;
             font-weight: bold;
-        }
-
-        .summary-table .summary-row {
-            background-color: #f8fafc;
-        }
-
-        .summary-table .total-row {
-            background-color: #dbeafe;
-            font-weight: bold;
-        }
-
-        .transactions-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-        }
-
-        .transactions-table th,
-        .transactions-table td {
-            padding: 8px 12px;
-            border: 1px solid #cbd5e1;
-            text-align: left;
-        }
-
-        .transactions-table th {
-            background-color: #f1f5f9;
-            color: #475569;
-            font-weight: bold;
-            font-size: 11px;
-        }
-
-        .transactions-table td {
-            font-size: 11px;
-        }
-
-        .transactions-table tbody tr:nth-child(even) {
-            background-color: #f8fafc;
-        }
-
-        .transactions-table tbody tr:hover {
-            background-color: #e0f2fe;
-        }
-
-        .badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: bold;
-        }
-
-        .badge-penjualan {
-            background-color: #dcfce7;
-            color: #166534;
-        }
-
-        .badge-pembelian {
-            background-color: #fed7aa;
-            color: #9a3412;
-        }
-
-        .text-right {
-            text-align: right !important;
-        }
-
-        .text-center {
             text-align: center;
+            text-transform: uppercase;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-bold { font-weight: bold; }
+        
+        /* Summary Section */
+        .summary-container {
+            width: 40%;
+            margin-left: auto;
+            margin-bottom: 40px;
+            page-break-inside: avoid;
+        }
+
+        /* Signatures */
+        .signature-section {
+            display: table;
+            width: 100%;
+            margin-top: 30px;
+            page-break-inside: avoid;
+        }
+
+        .signature-box {
+            display: table-cell;
+            width: 33%;
+            text-align: center;
+            vertical-align: top;
+        }
+
+        .signature-space {
+            height: 70px;
+        }
+
+        .signature-name {
+            font-weight: bold;
+            text-decoration: underline;
         }
 
         .footer {
             margin-top: 30px;
-            text-align: center;
-            font-size: 10px;
-            color: #64748b;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 15px;
-        }
-
-        .page-break {
-            page-break-before: always;
-        }
-
-        .no-data {
-            text-align: center;
-            padding: 40px;
-            color: #6b7280;
+            font-size: 8pt;
+            text-align: right;
             font-style: italic;
+            border-top: 1px solid #ccc;
+            padding-top: 5px;
+        }
+
+        /* Print Specifics */
+        @media print {
+            body { 
+                background: none;
+                margin: 0;
+                padding: 0;
+            }
+            .sheet {
+                box-shadow: none;
+                width: 100%;
+                margin: 0;
+                padding: 0; /* Let @page handle margins if supported, or use body padding */
+            }
+            @page {
+                size: A4 landscape;
+                margin: 1cm;
+            }
         }
     </style>
 </head>
-
 <body>
-    <!-- Header -->
-    <div class="header">
-        <h1>LAPORAN PEMBAYARAN</h1>
-        <p>
-            @if ($laporanData['periode']['jenis'] == 'tanggal')
-                Periode: {{ $laporanData['periode']['tanggal_dari'] }} s/d
-                {{ $laporanData['periode']['tanggal_sampai'] }}
-            @else
-                Periode: {{ $laporanData['periode']['bulan_nama'] }} {{ $laporanData['periode']['tahun'] }}
-            @endif
-        </p>
-    </div>
+    <div class="sheet">
+        @php
+            // Merge and sort data (Logic copied from Controller index method for consistency)
+            $pembayaranData = collect();
+            if(isset($laporanData['pembayaran_penjualan'])) {
+                foreach ($laporanData['pembayaran_penjualan'] as $pembayaran) {
+                    $pembayaranData->push((object) [
+                        'tanggal' => $pembayaran->tanggal,
+                        'jenis' => 'PENJUALAN',
+                        'no_faktur' => $pembayaran->penjualan->no_faktur ?? '-',
+                        'nama_pelanggan_supplier' => $pembayaran->penjualan->pelanggan->nama ?? 'UMUM',
+                        'metode_pembayaran' => $pembayaran->metode_pembayaran ?? '-',
+                        'kas_bank' => $pembayaran->kasBank->nama ?? '-',
+                        'jumlah' => $pembayaran->jumlah_bayar,
+                    ]);
+                }
+            }
+            if(isset($laporanData['pembayaran_pembelian'])) {
+                foreach ($laporanData['pembayaran_pembelian'] as $pembayaran) {
+                    $pembayaranData->push((object) [
+                        'tanggal' => $pembayaran->tanggal,
+                        'jenis' => 'PEMBELIAN',
+                        'no_faktur' => $pembayaran->pembelian->no_faktur ?? '-',
+                        'nama_pelanggan_supplier' => $pembayaran->pembelian->supplier->nama ?? 'UMUM',
+                        'metode_pembayaran' => $pembayaran->metode_pembayaran ?? '-',
+                        'kas_bank' => $pembayaran->kasBank->nama ?? '-',
+                        'jumlah' => $pembayaran->jumlah_bayar,
+                    ]);
+                }
+            }
+            $mergedPembayaran = $pembayaranData->sortBy('tanggal')->values();
+        @endphp
 
+        <!-- Letterhead -->
+        <div class="page-header">
+            <h1>TOKO PUTRA SUBUR</h1>
+            <p>Jl. Contoh No. 123, Kelurahan Contoh, Kecamatan Contoh, Kota Contoh</p>
+            <p>Telp: (021) 123-4567 | Email: info@putrasubur.com</p>
+        </div>
 
-    <!-- Detail Transaksi -->
-    <h3>Detail Transaksi Pembayaran</h3>
-    @if ($laporanData['pembayaran_penjualan']->count() > 0 || $laporanData['pembayaran_pembelian']->count() > 0)
-        <table class="transactions-table">
-            <thead>
-                <tr>
-                    <th>Tanggal</th>
-                    <th>Jenis</th>
-                    <th>No. Faktur</th>
-                    <th>Pelanggan/Supplier</th>
-                    <th>Metode Pembayaran</th>
-                    <th>Kas Bank</th>
-                    <th class="text-right">Jumlah</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Pembayaran Penjualan -->
-                @foreach ($laporanData['pembayaran_penjualan'] as $pembayaran)
-                    <tr>
-                        <td>{{ \Carbon\Carbon::parse($pembayaran->tanggal)->format('d/m/Y') }}</td>
-                        <td class="text-center">
-                            <span class="badge badge-penjualan">Penjualan</span>
-                        </td>
-                        <td>{{ $pembayaran->penjualan->no_faktur ?? '-' }}</td>
-                        <td>{{ $pembayaran->penjualan->pelanggan->nama ?? '-' }}</td>
-                        <td>{{ $pembayaran->metode_pembayaran ?? '-' }}</td>
-                        <td>{{ $pembayaran->kasBank->nama ?? '-' }}</td>
-                        <td class="text-right">Rp {{ number_format($pembayaran->jumlah_bayar, 0, ',', '.') }}</td>
-                    </tr>
-                @endforeach
+        <!-- Report Title -->
+        <div class="report-title">
+            <h2>Laporan Pembayaran</h2>
+        </div>
 
-                <!-- Pembayaran Pembelian -->
-                @foreach ($laporanData['pembayaran_pembelian'] as $pembayaran)
-                    <tr>
-                        <td>{{ \Carbon\Carbon::parse($pembayaran->tanggal)->format('d/m/Y') }}</td>
-                        <td class="text-center">
-                            <span class="badge badge-pembelian">Pembelian</span>
-                        </td>
-                        <td>{{ $pembayaran->pembelian->no_faktur ?? '-' }}</td>
-                        <td>{{ $pembayaran->pembelian->supplier->nama ?? '-' }}</td>
-                        <td>{{ $pembayaran->metode_pembayaran ?? '-' }}</td>
-                        <td>{{ $pembayaran->kasBank->nama ?? '-' }}</td>
-                        <td class="text-right">Rp {{ number_format($pembayaran->jumlah_bayar, 0, ',', '.') }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
+        <!-- Meta Info -->
+        <table class="report-meta" style="width: auto; border: none; margin-bottom: 20px;">
+            <tr style="border: none;">
+                <td style="border: none; width: 100px;">Periode</td>
+                <td style="border: none; width: 10px;">:</td>
+                <td style="border: none; font-weight: bold;">
+                    @if ($laporanData['periode']['jenis'] == 'tanggal')
+                        {{ $laporanData['periode']['tanggal_dari'] }} s.d. {{ $laporanData['periode']['tanggal_sampai'] }}
+                    @else
+                        {{ strtoupper($laporanData['periode']['bulan_nama']) }} {{ $laporanData['periode']['tahun'] }}
+                    @endif
+                </td>
+            </tr>
+            <tr style="border: none;">
+                <td style="border: none;">Dicetak Oleh</td>
+                <td style="border: none;">:</td>
+                <td style="border: none;">{{ Auth::user()->name ?? 'Admin' }}</td>
+            </tr>
         </table>
 
-        <!-- Summary by Metode Pembayaran -->
-        @if (isset($laporanData['metode_pembayaran_counts']) && count($laporanData['metode_pembayaran_counts']) > 0)
-            <div style="margin-top: 20px;">
-                <h4 style="font-size: 14px; font-weight: bold; margin-bottom: 10px; color: #1f2937;">Rekap Metode
-                    Pembayaran</h4>
-                <table class="summary-table">
-                    <thead>
+        <!-- Data Table -->
+        @if ($mergedPembayaran->count() > 0)
+            <table>
+                <thead>
+                    <tr>
+                        <th width="5%">No</th>
+                        <th width="10%">Tanggal</th>
+                        <th width="10%">Jenis</th>
+                        <th width="12%">No. Faktur</th>
+                        <th width="20%">Pihak Terkait</th>
+                        <th width="12%">Metode</th>
+                        <th width="15%">Kas/Bank</th>
+                        <th width="16%">Jumlah</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($mergedPembayaran as $index => $item)
                         <tr>
-                            <th>Metode Pembayaran</th>
-                            <th class="text-center">Jumlah Transaksi</th>
-                            <th class="text-right">Total Nilai</th>
+                            <td class="text-center">{{ $index + 1 }}</td>
+                            <td class="text-center">{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</td>
+                            <td class="text-center">{{ $item->jenis }}</td>
+                            <td class="text-center">{{ $item->no_faktur }}</td>
+                            <td>{{ strtoupper($item->nama_pelanggan_supplier) }}</td>
+                            <td class="text-center">{{ strtoupper($item->metode_pembayaran) }}</td>
+                            <td>{{ strtoupper($item->kas_bank) }}</td>
+                            <td class="text-right">{{ number_format($item->jumlah, 0, ',', '.') }}</td>
                         </tr>
-                    </thead>
-                    <tbody>
+                    @endforeach
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="7" class="text-right text-bold" style="background-color: #f0f0f0;">TOTAL PEMBAYARAN</td>
+                        <td class="text-right text-bold" style="background-color: #f0f0f0;">Rp {{ number_format($laporanData['summary']['total_nilai'], 0, ',', '.') }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <!-- Summaries -->
+            <div style="width: 100%; display: table; margin-bottom: 20px;">
+                <!-- Summary Type -->
+                <div style="display: table-cell; width: 48%; vertical-align: top; padding-right: 2%;">
+                    <table style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th colspan="3" style="text-align: left;">REKAP JENIS TRANSAKSI</th>
+                            </tr>
+                        </thead>
+                        <tr>
+                            <td>Penjualan</td>
+                            <td class="text-center">{{ $laporanData['summary']['total_pembayaran_penjualan'] }} Trx</td>
+                            <td class="text-right">Rp {{ number_format($laporanData['summary']['total_nilai_penjualan'], 0, ',', '.') }}</td>
+                        </tr>
+                        <tr>
+                            <td>Pembelian</td>
+                            <td class="text-center">{{ $laporanData['summary']['total_pembayaran_pembelian'] }} Trx</td>
+                            <td class="text-right">Rp {{ number_format($laporanData['summary']['total_nilai_pembelian'], 0, ',', '.') }}</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <!-- Summary Method -->
+                <div style="display: table-cell; width: 48%; vertical-align: top; padding-left: 2%;">
+                     @if (isset($laporanData['metode_pembayaran_counts']) && count($laporanData['metode_pembayaran_counts']) > 0)
+                    <table style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th colspan="3" style="text-align: left;">REKAP METODE PEMBAYARAN</th>
+                            </tr>
+                        </thead>
                         @foreach ($laporanData['metode_pembayaran_counts'] as $metode)
-                            <tr>
-                                <td>{{ $metode['nama'] }}</td>
-                                <td class="text-center">{{ number_format($metode['count'], 0, ',', '.') }}</td>
-                                <td class="text-right">Rp {{ number_format($metode['nilai'], 0, ',', '.') }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @endif
-
-        <!-- Summary by Kas Bank -->
-        @if (isset($laporanData['kas_bank_counts']) && count($laporanData['kas_bank_counts']) > 0)
-            <div style="margin-top: 20px;">
-                <h4 style="font-size: 14px; font-weight: bold; margin-bottom: 10px; color: #1f2937;">Rekap Kas Bank</h4>
-                <table class="summary-table">
-                    <thead>
                         <tr>
-                            <th>Kas Bank</th>
-                            <th class="text-center">Jumlah Transaksi</th>
-                            <th class="text-right">Total Nilai</th>
+                            <td>{{ strtoupper($metode['nama']) }}</td>
+                            <td class="text-center">{{ $metode['count'] }} Trx</td>
+                            <td class="text-right">Rp {{ number_format($metode['nilai'], 0, ',', '.') }}</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($laporanData['kas_bank_counts'] as $kasBank)
-                            <tr>
-                                <td>{{ $kasBank['nama'] }}</td>
-                                <td class="text-center">{{ number_format($kasBank['count'], 0, ',', '.') }}</td>
-                                <td class="text-right">Rp {{ number_format($kasBank['nilai'], 0, ',', '.') }}</td>
-                            </tr>
                         @endforeach
-                    </tbody>
-                </table>
+                    </table>
+                    @endif
+                </div>
+            </div>
+
+        @else
+            <div style="text-align: center; padding: 40px; border: 1px dashed #ccc;">
+                <p>Data tidak ditemukan untuk periode ini.</p>
             </div>
         @endif
-    @else
-        <div class="no-data">
-            <p>Tidak ada data pembayaran untuk periode yang dipilih</p>
+
+        <!-- Signatures -->
+        <div class="signature-section">
+            <div class="signature-box">
+                <p>Mengetahui,</p>
+                <p>Manager</p>
+                <div class="signature-space"></div>
+                <p class="signature-name">( ........................................ )</p>
+            </div>
+            <div class="signature-box">
+                <!-- Space for middle signature if needed -->
+            </div>
+            <div class="signature-box">
+                <p>Dibuat Oleh,</p>
+                <p>Admin / Keuangan</p>
+                <div class="signature-space"></div>
+                <p class="signature-name">( {{ strtoupper(Auth::user()->name ?? '........................................') }} )</p>
+            </div>
         </div>
-    @endif
 
-    <!-- Footer -->
-    <div class="footer">
-        <p>Laporan ini dibuat secara otomatis oleh sistem POS pada {{ now()->format('d F Y H:i:s') }}</p>
+        <!-- Footer Page Info -->
+        <div class="footer">
+            Dicetak pada tanggal: {{ date('d F Y') }} oleh sistem aplikasi POS Putra Subur.
+        </div>
     </div>
+    <script>
+        window.onload = function() {
+            window.print();
+        }
+    </script>
 </body>
-
 </html>

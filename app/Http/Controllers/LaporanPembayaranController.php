@@ -416,6 +416,10 @@ class LaporanPembayaranController extends Controller
      */
     public function exportPdf(Request $request)
     {
+        // Increase limits for large PDF generation
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '512M');
+
         try {
             $kasBankId = $request->kas_bank_id ?: null;
             $metodePembayaranId = $request->metode_pembayaran_id ?: null;
@@ -452,27 +456,13 @@ class LaporanPembayaranController extends Controller
                 );
             }
 
-            // Generate PDF using DomPDF
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('laporan.pembayaran.pdf', compact('laporanData'));
-            $pdf->setPaper('a4', 'landscape');
-
-            // Generate filename
-            $filename = 'Laporan_Pembayaran_';
-            if ($laporanData['periode']['jenis'] == 'tanggal') {
-                $tanggalDari = str_replace('/', '-', $request->tanggal_dari);
-                $tanggalSampai = str_replace('/', '-', $request->tanggal_sampai);
-                $filename .= $tanggalDari . '_sampai_' . $tanggalSampai;
-            } else {
-                $filename .= $laporanData['periode']['bulan_nama'] . '_' . $laporanData['periode']['tahun'];
-            }
-            $filename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $filename) . '.pdf';
-
-            return $pdf->stream($filename);
+            // Return view for HTML print preview
+            return view('laporan.pembayaran.pdf', compact('laporanData'));
         } catch (\Exception $e) {
-            Log::error('PDF Export Error: ' . $e->getMessage());
+            Log::error('Print Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan dalam mengexport PDF: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan dalam mencetak: ' . $e->getMessage()
             ], 500);
         }
     }

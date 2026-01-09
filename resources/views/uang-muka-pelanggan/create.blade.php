@@ -88,10 +88,10 @@
 
         <!-- Form Card -->
         <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-            <div class="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-gray-100">
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
                 <div class="flex items-center space-x-3">
-                    <div class="p-2 bg-green-100 rounded-lg">
-                        <i class="ti ti-currency-dollar text-lg text-green-600"></i>
+                    <div class="p-2 bg-blue-100 rounded-lg">
+                        <i class="ti ti-currency-dollar text-lg text-blue-600"></i>
                     </div>
                     <h2 class="text-lg font-semibold text-gray-800">Form Uang Muka Pelanggan</h2>
                 </div>
@@ -106,7 +106,7 @@
                             Pelanggan <span class="text-red-500">*</span>
                         </label>
                         <select name="pelanggan_id" id="pelanggan_id" required
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">Pilih Pelanggan</option>
                             @foreach ($pelanggan as $pel)
                                 <option value="{{ $pel->id }}" {{ old('pelanggan_id') == $pel->id ? 'selected' : '' }}>
@@ -126,7 +126,7 @@
                         </label>
                         <div class="date-input-wrapper">
                             <input type="text" id="tanggal" value="{{ old('tanggal', date('d/m/Y')) }}"
-                                class="flatpickr-input w-full px-4 py-3" placeholder="Pilih tanggal" required readonly>
+                                class="flatpickr-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Pilih tanggal" required readonly>
                             <i class="ti ti-calendar"></i>
                         </div>
                         <input type="hidden" name="tanggal" id="tanggal_hidden" value="{{ old('tanggal', date('Y-m-d')) }}">
@@ -142,8 +142,8 @@
                         </label>
                         <input type="text" name="jumlah_uang_muka" id="jumlah_uang_muka"
                             value="{{ old('jumlah_uang_muka') }}"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                            placeholder="Masukkan jumlah uang muka (Rp)" required>
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right font-semibold text-gray-900"
+                            placeholder="0" required>
                         @error('jumlah_uang_muka')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -155,7 +155,7 @@
                             Metode Pembayaran <span class="text-red-500">*</span>
                         </label>
                         <select name="metode_pembayaran" id="metode_pembayaran" required
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">Pilih Metode Pembayaran</option>
                             @foreach ($metodePembayaran as $metode)
                                 <option value="{{ $metode->kode }}" {{ old('metode_pembayaran') == $metode->kode ? 'selected' : '' }}>
@@ -174,7 +174,7 @@
                             Kas/Bank <span class="text-red-500">*</span>
                         </label>
                         <select name="kas_bank_id" id="kas_bank_id" required
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">Pilih Kas/Bank</option>
                             @foreach ($kasBank as $kas)
                                 <option value="{{ $kas->id }}" {{ old('kas_bank_id') == $kas->id ? 'selected' : '' }}>
@@ -193,7 +193,7 @@
                             Keterangan
                         </label>
                         <textarea name="keterangan" id="keterangan" rows="3"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             placeholder="Masukkan keterangan (opsional)">{{ old('keterangan') }}</textarea>
                         @error('keterangan')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -202,13 +202,12 @@
 
                     <!-- Action Buttons -->
                     <div class="flex space-x-4 pt-4">
-                        <a href="{{ route('uang-muka-pelanggan.index') }}"
-                            class="flex-1 py-3 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600 transition-colors text-center">
-                            <i class="ti ti-x text-lg mr-2"></i>
+                        <button type="button" id="cancelFormBtn"
+                            class="flex-1 py-3 bg-white border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors text-center">
                             Batal
-                        </a>
+                        </button>
                         <button type="submit"
-                            class="flex-1 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors">
+                            class="flex-1 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 transition-colors shadow-lg shadow-blue-500/30">
                             <i class="ti ti-device-floppy text-lg mr-2"></i>
                             Simpan Uang Muka
                         </button>
