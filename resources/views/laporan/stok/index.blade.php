@@ -272,6 +272,10 @@
                         <tbody class="divide-y divide-gray-50">
                             @php
                                 $runningSaldo = $laporanData['saldo_awal'];
+                                $totalInQty = 0;
+                                $totalInRp = 0;
+                                $totalOutQty = 0;
+                                $totalOutRp = 0;
                             @endphp
                             
                             <!-- Saldo Awal Row -->
@@ -295,10 +299,19 @@
                                 @php
                                     if ($transaksi->jenis == 'pembelian') {
                                         $runningSaldo += $transaksi->jumlah;
+                                        $totalInQty += $transaksi->jumlah;
+                                        $totalInRp += $transaksi->total_harga;
                                     } elseif ($transaksi->jenis == 'penjualan') {
                                         $runningSaldo -= $transaksi->jumlah;
+                                        $totalOutQty += $transaksi->jumlah;
+                                        $totalOutRp += $transaksi->total_harga;
                                     } elseif ($transaksi->jenis == 'penyesuaian') {
                                         $runningSaldo += $transaksi->jumlah;
+                                        if ($transaksi->jumlah > 0) {
+                                            $totalInQty += $transaksi->jumlah;
+                                        } else {
+                                            $totalOutQty += abs($transaksi->jumlah);
+                                        }
                                     }
                                 @endphp
                                 <tr class="hover:bg-gray-50/50 transition-colors">
@@ -366,7 +379,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-5 py-8 text-center text-gray-500">
+                                    <td colspan="9" class="px-5 py-8 text-center text-gray-500">
                                         <div class="flex flex-col items-center justify-center gap-2">
                                             <i class="ti ti-file-off text-3xl text-gray-300"></i>
                                             <p class="text-sm">Tidak ada transaksi pada periode ini.</p>
@@ -375,6 +388,16 @@
                                 </tr>
                             @endforelse
                         </tbody>
+                        <tfoot class="bg-gray-50 font-bold border-t border-gray-200">
+                            <tr>
+                                <td colspan="4" class="px-5 py-3 text-center text-gray-800">TOTAL MUTASI</td>
+                                <td class="px-5 py-3 text-right text-green-700">{{ number_format($totalInQty, 2, ',', '.') }}</td>
+                                <td class="px-5 py-3 text-right text-green-700">{{ number_format($totalInRp, 0, ',', '.') }}</td>
+                                <td class="px-5 py-3 text-right text-red-700">{{ number_format($totalOutQty, 2, ',', '.') }}</td>
+                                <td class="px-5 py-3 text-right text-red-700">{{ number_format($totalOutRp, 0, ',', '.') }}</td>
+                                <td class="px-5 py-3 text-right text-gray-900">{{ number_format($runningSaldo, 2, ',', '.') }}</td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
