@@ -276,7 +276,9 @@ class PembelianController extends Controller
 
                 // Update stock
                 $produk = Produk::find($item['produk_id']);
-                $produk->increment('stok', $item['qty']);
+                // Hitung qty efektif (qty - qty_discount)
+                $effectiveQty = max(0, $item['qty'] - $qtyDiscount);
+                $produk->increment('stok', $effectiveQty);
             }
 
             // Create payment record if there's payment amount
@@ -604,6 +606,7 @@ class PembelianController extends Controller
                 'items.*.qty' => 'required|numeric|min:0.01',
                 'items.*.price' => 'required|numeric|min:0',
                 'items.*.discount' => 'nullable|numeric|min:0',
+                'items.*.qty_discount' => 'nullable|numeric|min:0', // Added validation for qty_discount
             ]);
 
             // Additional validation for metode_pembayaran to ensure it's active
@@ -623,7 +626,9 @@ class PembelianController extends Controller
             // Restore stock from old details
             foreach ($pembelian->detailPembelian as $detail) {
                 $produk = Produk::find($detail->produk_id);
-                $produk->decrement('stok', $detail->qty);
+                // Hitung qty efektif lama (qty - qty_discount)
+                $oldEffectiveQty = max(0, $detail->qty - ($detail->qty_discount ?? 0));
+                $produk->decrement('stok', $oldEffectiveQty);
             }
 
             // Delete existing detail pembelian
@@ -682,11 +687,15 @@ class PembelianController extends Controller
                     'harga_beli' => $item['price'],
                     'subtotal' => $itemTotal, // Store final amount after item discount
                     'discount' => $itemDiscount,
+                    'qty_discount' => $item['qty_discount'] ?? 0, // Save qty_discount
                 ]);
 
                 // Update stock
                 $produk = Produk::find($item['id']);
-                $produk->increment('stok', $item['qty']);
+                // Hitung qty efektif baru
+                $newQtyDiscount = $item['qty_discount'] ?? 0; // Pastikan parameter ini dikirim atau handle jika tidak
+                $newEffectiveQty = max(0, $item['qty'] - $newQtyDiscount);
+                $produk->increment('stok', $newEffectiveQty);
             }
 
             // Create payment record if there's payment amount

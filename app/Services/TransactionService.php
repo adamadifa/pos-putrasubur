@@ -480,13 +480,15 @@ class TransactionService
                 // Kurangi stok produk
                 $produk = \App\Models\Produk::find($detail->produk_id);
                 if ($produk) {
-                    $produk->decrement('stok', $detail->qty);
+                    // Hitung qty efektif (qty - qty_discount)
+                    $effectiveQty = max(0, $detail->qty - ($detail->qty_discount ?? 0));
+                    $produk->decrement('stok', $effectiveQty);
 
                     Log::info('Stock reduced for product from pembelian deletion', [
                         'produk_id' => $produk->id,
                         'nama_produk' => $produk->nama_produk,
-                        'qty_reduced' => $detail->qty,
-                        'stok_sebelum' => $produk->stok + $detail->qty,
+                        'qty_reduced' => $effectiveQty,
+                        'stok_sebelum' => $produk->stok + $effectiveQty,
                         'stok_sesudah' => $produk->stok,
                         'pembelian_id' => $pembelian->id
                     ]);

@@ -204,7 +204,9 @@
                     <th style="width: 30%">Keterangan</th>
                     <th style="width: 10%">Jenis</th>
                     <th style="width: 10%">In</th>
+                    <th style="width: 10%">Jumlah (Rp)</th>
                     <th style="width: 10%">Out</th>
+                    <th style="width: 10%">Jumlah (Rp)</th>
                     <th style="width: 10%">Saldo</th>
                 </tr>
             </thead>
@@ -227,6 +229,8 @@
                     <td class="text-center">-</td>
                     <td><strong>SALDO AWAL PERIODE</strong></td>
                     <td class="text-center">-</td>
+                    <td class="text-right">-</td>
+                    <td class="text-right">-</td>
                     <td class="text-right">-</td>
                     <td class="text-right">-</td>
                     <td class="text-right font-bold">{{ number_format($runningSaldo, 2, ',', '.') }}</td>
@@ -258,6 +262,13 @@
                             @endif
                         </td>
                         <td class="text-right">
+                            @if ($transaksi->jenis == 'pembelian')
+                                {{ number_format($transaksi->total_harga, 0, ',', '.') }}
+                            @else
+                                -
+                            @endif
+                        </td>
+                        <td class="text-right">
                             @if ($transaksi->jenis == 'penjualan')
                                 {{ number_format($transaksi->jumlah, 2, ',', '.') }}
                             @elseif ($transaksi->jenis == 'penyesuaian' && $transaksi->jumlah < 0)
@@ -266,11 +277,18 @@
                                 -
                             @endif
                         </td>
+                        <td class="text-right">
+                            @if ($transaksi->jenis == 'penjualan')
+                                {{ number_format($transaksi->total_harga, 0, ',', '.') }}
+                            @else
+                                -
+                            @endif
+                        </td>
                         <td class="text-right">{{ number_format($runningSaldo, 2, ',', '.') }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="text-center py-4">Tidak ada transaksi pada periode ini.</td>
+                        <td colspan="10" class="text-center py-4">Tidak ada transaksi pada periode ini.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -281,7 +299,13 @@
                         {{ number_format($laporanData['summary']['total_pembelian'] + max(0, $laporanData['summary']['total_penyesuaian']), 2, ',', '.') }}
                     </td>
                     <td class="text-right">
+                        {{ number_format($laporanData['summary']['total_pembelian_uang'] ?? 0, 0, ',', '.') }}
+                    </td>
+                    <td class="text-right">
                          {{ number_format($laporanData['summary']['total_penjualan'] + abs(min(0, $laporanData['summary']['total_penyesuaian'])), 2, ',', '.') }}
+                    </td>
+                    <td class="text-right">
+                         {{ number_format($laporanData['summary']['total_penjualan_uang'] ?? 0, 0, ',', '.') }}
                     </td>
                     <td class="text-right">
                         {{ number_format($laporanData['summary']['saldo_akhir'], 2, ',', '.') }}

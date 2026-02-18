@@ -263,7 +263,9 @@
                                 <th class="px-5 py-3 text-center">Jenis</th>
                                 <th class="px-5 py-3">No Transaksi</th>
                                 <th class="px-5 py-3 text-right text-green-600">In</th>
+                                <th class="px-5 py-3 text-right text-green-600">Jumlah (Rp)</th>
                                 <th class="px-5 py-3 text-right text-red-600">Out</th>
+                                <th class="px-5 py-3 text-right text-red-600">Jumlah (Rp)</th>
                                 <th class="px-5 py-3 text-right">Saldo</th>
                             </tr>
                         </thead>
@@ -282,6 +284,8 @@
                                     @endif
                                 </td>
                                 <td class="px-5 py-3 text-xs text-gray-500" colspan="3">Saldo Awal Periode</td>
+                                <td class="px-5 py-3 text-right text-xs text-gray-500">-</td>
+                                <td class="px-5 py-3 text-right text-xs text-gray-500">-</td>
                                 <td class="px-5 py-3 text-right text-xs text-gray-500">-</td>
                                 <td class="px-5 py-3 text-right text-xs text-gray-500">-</td>
                                 <td class="px-5 py-3 text-right font-bold text-gray-800">{{ number_format($runningSaldo, 2, ',', '.') }}</td>
@@ -333,11 +337,25 @@
                                             -
                                         @endif
                                     </td>
+                                    <td class="px-5 py-3 text-right font-medium text-green-700">
+                                        @if ($transaksi->jenis == 'pembelian')
+                                            {{ number_format($transaksi->total_harga, 0, ',', '.') }}
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
                                     <td class="px-5 py-3 text-right font-medium text-red-700">
                                         @if ($transaksi->jenis == 'penjualan')
                                             {{ number_format($transaksi->jumlah, 2, ',', '.') }}
                                         @elseif ($transaksi->jenis == 'penyesuaian' && $transaksi->jumlah < 0)
                                             {{ number_format(abs($transaksi->jumlah), 2, ',', '.') }}
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td class="px-5 py-3 text-right font-medium text-red-700">
+                                        @if ($transaksi->jenis == 'penjualan')
+                                            {{ number_format($transaksi->total_harga, 0, ',', '.') }}
                                         @else
                                             -
                                         @endif
