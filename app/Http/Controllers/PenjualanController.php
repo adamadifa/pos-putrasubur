@@ -315,6 +315,7 @@ class PenjualanController extends Controller
                 'items.*.qty' => 'required|numeric|min:0.1',
                 'items.*.harga' => 'required|numeric|min:0',
                 'items.*.discount' => 'nullable|numeric|min:0',
+                'items.*.keterangan' => 'nullable|string',
                 'uang_muka' => 'nullable|array',
                 'uang_muka.*.id' => 'required|exists:uang_muka_pelanggan,id',
                 'uang_muka.*.jumlah' => 'required|numeric|min:0.01',
@@ -585,6 +586,7 @@ class PenjualanController extends Controller
                     'harga' => $item['harga'],
                     'subtotal' => $itemTotal, // Store final amount after item discount
                     'discount' => $itemDiscount,
+                    'keterangan' => $item['keterangan'] ?? null,
                 ]);
 
                 // Update stock

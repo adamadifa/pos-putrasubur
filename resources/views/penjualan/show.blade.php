@@ -330,6 +330,13 @@
                                                 </div>
                                             @endif
                                         </div>
+                                        @if ($detail->keterangan)
+                                            <div
+                                                class="mt-2 text-xs text-gray-500 bg-yellow-50 p-2.5 rounded-lg border border-yellow-100 italic flex items-start">
+                                                <i class="ti ti-note text-yellow-500 mr-1.5 mt-0.5"></i>
+                                                <span>{{ $detail->keterangan }}</span>
+                                            </div>
+                                        @endif
                                     </div>
 
                                     <!-- Price -->

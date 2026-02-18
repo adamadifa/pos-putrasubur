@@ -174,6 +174,9 @@
                 @if ($detail->discount > 0)
                     <br>Diskon: -{{ number_format($detail->discount, 0) }}
                 @endif
+                @if ($detail->keterangan)
+                    <br><i>Note: {{ $detail->keterangan }}</i>
+                @endif
             </div>
         </div>
     @endforeach

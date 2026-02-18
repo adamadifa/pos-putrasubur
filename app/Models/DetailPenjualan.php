@@ -18,6 +18,7 @@ class DetailPenjualan extends Model
         'harga',
         'subtotal',
         'discount',
+        'keterangan',
     ];
 
     protected $casts = [

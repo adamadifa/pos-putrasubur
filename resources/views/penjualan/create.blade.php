@@ -570,7 +570,6 @@
                     </p>
                 </div>
 
-                <!-- Discount Input -->
                 <div class="mb-5 md:mb-6">
                     <label for="discountInput"
                         class="flex items-center md:block text-sm md:text-sm font-semibold md:font-medium text-gray-700 mb-3 md:mb-2">
@@ -588,6 +587,20 @@
                     </div>
                     <p class="text-xs text-gray-500 mt-2 hidden md:block">Masukkan potongan harga untuk produk ini (dalam
                         Rupiah)</p>
+                </div>
+
+                <!-- Keterangan Input -->
+                <div class="mb-5 md:mb-6">
+                    <label for="keteranganInput"
+                        class="flex items-center md:block text-sm md:text-sm font-semibold md:font-medium text-gray-700 mb-3 md:mb-2">
+                        <i class="ti ti-note text-gray-500 mr-2 md:hidden"></i>
+                        Keterangan <span class="text-xs font-normal text-gray-500 ml-1">(Opsional)</span>
+                    </label>
+                    <div class="relative">
+                        <textarea id="keteranganInput" rows="2"
+                            class="w-full px-4 md:px-3 py-3 md:py-2 border-2 md:border border-gray-300 rounded-xl md:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm md:text-sm bg-gray-50 md:bg-white focus:bg-white resize-none"
+                            placeholder="Tambahkan catatan untuk item ini..."></textarea>
+                    </div>
                 </div>
 
                 <!-- Total Price Preview -->
@@ -3339,9 +3352,10 @@
                     unit: this.dataset.unit
                 };
 
-                // Check if product already exists in order
-                const existingIndex = orderItems.findIndex(item => item.id === productData.id);
+                // Check if product already exists in order - REMOVED TO ALLOW DUPLICATES
+                // const existingIndex = orderItems.findIndex(item => item.id === productData.id);
 
+                /*
                 if (existingIndex !== -1) {
                     // Product already exists - show message and don't open modal
                     showToast(
@@ -3354,13 +3368,14 @@
                     // Prevent modal from opening
                     return;
                 }
+                */
 
                 showQuantityModal(productData);
             });
         });
 
         // Show quantity modal
-        function showQuantityModal(product, currentQty = 1, currentDiscount = 0, currentPrice = null) {
+        function showQuantityModal(product, currentQty = 1, currentDiscount = 0, currentPrice = null, currentKeterangan = '') {
             currentProduct = product;
 
             // Update modal content
@@ -3386,12 +3401,16 @@
             const discountInput = document.getElementById('discountInput');
             discountInput.value = formatNumberInput(currentDiscount.toString());
 
+            // Set keterangan
+            const keteranganInput = document.getElementById('keteranganInput');
+            keteranganInput.value = currentKeterangan || '';
+
             // Update modal title based on mode
             const modalTitle = document.querySelector('#quantityModal h3');
             if (editingItemIndex !== null) {
-                modalTitle.textContent = 'Edit Quantity';
+                modalTitle.textContent = 'Edit Item';
                 document.getElementById('confirmQuantity').innerHTML =
-                    '<i class="ti ti-check text-sm mr-1"></i>Update Quantity';
+                    '<i class="ti ti-check text-sm mr-1"></i>Update Item';
             } else {
                 modalTitle.textContent = 'Masukkan Quantity';
                 document.getElementById('confirmQuantity').innerHTML =
@@ -3569,12 +3588,15 @@
 
 
 
+                // Get Keterangan
+                const keterangan = document.getElementById('keteranganInput').value;
+
                 if (editingItemIndex !== null) {
                     // Edit existing item
-                    updateOrderItemQuantity(editingItemIndex, qty, discount, currentPrice);
+                    updateOrderItemQuantity(editingItemIndex, qty, discount, currentPrice, keterangan);
                 } else {
                     // Add new item
-                    addToOrder(currentProduct, qty, discount, currentPrice);
+                    addToOrder(currentProduct, qty, discount, currentPrice, keterangan);
                 }
 
                 closeQuantityModalHandler();
@@ -3603,30 +3625,22 @@
             });
         });
 
-        function addToOrder(product, quantity = 1, discount = 0, customPrice = null) {
-            // Check if product already in order
-            const existingIndex = orderItems.findIndex(item => item.id === product.id);
+        function addToOrder(product, quantity = 1, discount = 0, customPrice = null, keterangan = '') {
+            // Check if product already in order - REMOVED TO ALLOW DUPLICATES
+            // const existingIndex = orderItems.findIndex(item => item.id === product.id);
 
-            if (existingIndex !== -1) {
-                // For existing items, replace with new values
-                orderItems[existingIndex].qty = quantity;
-                orderItems[existingIndex].discount = discount;
-                orderItems[existingIndex].price = customPrice || product.price;
-                updateOrderItem(existingIndex);
-                showToast(`${product.name} diperbarui dalam pesanan`, 'success');
-            } else {
-                // Add new item
-                const newItem = {
-                    ...product,
-                    qty: quantity,
-                    discount: discount,
-                    price: customPrice || product.price,
-                    index: productIndex++
-                };
-                orderItems.push(newItem);
-                renderOrderItem(newItem);
-                showToast(`${product.name} ditambahkan ke pesanan (${quantity} ${product.unit})`, 'success');
-            }
+            // Always Add new item
+            const newItem = {
+                ...product,
+                qty: quantity,
+                discount: discount || 0,
+                price: customPrice || product.price,
+                keterangan: keterangan,
+                index: productIndex++ // Ensure productIndex is incremented for unique IDs
+            };
+            orderItems.push(newItem);
+            renderOrderItem(newItem);
+            showToast(`${product.name} ditambahkan ke pesanan (${formatDecimalInput(quantity)} ${product.unit})`, 'success');
 
             updateOrderSummary();
         }
@@ -3756,9 +3770,15 @@
 
                     <!-- Edit Hint -->
                     <div class="mt-3 pt-2 border-t border-gray-100">
+                         ${item.keterangan ? `
+                            <div class="mb-2 text-xs text-gray-600 bg-yellow-50 p-2 rounded border border-yellow-100">
+                                <i class="ti ti-note text-yellow-500 mr-1"></i>
+                                <span class="italic">${item.keterangan}</span>
+                            </div>
+                        ` : ''}
                         <p class="text-xs text-gray-400 text-center">
                             <i class="ti ti-click text-xs mr-1"></i>
-                            Klik untuk edit quantity atau potongan
+                            Klik untuk edit item
                         </p>
                     </div>
 
@@ -3766,6 +3786,7 @@
                     <input type="hidden" name="items[${item.index}][qty]" value="${item.qty}" class="qty-input">
                     <input type="hidden" name="items[${item.index}][harga]" value="${item.price}">
                     <input type="hidden" name="items[${item.index}][discount]" value="${discount}" class="discount-input">
+                    <input type="hidden" name="items[${item.index}][keterangan]" value="${item.keterangan || ''}" class="keterangan-input">
                 </div>
             `;
 
@@ -3792,6 +3813,13 @@
             element.querySelector('.qty-input').value = item.qty;
             element.querySelector('.discount-input').value = item.discount || 0;
             element.querySelector('input[name*="[harga]"]').value = item.price;
+            
+            // Update keterangan hidden input
+            const keteranganInput = element.querySelector('.keterangan-input');
+            if (keteranganInput) {
+                keteranganInput.value = item.keterangan || '';
+            }
+
 
             // Calculate values
             const subtotal = item.price * item.qty;
@@ -3826,6 +3854,24 @@
                     <span class="font-bold text-lg ${discount > 0 ? 'text-green-600' : 'text-blue-600'}">Rp ${formatNumber(total)}</span>
                 </div>
             `;
+            
+            // Update edit hint section to show/hide keterangan
+            const oldEditHint = element.querySelector('.mt-3.pt-2.border-t.border-gray-100');
+            if (oldEditHint) {
+                 const newEditHintHtml = `
+                    ${item.keterangan ? `
+                        <div class="mb-2 text-xs text-gray-600 bg-yellow-50 p-2 rounded border border-yellow-100">
+                            <i class="ti ti-note text-yellow-500 mr-1"></i>
+                            <span class="italic">${item.keterangan}</span>
+                        </div>
+                    ` : ''}
+                    <p class="text-xs text-gray-400 text-center">
+                        <i class="ti ti-click text-xs mr-1"></i>
+                        Klik untuk edit item
+                    </p>
+                `;
+                oldEditHint.innerHTML = newEditHintHtml;
+            }
         }
 
         // Edit order item quantity
@@ -3836,12 +3882,12 @@
             const item = orderItems[itemIndex];
             editingItemIndex = itemIndex;
 
-            // Show modal with current quantity, discount, and price
-            showQuantityModal(item, item.qty, item.discount || 0, item.price);
+            // Show modal with current quantity, discount, price, and keterangan
+            showQuantityModal(item, item.qty, item.discount || 0, item.price, item.keterangan || '');
         }
 
         // Update order item quantity
-        function updateOrderItemQuantity(itemIndex, newQty, newDiscount = 0, newPrice = null) {
+        function updateOrderItemQuantity(itemIndex, newQty, newDiscount = 0, newPrice = null, newKeterangan = '') {
             const item = orderItems[itemIndex];
 
             // Validate new quantity
@@ -3853,7 +3899,7 @@
 
 
 
-            // Update quantity, discount, and price
+            // Update quantity, discount, price, and keterangan
             const oldQty = item.qty;
             const oldDiscount = item.discount || 0;
             const oldPrice = item.price;
@@ -3862,6 +3908,8 @@
             if (newPrice !== null) {
                 item.price = newPrice;
             }
+            item.keterangan = newKeterangan;
+            
             updateOrderItem(itemIndex);
             updateOrderSummary();
 
@@ -3878,18 +3926,16 @@
         }
 
         // Update product card states to show which products are already in order
+        // Logic modified to allow duplicate items and re-selection of the same product
         function updateProductCardStates() {
             const productCards = document.querySelectorAll('.product-card');
 
             productCards.forEach(card => {
                 const productId = parseInt(card.dataset.id);
-                const isInOrder = orderItems.some(item => item.id === productId);
+                // const isInOrder = orderItems.some(item => item.id === productId);
 
-                if (isInOrder) {
-                    card.classList.add('disabled');
-                } else {
-                    card.classList.remove('disabled');
-                }
+                // Always remove disabled class to allow multiple additions
+                card.classList.remove('disabled');
             });
         }
 
