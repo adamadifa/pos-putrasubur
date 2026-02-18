@@ -344,12 +344,19 @@
 
                                 <!-- Aksi -->
                                 <td class="px-4 py-3 whitespace-nowrap text-right pl-6">
-                                    <div class="flex items-center justify-end">
+                                    <div class="flex items-center justify-end gap-2">
                                         <a href="{{ route('penjualan.show', $item->encrypted_id) }}" 
                                            class="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition-all duration-200"
                                            title="Lihat Detail">
                                             <i class="ti ti-eye text-sm"></i>
                                         </a>
+                                        
+                                        <button type="button" 
+                                                onclick="confirmDelete('{{ $item->encrypted_id }}', '{{ $item->no_faktur }}')"
+                                                class="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-red-600 hover:to-red-700 transform hover:scale-105 transition-all duration-200"
+                                                title="Hapus Transaksi">
+                                            <i class="ti ti-trash text-sm"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -380,7 +387,59 @@
     </div>
 @endsection
 
+@push('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        /* Custom SweetAlert Styling */
+        .swal2-popup {
+            border-radius: 16px !important;
+            font-family: 'Inter', sans-serif !important;
+        }
+
+        .swal2-title {
+            color: #1f2937 !important;
+            font-weight: 700 !important;
+            font-size: 1.5rem !important;
+        }
+
+        .swal2-content {
+            color: #6b7280 !important;
+            font-size: 1rem !important;
+        }
+
+        .swal2-confirm {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+            border: none !important;
+            border-radius: 12px !important;
+            font-weight: 600 !important;
+            padding: 12px 24px !important;
+            font-size: 0.95rem !important;
+        }
+
+        .swal2-cancel {
+            background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%) !important;
+            border: none !important;
+            border-radius: 12px !important;
+            font-weight: 600 !important;
+            padding: 12px 24px !important;
+            font-size: 0.95rem !important;
+        }
+
+        .swal2-actions {
+            gap: 1rem !important;
+        }
+
+        .swal2-icon.swal2-warning {
+            border-color: #f59e0b !important;
+            color: #f59e0b !important;
+        }
+    </style>
+@endpush
+
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Flatpickr configuration
@@ -396,5 +455,72 @@
             flatpickr("#tanggal_dari", flatpickrConfig);
             flatpickr("#tanggal_sampai", flatpickrConfig);
         });
+
+        function confirmDelete(saleId, invoiceNumber) {
+            Swal.fire({
+                title: 'Konfirmasi Hapus',
+                text: `Apakah Anda yakin ingin menghapus transaksi "${invoiceNumber}"?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#ea580c',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal',
+                reverseButtons: true,
+                showLoaderOnConfirm: true,
+                preConfirm: () => {
+                    return fetch(`{{ route('penjualan.destroy', '') }}/${saleId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        },
+                        credentials: 'same-origin'
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            // Try to parse as JSON, if fails, use status text
+                            return response.text().then(text => {
+                                try {
+                                    const err = JSON.parse(text);
+                                    throw new Error(err.message || 'Terjadi kesalahan saat menghapus penjualan');
+                                } catch (e) {
+                                    throw new Error(text || response.statusText || 'Terjadi kesalahan saat menghapus penjualan');
+                                }
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: data.message || 'Penjualan berhasil dihapus.',
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            // Hanya tampilkan message-nya saja, bukan JSON
+                            const errorMessage = data.message || 'Terjadi kesalahan saat menghapus penjualan';
+                            throw new Error(errorMessage);
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: error.message || 'Terjadi kesalahan saat menghapus penjualan',
+                            confirmButtonText: 'OK'
+                        });
+                        throw error;
+                    });
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+            });
+        }
     </script>
 @endpush
