@@ -482,4 +482,188 @@ class LaporanStokController extends Controller
 
         return view('laporan.stok.pdf', compact('laporanData'));
     }
+
+    /**
+     * Tampilkan rekap laporan stok untuk semua produk
+     */
+    public function rekap(Request $request)
+    {
+        $jenisPeriode = $request->get('jenis_periode', 'bulan');
+        $selectedBulan = $request->get('bulan', date('n'));
+        $selectedTahun = $request->get('tahun', date('Y'));
+        $tanggalDari = $request->get('tanggal_dari', date('d/m/Y'));
+        $tanggalSampai = $request->get('tanggal_sampai', date('d/m/Y'));
+
+        $bulanList = $this->getBulanList();
+        $tahunList = $this->getTahunList();
+
+        $rekapData = null;
+        if ($jenisPeriode === 'tanggal' && $tanggalDari && $tanggalSampai) {
+            $rekapData = $this->generateRekapDataByDateRange($tanggalDari, $tanggalSampai);
+        } else {
+            $rekapData = $this->generateRekapData($selectedBulan, $selectedTahun);
+        }
+
+        return view('laporan.stok.rekap', compact(
+            'jenisPeriode',
+            'selectedBulan',
+            'selectedTahun',
+            'tanggalDari',
+            'tanggalSampai',
+            'bulanList',
+            'tahunList',
+            'rekapData'
+        ));
+    }
+
+    /**
+     * Cetak rekap laporan stok
+     */
+    public function rekapPrint(Request $request)
+    {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '512M');
+
+        $jenisPeriode = $request->get('jenis_periode', 'bulan');
+        $selectedBulan = $request->get('bulan', date('n'));
+        $selectedTahun = $request->get('tahun', date('Y'));
+        $tanggalDari = $request->get('tanggal_dari', date('d/m/Y'));
+        $tanggalSampai = $request->get('tanggal_sampai', date('d/m/Y'));
+
+        if ($jenisPeriode === 'tanggal' && $tanggalDari && $tanggalSampai) {
+            $rekapData = $this->generateRekapDataByDateRange($tanggalDari, $tanggalSampai);
+        } else {
+            $rekapData = $this->generateRekapData($selectedBulan, $selectedTahun);
+        }
+
+        return view('laporan.stok.rekap-print', compact('rekapData'));
+    }
+
+    private function getBulanList()
+    {
+        return [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+    }
+
+    private function getTahunList()
+    {
+        $tahunList = [];
+        for ($i = 2020; $i <= date('Y') + 1; $i++) {
+            $tahunList[] = $i;
+        }
+        return $tahunList;
+    }
+
+    private function generateRekapData($bulan, $tahun)
+    {
+        $tanggalDari = \Carbon\Carbon::create($tahun, $bulan, 1)->startOfMonth();
+        $tanggalSampai = \Carbon\Carbon::create($tahun, $bulan, 1)->endOfMonth();
+
+        return $this->processRekapData($tanggalDari, $tanggalSampai, 'bulan', $bulan, $tahun);
+    }
+
+    private function generateRekapDataByDateRange($tanggalDariStr, $tanggalSampaiStr)
+    {
+        try {
+            $tanggalDari = \Carbon\Carbon::createFromFormat('d/m/Y', $tanggalDariStr)->startOfDay();
+            $tanggalSampai = \Carbon\Carbon::createFromFormat('d/m/Y', $tanggalSampaiStr)->endOfDay();
+        } catch (\Exception $e) {
+            $tanggalDari = \Carbon\Carbon::parse($tanggalDariStr)->startOfDay();
+            $tanggalSampai = \Carbon\Carbon::parse($tanggalSampaiStr)->endOfDay();
+        }
+
+        return $this->processRekapData($tanggalDari, $tanggalSampai, 'tanggal');
+    }
+
+    private function processRekapData($tanggalDari, $tanggalSampai, $jenisPeriode, $bulan = null, $tahun = null)
+    {
+        $produkList = Produk::with(['kategori', 'satuan'])->get();
+        $results = [];
+
+        foreach ($produkList as $produk) {
+            // Get Saldo Awal at tanggalDari
+            $saldoAwal = $this->calculateSaldoAwalAtDate($produk->id, $tanggalDari);
+            
+            // Get Transactions in period
+            $transaksi = $this->getTransaksiProduk($produk->id, $tanggalDari, $tanggalSampai);
+            
+            $masuk = $transaksi->whereIn('jenis', ['pembelian'])->sum('jumlah');
+            $masukNominal = $transaksi->whereIn('jenis', ['pembelian'])->sum('total_harga');
+            
+            // Penyesuaian positif masuk ke 'masuk', negatif masuk ke 'keluar'
+            $masuk += $transaksi->where('jenis', 'penyesuaian')->where('jumlah', '>', 0)->sum('jumlah');
+            
+            $keluar = $transaksi->where('jenis', 'penjualan')->sum('jumlah');
+            $keluarNominal = $transaksi->whereIn('jenis', ['penjualan'])->sum('total_harga');
+            
+            $keluar += abs($transaksi->where('jenis', 'penyesuaian')->where('jumlah', '<', 0)->sum('jumlah'));
+            
+            $saldoAkhir = $saldoAwal + $masuk - $keluar;
+
+            $results[] = [
+                'produk' => $produk,
+                'saldo_awal' => $saldoAwal,
+                'masuk' => $masuk,
+                'masuk_nominal' => $masukNominal,
+                'keluar' => $keluar,
+                'keluar_nominal' => $keluarNominal,
+                'saldo_akhir' => $saldoAkhir,
+            ];
+        }
+
+        return [
+            'results' => $results,
+            'periode' => [
+                'jenis' => $jenisPeriode,
+                'tanggal_dari' => $tanggalDari->format('d/m/Y'),
+                'tanggal_sampai' => $tanggalSampai->format('d/m/Y'),
+                'bulan_nama' => $bulan ? $this->getBulanNama($bulan) : null,
+                'tahun' => $tahun,
+            ]
+        ];
+    }
+
+    private function calculateSaldoAwalAtDate($produkId, $date)
+    {
+        $bulan = $date->month;
+        $tahun = $date->year;
+        
+        // Initial Saldo Awal from table
+        $saldoAwalBulan = $this->getSaldoAwalProduk($produkId, $bulan, $tahun);
+        
+        // If 0, check last 12 months
+        if ($saldoAwalBulan == 0) {
+            $currentDate = \Carbon\Carbon::create($tahun, $bulan, 1);
+            for ($i = 0; $i < 12; $i++) {
+                $currentDate->subMonth();
+                $saldoAwalCari = $this->getSaldoAwalProduk($produkId, $currentDate->month, $currentDate->year);
+                if ($saldoAwalCari > 0) {
+                    // Calculate from that month to current date
+                    $transaksiSebelum = $this->getTransaksiProduk($produkId, \Carbon\Carbon::create($currentDate->year, $currentDate->month, 1), $date->copy()->subDay());
+                    $total = $saldoAwalCari;
+                    foreach ($transaksiSebelum as $t) {
+                        if ($t->jenis == 'pembelian') $total += $t->jumlah;
+                        elseif ($t->jenis == 'penjualan') $total -= $t->jumlah;
+                        elseif ($t->jenis == 'penyesuaian') $total += $t->jumlah;
+                    }
+                    return $total;
+                }
+            }
+        } else {
+            // Calculate from day 1 of month to date-1
+            $transaksiSebelum = $this->getTransaksiProduk($produkId, \Carbon\Carbon::create($tahun, $bulan, 1), $date->copy()->subDay());
+            $total = $saldoAwalBulan;
+            foreach ($transaksiSebelum as $t) {
+                if ($t->jenis == 'pembelian') $total += $t->jumlah;
+                elseif ($t->jenis == 'penjualan') $total -= $t->jumlah;
+                elseif ($t->jenis == 'penyesuaian') $total += $t->jumlah;
+            }
+            return $total;
+        }
+        
+        return 0;
+    }
 }

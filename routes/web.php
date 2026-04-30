@@ -290,8 +290,10 @@ Route::middleware('auth')->group(function () {
 
         Route::prefix('stok')->name('stok.')->group(function () {
             Route::get('/', [LaporanStokController::class, 'index'])->name('index');
+            Route::get('/rekap', [LaporanStokController::class, 'rekap'])->name('rekap');
             Route::post('/export-pdf', [LaporanStokController::class, 'exportPdf'])->name('export-pdf');
             Route::get('/print', [LaporanStokController::class, 'print'])->name('print');
+            Route::get('/rekap-print', [LaporanStokController::class, 'rekapPrint'])->name('rekap-print');
         });
 
         Route::prefix('penjualan')->name('penjualan.')->group(function () {

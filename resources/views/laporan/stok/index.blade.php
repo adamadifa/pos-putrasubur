@@ -11,6 +11,11 @@
                 <h2 class="text-xl font-bold text-gray-800">Laporan Stok</h2>
                 <p class="text-xs text-gray-500">Laporan saldo awal dan pergerakan stok produk per periode</p>
             </div>
+            <div class="mt-4 sm:mt-0 flex gap-2">
+                <a href="{{ route('laporan.stok.rekap') }}" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-sm flex items-center gap-2">
+                    <i class="ti ti-table"></i> Rekap Laporan Stok
+                </a>
+            </div>
         </div>
 
         <!-- Filter Form -->
