@@ -161,7 +161,34 @@
                     <div class="p-6">
                         <div class="space-y-4">
                             <div class="flex justify-between items-center pb-3 border-b">
-                                <span class="text-gray-600">Jumlah Pinjaman</span>
+                                <span class="text-gray-600">Pinjaman Awal</span>
+                                <span class="text-lg font-semibold text-gray-900">Rp
+                                    {{ number_format($pinjaman->jumlah_pinjaman, 0, ',', '.') }}</span>
+                            </div>
+                            
+                            @if(count($riwayatPenambahan) > 0)
+                                <div class="space-y-2 py-2 border-b">
+                                    <span class="text-sm text-gray-500 block mb-2">Penambahan Pinjaman:</span>
+                                    @foreach($riwayatPenambahan as $penambahan)
+                                        <div class="flex justify-between items-center text-sm">
+                                            <span class="text-gray-600">{{ $penambahan->tanggal->format('d/m/Y') }}</span>
+                                            <div class="flex items-center space-x-2">
+                                                <span class="font-medium text-gray-900">+ Rp {{ number_format($penambahan->jumlah, 0, ',', '.') }}</span>
+                                                <form action="{{ route('pinjaman.penambahan.destroy', $penambahan->encrypted_id) }}" method="POST" onsubmit="return confirm('Hapus penambahan ini?');" class="inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-500 hover:text-red-700">
+                                                        <i class="ti ti-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+
+                            <div class="flex justify-between items-center pb-3 border-b">
+                                <span class="text-gray-600 font-bold">Total Pinjaman</span>
                                 <span class="text-xl font-bold text-gray-900">Rp
                                     {{ number_format($pinjaman->total_pinjaman, 0, ',', '.') }}</span>
                             </div>
@@ -385,6 +412,88 @@
                     </div>
                 @endif
 
+                <!-- Additional Loan Form -->
+                <div class="bg-white rounded-lg shadow border">
+                    <div class="px-6 py-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+                        <h3 class="font-semibold text-gray-900 flex items-center">
+                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="ti ti-plus text-blue-600"></i>
+                            </div>
+                            Tambah Pinjaman
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <form action="{{ route('pinjaman.penambahan.store', $pinjaman->encrypted_id) }}"
+                            method="POST">
+                            @csrf
+
+                            <div class="mb-4">
+                                <label for="tanggal_penambahan" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Tanggal Penambahan <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" name="tanggal" id="tanggal_penambahan"
+                                    value="{{ old('tanggal', date('d/m/Y')) }}"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    required>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="jumlah_penambahan" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Jumlah Tambahan <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" name="jumlah" id="jumlah_penambahan" value="{{ old('jumlah') }}"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="0" required>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="metode_pembayaran_add" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Metode Pembayaran <span class="text-red-500">*</span>
+                                </label>
+                                <select name="metode_pembayaran" id="metode_pembayaran_add"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    required>
+                                    <option value="">Pilih Metode</option>
+                                    @foreach (\App\Models\MetodePembayaran::where('status', true)->get() as $metode)
+                                        <option value="{{ $metode->kode }}"
+                                            {{ old('metode_pembayaran') == $metode->kode ? 'selected' : '' }}>
+                                            {{ $metode->nama }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="kas_bank_id_add" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Kas/Bank <span class="text-red-500">*</span>
+                                </label>
+                                <select name="kas_bank_id" id="kas_bank_id_add"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    required>
+                                    <option value="">Pilih Kas/Bank</option>
+                                    @foreach (\App\Models\KasBank::orderBy('nama')->get() as $kasBank)
+                                        <option value="{{ $kasBank->id }}"
+                                            {{ old('kas_bank_id') == $kasBank->id ? 'selected' : '' }}>
+                                            {{ $kasBank->nama }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="keterangan_add" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Keterangan
+                                </label>
+                                <textarea name="keterangan" id="keterangan_add" rows="2"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                            </div>
+
+                            <button type="submit"
+                                class="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                <i class="ti ti-plus mr-2"></i>Simpan Penambahan
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
                 <!-- Summary Card -->
                 <div class="bg-white rounded-lg shadow border">
                     <div class="px-6 py-4 border-b bg-gradient-to-r from-gray-50 to-gray-100">
@@ -433,6 +542,26 @@
                 flatpickr("#tanggal", {
                     dateFormat: "d/m/Y",
                     defaultDate: "today"
+                });
+            }
+
+            // Date picker untuk tanggal penambahan
+            const tanggalAddInput = document.getElementById('tanggal_penambahan');
+            if (tanggalAddInput && typeof flatpickr !== 'undefined') {
+                flatpickr("#tanggal_penambahan", {
+                    dateFormat: "d/m/Y",
+                    defaultDate: "today"
+                });
+            }
+
+            // Format currency input untuk jumlah penambahan
+            const jumlahAddInput = document.getElementById('jumlah_penambahan');
+            if (jumlahAddInput) {
+                jumlahAddInput.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/[^\d]/g, '');
+                    if (value) {
+                        e.target.value = new Intl.NumberFormat('id-ID').format(value);
+                    }
                 });
             }
         </script>

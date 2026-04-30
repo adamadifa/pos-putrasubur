@@ -59,6 +59,22 @@ class Pelanggan extends Model
     }
 
     /**
+     * Relationship dengan Supplier (jika pelanggan juga supplier)
+     */
+    public function supplier()
+    {
+        return $this->hasOne(Supplier::class, 'pelanggan_id');
+    }
+
+    /**
+     * Check if pelanggan is also a supplier
+     */
+    public function getIsJugaSupplierAttribute()
+    {
+        return $this->supplier()->exists();
+    }
+
+    /**
      * Get total transaksi pelanggan
      */
     public function getTotalTransaksiAttribute()

@@ -77,6 +77,11 @@ class Pinjaman extends Model
         return $this->hasMany(PembayaranPinjaman::class);
     }
 
+    public function penambahanPinjaman()
+    {
+        return $this->hasMany(PenambahanPinjaman::class);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

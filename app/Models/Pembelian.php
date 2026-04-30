@@ -37,6 +37,8 @@ class Pembelian extends Model
         'subtotal',
         'diskon',
         'total',
+        'total_potongan',
+        'nett_total',
         'status_pembayaran',
         'jenis_transaksi',
         'keterangan',
@@ -48,6 +50,8 @@ class Pembelian extends Model
         'subtotal' => 'decimal:2',
         'diskon' => 'decimal:2',
         'total' => 'decimal:2',
+        'total_potongan' => 'decimal:2',
+        'nett_total' => 'decimal:2',
     ];
 
     protected $appends = ['encrypted_id'];
@@ -84,11 +88,32 @@ class Pembelian extends Model
         return $this->hasMany(PenggunaanUangMukaPembelian::class);
     }
 
+    public function kompensasi()
+    {
+        return $this->hasOne(KompensasiPembelian::class);
+    }
+
+    public function penjualanLinked()
+    {
+        return $this->hasOneThrough(
+            Penjualan::class,
+            KompensasiPembelian::class,
+            'pembelian_id', 'id', 'id', 'penjualan_id'
+        );
+    }
+
+    public function getHasPotonganAttribute()
+    {
+        return $this->total_potongan > 0;
+    }
+
     // Accessors
     public function getSisaPembayaranAttribute()
     {
         $totalDibayar = $this->pembayaranPembelian->sum('jumlah_bayar');
-        return $this->total - $totalDibayar;
+        // Gunakan nett_total jika ada potongan, otherwise total
+        $basis = ($this->nett_total > 0) ? $this->nett_total : $this->total;
+        return max(0, $basis - $totalDibayar);
     }
 
     public function getTotalDibayarAttribute()

@@ -160,6 +160,29 @@
                                   placeholder="Tambahan catatan (opsional)">{{ old('keterangan', $supplier->keterangan) }}</textarea>
                         @error('keterangan') <p class="mt-1 text-xs text-red-500 error-message">{{ $message }}</p> @enderror
                     </div>
+
+                    <!-- Link ke Pelanggan -->
+                    <div class="field-wrapper">
+                        <label for="pelanggan_id" class="block text-xs font-bold text-gray-700 mb-1">
+                            Hubungkan ke Pelanggan
+                        </label>
+                        <select name="pelanggan_id" id="pelanggan_id"
+                                class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50/30 @error('pelanggan_id') border-red-500 @enderror">
+                            <option value="">-- Tidak dihubungkan --</option>
+                            @foreach ($pelangganList as $pelanggan)
+                                <option value="{{ $pelanggan->id }}" {{ old('pelanggan_id', $supplier->pelanggan_id) == $pelanggan->id ? 'selected' : '' }}>
+                                    {{ $pelanggan->kode_pelanggan }} - {{ $pelanggan->nama }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">
+                            <svg class="w-3 h-3 inline mr-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                            </svg>
+                            Opsional. Hubungkan jika supplier ini juga membeli barang dari Anda (untuk fitur potongan penjualan).
+                        </p>
+                        @error('pelanggan_id') <p class="mt-1 text-xs text-red-500 error-message">{{ $message }}</p> @enderror
+                    </div>
                 </div>
 
                 <!-- Footer -->

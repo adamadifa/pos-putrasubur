@@ -179,6 +179,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [PembelianController::class, 'index'])->name('index');
         Route::get('/create', [PembelianController::class, 'create'])->name('create');
         Route::post('/', [PembelianController::class, 'store'])->name('store');
+        Route::get('/supplier-pelanggan/{supplierId}', [PembelianController::class, 'getSupplierPelangganInfo'])->name('supplier-pelanggan');
         Route::get('/{encryptedId}', [PembelianController::class, 'show'])->name('show');
         Route::get('/{encryptedId}/edit', [PembelianController::class, 'edit'])->name('edit');
         Route::put('/{encryptedId}', [PembelianController::class, 'update'])->name('update');
@@ -212,6 +213,10 @@ Route::middleware('auth')->group(function () {
         Route::put('/{encryptedId}', [PinjamanController::class, 'update'])->name('update');
         Route::delete('/{encryptedId}', [PinjamanController::class, 'destroy'])->name('destroy');
         Route::post('/{encryptedId}/pembayaran', [PinjamanController::class, 'storePayment'])->name('pembayaran.store');
+        
+        // Addition Routes
+        Route::post('/{encryptedId}/penambahan', [PinjamanController::class, 'storeAddition'])->name('penambahan.store');
+        Route::delete('/penambahan/{encryptedAdditionId}', [PinjamanController::class, 'destroyAddition'])->name('penambahan.destroy');
     });
 
     // Uang Muka Supplier Routes (Admin & Kasir only)

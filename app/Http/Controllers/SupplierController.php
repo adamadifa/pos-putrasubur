@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Supplier;
+use App\Models\Pelanggan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Validation\Rule;
@@ -53,7 +54,13 @@ class SupplierController extends Controller
      */
     public function create()
     {
-        return view('supplier.create');
+        // Get pelanggan yang belum di-link ke supplier lain
+        $pelangganList = Pelanggan::whereDoesntHave('supplier')
+            ->where('status', true)
+            ->orderBy('nama')
+            ->get();
+
+        return view('supplier.create', compact('pelangganList'));
     }
 
     /**
@@ -104,6 +111,7 @@ class SupplierController extends Controller
                 'telepon' => 'nullable|string|max:20',
                 'email' => 'nullable|email|max:100',
                 'keterangan' => 'nullable|string',
+                'pelanggan_id' => 'nullable|exists:pelanggan,id|unique:supplier,pelanggan_id',
                 'status' => 'boolean',
             ]);
 
@@ -146,7 +154,17 @@ class SupplierController extends Controller
     {
         try {
             $supplier = Supplier::findOrFail(Crypt::decryptString($id));
-            return view('supplier.edit', compact('supplier'));
+
+            // Get pelanggan yang belum di-link ke supplier lain, termasuk yang sudah di-link ke supplier ini
+            $pelangganList = Pelanggan::where(function ($query) use ($supplier) {
+                $query->whereDoesntHave('supplier')
+                      ->orWhere('id', $supplier->pelanggan_id);
+            })
+            ->where('status', true)
+            ->orderBy('nama')
+            ->get();
+
+            return view('supplier.edit', compact('supplier', 'pelangganList'));
         } catch (\Exception $e) {
             return redirect()->route('supplier.index')
                 ->with('error', 'Supplier tidak ditemukan.');
@@ -167,6 +185,7 @@ class SupplierController extends Controller
                 'telepon' => 'nullable|string|max:20',
                 'email' => 'nullable|email|max:100',
                 'keterangan' => 'nullable|string',
+                'pelanggan_id' => 'nullable|exists:pelanggan,id|unique:supplier,pelanggan_id,' . $supplier->id,
                 'status' => 'boolean',
             ]);
 

@@ -27,7 +27,7 @@ class PenjualanController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = Penjualan::with(['pelanggan', 'kasir', 'detailPenjualan', 'pembayaranPenjualan']);
+        $query = Penjualan::with(['pelanggan', 'kasir', 'detailPenjualan', 'pembayaranPenjualan', 'kompensasi']);
 
         // Handle search
         if ($request->filled('search')) {

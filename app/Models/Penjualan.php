@@ -90,6 +90,34 @@ class Penjualan extends Model
     }
 
     /**
+     * Relationship dengan KompensasiPembelian (jika penjualan ini dari potongan pembelian)
+     */
+    public function kompensasi()
+    {
+        return $this->hasOne(KompensasiPembelian::class);
+    }
+
+    /**
+     * Get linked pembelian (jika penjualan ini dari potongan pembelian)
+     */
+    public function pembelianLinked()
+    {
+        return $this->hasOneThrough(
+            Pembelian::class,
+            KompensasiPembelian::class,
+            'penjualan_id', 'id', 'id', 'pembelian_id'
+        );
+    }
+
+    /**
+     * Check if this penjualan is from a pembelian potongan
+     */
+    public function getIsFromKompensasiAttribute()
+    {
+        return $this->kompensasi()->exists();
+    }
+
+    /**
      * Get total setelah diskon
      */
     public function getTotalSetelahDiskonAttribute()

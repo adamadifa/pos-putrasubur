@@ -621,6 +621,60 @@
                             </span>
                         </div>
 
+                        @if ($pembelian->total_potongan > 0)
+                            <!-- Potongan Penjualan -->
+                            <div class="flex items-center justify-between py-2">
+                                <div class="flex items-center">
+                                    <i class="ti ti-receipt-off text-blue-400 mr-2"></i>
+                                    <span class="text-gray-600">Potongan Penjualan</span>
+                                </div>
+                                <span class="font-semibold text-blue-600">
+                                    -Rp {{ number_format($pembelian->total_potongan, 0, ',', '.') }}
+                                </span>
+                            </div>
+
+                            <!-- Nett Total -->
+                            <div
+                                class="flex items-center justify-between py-3 border-t border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50 -mx-6 px-6 rounded-lg">
+                                <div class="flex items-center">
+                                    <i class="ti ti-receipt-2 text-green-600 mr-2"></i>
+                                    <span class="font-bold text-gray-900">Nett Total (Yang Harus Dibayar)</span>
+                                </div>
+                                <span class="font-bold text-xl text-green-600">
+                                    Rp {{ number_format($pembelian->nett_total, 0, ',', '.') }}
+                                </span>
+                            </div>
+
+                            @if ($pembelian->kompensasi && $pembelian->kompensasi->penjualan)
+                                <!-- Linked Penjualan Info -->
+                                <div class="border border-blue-200 bg-blue-50 rounded-lg p-3 mt-2">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-sm font-semibold text-blue-800">
+                                            <i class="ti ti-link mr-1"></i> Penjualan Terkait
+                                        </span>
+                                        <a href="{{ route('penjualan.show', $pembelian->kompensasi->penjualan->encrypted_id) }}"
+                                            class="text-xs text-blue-600 hover:text-blue-800 font-medium">
+                                            Lihat Detail →
+                                        </a>
+                                    </div>
+                                    <div class="text-sm text-blue-700">
+                                        <div class="flex justify-between">
+                                            <span>No. Faktur</span>
+                                            <span class="font-medium">{{ $pembelian->kompensasi->penjualan->no_faktur }}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>Total Penjualan</span>
+                                            <span class="font-medium">Rp {{ number_format($pembelian->kompensasi->penjualan->total, 0, ',', '.') }}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>Kompensasi</span>
+                                            <span class="font-medium">Rp {{ number_format($pembelian->kompensasi->jumlah_kompensasi, 0, ',', '.') }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        @endif
+
                         <!-- Payment Status -->
                         <div class="pt-3 border-t space-y-3">
                             <div class="flex items-center justify-between">
@@ -636,7 +690,8 @@
 
                             @php
                                 $totalDibayar = $pembelian->pembayaranPembelian->sum('jumlah_bayar');
-                                $sisaPembayaran = $pembelian->total - $totalDibayar;
+                                $basisPembayaran = $pembelian->nett_total > 0 ? $pembelian->nett_total : $pembelian->total;
+                                $sisaPembayaran = max(0, $basisPembayaran - $totalDibayar);
                             @endphp
 
                             <div class="flex items-center justify-between">

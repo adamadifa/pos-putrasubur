@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Pinjaman;
 use App\Models\PembayaranPinjaman;
+use App\Models\PenambahanPinjaman;
 use App\Models\Peminjam;
 use App\Models\MetodePembayaran;
 use App\Models\KasBank;
@@ -155,10 +156,16 @@ class PinjamanController extends Controller
     public function show($encryptedId)
     {
         $pinjaman = Pinjaman::findByEncryptedId($encryptedId);
-        $pinjaman->load(['peminjam', 'user', 'pembayaranPinjaman.user', 'pembayaranPinjaman.kasBank']);
+        $pinjaman->load(['peminjam', 'user', 'pembayaranPinjaman.user', 'pembayaranPinjaman.kasBank', 'penambahanPinjaman.user', 'penambahanPinjaman.kasBank']);
 
         // Get payment history
         $riwayatPembayaran = PembayaranPinjaman::where('pinjaman_id', $pinjaman->id)
+            ->with(['user', 'kasBank'])
+            ->orderBy('tanggal', 'asc')
+            ->get();
+
+        // Get addition history
+        $riwayatPenambahan = PenambahanPinjaman::where('pinjaman_id', $pinjaman->id)
             ->with(['user', 'kasBank'])
             ->orderBy('tanggal', 'asc')
             ->get();
@@ -176,7 +183,7 @@ class PinjamanController extends Controller
         }
         $pinjaman->save();
 
-        return view('pinjaman.show', compact('pinjaman', 'riwayatPembayaran', 'totalDibayar', 'sisaPinjaman'));
+        return view('pinjaman.show', compact('pinjaman', 'riwayatPembayaran', 'riwayatPenambahan', 'totalDibayar', 'sisaPinjaman'));
     }
 
     /**
@@ -493,6 +500,168 @@ class PinjamanController extends Controller
             Log::error('Error deleting pembayaran pinjaman: ' . $e->getMessage());
             return back()
                 ->withErrors(['error' => 'Terjadi kesalahan saat menghapus pembayaran: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Store additional loan
+     */
+    public function storeAddition(Request $request, $encryptedId)
+    {
+        $pinjaman = Pinjaman::findByEncryptedId($encryptedId);
+
+        // Clean and parse jumlah input
+        $jumlahInput = $request->input('jumlah');
+        $jumlahClean = preg_replace('/[^\d]/', '', $jumlahInput);
+        $jumlahNumeric = (float) $jumlahClean;
+
+        $validated = $request->validate([
+            'tanggal' => 'required|date_format:d/m/Y',
+            'jumlah' => 'required|string',
+            'metode_pembayaran' => 'required|string|exists:metode_pembayaran,kode',
+            'kas_bank_id' => 'required|exists:kas_bank,id',
+            'keterangan' => 'nullable|string|max:255',
+        ], [
+            'tanggal.required' => 'Tanggal penambahan wajib diisi.',
+            'tanggal.date_format' => 'Format tanggal tidak valid. Gunakan format dd/mm/yyyy.',
+            'jumlah.required' => 'Jumlah penambahan wajib diisi.',
+            'metode_pembayaran.required' => 'Metode pembayaran wajib dipilih.',
+            'metode_pembayaran.exists' => 'Metode pembayaran tidak valid.',
+            'kas_bank_id.required' => 'Kas/Bank wajib dipilih.',
+            'kas_bank_id.exists' => 'Kas/Bank tidak valid.',
+        ]);
+
+        // Validate jumlah numeric
+        if ($jumlahNumeric <= 0) {
+            return back()->withInput()
+                ->withErrors(['jumlah' => 'Jumlah penambahan harus lebih dari 0.']);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $pembayaran = PenambahanPinjaman::create([
+                'pinjaman_id' => $pinjaman->id,
+                'tanggal' => Carbon::createFromFormat('d/m/Y', $validated['tanggal']),
+                'jumlah' => $jumlahNumeric,
+                'metode_pembayaran' => $validated['metode_pembayaran'],
+                'kas_bank_id' => $validated['kas_bank_id'],
+                'keterangan' => $validated['keterangan'] ?? null,
+                'user_id' => Auth::id(),
+            ]);
+
+            // Update total pinjaman
+            $pinjaman->total_pinjaman += $jumlahNumeric;
+            
+            // Re-calculate status
+            $totalDibayar = $pinjaman->pembayaranPinjaman->sum('jumlah_bayar');
+            if ($totalDibayar >= $pinjaman->total_pinjaman) {
+                $pinjaman->status_pembayaran = 'lunas';
+            } elseif ($totalDibayar > 0) {
+                $pinjaman->status_pembayaran = 'sebagian';
+            } else {
+                $pinjaman->status_pembayaran = 'belum_bayar';
+            }
+            $pinjaman->save();
+
+            // Update kas/bank saldo (Kredit = mengurangi saldo)
+            $kasBank = KasBank::find($validated['kas_bank_id']);
+            if ($kasBank) {
+                $kasBank->updateSaldo($jumlahNumeric, 'K');
+            }
+
+            // Create transaksi kas/bank
+            \App\Models\TransaksiKasBank::create([
+                'kas_bank_id' => $validated['kas_bank_id'],
+                'tanggal' => Carbon::createFromFormat('d/m/Y', $validated['tanggal'])->toDateString(),
+                'no_bukti' => 'TRX-ADD-PIN-' . date('Ymd') . '-' . str_pad($pembayaran->id, 4, '0', STR_PAD_LEFT),
+                'jenis_transaksi' => 'K', // Kredit = pengeluaran
+                'kategori_transaksi' => 'MN', // Manual
+                'referensi_id' => $pembayaran->id,
+                'referensi_tipe' => 'APN', // Addition Pinjaman (Additional Pinjaman)
+                'jumlah' => $jumlahNumeric,
+                'saldo_sebelum' => $kasBank->saldo + $jumlahNumeric,
+                'saldo_sesudah' => $kasBank->saldo,
+                'keterangan' => "Penambahan pinjaman - {$pinjaman->no_pinjaman}",
+                'user_id' => Auth::id()
+            ]);
+
+            DB::commit();
+
+            Log::info('Penambahan pinjaman created', [
+                'addition_id' => $pembayaran->id,
+                'pinjaman_id' => $pinjaman->id,
+                'jumlah' => $jumlahNumeric,
+            ]);
+
+            return redirect()->route('pinjaman.show', $pinjaman->encrypted_id)
+                ->with('success', 'Penambahan pinjaman berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error creating penambahan pinjaman: ' . $e->getMessage());
+            return back()->withInput()
+                ->withErrors(['error' => 'Terjadi kesalahan saat menambahkan penambahan: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Delete addition for pinjaman
+     */
+    public function destroyAddition($encryptedAdditionId)
+    {
+        try {
+            $addition = PenambahanPinjaman::findByEncryptedId($encryptedAdditionId);
+            $pinjaman = $addition->pinjaman;
+
+            DB::beginTransaction();
+
+            // Hapus transaksi kas/bank terkait
+            $transaksi = \App\Models\TransaksiKasBank::where('referensi_id', $addition->id)
+                ->where('referensi_tipe', 'APN')
+                ->first();
+
+            if ($transaksi) {
+                $kasBank = KasBank::find($transaksi->kas_bank_id);
+                if ($kasBank) {
+                    // Kembalikan saldo (Debet = menambah saldo yang sebelumnya dikurangi dengan Kredit)
+                    $kasBank->updateSaldo($addition->jumlah, 'D');
+                }
+                $transaksi->delete();
+            } else {
+                if ($addition->kas_bank_id) {
+                    $kasBank = KasBank::find($addition->kas_bank_id);
+                    if ($kasBank) {
+                        $kasBank->updateSaldo($addition->jumlah, 'D');
+                    }
+                }
+            }
+
+            // Update total pinjaman
+            $pinjaman->total_pinjaman -= $addition->jumlah;
+            
+            // Hapus addition
+            $addition->delete();
+
+            // Re-calculate status
+            $totalDibayar = $pinjaman->pembayaranPinjaman->sum('jumlah_bayar');
+            if ($totalDibayar >= $pinjaman->total_pinjaman) {
+                $pinjaman->status_pembayaran = 'lunas';
+            } elseif ($totalDibayar > 0) {
+                $pinjaman->status_pembayaran = 'sebagian';
+            } else {
+                $pinjaman->status_pembayaran = 'belum_bayar';
+            }
+            $pinjaman->save();
+
+            DB::commit();
+
+            return redirect()->route('pinjaman.show', $pinjaman->encrypted_id)
+                ->with('success', 'Penambahan pinjaman berhasil dihapus.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error deleting penambahan pinjaman: ' . $e->getMessage());
+            return back()
+                ->withErrors(['error' => 'Terjadi kesalahan saat menghapus penambahan: ' . $e->getMessage()]);
         }
     }
 }

@@ -339,7 +339,14 @@
                                             <i class="ti ti-receipt"></i>
                                         </div>
                                         <div class="flex flex-col">
-                                            <span class="text-sm font-bold text-gray-900">{{ $item->no_faktur }}</span>
+                                            <span class="text-sm font-bold text-gray-900 flex items-center gap-1.5">
+                                                {{ $item->no_faktur }}
+                                                @if ($item->kompensasi)
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-700" title="Ada kompensasi penjualan">
+                                                        <i class="ti ti-link text-[10px] mr-0.5"></i>KOMP
+                                                    </span>
+                                                @endif
+                                            </span>
                                             <span class="text-xs text-gray-500 flex items-center gap-1">
                                                 <i class="ti ti-user text-[10px]"></i> {{ $item->user->name ?? '-' }}
                                             </span>
@@ -487,7 +494,14 @@
                                     <i class="ti ti-receipt text-white text-sm"></i>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <div class="text-sm font-semibold text-gray-900 truncate">{{ $item->no_faktur }}</div>
+                                    <div class="text-sm font-semibold text-gray-900 truncate flex items-center gap-1.5">
+                                        {{ $item->no_faktur }}
+                                        @if ($item->kompensasi)
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-700" title="Ada kompensasi penjualan">
+                                                <i class="ti ti-link text-[10px] mr-0.5"></i>KOMP
+                                            </span>
+                                        @endif
+                                    </div>
                                     <div class="text-xs text-gray-500 mt-0.5">{{ $item->user->name ?? 'N/A' }}</div>
                                 </div>
                             </div>

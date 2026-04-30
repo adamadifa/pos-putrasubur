@@ -7,6 +7,10 @@ use App\Models\Supplier;
 use App\Models\Produk;
 use App\Models\DetailPembelian;
 use App\Models\PembayaranPembelian;
+use App\Models\Penjualan;
+use App\Models\DetailPenjualan;
+use App\Models\PembayaranPenjualan;
+use App\Models\KompensasiPembelian;
 use App\Models\MetodePembayaran;
 use App\Models\KasBank;
 use App\Models\PengaturanUmum;
@@ -31,7 +35,7 @@ class PembelianController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Pembelian::with(['supplier', 'detailPembelian', 'user']);
+        $query = Pembelian::with(['supplier', 'detailPembelian', 'user', 'kompensasi']);
 
         // Search functionality
         if ($request->filled('search')) {
@@ -116,7 +120,7 @@ class PembelianController extends Controller
      */
     public function create()
     {
-        $suppliers = Supplier::where('status', true)->orderBy('nama')->get();
+        $suppliers = Supplier::with('pelanggan')->where('status', true)->orderBy('nama')->get();
         $produk = Produk::with(['kategori', 'satuan'])->orderBy('nama_produk')->get();
 
         // Get active payment methods
@@ -144,8 +148,8 @@ class PembelianController extends Controller
             'supplier_id' => 'required|exists:supplier,id',
             'tanggal' => 'required|date',
             'jenis_transaksi' => 'required|in:tunai,kredit',
-            'metode_pembayaran' => 'required|string|exists:metode_pembayaran,kode',
-            'kas_bank_id' => 'required|exists:kas_bank,id',
+            'metode_pembayaran' => 'nullable|string|exists:metode_pembayaran,kode',
+            'kas_bank_id' => 'nullable|exists:kas_bank,id',
             'dp_amount' => 'nullable|numeric|min:0',
             'diskon' => 'nullable|numeric|min:0',
             'uang_muka' => 'nullable|array',
@@ -159,6 +163,13 @@ class PembelianController extends Controller
             'items.*.harga_beli' => 'required|numeric|min:0',
             'items.*.discount' => 'nullable|numeric|min:0',
             'items.*.keterangan' => 'nullable|string|max:500',
+            // Potongan penjualan items (optional)
+            'potongan_items' => 'nullable|array',
+            'potongan_items.*.produk_id' => 'required|exists:produk,id',
+            'potongan_items.*.qty' => 'required|numeric|min:0.01',
+            'potongan_items.*.harga_jual' => 'required|numeric|min:0',
+            'potongan_items.*.discount' => 'nullable|numeric|min:0',
+            'potongan_items.*.keterangan' => 'nullable|string|max:500',
         ], [
             'no_faktur.required' => 'Nomor faktur wajib diisi.',
             'no_faktur.unique' => 'Nomor faktur sudah digunakan.',
@@ -167,9 +178,7 @@ class PembelianController extends Controller
             'supplier_id.exists' => 'Supplier tidak valid.',
             'jenis_transaksi.required' => 'Jenis transaksi wajib dipilih.',
             'jenis_transaksi.in' => 'Jenis transaksi tidak valid.',
-            'metode_pembayaran.required' => 'Metode pembayaran wajib dipilih.',
             'metode_pembayaran.exists' => 'Metode pembayaran tidak valid.',
-            'kas_bank_id.required' => 'Kas/Bank wajib dipilih.',
             'kas_bank_id.exists' => 'Kas/Bank tidak valid.',
             'dp_amount.min' => 'Jumlah pembayaran tidak boleh negatif.',
             'items.required' => 'Minimal harus ada 1 produk.',
@@ -183,6 +192,9 @@ class PembelianController extends Controller
             'items.*.harga_beli.min' => 'Harga tidak boleh negatif.',
             'items.*.discount.min' => 'Diskon tidak boleh negatif.',
             'items.*.keterangan.max' => 'Keterangan maksimal 500 karakter.',
+            'potongan_items.*.produk_id.required' => 'Produk potongan wajib dipilih.',
+            'potongan_items.*.qty.required' => 'Quantity potongan wajib diisi.',
+            'potongan_items.*.harga_jual.required' => 'Harga jual potongan wajib diisi.',
         ]);
 
         // Additional validation for metode_pembayaran to ensure it's active
@@ -233,12 +245,28 @@ class PembelianController extends Controller
             $jenisTransaksi = $validated['jenis_transaksi'];
             $dpAmount = $validated['dp_amount'] ?? 0;
 
-            // Determine payment status
+            // Calculate total_potongan from potongan items
+            $totalPotongan = 0;
+            $potonganItems = $validated['potongan_items'] ?? [];
+            if (!empty($potonganItems)) {
+                foreach ($potonganItems as $pItem) {
+                    $pSubtotal = $pItem['qty'] * $pItem['harga_jual'];
+                    $pDiscount = $pItem['discount'] ?? 0;
+                    $totalPotongan += ($pSubtotal - $pDiscount);
+                }
+            }
+
+            $nettTotal = max(0, $totalSetelahDiskon - $totalPotongan);
+
+            // Determine payment status based on nett_total
             $statusPembayaran = 'belum_bayar';
-            if ($jenisTransaksi === 'tunai' && $dpAmount >= $totalSetelahDiskon) {
+            if ($nettTotal <= 0) {
+                // Potongan >= total beli → pembelian otomatis lunas
+                $statusPembayaran = 'lunas';
+            } elseif ($jenisTransaksi === 'tunai' && $dpAmount >= $nettTotal) {
                 $statusPembayaran = 'lunas';
             } elseif ($dpAmount > 0) {
-                $statusPembayaran = $dpAmount < $totalSetelahDiskon ? 'dp' : 'lunas';
+                $statusPembayaran = $dpAmount < $nettTotal ? 'dp' : 'lunas';
             }
 
             // Create pembelian
@@ -249,6 +277,8 @@ class PembelianController extends Controller
                 'subtotal' => $subtotal,
                 'diskon' => $diskon,
                 'total' => $totalSetelahDiskon,
+                'total_potongan' => $totalPotongan,
+                'nett_total' => $nettTotal,
                 'status_pembayaran' => $statusPembayaran,
                 'jenis_transaksi' => $validated['jenis_transaksi'],
                 'keterangan' => $validated['keterangan'] ?? null,
@@ -269,19 +299,136 @@ class PembelianController extends Controller
                     'qty' => $item['qty'],
                     'qty_discount' => $qtyDiscount,
                     'harga_beli' => $item['harga_beli'],
-                    'subtotal' => $itemTotal, // Store final amount after item discount
+                    'subtotal' => $itemTotal,
                     'discount' => $itemDiscount,
                     'keterangan' => $item['keterangan'] ?? null,
                 ]);
 
-                // Update stock
+                // Update stock (beli = stok bertambah)
                 $produk = Produk::find($item['produk_id']);
-                // Hitung qty efektif (qty - qty_discount)
                 $effectiveQty = max(0, $item['qty'] - $qtyDiscount);
                 $produk->increment('stok', $effectiveQty);
             }
 
-            // Create payment record if there's payment amount
+            // === HANDLE POTONGAN PENJUALAN ===
+            $penjualanLinked = null;
+            if (!empty($potonganItems)) {
+                $supplier = Supplier::with('pelanggan')->find($validated['supplier_id']);
+
+                if (!$supplier || !$supplier->pelanggan_id) {
+                    throw new \Exception('Supplier ini belum dihubungkan ke pelanggan. Silakan link di master supplier.');
+                }
+
+                // Validate stock for all potongan items
+                foreach ($potonganItems as $index => $pItem) {
+                    $produkJual = Produk::find($pItem['produk_id']);
+                    if ($produkJual->stok < $pItem['qty']) {
+                        throw new \Exception("Stok {$produkJual->nama_produk} tidak cukup. Stok: {$produkJual->stok}, dibutuhkan: {$pItem['qty']}");
+                    }
+                }
+
+                // Generate invoice number for penjualan
+                $lastPenjualan = Penjualan::whereDate('created_at', today())->orderBy('id', 'desc')->first();
+                $penjualanPrefix = 'INV-' . Carbon::now()->format('Ymd') . '-';
+                if ($lastPenjualan && str_starts_with($lastPenjualan->no_faktur, $penjualanPrefix)) {
+                    $lastNum = (int) substr($lastPenjualan->no_faktur, -4);
+                    $nextNum = $lastNum + 1;
+                } else {
+                    $nextNum = 1;
+                }
+                $noFakturPenjualan = $penjualanPrefix . str_pad($nextNum, 4, '0', STR_PAD_LEFT);
+
+                // Determine penjualan payment status
+                $selisih = $totalPotongan - $totalSetelahDiskon; // positif = piutang
+                $penjualanStatusBayar = $selisih > 0 ? 'dp' : 'lunas';
+                $penjualanJumlahLunas = min($totalPotongan, $totalSetelahDiskon);
+
+                // Create penjualan record
+                $totalPenjualanSebelumDiskon = 0;
+                foreach ($potonganItems as $pItem) {
+                    $totalPenjualanSebelumDiskon += ($pItem['qty'] * $pItem['harga_jual']);
+                }
+
+                $penjualanLinked = Penjualan::create([
+                    'no_faktur' => $noFakturPenjualan,
+                    'tanggal' => $validated['tanggal'],
+                    'pelanggan_id' => $supplier->pelanggan_id,
+                    'jenis_transaksi' => 'tunai',
+                    'total' => $totalPenjualanSebelumDiskon,
+                    'diskon' => 0,
+                    'status_pembayaran' => $penjualanStatusBayar,
+                    'kasir_id' => auth()->id(),
+                ]);
+
+                // Create detail penjualan + adjust stock
+                foreach ($potonganItems as $pItem) {
+                    $pSubtotal = $pItem['qty'] * $pItem['harga_jual'];
+                    $pDiscount = $pItem['discount'] ?? 0;
+                    $pTotal = $pSubtotal - $pDiscount;
+
+                    DetailPenjualan::create([
+                        'penjualan_id' => $penjualanLinked->id,
+                        'produk_id' => $pItem['produk_id'],
+                        'qty' => $pItem['qty'],
+                        'harga' => $pItem['harga_jual'],
+                        'subtotal' => $pTotal,
+                        'discount' => $pDiscount,
+                        'keterangan' => $pItem['keterangan'] ?? 'Potongan pembelian ' . $pembelian->no_faktur,
+                    ]);
+
+                    // Update stock (jual = stok berkurang)
+                    $produkJual = Produk::find($pItem['produk_id']);
+                    $produkJual->decrement('stok', $pItem['qty']);
+                }
+
+                // Create kompensasi link
+                KompensasiPembelian::create([
+                    'pembelian_id' => $pembelian->id,
+                    'penjualan_id' => $penjualanLinked->id,
+                    'jumlah_kompensasi' => $penjualanJumlahLunas,
+                    'keterangan' => "Potongan penjualan pada pembelian {$pembelian->no_faktur}",
+                    'user_id' => auth()->id(),
+                ]);
+
+                // Create pembayaran penjualan (kompensasi - no cash movement)
+                PembayaranPenjualan::create([
+                    'penjualan_id' => $penjualanLinked->id,
+                    'no_bukti' => 'KOMP-' . date('Ymd') . '-' . str_pad($penjualanLinked->id, 4, '0', STR_PAD_LEFT),
+                    'tanggal' => $validated['tanggal'],
+                    'jumlah_bayar' => $penjualanJumlahLunas,
+                    'metode_pembayaran' => 'KOMPENSASI',
+                    'status_bayar' => $penjualanStatusBayar === 'lunas' ? 'P' : 'D',
+                    'status_uang_muka' => 0,
+                    'keterangan' => 'Kompensasi dari pembelian ' . $pembelian->no_faktur,
+                    'user_id' => auth()->id(),
+                    'kas_bank_id' => null,
+                ]);
+
+                // Create pembayaran pembelian (kompensasi - no cash movement) if nettTotal needs offset
+                if ($totalPotongan > 0) {
+                    PembayaranPembelian::create([
+                        'pembelian_id' => $pembelian->id,
+                        'no_bukti' => 'KOMP-PO-' . date('Ymd') . '-' . str_pad($pembelian->id, 4, '0', STR_PAD_LEFT),
+                        'tanggal' => $validated['tanggal'],
+                        'jumlah_bayar' => min($totalPotongan, $totalSetelahDiskon),
+                        'metode_pembayaran' => 'KOMPENSASI',
+                        'status_bayar' => $nettTotal <= 0 ? 'P' : 'D',
+                        'status_uang_muka' => 0,
+                        'keterangan' => 'Kompensasi dari penjualan ' . $noFakturPenjualan,
+                        'user_id' => auth()->id(),
+                        'kas_bank_id' => null,
+                    ]);
+                }
+
+                Log::info('Potongan penjualan created', [
+                    'pembelian_id' => $pembelian->id,
+                    'penjualan_id' => $penjualanLinked->id,
+                    'total_potongan' => $totalPotongan,
+                    'nett_total' => $nettTotal,
+                ]);
+            }
+
+            // Create payment record if there's payment amount (only for nett_total > 0)
             if ($dpAmount > 0) {
                 // Generate payment reference number
                 $noBukti = 'PAY-PO-' . date('Ymd') . '-' . str_pad($pembelian->id, 4, '0', STR_PAD_LEFT);
@@ -483,6 +630,10 @@ class PembelianController extends Controller
                 $successMessage .= ' Uang muka ' . number_format($totalUangMukaDigunakan, 0, ',', '.') . ' telah digunakan.';
             }
 
+            if ($penjualanLinked) {
+                $successMessage .= ' Potongan penjualan ' . number_format($totalPotongan, 0, ',', '.') . ' telah dibuat (Faktur: ' . $penjualanLinked->no_faktur . ').';
+            }
+
             // Debug logging
             Log::info('Pembelian created successfully', [
                 'pembelian_id' => $pembelian->id,
@@ -513,7 +664,7 @@ class PembelianController extends Controller
     {
         try {
             $pembelian = Pembelian::findByEncryptedId($encryptedId);
-            $pembelian->load(['supplier', 'detailPembelian.produk.satuan', 'user']);
+            $pembelian->load(['supplier.pelanggan', 'detailPembelian.produk.satuan', 'user', 'kompensasi.penjualan.detailPenjualan.produk.satuan']);
 
             // Query terpisah untuk riwayat pembayaran, diorder by id
             $riwayatPembayaran = PembayaranPembelian::where('pembelian_id', $pembelian->id)
@@ -540,6 +691,35 @@ class PembelianController extends Controller
         } catch (\Exception $e) {
             return redirect()->route('pembelian.index')
                 ->with('error', 'Pembelian tidak ditemukan.');
+        }
+    }
+
+    /**
+     * API: Get supplier's linked pelanggan info
+     */
+    public function getSupplierPelangganInfo($supplierId)
+    {
+        try {
+            $supplier = Supplier::with('pelanggan')->find($supplierId);
+
+            if (!$supplier) {
+                return response()->json(['has_pelanggan' => false]);
+            }
+
+            if (!$supplier->pelanggan_id) {
+                return response()->json(['has_pelanggan' => false]);
+            }
+
+            return response()->json([
+                'has_pelanggan' => true,
+                'pelanggan' => [
+                    'id' => $supplier->pelanggan->id,
+                    'kode' => $supplier->pelanggan->kode_pelanggan,
+                    'nama' => $supplier->pelanggan->nama,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['has_pelanggan' => false, 'error' => $e->getMessage()]);
         }
     }
 

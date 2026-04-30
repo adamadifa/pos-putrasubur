@@ -406,6 +406,59 @@
                         </div>
                     </div>
 
+                    <!-- Desktop: Potongan Penjualan Section (hidden by default) -->
+                    <div id="potonganSection" class="hidden lg:hidden bg-white rounded-lg shadow-sm border border-blue-200 p-4 mb-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-base font-semibold text-blue-800 flex items-center">
+                                <i class="ti ti-receipt-off text-blue-600 mr-2"></i>
+                                Potongan Penjualan
+                            </h3>
+                            <span class="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full" id="potonganPelangganName">-</span>
+                        </div>
+
+                        <div class="mb-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div class="flex items-start">
+                                <i class="ti ti-info-circle text-blue-500 mr-2 mt-0.5 text-sm"></i>
+                                <span class="text-xs text-blue-700">Barang yang dijual ke supplier sebagai potongan pembayaran. Stok akan berkurang otomatis.</span>
+                            </div>
+                        </div>
+
+                        <!-- Potongan Product Search -->
+                        <div class="mb-3">
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="ti ti-search text-blue-400"></i>
+                                </div>
+                                <input type="text" id="potonganProductSearch"
+                                    class="w-full pl-10 pr-4 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
+                                    placeholder="Cari produk untuk potongan...">
+                                
+                                <!-- Search Results Dropdown -->
+                                <div id="potonganSearchResults" class="hidden absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Potongan Items List -->
+                        <div id="potonganItems" class="space-y-2 mb-3 max-h-48 overflow-y-auto">
+                            <!-- Items will be added here dynamically -->
+                        </div>
+
+                        <!-- Potongan Empty State -->
+                        <div id="potonganEmptyState" class="text-center py-4 text-blue-400">
+                            <i class="ti ti-basket-off text-xl mb-1"></i>
+                            <p class="text-xs">Belum ada barang potongan</p>
+                        </div>
+
+                        <!-- Potongan Total -->
+                        <div class="border-t border-blue-200 pt-3 mt-3">
+                            <div class="flex justify-between items-center text-sm font-semibold text-blue-800">
+                                <span>Total Potongan</span>
+                                <span id="totalPotonganDisplay">Rp 0</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Desktop: Total Summary -->
                     <div class="hidden lg:block bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
                         <div class="space-y-2 mb-4">
@@ -420,6 +473,17 @@
                             <div class="flex justify-between text-lg font-bold border-t border-gray-200 pt-2">
                                 <span>Total</span>
                                 <span id="totalDisplayDesktop">Rp 0</span>
+                            </div>
+                            <!-- Potongan Row (hidden by default) -->
+                            <div id="potonganRowDesktop" class="hidden">
+                                <div class="flex justify-between text-sm text-blue-600">
+                                    <span>Potongan Penjualan</span>
+                                    <span class="font-medium" id="potonganDisplayDesktop">-Rp 0</span>
+                                </div>
+                                <div class="flex justify-between text-lg font-bold text-green-700 border-t border-green-200 pt-2 mt-2">
+                                    <span>Nett Total</span>
+                                    <span id="nettTotalDisplayDesktop">Rp 0</span>
+                                </div>
                             </div>
                         </div>
 
@@ -696,6 +760,18 @@
                         <div class="flex justify-between text-base md:text-lg font-bold border-t border-gray-200 pt-2">
                             <span>Total</span>
                             <span id="previewTotal">Rp 0</span>
+                        </div>
+
+                        <!-- Potongan Penjualan (New) -->
+                        <div class="flex justify-between text-xs md:text-sm hidden" id="previewPotonganRow">
+                            <span class="text-blue-600">Potongan Penjualan</span>
+                            <span class="font-medium text-blue-600 text-sm md:text-base" id="previewPotongan">-Rp 0</span>
+                        </div>
+                        
+                        <!-- Nett Total (New) -->
+                        <div class="flex justify-between text-base md:text-lg font-bold text-green-700 hidden" id="previewNettTotalRow">
+                            <span>Nett Total</span>
+                            <span id="previewNettTotal">Rp 0</span>
                         </div>
                         <div id="previewPaymentBreakdown" class="hidden border-t border-gray-200 pt-2 space-y-2">
                             <div class="flex justify-between text-xs md:text-sm" id="previewUangMukaRow"
@@ -1901,6 +1977,9 @@
                     if (clearSupplierBtnDesktop) clearSupplierBtnDesktop.classList.remove('hidden');
 
                     supplierModal.classList.add('hidden');
+
+                    // Check if supplier has linked pelanggan for potongan
+                    checkSupplierPelanggan(supplierId);
                 });
             });
         }
@@ -2492,6 +2571,11 @@
             if (subtotalDisplayDesktop) subtotalDisplayDesktop.textContent = `Rp ${formatNumber(subtotal)}`;
             if (discountDisplayDesktop) discountDisplayDesktop.textContent = `Rp ${formatNumber(discountAmount)}`;
             if (totalDisplayDesktop) totalDisplayDesktop.textContent = `Rp ${formatNumber(totalAmount)}`;
+
+            // Update Potongan Penjualan & Nett Total if applicable
+            if (typeof updatePotonganTotals === 'function') {
+                updatePotonganTotals();
+            }
 
             // Handle DP and payment breakdown
             const jenisTransaksi = document.getElementById('jenisTransaksi').value;
@@ -3376,6 +3460,32 @@
 
             document.getElementById('previewTotal').textContent = `Rp ${formatNumber(total)}`;
 
+            // Potongan Penjualan Calculation
+            let totalPotongan = 0;
+            if (typeof potonganCart !== 'undefined') {
+                potonganCart.forEach(item => {
+                    totalPotongan += (item.qty * item.harga_jual) - item.discount;
+                });
+            }
+
+            const previewPotonganRow = document.getElementById('previewPotonganRow');
+            const previewNettTotalRow = document.getElementById('previewNettTotalRow');
+            
+            if (totalPotongan > 0) {
+                if (previewPotonganRow) {
+                    previewPotonganRow.classList.remove('hidden');
+                    document.getElementById('previewPotongan').textContent = `-Rp ${formatNumber(totalPotongan)}`;
+                }
+                if (previewNettTotalRow) {
+                    previewNettTotalRow.classList.remove('hidden');
+                    const nettTotal = Math.max(0, total - totalPotongan);
+                    document.getElementById('previewNettTotal').textContent = `Rp ${formatNumber(nettTotal)}`;
+                }
+            } else {
+                if (previewPotonganRow) previewPotonganRow.classList.add('hidden');
+                if (previewNettTotalRow) previewNettTotalRow.classList.add('hidden');
+            }
+
             // Show/hide payment breakdown for kredit
             const previewPaymentBreakdown = document.getElementById('previewPaymentBreakdown');
             if (jenisTransaksi === 'kredit') {
@@ -3541,15 +3651,22 @@
         function updatePaymentCalculationForTunai() {
             const total = parseFormattedNumber(document.getElementById('previewTotal').textContent.replace('Rp ', '')
                 .replace(/\./g, ''));
+            
+            // Check for Nett Total (after potongan)
+            let totalToPay = total;
+            const previewNettTotalRow = document.getElementById('previewNettTotalRow');
+            const previewNettTotal = document.getElementById('previewNettTotal');
+            if (previewNettTotalRow && !previewNettTotalRow.classList.contains('hidden') && previewNettTotal) {
+                totalToPay = parseFormattedNumber(previewNettTotal.textContent.replace('Rp ', '').replace(/\./g, ''));
+            }
+
             const uangMukaUsed = getTotalUangMukaUsed();
-            const sisaBayar = Math.max(0, total - uangMukaUsed);
+            const sisaBayar = Math.max(0, totalToPay - uangMukaUsed);
 
             // Auto-fill DP amount dengan sisa bayar
             const dpAmount = document.getElementById('previewDpAmount');
-            if (dpAmount && uangMukaUsed > 0) {
+            if (dpAmount) {
                 dpAmount.value = formatNumberInput(sisaBayar.toString());
-            } else if (dpAmount && uangMukaUsed === 0) {
-                dpAmount.value = formatNumberInput(total.toString());
             }
 
             // Update display
@@ -3563,7 +3680,7 @@
             const dpAmountValue = parseFormattedNumber(dpAmount.value);
             document.getElementById('previewDpDisplay').textContent = `Rp ${formatNumber(dpAmountValue)}`;
             document.getElementById('previewRemainingDisplay').textContent =
-                `Rp ${formatNumber(Math.max(0, total - uangMukaUsed - dpAmountValue))}`;
+                `Rp ${formatNumber(Math.max(0, totalToPay - uangMukaUsed - dpAmountValue))}`;
         }
 
         // Initialize payment method elements
@@ -3866,10 +3983,21 @@
         function updatePaymentCalculation() {
             const total = parseFormattedNumber(document.getElementById('previewTotal').textContent.replace('Rp ', '')
                 .replace(/\./g, ''));
+            
+            // Re-calculate Potongan directly to ensure consistency
+            let totalPotongan = 0;
+            if (typeof potonganCart !== 'undefined') {
+                potonganCart.forEach(item => {
+                    totalPotongan += (item.qty * item.harga_jual) - item.discount;
+                });
+            }
+            
+            const totalToPay = Math.max(0, total - totalPotongan);
+
             const uangMukaUsed = getTotalUangMukaUsed();
             const dpAmount = parseFormattedNumber(document.getElementById('previewDpAmount').value);
             const totalPembayaran = uangMukaUsed + dpAmount;
-            const remaining = Math.max(0, total - totalPembayaran);
+            const remaining = Math.max(0, totalToPay - totalPembayaran);
 
             // Update uang muka display
             if (uangMukaUsed > 0) {
@@ -4198,6 +4326,271 @@
                     card.style.backgroundColor = '';
                 }, 2000);
             });
+        }
+        // ============================
+        // POTONGAN PENJUALAN MODULE
+        // ============================
+        let potonganCart = [];
+        let supplierHasPelanggan = false;
+        let linkedPelangganData = null;
+
+        const allProducts = @json($produk);
+
+        function checkSupplierPelanggan(supplierId) {
+            fetch(`/pembelian/supplier-pelanggan/${supplierId}`)
+                .then(res => res.json())
+                .then(data => {
+                    const section = document.getElementById('potonganSection');
+                    if (data.has_pelanggan) {
+                        supplierHasPelanggan = true;
+                        linkedPelangganData = data.pelanggan;
+                        section.classList.remove('hidden', 'lg:hidden');
+                        section.classList.add('lg:block');
+                        document.getElementById('potonganPelangganName').textContent = data.pelanggan.nama;
+                    } else {
+                        supplierHasPelanggan = false;
+                        linkedPelangganData = null;
+                        section.classList.add('hidden');
+                        section.classList.remove('lg:block');
+                        potonganCart = [];
+                        renderPotonganItems();
+                    }
+                })
+                .catch(err => {
+                    console.error('Error checking supplier pelanggan:', err);
+                    supplierHasPelanggan = false;
+                });
+        }
+
+        // Potongan Product Search
+        const potonganSearchInput = document.getElementById('potonganProductSearch');
+        const potonganSearchResults = document.getElementById('potonganSearchResults');
+
+        if (potonganSearchInput) {
+            let searchTimeout;
+            potonganSearchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                const query = this.value.trim().toLowerCase();
+                if (query.length < 1) {
+                    potonganSearchResults.classList.add('hidden');
+                    return;
+                }
+                searchTimeout = setTimeout(() => {
+                    const results = allProducts.filter(p => {
+                        const nama = p.nama_produk ? p.nama_produk.toLowerCase() : '';
+                        const kode = p.kode_produk ? p.kode_produk.toLowerCase() : '';
+                        return nama.includes(query) || kode.includes(query);
+                    }).slice(0, 8);
+                    renderPotonganSearchResults(results);
+                }, 200);
+            });
+
+            potonganSearchInput.addEventListener('blur', function() {
+                setTimeout(() => potonganSearchResults.classList.add('hidden'), 200);
+            });
+        }
+
+        function renderPotonganSearchResults(results) {
+            if (results.length === 0) {
+                potonganSearchResults.innerHTML = '<div class="p-3 text-sm text-gray-500 text-center">Tidak ditemukan</div>';
+                potonganSearchResults.classList.remove('hidden');
+                return;
+            }
+
+            let html = '';
+            results.forEach(product => {
+                const alreadyInCart = potonganCart.find(item => item.produk_id == product.id);
+                const escapedName = (product.nama_produk || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                const escapedSatuan = (product.satuan?.nama || 'pcs').replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                const escapedKode = (product.kode_produk || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                
+                let clickHandler = '';
+                if (!alreadyInCart) {
+                    clickHandler = `addPotonganItem(${product.id}, '${escapedName}', ${product.harga_jual || 0}, '${escapedSatuan}', ${product.stok || 0}, '${escapedKode}')`;
+                }
+
+                html += `
+                    <div class="p-2 hover:bg-blue-50 cursor-pointer flex items-center justify-between border-b border-gray-100 transition-colors ${alreadyInCart ? 'opacity-50' : ''}"
+                         onclick="${clickHandler}">
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-medium text-gray-900 truncate">${product.nama_produk}</div>
+                            <div class="text-xs text-gray-500">${product.kode_produk} • Stok: ${product.stok || 0} ${product.satuan?.nama || 'pcs'}</div>
+                        </div>
+                        <div class="text-right ml-2">
+                            <div class="text-sm font-semibold text-blue-600">Rp ${formatNumber(product.harga_jual || 0)}</div>
+                            ${alreadyInCart ? '<span class="text-xs text-orange-500">Sudah dipilih</span>' : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            potonganSearchResults.innerHTML = html;
+            potonganSearchResults.classList.remove('hidden');
+        }
+
+        function addPotonganItem(produkId, nama, hargaJual, satuan, stok, kode) {
+            if (potonganCart.find(item => item.produk_id == produkId)) return;
+
+            potonganCart.push({
+                produk_id: produkId,
+                nama: nama,
+                kode: kode,
+                harga_jual: hargaJual,
+                satuan: satuan,
+                stok: stok,
+                qty: 1,
+                discount: 0,
+            });
+
+            potonganSearchInput.value = '';
+            potonganSearchResults.classList.add('hidden');
+            renderPotonganItems();
+            updatePotonganTotals();
+        }
+
+        function removePotonganItem(index) {
+            potonganCart.splice(index, 1);
+            renderPotonganItems();
+            updatePotonganTotals();
+        }
+
+        function updatePotonganItemQty(index, qty) {
+            qty = parseFloat(qty) || 0;
+            potonganCart[index].qty = qty;
+            
+            const hiddenInput = document.getElementById(`potongan-qty-input-${index}`);
+            if (hiddenInput) hiddenInput.value = qty;
+            
+            updatePotonganItemRowDisplay(index);
+            updatePotonganTotals();
+        }
+
+        function updatePotonganItemHarga(index, harga) {
+            harga = parseFloat(String(harga).replace(/[^0-9]/g, '')) || 0;
+            potonganCart[index].harga_jual = harga;
+            
+            const hiddenInput = document.getElementById(`potongan-harga-input-${index}`);
+            if (hiddenInput) hiddenInput.value = harga;
+            
+            updatePotonganItemRowDisplay(index);
+            updatePotonganTotals();
+        }
+
+        function updatePotonganItemDiscount(index, disc) {
+            disc = parseFloat(String(disc).replace(/[^0-9]/g, '')) || 0;
+            potonganCart[index].discount = disc;
+            
+            const hiddenInput = document.getElementById(`potongan-discount-input-${index}`);
+            if (hiddenInput) hiddenInput.value = disc;
+            
+            updatePotonganItemRowDisplay(index);
+            updatePotonganTotals();
+        }
+
+        function updatePotonganItemRowDisplay(index) {
+            const item = potonganCart[index];
+            const subtotal = (item.qty * item.harga_jual) - item.discount;
+            const subtotalEl = document.getElementById(`potongan-subtotal-${index}`);
+            if (subtotalEl) {
+                subtotalEl.textContent = formatNumber(subtotal);
+            }
+        }
+
+        function renderPotonganItems() {
+            const container = document.getElementById('potonganItems');
+            const emptyState = document.getElementById('potonganEmptyState');
+
+            if (potonganCart.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            let html = '';
+            potonganCart.forEach((item, index) => {
+                const subtotal = (item.qty * item.harga_jual) - item.discount;
+                html += `
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-2.5">
+                        <div class="flex items-start justify-between mb-2">
+                            <div class="flex-1 min-w-0 mr-2">
+                                <div class="text-sm font-semibold text-gray-900 truncate">${item.nama}</div>
+                                <div class="text-xs text-gray-500">${item.kode} • ${item.satuan}</div>
+                            </div>
+                            <button onclick="removePotonganItem(${index})" class="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors">
+                                <i class="ti ti-x text-sm"></i>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>
+                                <label class="text-xs text-gray-500 mb-0.5 block">Qty</label>
+                                <input type="number" value="${item.qty}" min="0" step="0.01"
+                                    oninput="updatePotonganItemQty(${index}, this.value)"
+                                    class="w-full px-2 py-1 text-sm border border-blue-200 rounded focus:ring-1 focus:ring-blue-500 text-center">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-0.5 block">Harga Jual</label>
+                                <input type="text" value="${formatNumber(item.harga_jual)}"
+                                    oninput="this.value=this.value.replace(/[^0-9]/g,''); updatePotonganItemHarga(${index}, this.value)"
+                                    class="w-full px-2 py-1 text-sm border border-blue-200 rounded focus:ring-1 focus:ring-blue-500 text-right">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-0.5 block">Diskon</label>
+                                <input type="text" value="${formatNumber(item.discount)}"
+                                    oninput="this.value=this.value.replace(/[^0-9]/g,''); updatePotonganItemDiscount(${index}, this.value)"
+                                    class="w-full px-2 py-1 text-sm border border-blue-200 rounded focus:ring-1 focus:ring-blue-500 text-right">
+                            </div>
+                        </div>
+                        <div class="text-right mt-1.5 text-sm font-semibold text-blue-700">
+                            Rp <span id="potongan-subtotal-${index}">${formatNumber(subtotal)}</span>
+                        </div>
+                        <input type="hidden" name="potongan_items[${index}][produk_id]" value="${item.produk_id}">
+                        <input type="hidden" name="potongan_items[${index}][qty]" id="potongan-qty-input-${index}" value="${item.qty}">
+                        <input type="hidden" name="potongan_items[${index}][harga_jual]" id="potongan-harga-input-${index}" value="${item.harga_jual}">
+                        <input type="hidden" name="potongan_items[${index}][discount]" id="potongan-discount-input-${index}" value="${item.discount}">
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function updatePotonganTotals() {
+            let totalPotongan = 0;
+            potonganCart.forEach(item => {
+                totalPotongan += (item.qty * item.harga_jual) - item.discount;
+            });
+
+            document.getElementById('totalPotonganDisplay').textContent = 'Rp ' + formatNumber(totalPotongan);
+
+            // Update desktop total summary
+            const potonganRow = document.getElementById('potonganRowDesktop');
+            if (!potonganRow) return;
+
+            if (totalPotongan > 0) {
+                potonganRow.classList.remove('hidden');
+                document.getElementById('potonganDisplayDesktop').textContent = '-Rp ' + formatNumber(totalPotongan);
+                
+                // Use global totalAmount if available, else read from display
+                let currentTotal = 0;
+                if (typeof totalAmount !== 'undefined') {
+                    currentTotal = totalAmount;
+                } else {
+                    const totalEl = document.getElementById('totalDisplayDesktop');
+                    const totalText = totalEl ? totalEl.textContent.replace(/[^0-9]/g, '') : '0';
+                    currentTotal = parseInt(totalText) || 0;
+                }
+                
+                const nettTotal = Math.max(0, currentTotal - totalPotongan);
+                document.getElementById('nettTotalDisplayDesktop').textContent = 'Rp ' + formatNumber(nettTotal);
+            } else {
+                potonganRow.classList.add('hidden');
+            }
+
+            // Re-render hidden inputs (for form submission)
+            renderPotonganItems();
+        }
+
+        function formatNumber(num) {
+            return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
         }
     </script>
 @endpush

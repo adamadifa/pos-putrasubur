@@ -253,8 +253,13 @@
                                             <i class="ti ti-receipt text-white text-sm"></i>
                                         </div>
                                         <div>
-                                            <div class="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                                            <div class="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors flex items-center gap-1.5">
                                                 {{ $item->no_faktur }}
+                                                @if ($item->kompensasi)
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-700" title="Dari kompensasi pembelian">
+                                                        <i class="ti ti-link text-[10px] mr-0.5"></i>KOMP
+                                                    </span>
+                                                @endif
                                             </div>
                                             <div class="text-xs text-gray-500 flex items-center mt-0.5">
                                                 <i class="ti ti-calendar mr-1"></i>

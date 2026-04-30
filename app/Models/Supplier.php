@@ -19,6 +19,7 @@ class Supplier extends Model
         'telepon',
         'email',
         'keterangan',
+        'pelanggan_id',
         'status',
     ];
 
@@ -36,6 +37,16 @@ class Supplier extends Model
     public function pembelian()
     {
         return $this->hasMany(Pembelian::class);
+    }
+
+    public function pelanggan()
+    {
+        return $this->belongsTo(Pelanggan::class);
+    }
+
+    public function getIsJugaPelangganAttribute()
+    {
+        return !is_null($this->pelanggan_id);
     }
 
     // Scopes
