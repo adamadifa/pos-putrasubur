@@ -87,7 +87,7 @@ class LaporanPembelianController extends Controller
 
         // Hitung summary
         $total_pembelian = $pembelians->count();
-        $total_nilai = $pembelians->sum('total');
+        $total_nilai = $pembelians->sum('nett_total');
         $total_qty = $pembelians->sum(function ($pembelian) {
             return $pembelian->detailPembelian->sum('qty');
         });
@@ -102,7 +102,7 @@ class LaporanPembelianController extends Controller
                 return [
                     'supplier' => $group->first()->supplier,
                     'total_transaksi' => $group->count(),
-                    'total_nilai' => $group->sum('total')
+                    'total_nilai' => $group->sum('nett_total')
                 ];
             })
             ->sortByDesc('total_nilai');
@@ -151,7 +151,7 @@ class LaporanPembelianController extends Controller
                     'tanggal' => $pembelian->tanggal,
                     'created_at' => $pembelian->created_at,
                     'supplier' => $pembelian->supplier->nama ?? 'N/A',
-                    'total' => $pembelian->subtotal - $pembelian->diskon,
+                    'total' => $pembelian->nett_total,
                     'status_pembayaran' => $pembelian->status_pembayaran,
                     'keterangan' => $pembelian->keterangan
                 ];
@@ -174,7 +174,7 @@ class LaporanPembelianController extends Controller
 
         // Hitung summary
         $total_pembelian = $pembelians->count();
-        $total_nilai = $pembelians->sum('total');
+        $total_nilai = $pembelians->sum('nett_total');
         $total_qty = $pembelians->sum(function ($pembelian) {
             return $pembelian->detailPembelian->sum('qty');
         });
@@ -189,7 +189,7 @@ class LaporanPembelianController extends Controller
                 return [
                     'supplier' => $group->first()->supplier,
                     'total_transaksi' => $group->count(),
-                    'total_nilai' => $group->sum('total')
+                    'total_nilai' => $group->sum('nett_total')
                 ];
             })
             ->sortByDesc('total_nilai');
@@ -238,7 +238,7 @@ class LaporanPembelianController extends Controller
                     'tanggal' => $pembelian->tanggal,
                     'created_at' => $pembelian->created_at,
                     'supplier' => $pembelian->supplier->nama ?? 'N/A',
-                    'total' => $pembelian->subtotal - $pembelian->diskon,
+                    'total' => $pembelian->nett_total,
                     'status_pembayaran' => $pembelian->status_pembayaran,
                     'keterangan' => $pembelian->keterangan
                 ];
