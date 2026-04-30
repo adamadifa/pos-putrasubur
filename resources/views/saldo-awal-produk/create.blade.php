@@ -255,14 +255,30 @@
                 
                 // Re-bind input formatting
                 $('.saldo-input').on('input', function() {
-                    let v = $(this).val().replace(/[^\d]/g, ''); // simple integer only for simplicity, or keep full logic
-                    $(this).val(v ? new Intl.NumberFormat('id-ID').format(v) : '');
+                    let v = $(this).val().replace(/[^\d,]/g, '');
+                    // Ensure only one comma
+                    const parts = v.split(',');
+                    if (parts.length > 2) {
+                        v = parts[0] + ',' + parts.slice(1).join('');
+                    }
+                    
+                    if (parts[0]) {
+                        let formattedInt = new Intl.NumberFormat('id-ID').format(parts[0].replace(/\./g, ''));
+                        $(this).val(parts.length > 1 ? formattedInt + ',' + parts[1] : formattedInt);
+                    } else {
+                        $(this).val(v);
+                    }
                 });
             }
 
             // Simplified Number Formatters
-            function fmtNum(n) { return new Intl.NumberFormat('id-ID').format(n); }
-            function fmtInput(n) { return n ? new Intl.NumberFormat('id-ID').format(n) : ''; }
+            function fmtNum(n) { 
+                return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n); 
+            }
+            function fmtInput(n) { 
+                if (n === null || n === undefined || n === '') return '';
+                return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n);
+            }
 
             // Submit Handler
             $('#saldoAwalForm').on('submit', function(e) {
