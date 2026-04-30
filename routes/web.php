@@ -30,6 +30,7 @@ use App\Http\Controllers\UangMukaSupplierController;
 use App\Http\Controllers\UangMukaPelangganController;
 use App\Http\Controllers\PinjamanController;
 use App\Http\Controllers\PeminjamController;
+use App\Http\Controllers\LaporanUangMukaController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -325,6 +326,14 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [LaporanPiutangController::class, 'index'])->name('index');
             Route::post('/export-pdf', [LaporanPiutangController::class, 'exportPdf'])->name('export-pdf');
             Route::get('/print', [LaporanPiutangController::class, 'print'])->name('print');
+        });
+
+        Route::prefix('uang-muka-pelanggan')->name('uang-muka-pelanggan.')->group(function () {
+            Route::get('/', [LaporanUangMukaController::class, 'pelanggan'])->name('index');
+        });
+
+        Route::prefix('uang-muka-supplier')->name('uang-muka-supplier.')->group(function () {
+            Route::get('/', [LaporanUangMukaController::class, 'supplier'])->name('index');
         });
     });
 

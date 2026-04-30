@@ -90,6 +90,40 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="col-md-3 mb-3">
+                                <div class="card border">
+                                    <div class="card-body text-center">
+                                        <div class="avatar-sm mx-auto mb-3">
+                                            <div
+                                                class="avatar-title rounded-circle bg-secondary-subtle text-secondary font-size-20">
+                                                <i class="ti ti-wallet"></i>
+                                            </div>
+                                        </div>
+                                        <h5 class="font-size-16">Uang Muka Pelanggan</h5>
+                                        <p class="text-muted">Laporan uang muka dari pelanggan</p>
+                                        <a href="{{ route('laporan.uang-muka-pelanggan.index') }}" class="btn btn-secondary btn-sm">Lihat
+                                            Laporan</a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <div class="card border">
+                                    <div class="card-body text-center">
+                                        <div class="avatar-sm mx-auto mb-3">
+                                            <div
+                                                class="avatar-title rounded-circle bg-dark-subtle text-dark font-size-20">
+                                                <i class="ti ti-wallet"></i>
+                                            </div>
+                                        </div>
+                                        <h5 class="font-size-16">Uang Muka Supplier</h5>
+                                        <p class="text-muted">Laporan uang muka ke supplier</p>
+                                        <a href="{{ route('laporan.uang-muka-supplier.index') }}" class="btn btn-dark btn-sm">Lihat
+                                            Laporan</a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
