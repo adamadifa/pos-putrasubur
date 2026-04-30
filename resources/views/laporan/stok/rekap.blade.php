@@ -144,7 +144,13 @@
                             @forelse ($rekapData['results'] as $index => $item)
                                 <tr class="hover:bg-gray-50/50 transition-colors">
                                     <td class="px-5 py-3 text-gray-500 text-center">{{ $index + 1 }}</td>
-                                    <td class="px-5 py-3 font-medium text-gray-900">{{ $item['produk']->nama_produk }}</td>
+                                    <td class="px-5 py-3 font-medium text-gray-900">
+                                        <button type="button" 
+                                            onclick="showDetailMutasi('{{ $item['produk']->id }}', '{{ $item['produk']->nama_produk }}')"
+                                            class="text-left hover:text-blue-600 hover:underline transition-colors">
+                                            {{ $item['produk']->nama_produk }}
+                                        </button>
+                                    </td>
                                     <td class="px-5 py-3 text-gray-500 text-xs">{{ $item['produk']->kategori->nama ?? '-' }}</td>
                                     <td class="px-5 py-3 text-right font-semibold">{{ number_format($item['saldo_awal'], 2, ',', '.') }}</td>
                                     <td class="px-5 py-3 text-right text-green-600 font-semibold">{{ number_format($item['masuk'], 2, ',', '.') }}</td>
@@ -164,6 +170,54 @@
                 </div>
             </div>
         @endif
+    </div>
+
+    <!-- Modal Detail Mutasi -->
+    <div id="detailMutasiModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeModal()"></div>
+
+            <!-- Modal panel -->
+            <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start justify-between border-b border-gray-100 pb-4 mb-4">
+                        <div>
+                            <h3 class="text-lg leading-6 font-bold text-gray-900" id="modalTitle">
+                                Rincian Mutasi Stok
+                            </h3>
+                            <p class="text-sm text-gray-500" id="modalSubtitle"></p>
+                        </div>
+                        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-500 transition-colors">
+                            <i class="ti ti-x text-2xl"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="mt-2 overflow-x-auto max-h-[60vh]">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-gray-50 text-gray-500 font-bold border-b border-gray-100 uppercase text-[10px] tracking-wider sticky top-0">
+                                <tr>
+                                    <th class="px-4 py-2">Tanggal</th>
+                                    <th class="px-4 py-2">Jenis</th>
+                                    <th class="px-4 py-2">No. Transaksi</th>
+                                    <th class="px-4 py-2 text-right">Masuk</th>
+                                    <th class="px-4 py-2 text-right">Keluar</th>
+                                    <th class="px-4 py-2">Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detailMutasiTableBody" class="divide-y divide-gray-50">
+                                <!-- Data will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" onclick="closeModal()" class="w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     @push('scripts')
@@ -197,6 +251,99 @@
                 });
             }
         });
+
+        function showDetailMutasi(produkId, namaProduk) {
+            const modal = document.getElementById('detailMutasiModal');
+            const tableBody = document.getElementById('detailMutasiTableBody');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalSubtitle = document.getElementById('modalSubtitle');
+            
+            const tanggalDari = '{{ $tanggalDari ?? "" }}';
+            const tanggalSampai = '{{ $tanggalSampai ?? "" }}';
+            const bulan = '{{ $selectedBulan ?? "" }}';
+            const tahun = '{{ $selectedTahun ?? "" }}';
+            const jenisPeriode = '{{ $jenisPeriode ?? "bulan" }}';
+
+            let tDari = tanggalDari;
+            let tSampai = tanggalSampai;
+
+            if (jenisPeriode === 'bulan') {
+                const lastDay = new Date(tahun, bulan, 0).getDate();
+                tDari = `01/${bulan.padStart(2, '0')}/${tahun}`;
+                tSampai = `${lastDay}/${bulan.padStart(2, '0')}/${tahun}`;
+            }
+
+            modalTitle.innerText = `Rincian Mutasi: ${namaProduk}`;
+            modalSubtitle.innerText = `Periode: ${tDari} - ${tSampai}`;
+            tableBody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500"><i class="ti ti-loader animate-spin mr-2"></i>Memuat data...</td></tr>';
+            
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+
+            fetch(`{{ route('laporan.stok.detail-mutasi') }}?produk_id=${produkId}&tanggal_dari=${tDari}&tanggal_sampai=${tSampai}`)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        if (result.data.length === 0) {
+                            tableBody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">Tidak ada rincian mutasi pada periode ini.</td></tr>';
+                            return;
+                        }
+
+                        let html = '';
+                        result.data.forEach(item => {
+                            const dateStr = new Date(item.tanggal).toLocaleDateString('id-ID', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric'
+                            });
+
+                            let badgeClass = '';
+                            let jenisLabel = '';
+                            if (item.jenis === 'pembelian') {
+                                badgeClass = 'bg-green-100 text-green-700';
+                                jenisLabel = 'Pembelian';
+                            } else if (item.jenis === 'penjualan') {
+                                badgeClass = 'bg-blue-100 text-blue-700';
+                                jenisLabel = 'Penjualan';
+                            } else {
+                                badgeClass = 'bg-gray-100 text-gray-700';
+                                jenisLabel = 'Penyesuaian';
+                            }
+
+                            const qtyIn = item.jenis === 'pembelian' || (item.jenis === 'penyesuaian' && item.jumlah > 0) ? 
+                                parseFloat(item.jumlah).toLocaleString('id-ID', {minimumFractionDigits: 2}) : '-';
+                            const qtyOut = item.jenis === 'penjualan' || (item.jenis === 'penyesuaian' && item.jumlah < 0) ? 
+                                Math.abs(parseFloat(item.jumlah)).toLocaleString('id-ID', {minimumFractionDigits: 2}) : '-';
+
+                            html += `
+                                <tr class="hover:bg-gray-50/50 transition-colors">
+                                    <td class="px-4 py-2 text-xs text-gray-600">${dateStr}</td>
+                                    <td class="px-4 py-2">
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeClass}">${jenisLabel}</span>
+                                    </td>
+                                    <td class="px-4 py-2 text-xs font-medium text-gray-700">${item.no_transaksi}</td>
+                                    <td class="px-4 py-2 text-right font-semibold text-green-600 text-xs">${qtyIn}</td>
+                                    <td class="px-4 py-2 text-right font-semibold text-red-600 text-xs">${qtyOut}</td>
+                                    <td class="px-4 py-2 text-xs text-gray-500">${item.keterangan || '-'}</td>
+                                </tr>
+                            `;
+                        });
+                        tableBody.innerHTML = html;
+                    } else {
+                        tableBody.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-red-500">${result.message}</td></tr>`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    tableBody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-red-500">Gagal memuat data.</td></tr>';
+                });
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('detailMutasiModal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
     </script>
     @endpush
 @endsection

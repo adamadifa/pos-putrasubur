@@ -295,6 +295,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/export-pdf', [LaporanStokController::class, 'exportPdf'])->name('export-pdf');
             Route::get('/print', [LaporanStokController::class, 'print'])->name('print');
             Route::get('/rekap-print', [LaporanStokController::class, 'rekapPrint'])->name('rekap-print');
+            Route::get('/detail-mutasi', [LaporanStokController::class, 'getDetailMutasi'])->name('detail-mutasi');
         });
 
         Route::prefix('penjualan')->name('penjualan.')->group(function () {

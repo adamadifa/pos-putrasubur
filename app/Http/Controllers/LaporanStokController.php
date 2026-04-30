@@ -666,4 +666,38 @@ class LaporanStokController extends Controller
         
         return 0;
     }
+
+    public function getDetailMutasi(Request $request)
+    {
+        try {
+            $produkId = $request->get('produk_id');
+            $tanggalDari = $request->get('tanggal_dari');
+            $tanggalSampai = $request->get('tanggal_sampai');
+            
+            // Parse dates from d/m/Y format
+            try {
+                $dateStart = \Carbon\Carbon::createFromFormat('d/m/Y', $tanggalDari)->startOfDay();
+                $dateEnd = \Carbon\Carbon::createFromFormat('d/m/Y', $tanggalSampai)->endOfDay();
+            } catch (\Exception $e) {
+                // Fallback for other formats
+                $dateStart = \Carbon\Carbon::parse($tanggalDari)->startOfDay();
+                $dateEnd = \Carbon\Carbon::parse($tanggalSampai)->endOfDay();
+            }
+            
+            $transaksi = $this->getTransaksiProduk($produkId, $dateStart, $dateEnd);
+            $produk = Produk::with('satuan')->find($produkId);
+            
+            return response()->json([
+                'success' => true,
+                'produk' => $produk,
+                'data' => $transaksi
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error getDetailMutasi: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
