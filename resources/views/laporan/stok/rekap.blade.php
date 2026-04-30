@@ -200,8 +200,10 @@
                                     <th class="px-4 py-2">Tanggal</th>
                                     <th class="px-4 py-2">Jenis</th>
                                     <th class="px-4 py-2">No. Transaksi</th>
-                                    <th class="px-4 py-2 text-right">Masuk</th>
-                                    <th class="px-4 py-2 text-right">Keluar</th>
+                                    <th class="px-4 py-2 text-right">Qty Masuk</th>
+                                    <th class="px-4 py-2 text-right text-green-600">Nominal Masuk</th>
+                                    <th class="px-4 py-2 text-right">Qty Keluar</th>
+                                    <th class="px-4 py-2 text-right text-red-600">Nominal Keluar</th>
                                     <th class="px-4 py-2">Keterangan</th>
                                 </tr>
                             </thead>
@@ -275,7 +277,7 @@
 
             modalTitle.innerText = `Rincian Mutasi: ${namaProduk}`;
             modalSubtitle.innerText = `Periode: ${tDari} - ${tSampai}`;
-            tableBody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500"><i class="ti ti-loader animate-spin mr-2"></i>Memuat data...</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-gray-500"><i class="ti ti-loader animate-spin mr-2"></i>Memuat data...</td></tr>';
             
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
@@ -285,7 +287,7 @@
                 .then(result => {
                     if (result.success) {
                         if (result.data.length === 0) {
-                            tableBody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">Tidak ada rincian mutasi pada periode ini.</td></tr>';
+                            tableBody.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-gray-500">Tidak ada rincian mutasi pada periode ini.</td></tr>';
                             return;
                         }
 
@@ -315,27 +317,34 @@
                             const qtyOut = item.jenis === 'penjualan' || (item.jenis === 'penyesuaian' && item.jumlah < 0) ? 
                                 Math.abs(parseFloat(item.jumlah)).toLocaleString('id-ID', {minimumFractionDigits: 2}) : '-';
 
+                            const nominalIn = (item.jenis === 'pembelian' || (item.jenis === 'penyesuaian' && item.jumlah > 0)) && item.total_harga ? 
+                                'Rp ' + Math.abs(parseFloat(item.total_harga)).toLocaleString('id-ID', {minimumFractionDigits: 0}) : '-';
+                            const nominalOut = (item.jenis === 'penjualan' || (item.jenis === 'penyesuaian' && item.jumlah < 0)) && item.total_harga ? 
+                                'Rp ' + Math.abs(parseFloat(item.total_harga)).toLocaleString('id-ID', {minimumFractionDigits: 0}) : '-';
+
                             html += `
-                                <tr class="hover:bg-gray-50/50 transition-colors">
+                                <tr class="hover:bg-gray-50/50 transition-colors border-b border-gray-50">
                                     <td class="px-4 py-2 text-xs text-gray-600">${dateStr}</td>
                                     <td class="px-4 py-2">
                                         <span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeClass}">${jenisLabel}</span>
                                     </td>
                                     <td class="px-4 py-2 text-xs font-medium text-gray-700">${item.no_transaksi}</td>
-                                    <td class="px-4 py-2 text-right font-semibold text-green-600 text-xs">${qtyIn}</td>
-                                    <td class="px-4 py-2 text-right font-semibold text-red-600 text-xs">${qtyOut}</td>
+                                    <td class="px-4 py-2 text-right font-semibold text-gray-700 text-xs">${qtyIn}</td>
+                                    <td class="px-4 py-2 text-right font-bold text-green-600 text-xs">${nominalIn}</td>
+                                    <td class="px-4 py-2 text-right font-semibold text-gray-700 text-xs">${qtyOut}</td>
+                                    <td class="px-4 py-2 text-right font-bold text-red-600 text-xs">${nominalOut}</td>
                                     <td class="px-4 py-2 text-xs text-gray-500">${item.keterangan || '-'}</td>
                                 </tr>
                             `;
                         });
                         tableBody.innerHTML = html;
                     } else {
-                        tableBody.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-red-500">${result.message}</td></tr>`;
+                        tableBody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-red-500">${result.message}</td></tr>`;
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    tableBody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-red-500">Gagal memuat data.</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-red-500">Gagal memuat data.</td></tr>';
                 });
         }
 
