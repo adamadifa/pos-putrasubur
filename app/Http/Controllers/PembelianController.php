@@ -319,14 +319,6 @@ class PembelianController extends Controller
                     throw new \Exception('Supplier ini belum dihubungkan ke pelanggan. Silakan link di master supplier.');
                 }
 
-                // Validate stock for all potongan items
-                foreach ($potonganItems as $index => $pItem) {
-                    $produkJual = Produk::find($pItem['produk_id']);
-                    if ($produkJual->stok < $pItem['qty']) {
-                        throw new \Exception("Stok {$produkJual->nama_produk} tidak cukup. Stok: {$produkJual->stok}, dibutuhkan: {$pItem['qty']}");
-                    }
-                }
-
                 // Generate invoice number for penjualan
                 $lastPenjualan = Penjualan::whereDate('created_at', today())->orderBy('id', 'desc')->first();
                 $penjualanPrefix = 'INV-' . Carbon::now()->format('Ymd') . '-';

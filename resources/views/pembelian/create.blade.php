@@ -4454,7 +4454,7 @@
         }
 
         function updatePotonganItemQty(index, qty) {
-            qty = parseFloat(qty) || 0;
+            qty = parseFormattedNumber(qty);
             potonganCart[index].qty = qty;
             
             const hiddenInput = document.getElementById(`potongan-qty-input-${index}`);
@@ -4465,7 +4465,7 @@
         }
 
         function updatePotonganItemHarga(index, harga) {
-            harga = parseFloat(String(harga).replace(/[^0-9]/g, '')) || 0;
+            harga = parseFormattedNumber(harga);
             potonganCart[index].harga_jual = harga;
             
             const hiddenInput = document.getElementById(`potongan-harga-input-${index}`);
@@ -4476,7 +4476,7 @@
         }
 
         function updatePotonganItemDiscount(index, disc) {
-            disc = parseFloat(String(disc).replace(/[^0-9]/g, '')) || 0;
+            disc = parseFormattedNumber(disc);
             potonganCart[index].discount = disc;
             
             const hiddenInput = document.getElementById(`potongan-discount-input-${index}`);
@@ -4516,27 +4516,27 @@
                                 <div class="text-sm font-semibold text-gray-900 truncate">${item.nama}</div>
                                 <div class="text-xs text-gray-500">${item.kode} • ${item.satuan}</div>
                             </div>
-                            <button onclick="removePotonganItem(${index})" class="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors">
+                            <button type="button" onclick="removePotonganItem(${index})" class="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors">
                                 <i class="ti ti-x text-sm"></i>
                             </button>
                         </div>
                         <div class="grid grid-cols-3 gap-2">
                             <div>
                                 <label class="text-xs text-gray-500 mb-0.5 block">Qty</label>
-                                <input type="number" value="${item.qty}" min="0" step="0.01"
+                                <input type="text" id="potongan-qty-${index}" value="${formatDecimalInput(item.qty)}"
                                     oninput="updatePotonganItemQty(${index}, this.value)"
                                     class="w-full px-2 py-1 text-sm border border-blue-200 rounded focus:ring-1 focus:ring-blue-500 text-center">
                             </div>
                             <div>
                                 <label class="text-xs text-gray-500 mb-0.5 block">Harga Jual</label>
-                                <input type="text" value="${formatNumber(item.harga_jual)}"
-                                    oninput="this.value=this.value.replace(/[^0-9]/g,''); updatePotonganItemHarga(${index}, this.value)"
+                                <input type="text" id="potongan-harga-${index}" value="${formatNumber(item.harga_jual)}"
+                                    oninput="updatePotonganItemHarga(${index}, this.value)"
                                     class="w-full px-2 py-1 text-sm border border-blue-200 rounded focus:ring-1 focus:ring-blue-500 text-right">
                             </div>
                             <div>
                                 <label class="text-xs text-gray-500 mb-0.5 block">Diskon</label>
-                                <input type="text" value="${formatNumber(item.discount)}"
-                                    oninput="this.value=this.value.replace(/[^0-9]/g,''); updatePotonganItemDiscount(${index}, this.value)"
+                                <input type="text" id="potongan-discount-${index}" value="${formatNumber(item.discount)}"
+                                    oninput="updatePotonganItemDiscount(${index}, this.value)"
                                     class="w-full px-2 py-1 text-sm border border-blue-200 rounded focus:ring-1 focus:ring-blue-500 text-right">
                             </div>
                         </div>
@@ -4551,6 +4551,17 @@
                 `;
             });
             container.innerHTML = html;
+
+            // Apply formatting and event listeners
+            potonganCart.forEach((item, index) => {
+                const qtyInput = document.getElementById(`potongan-qty-${index}`);
+                const hargaInput = document.getElementById(`potongan-harga-${index}`);
+                const discInput = document.getElementById(`potongan-discount-${index}`);
+
+                if (qtyInput) setupDecimalInput(qtyInput);
+                if (hargaInput) setupNumberInput(hargaInput);
+                if (discInput) setupNumberInput(discInput);
+            });
         }
 
         function updatePotonganTotals() {
@@ -4584,9 +4595,6 @@
             } else {
                 potonganRow.classList.add('hidden');
             }
-
-            // Re-render hidden inputs (for form submission)
-            renderPotonganItems();
         }
 
         function formatNumber(num) {
