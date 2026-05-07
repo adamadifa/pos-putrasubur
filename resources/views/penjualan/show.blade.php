@@ -314,7 +314,7 @@
                                             class="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm text-gray-600">
                                             <div class="flex items-center">
                                                 <i class="ti ti-package text-indigo-500 mr-1"></i>
-                                                <span class="font-medium">{{ $detail->qty }}
+                                                <span class="font-medium">{{ number_format($detail->qty, 2, ',', '.') }}
                                                     {{ $detail->produk->satuan->nama ?? 'pcs' }}</span>
                                             </div>
                                             <div class="flex items-center">
@@ -1077,7 +1077,7 @@
                     <div style="margin-bottom: 8px;">
                         <p style="margin: 2px 0; font-weight: bold;">{{ $detail->produk->nama_produk }}</p>
                         <p style="margin: 2px 0; font-size: 11px;">
-                            {{ number_format($detail->qty, 0) }} {{ $detail->produk->satuan->nama ?? 'pcs' }} x
+                            {{ number_format($detail->qty, 2, ',', '.') }} {{ $detail->produk->satuan->nama ?? 'pcs' }} x
                             {{ number_format($detail->harga, 0) }} = {{ number_format($detail->subtotal, 0) }}
                         </p>
                     </div>
@@ -1619,7 +1619,7 @@
             @foreach ($penjualan->detailPenjualan as $detail)
                 invoiceLines.push("{{ substr($detail->produk->nama_produk, 0, 20) }}\n");
                 invoiceLines.push(
-                    "  {{ number_format($detail->qty, 0) }} {{ $detail->produk->satuan->nama ?? 'pcs' }} x {{ number_format($detail->harga, 0) }} = {{ number_format($detail->subtotal, 0) }}\n"
+                    "  {{ number_format($detail->qty, 2, ',', '.') }} {{ $detail->produk->satuan->nama ?? 'pcs' }} x {{ number_format($detail->harga, 0, ',', '.') }} = {{ number_format($detail->subtotal, 0, ',', '.') }}\n"
                 );
                 @if ($detail->discount > 0)
                     invoiceLines.push("  Diskon: -{{ number_format($detail->discount, 0) }}\n");
@@ -2376,7 +2376,7 @@
             @foreach ($penjualan->detailPenjualan as $detail)
                 content += '{{ substr($detail->produk->nama_produk, 0, 30) }}\n';
                 content +=
-                    '  {{ number_format($detail->qty, 0) }} {{ $detail->produk->satuan->nama ?? 'pcs' }} x {{ number_format($detail->harga, 0) }} = {{ number_format($detail->subtotal, 0) }}\n';
+                    '  {{ number_format($detail->qty, 2, ',', '.') }} {{ $detail->produk->satuan->nama ?? 'pcs' }} x {{ number_format($detail->harga, 0, ',', '.') }} = {{ number_format($detail->subtotal, 0, ',', '.') }}\n';
                 @if ($detail->discount > 0)
                     content += '  Diskon: -{{ number_format($detail->discount, 0) }}\n';
                 @endif

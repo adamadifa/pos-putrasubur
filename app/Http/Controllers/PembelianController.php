@@ -456,11 +456,12 @@ class PembelianController extends Controller
                     }
                 }
 
-                // Tentukan status_bayar berdasarkan jumlah pembayaran vs total
+                // Tentukan status_bayar berdasarkan jumlah pembayaran vs nett_total
                 // D = DP (pembayaran pertama yang belum lunas)
                 // P = Pelunasan (pembayaran yang membuat total menjadi lunas)
+                $basisPembayaran = $nettTotal > 0 ? $nettTotal : $totalSetelahDiskon;
                 $statusBayar = 'D'; // Default to DP
-                if ($dpAmount >= $pembelian->total) {
+                if ($dpAmount >= $basisPembayaran) {
                     $statusBayar = 'P'; // Pelunasan (full payment)
                 } else {
                     $statusBayar = 'D'; // DP (partial payment)
@@ -516,7 +517,8 @@ class PembelianController extends Controller
                             }
 
                             // Validasi jumlah tidak melebihi sisa pembayaran pembelian
-                            $sisaPembayaran = $pembelian->total - ($dpAmount ?? 0);
+                            $basisPembayaran = $nettTotal > 0 ? $nettTotal : $totalSetelahDiskon;
+                            $sisaPembayaran = $basisPembayaran - ($dpAmount ?? 0);
                             if ($jumlahDigunakan > $sisaPembayaran) {
                                 throw new \Exception("Jumlah uang muka yang digunakan ({$jumlahDigunakan}) melebihi sisa pembayaran ({$sisaPembayaran}).");
                             }
@@ -562,7 +564,8 @@ class PembelianController extends Controller
                     // A = Angsuran (pembayaran selanjutnya yang belum lunas, tapi ini tidak mungkin karena pembayaran pertama)
                     // P = Pelunasan (pembayaran yang membuat total menjadi lunas)
                     $statusBayarUm = 'D'; // Default to DP
-                    if ($totalPembayaranDenganUm >= $pembelian->total) {
+                    $basisPembayaranUm = $nettTotal > 0 ? $nettTotal : $totalSetelahDiskon;
+                    if ($totalPembayaranDenganUm >= $basisPembayaranUm) {
                         $statusBayarUm = 'P'; // Pelunasan (full payment)
                     } else {
                         $statusBayarUm = 'D'; // DP (partial payment)
@@ -601,9 +604,10 @@ class PembelianController extends Controller
                     ]);
                 }
 
-                // Update status pembayaran jika uang muka + DP >= total
+                // Update status pembayaran jika uang muka + DP >= nett_total
                 $totalPembayaran = ($dpAmount ?? 0) + $totalUangMukaDigunakan;
-                if ($totalPembayaran >= $pembelian->total) {
+                $basisPembayaranFinal = $nettTotal > 0 ? $nettTotal : $totalSetelahDiskon;
+                if ($totalPembayaran >= $basisPembayaranFinal) {
                     $pembelian->update(['status_pembayaran' => 'lunas']);
                 } elseif ($totalPembayaran > 0) {
                     $pembelian->update(['status_pembayaran' => 'dp']);
@@ -656,7 +660,7 @@ class PembelianController extends Controller
     {
         try {
             $pembelian = Pembelian::findByEncryptedId($encryptedId);
-            $pembelian->load(['supplier.pelanggan', 'detailPembelian.produk.satuan', 'user', 'kompensasi.penjualan.detailPenjualan.produk.satuan']);
+            $pembelian->load(['supplier.pelanggan', 'detailPembelian.produk.satuan', 'user', 'kompensasi.penjualan.detailPenjualan.produk.satuan', 'penggunaanUangMuka.uangMukaSupplier']);
 
             // Query terpisah untuk riwayat pembayaran, diorder by id
             $riwayatPembayaran = PembayaranPembelian::where('pembelian_id', $pembelian->id)

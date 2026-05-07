@@ -110,7 +110,10 @@ class Pembelian extends Model
     // Accessors
     public function getSisaPembayaranAttribute()
     {
-        $totalDibayar = $this->pembayaranPembelian->sum('jumlah_bayar');
+        // Exclude KOMPENSASI payments karena sudah dihitung di potongan penjualan
+        $totalDibayar = $this->pembayaranPembelian
+            ->where('metode_pembayaran', '!=', 'KOMPENSASI')
+            ->sum('jumlah_bayar');
         // Gunakan nett_total jika ada potongan, otherwise total
         $basis = ($this->nett_total > 0) ? $this->nett_total : $this->total;
         return max(0, $basis - $totalDibayar);
@@ -118,7 +121,10 @@ class Pembelian extends Model
 
     public function getTotalDibayarAttribute()
     {
-        return $this->pembayaranPembelian->sum('jumlah_bayar');
+        // Exclude KOMPENSASI payments karena sudah dihitung di potongan penjualan
+        return $this->pembayaranPembelian
+            ->where('metode_pembayaran', '!=', 'KOMPENSASI')
+            ->sum('jumlah_bayar');
     }
 
     public function getTotalSetelahDiskonAttribute()

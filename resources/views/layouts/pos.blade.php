@@ -29,6 +29,9 @@
 
 
     <style>
+        /* Alpine.js x-cloak */
+        [x-cloak] { display: none !important; }
+
         /* Custom Flatpickr Styling - Clean & Modern */
         .flatpickr-calendar {
             background: #ffffff;

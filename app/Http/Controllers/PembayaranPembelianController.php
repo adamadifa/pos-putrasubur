@@ -72,9 +72,13 @@ class PembayaranPembelianController extends Controller
             ->orderBy('tanggal', 'desc')
             ->get()
             ->filter(function ($p) {
-                // Calculate total already paid
-                $sudahDibayar = $p->pembayaranPembelian->sum('jumlah_bayar');
-                $sisaBayar = $p->total - $sudahDibayar;
+                // Calculate total already paid (exclude KOMPENSASI yang sudah dihitung di potongan)
+                $sudahDibayar = $p->pembayaranPembelian
+                    ->where('metode_pembayaran', '!=', 'KOMPENSASI')
+                    ->sum('jumlah_bayar');
+                // Gunakan nett_total jika ada potongan penjualan
+                $basis = ($p->nett_total > 0) ? $p->nett_total : $p->total;
+                $sisaBayar = $basis - $sudahDibayar;
 
                 // Only show transactions that still have remaining balance to pay
                 return $sisaBayar > 0;
@@ -237,9 +241,12 @@ class PembayaranPembelianController extends Controller
             // Get the pembelian
             $pembelian = Pembelian::findOrFail($validated['pembelian_id']);
 
-            // Calculate total already paid (sebelum memproses uang muka baru)
-            $sudahDibayar = $pembelian->pembayaranPembelian->sum('jumlah_bayar');
-            $totalTransaksi = $pembelian->total;
+            // Calculate total already paid (exclude KOMPENSASI yang sudah dihitung di potongan)
+            $sudahDibayar = $pembelian->pembayaranPembelian
+                ->where('metode_pembayaran', '!=', 'KOMPENSASI')
+                ->sum('jumlah_bayar');
+            // Gunakan nett_total jika ada potongan penjualan
+            $totalTransaksi = ($pembelian->nett_total > 0) ? $pembelian->nett_total : $pembelian->total;
             $sisaBayar = $totalTransaksi - $sudahDibayar;
 
             // Handle uang muka jika ada
@@ -661,11 +668,13 @@ class PembayaranPembelianController extends Controller
             $pembelian = Pembelian::findOrFail($validated['pembelian_id']);
             $jumlahBayar = $jumlahNumeric;
 
-            // Calculate sisa pembayaran excluding current payment
+            // Calculate sisa pembayaran excluding current payment and KOMPENSASI
             $totalDibayarLain = $pembelian->pembayaranPembelian()
                 ->where('id', '!=', $pembayaranPembelian->id)
+                ->where('metode_pembayaran', '!=', 'KOMPENSASI')
                 ->sum('jumlah_bayar');
-            $sisaPembayaran = $pembelian->total - $totalDibayarLain;
+            $basisPembayaran = ($pembelian->nett_total > 0) ? $pembelian->nett_total : $pembelian->total;
+            $sisaPembayaran = $basisPembayaran - $totalDibayarLain;
 
             // Validate payment amount
             if ($jumlahBayar > $sisaPembayaran) {
@@ -686,11 +695,14 @@ class PembayaranPembelianController extends Controller
                 'keterangan' => $validated['keterangan'],
             ]);
 
-            // Update pembelian status
-            $totalDibayar = $pembelian->pembayaranPembelian()->sum('jumlah_bayar');
+            // Update pembelian status (exclude KOMPENSASI, use nett_total)
+            $totalDibayar = $pembelian->pembayaranPembelian()
+                ->where('metode_pembayaran', '!=', 'KOMPENSASI')
+                ->sum('jumlah_bayar');
+            $basisTotal = ($pembelian->nett_total > 0) ? $pembelian->nett_total : $pembelian->total;
             $statusPembayaran = 'belum_bayar';
 
-            if ($totalDibayar >= $pembelian->total) {
+            if ($totalDibayar >= $basisTotal) {
                 $statusPembayaran = 'lunas';
             } elseif ($totalDibayar > 0) {
                 $statusPembayaran = 'dp';
@@ -811,10 +823,13 @@ class PembayaranPembelianController extends Controller
             // Delete the payment
             $pembayaranPembelian->delete();
 
-            // Recalculate pembelian payment status
-            $totalDibayar = PembayaranPembelian::where('pembelian_id', $pembelian->id)->sum('jumlah_bayar');
+            // Recalculate pembelian payment status (exclude KOMPENSASI)
+            $totalDibayar = PembayaranPembelian::where('pembelian_id', $pembelian->id)
+                ->where('metode_pembayaran', '!=', 'KOMPENSASI')
+                ->sum('jumlah_bayar');
+            $basisTotal = ($pembelian->nett_total > 0) ? $pembelian->nett_total : $pembelian->total;
 
-            if ($totalDibayar >= $pembelian->total) {
+            if ($totalDibayar >= $basisTotal) {
                 $pembelian->update(['status_pembayaran' => 'lunas']);
             } elseif ($totalDibayar > 0) {
                 $pembelian->update(['status_pembayaran' => 'dp']);

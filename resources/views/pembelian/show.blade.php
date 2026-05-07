@@ -513,6 +513,57 @@
                                                         class="text-xs text-gray-500 line-clamp-2">{{ $pembayaran->keterangan }}</span>
                                                 </div>
                                             @endif
+
+                                            {{-- Detail Rincian Uang Muka yang Digunakan --}}
+                                            @if (($pembayaran->status_uang_muka ?? 0) == 1 && $pembelian->penggunaanUangMuka->count() > 0)
+                                                <div class="mt-2" x-data="{ showDetail: false }">
+                                                    <button type="button" @click="showDetail = !showDetail"
+                                                        class="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800 font-medium transition-colors">
+                                                        <i class="ti ti-list-details mr-0.5"></i>
+                                                        <span x-text="showDetail ? 'Sembunyikan Rincian' : 'Lihat Rincian Uang Muka'"></span>
+                                                        <i class="ti text-[10px] transition-transform duration-200"
+                                                           :class="showDetail ? 'ti-chevron-up' : 'ti-chevron-down'"></i>
+                                                    </button>
+                                                    <div x-show="showDetail" x-cloak
+                                                         x-transition:enter="transition ease-out duration-200"
+                                                         x-transition:enter-start="opacity-0 transform -translate-y-2"
+                                                         x-transition:enter-end="opacity-100 transform translate-y-0"
+                                                         x-transition:leave="transition ease-in duration-150"
+                                                         x-transition:leave-start="opacity-100 transform translate-y-0"
+                                                         x-transition:leave-end="opacity-0 transform -translate-y-2"
+                                                         class="mt-2 space-y-1.5">
+                                                        @foreach ($pembelian->penggunaanUangMuka as $penggunaan)
+                                                            <div class="flex items-center justify-between bg-white/80 border border-purple-100 rounded-lg px-3 py-2">
+                                                                <div class="flex items-center gap-2 min-w-0">
+                                                                    <div class="w-7 h-7 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                                        <i class="ti ti-receipt text-purple-600 text-xs"></i>
+                                                                    </div>
+                                                                    <div class="min-w-0">
+                                                                        <div class="text-xs font-semibold text-gray-800 truncate">
+                                                                            {{ $penggunaan->uangMukaSupplier->no_uang_muka ?? '-' }}
+                                                                        </div>
+                                                                        <div class="text-[10px] text-gray-500 flex items-center gap-1.5">
+                                                                            <span>{{ $penggunaan->uangMukaSupplier->tanggal ? $penggunaan->uangMukaSupplier->tanggal->format('d/m/Y') : '-' }}</span>
+                                                                            <span class="text-gray-300">•</span>
+                                                                            <span>Total: Rp {{ number_format($penggunaan->uangMukaSupplier->jumlah_uang_muka ?? 0, 0, ',', '.') }}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="text-right flex-shrink-0 ml-2">
+                                                                    <div class="text-xs font-bold text-purple-700">
+                                                                        Rp {{ number_format($penggunaan->jumlah_digunakan, 0, ',', '.') }}
+                                                                    </div>
+                                                                    <div class="text-[10px] text-gray-400">digunakan</div>
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+                                                        <div class="flex items-center justify-between bg-purple-50 rounded-lg px-3 py-1.5 border border-purple-200">
+                                                            <span class="text-xs font-semibold text-purple-800">Total Uang Muka Digunakan</span>
+                                                            <span class="text-xs font-bold text-purple-800">Rp {{ number_format($pembelian->penggunaanUangMuka->sum('jumlah_digunakan'), 0, ',', '.') }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endif
                                         </div>
 
                                         <!-- Payment Amount & Actions -->
@@ -677,6 +728,14 @@
 
                         <!-- Payment Status -->
                         <div class="pt-3 border-t space-y-3">
+                            @php
+                                // Exclude KOMPENSASI payments karena sudah ditampilkan di Potongan Penjualan
+                                $totalDibayarCash = $pembelian->pembayaranPembelian
+                                    ->where('metode_pembayaran', '!=', 'KOMPENSASI')
+                                    ->sum('jumlah_bayar');
+                                $basisPembayaran = $pembelian->nett_total > 0 ? $pembelian->nett_total : $pembelian->total;
+                                $sisaPembayaran = max(0, $basisPembayaran - $totalDibayarCash);
+                            @endphp
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center">
                                     <i class="ti ti-check-circle text-green-500 mr-2"></i>
@@ -684,15 +743,9 @@
                                 </div>
                                 <span class="font-semibold text-green-600">
                                     Rp
-                                    {{ number_format($pembelian->pembayaranPembelian->sum('jumlah_bayar'), 0, ',', '.') }}
+                                    {{ number_format($totalDibayarCash, 0, ',', '.') }}
                                 </span>
                             </div>
-
-                            @php
-                                $totalDibayar = $pembelian->pembayaranPembelian->sum('jumlah_bayar');
-                                $basisPembayaran = $pembelian->nett_total > 0 ? $pembelian->nett_total : $pembelian->total;
-                                $sisaPembayaran = max(0, $basisPembayaran - $totalDibayar);
-                            @endphp
 
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center">

@@ -3652,13 +3652,15 @@
             const total = parseFormattedNumber(document.getElementById('previewTotal').textContent.replace('Rp ', '')
                 .replace(/\./g, ''));
             
-            // Check for Nett Total (after potongan)
-            let totalToPay = total;
-            const previewNettTotalRow = document.getElementById('previewNettTotalRow');
-            const previewNettTotal = document.getElementById('previewNettTotal');
-            if (previewNettTotalRow && !previewNettTotalRow.classList.contains('hidden') && previewNettTotal) {
-                totalToPay = parseFormattedNumber(previewNettTotal.textContent.replace('Rp ', '').replace(/\./g, ''));
+            // Calculate potongan directly from cart data (more reliable than reading DOM)
+            let totalPotongan = 0;
+            if (typeof potonganCart !== 'undefined') {
+                potonganCart.forEach(item => {
+                    totalPotongan += (item.qty * item.harga_jual) - item.discount;
+                });
             }
+            
+            const totalToPay = Math.max(0, total - totalPotongan);
 
             const uangMukaUsed = getTotalUangMukaUsed();
             const sisaBayar = Math.max(0, totalToPay - uangMukaUsed);
