@@ -49,10 +49,13 @@ class TransactionService
                 'total_payment' => $validationResult['total_payment'] ?? 0
             ]);
 
-            // 4. Kembalikan stok produk sebelum menghapus penjualan
+            // 4. Sesuaikan pembelian yang terkait kompensasi (potongan penjualan)
+            $this->adjustLinkedPembelianKompensasi($penjualan);
+
+            // 5. Kembalikan stok produk sebelum menghapus penjualan
             $this->restoreStockFromPenjualan($penjualan);
 
-            // 5. Kembalikan uang muka jika ada sebelum menghapus pembayaran
+            // 6. Kembalikan uang muka jika ada sebelum menghapus pembayaran
             $penggunaanUangMukaList = \App\Models\PenggunaanUangMukaPenjualan::where('penjualan_id', $penjualan->id)->get();
             foreach ($penggunaanUangMukaList as $penggunaan) {
                 $uangMuka = $penggunaan->uangMukaPelanggan;
@@ -80,13 +83,13 @@ class TransactionService
                 $penggunaan->delete();
             }
 
-            // 6. Hapus pembayaran terlebih dahulu untuk memastikan trigger berjalan
+            // 7. Hapus pembayaran terlebih dahulu untuk memastikan trigger berjalan
             $pembayaranList = $penjualan->pembayaranPenjualan;
             foreach ($pembayaranList as $pembayaran) {
                 $pembayaran->delete(); // Ini akan memicu trigger after_pembayaran_penjualan_delete
             }
 
-            // 7. Hapus penjualan (trigger akan otomatis menghapus detail)
+            // 8. Hapus penjualan (trigger akan otomatis menghapus detail)
             $deleted = $penjualan->delete();
 
             // Debug: Log hasil delete
@@ -235,8 +238,9 @@ class TransactionService
         // Cek apakah penjualan masih dalam hari yang sama
         $createdAt = $penjualan->created_at;
         $isSameDay = $createdAt->isSameDay(now());
+        $isSpecialUser = auth()->user() && auth()->user()->email === 'adamabdi.al.a@gmail.com';
 
-        if (!$isSameDay) {
+        if (!$isSameDay && !$isSpecialUser) {
             return [
                 'success' => false,
                 'message' => 'Tidak dapat menghapus penjualan yang sudah bukan hari yang sama. Hanya penjualan hari ini yang dapat dihapus.'
@@ -289,8 +293,9 @@ class TransactionService
             // Cek apakah pembelian masih dalam hari yang sama
             $createdAt = $pembelian->created_at;
             $isSameDay = $createdAt->isSameDay(now());
+            $isSpecialUser = auth()->user() && auth()->user()->email === 'adamabdi.al.a@gmail.com';
 
-            if (!$isSameDay) {
+            if (!$isSameDay && !$isSpecialUser) {
                 return [
                     'success' => false,
                     'message' => 'Tidak dapat menghapus pembelian yang sudah bukan hari yang sama. Hanya pembelian hari ini yang dapat dihapus.'
@@ -497,6 +502,105 @@ class TransactionService
         } catch (Exception $e) {
             Log::error('Error reducing stock from pembelian', [
                 'pembelian_id' => $pembelian->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e; // Re-throw untuk ditangani oleh caller
+        }
+    }
+
+    /**
+     * Sesuaikan pembelian yang terkait kompensasi ketika penjualan dihapus.
+     * 
+     * Ketika penjualan yang merupakan potongan penjualan pada pembelian dihapus,
+     * maka pembelian harus disesuaikan:
+     * - Hapus pembayaran KOMPENSASI pada pembelian
+     * - Reset total_potongan dan nett_total
+     * - Hapus record kompensasi
+     * - Hitung ulang status pembayaran pembelian
+     */
+    private function adjustLinkedPembelianKompensasi(Penjualan $penjualan): void
+    {
+        try {
+            // Cek apakah penjualan ini terkait dengan kompensasi pembelian
+            $kompensasi = \App\Models\KompensasiPembelian::where('penjualan_id', $penjualan->id)->first();
+
+            if (!$kompensasi) {
+                return; // Tidak ada kompensasi, tidak perlu penyesuaian
+            }
+
+            $pembelian = Pembelian::find($kompensasi->pembelian_id);
+
+            if (!$pembelian) {
+                // Pembelian sudah tidak ada, hapus kompensasi saja
+                $kompensasi->delete();
+                return;
+            }
+
+            Log::info('Adjusting linked pembelian kompensasi', [
+                'penjualan_id' => $penjualan->id,
+                'pembelian_id' => $pembelian->id,
+                'kompensasi_id' => $kompensasi->id,
+                'jumlah_kompensasi' => $kompensasi->jumlah_kompensasi,
+                'total_potongan_sebelum' => $pembelian->total_potongan,
+                'nett_total_sebelum' => $pembelian->nett_total,
+            ]);
+
+            // 1. Hapus pembayaran KOMPENSASI pada pembelian
+            $kompensasiPayments = PembayaranPembelian::where('pembelian_id', $pembelian->id)
+                ->where('metode_pembayaran', 'KOMPENSASI')
+                ->get();
+
+            foreach ($kompensasiPayments as $payment) {
+                Log::info('Deleting KOMPENSASI payment from pembelian', [
+                    'payment_id' => $payment->id,
+                    'no_bukti' => $payment->no_bukti,
+                    'jumlah_bayar' => $payment->jumlah_bayar,
+                ]);
+                $payment->delete();
+            }
+
+            // 2. Reset total_potongan dan hitung ulang nett_total
+            $pembelian->total_potongan = 0;
+            $pembelian->nett_total = $pembelian->total; // total sudah = subtotal - diskon
+
+            // 3. Hitung ulang status pembayaran berdasarkan pembayaran yang tersisa (non-KOMPENSASI)
+            $totalPembayaranTersisa = PembayaranPembelian::where('pembelian_id', $pembelian->id)
+                ->where('metode_pembayaran', '!=', 'KOMPENSASI')
+                ->sum('jumlah_bayar');
+
+            // Termasuk uang muka
+            $totalUangMuka = PembayaranPembelian::where('pembelian_id', $pembelian->id)
+                ->where('status_uang_muka', 1)
+                ->sum('jumlah_bayar');
+
+            $totalDibayar = $totalPembayaranTersisa; // uang muka sudah termasuk dalam query di atas
+
+            if ($totalDibayar >= $pembelian->nett_total) {
+                $pembelian->status_pembayaran = 'lunas';
+            } elseif ($totalDibayar > 0) {
+                $pembelian->status_pembayaran = 'dp';
+            } else {
+                $pembelian->status_pembayaran = 'belum_bayar';
+            }
+
+            $pembelian->save();
+
+            Log::info('Pembelian adjusted after penjualan kompensasi deletion', [
+                'pembelian_id' => $pembelian->id,
+                'no_faktur' => $pembelian->no_faktur,
+                'total_potongan_sesudah' => $pembelian->total_potongan,
+                'nett_total_sesudah' => $pembelian->nett_total,
+                'total_dibayar' => $totalDibayar,
+                'status_pembayaran_baru' => $pembelian->status_pembayaran,
+            ]);
+
+            // 4. Hapus record kompensasi
+            $kompensasi->delete();
+
+        } catch (Exception $e) {
+            Log::error('Error adjusting linked pembelian kompensasi', [
+                'penjualan_id' => $penjualan->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);

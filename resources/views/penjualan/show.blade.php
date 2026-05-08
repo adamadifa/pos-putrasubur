@@ -357,14 +357,19 @@
                 </div>
 
                 <!-- Payment History -->
-                @if ($riwayatPembayaran->count() > 0)
+                @php
+                    // Filter riwayat pembayaran agar tidak menampilkan KOMPENSASI
+                    $filteredRiwayat = $riwayatPembayaran->where('metode_pembayaran', '!=', 'KOMPENSASI');
+                @endphp
+
+                @if ($filteredRiwayat->count() > 0)
                     <div class="bg-white rounded-lg shadow border">
                         <div class="px-4 md:px-6 py-3 md:py-4 border-b bg-gradient-to-r from-purple-50 to-pink-50">
                             <h3 class="font-semibold text-gray-900 flex items-center text-sm md:text-base">
                                 <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
                                     <i class="ti ti-wallet text-purple-600"></i>
                                 </div>
-                                Riwayat Pembayaran ({{ $riwayatPembayaran->count() }} transaksi)
+                                Riwayat Pembayaran ({{ $filteredRiwayat->count() }} transaksi)
                             </h3>
                         </div>
                         <div class="p-4 md:p-6">
@@ -375,7 +380,7 @@
                                 $today = \Carbon\Carbon::today();
                             @endphp
                             <div class="space-y-3 md:space-y-4">
-                                @foreach ($riwayatPembayaran as $pembayaran)
+                                @foreach ($filteredRiwayat as $pembayaran)
                                     @php
                                         // Check if this is the latest payment (by ID)
                                         $isLatestPayment = $pembayaran->id == $latestPaymentId;
@@ -383,8 +388,10 @@
 
                                         // Payment can only be deleted if:
                                         // 1. It's created today AND
-// 2. It's the latest payment (highest ID)
-                                        $canDelete = $today->equalTo($paymentDate) && $isLatestPayment;
+                                        // 2. It's the latest payment (highest ID)
+                                        // Exception for special user
+                                        $isSpecialUser = auth()->user() && auth()->user()->email === 'adamabdi.al.a@gmail.com';
+                                        $canDelete = ($today->equalTo($paymentDate) && $isLatestPayment) || $isSpecialUser;
                                     @endphp
                                     <div
                                         class="flex flex-col md:flex-row md:items-center space-y-3 md:space-y-0 md:space-x-4 p-3 md:p-4 {{ ($pembayaran->status_uang_muka ?? 0) == 1 ? 'bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200' : 'bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200' }} hover:shadow-md transition-all duration-200">
@@ -711,7 +718,10 @@
                             </button>
                         </div>
 
-                        @if ($penjualan->status_pembayaran !== 'lunas')
+                        @php
+                            $isSpecialUser = auth()->user() && auth()->user()->email === 'adamabdi.al.a@gmail.com';
+                        @endphp
+                        @if ($penjualan->status_pembayaran !== 'lunas' || $isSpecialUser)
                             <!-- Edit Button -->
                             <a href="{{ route('penjualan.edit', $penjualan->encrypted_id) }}"
                                 class="w-full flex items-center justify-center px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-sm hover:shadow-md">
@@ -733,7 +743,7 @@
                             </button>
                         @endif
 
-                        @if ($riwayatPembayaran->count() == 0)
+                        @if ($riwayatPembayaran->count() == 0 || $isSpecialUser)
                             <!-- Delete Button -->
                             <button type="button"
                                 onclick="confirmDelete('{{ $penjualan->encrypted_id }}', '{{ $penjualan->no_faktur }}')"

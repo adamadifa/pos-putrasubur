@@ -846,8 +846,9 @@ class PenjualanController extends Controller
         $today = Carbon::today();
         $transactionDate = Carbon::parse($penjualan->created_at)->startOfDay();
         $isMoreThanOneDay = $today->diffInDays($transactionDate) > 1;
+        $isSpecialUser = auth()->user() && auth()->user()->email === 'adamabdi.al.a@gmail.com';
 
-        if ($isMoreThanOneDay) {
+        if ($isMoreThanOneDay && !$isSpecialUser) {
             return redirect()->route('penjualan.show', $encryptedId)
                 ->with('error', 'Transaksi yang sudah lebih dari H+1 tidak dapat diedit.');
         }
@@ -885,8 +886,9 @@ class PenjualanController extends Controller
         $today = Carbon::today();
         $transactionDate = Carbon::parse($penjualan->created_at)->startOfDay();
         $isMoreThanOneDay = $today->diffInDays($transactionDate) > 1;
+        $isSpecialUser = auth()->user() && auth()->user()->email === 'adamabdi.al.a@gmail.com';
 
-        if ($isMoreThanOneDay) {
+        if ($isMoreThanOneDay && !$isSpecialUser) {
             return redirect()->route('penjualan.show', $encryptedId)
                 ->with('error', 'Transaksi yang sudah lebih dari H+1 tidak dapat diedit.');
         }
