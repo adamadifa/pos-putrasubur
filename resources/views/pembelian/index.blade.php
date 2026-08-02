@@ -397,6 +397,15 @@
                                             <i class="ti ti-eye"></i>
                                         </a>
 
+                                        @if ($item->status_pembayaran !== 'lunas')
+                                        <button type="button" 
+                                                onclick="confirmLunas('{{ $item->encrypted_id }}', '{{ $item->no_faktur }}', {{ $item->sisa_pembayaran }})"
+                                                class="p-1.5 rounded-lg text-green-600 bg-green-50 hover:bg-green-100 hover:text-green-700 transition-all shadow-sm"
+                                                title="Ubah Status Kelunas">
+                                            <i class="ti ti-circle-check"></i>
+                                        </button>
+                                        @endif
+
                                         @if (!$isMoreThanOneDay)
                                         {{-- 
                                             <a href="{{ route('pembelian.edit', $item->encrypted_id) }}" 
@@ -564,6 +573,15 @@
                                     title="Lihat Detail">
                                     <i class="ti ti-eye text-sm"></i>
                                 </a>
+
+                                @if ($item->status_pembayaran !== 'lunas')
+                                <button type="button"
+                                    onclick="confirmLunas('{{ $item->encrypted_id }}', '{{ $item->no_faktur }}', {{ $item->sisa_pembayaran }})"
+                                    class="inline-flex items-center justify-center w-9 h-9 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg shadow-sm hover:shadow-lg hover:from-green-600 hover:to-green-700 transform hover:scale-105 transition-all duration-200"
+                                    title="Ubah Status Kelunas">
+                                    <i class="ti ti-circle-check text-sm"></i>
+                                </button>
+                                @endif
 
                                 {{-- Edit button hidden --}}
                                 @if (!$isMoreThanOneDay)
@@ -884,6 +902,136 @@
             document.getElementById('tanggal_sampai_hidden').value = tanggalSampaiValue;
             @endif
         });
+
+        const methods = @json($metodePembayaran ?? []);
+        const banks = @json($kasBank ?? []);
+
+        function confirmLunas(purchaseId, invoiceNumber, remainingAmount) {
+            const formattedAmount = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(remainingAmount);
+            
+            // Build Metode Pembayaran options
+            let methodOptions = '';
+            methods.forEach(method => {
+                methodOptions += `<option value="${method.kode}">${method.nama}</option>`;
+            });
+
+            // Build Kas/Bank options
+            let bankOptions = '<option value="">-- Pilih Kas/Bank --</option>';
+            banks.forEach(bank => {
+                bankOptions += `<option value="${bank.id}">${bank.nama} (Saldo: Rp ${new Intl.NumberFormat('id-ID').format(bank.saldo_terkini)})</option>`;
+            });
+
+            const htmlContent = `
+                <div class="text-left space-y-4">
+                    <p class="text-sm text-gray-600 mb-4">Apakah Anda yakin ingin melunasi transaksi <strong>${invoiceNumber}</strong>?</p>
+                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-4">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">Sisa Pembayaran:</span>
+                            <span class="font-bold text-red-600">${formattedAmount}</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="swal_metode_pembayaran" class="block text-xs font-semibold text-gray-700 mb-1">Metode Pembayaran</label>
+                        <select id="swal_metode_pembayaran" class="w-full p-2 border border-gray-300 rounded-lg text-sm focus:ring-orange-500 focus:border-orange-500">
+                            ${methodOptions}
+                        </select>
+                    </div>
+                    <div id="swal_kas_bank_container" class="mb-3">
+                        <label for="swal_kas_bank_id" class="block text-xs font-semibold text-gray-700 mb-1">Kas / Bank</label>
+                        <select id="swal_kas_bank_id" class="w-full p-2 border border-gray-300 rounded-lg text-sm focus:ring-orange-500 focus:border-orange-500">
+                            ${bankOptions}
+                        </select>
+                    </div>
+                </div>
+            `;
+
+            Swal.fire({
+                title: 'Konfirmasi Pelunasan',
+                html: htmlContent,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Lunasi!',
+                cancelButtonText: 'Batal',
+                reverseButtons: true,
+                showLoaderOnConfirm: true,
+                didOpen: () => {
+                    const methodSelect = document.getElementById('swal_metode_pembayaran');
+                    const bankContainer = document.getElementById('swal_kas_bank_container');
+                    
+                    // Show/hide bank selection based on payment method
+                    const toggleBankContainer = () => {
+                        const val = methodSelect.value;
+                        if (val === 'tunai' || val === 'transfer' || val === 'qris') {
+                            bankContainer.style.display = 'block';
+                        } else {
+                            bankContainer.style.display = 'none';
+                        }
+                    };
+
+                    methodSelect.addEventListener('change', toggleBankContainer);
+                    toggleBankContainer(); // Initial check
+                },
+                preConfirm: () => {
+                    const metode_pembayaran = document.getElementById('swal_metode_pembayaran').value;
+                    const kas_bank_id = document.getElementById('swal_kas_bank_id').value;
+                    
+                    // Frontend validation inside SweetAlert
+                    if (['tunai', 'transfer', 'qris'].includes(metode_pembayaran) && !kas_bank_id) {
+                        Swal.showValidationMessage('Kas/Bank wajib dipilih untuk metode pembayaran ini.');
+                        return false;
+                    }
+
+                    const url = "{{ route('pembelian.lunas', 'PLACEHOLDER') }}".replace('PLACEHOLDER', purchaseId);
+                    return fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            metode_pembayaran: metode_pembayaran,
+                            kas_bank_id: kas_bank_id
+                        }),
+                        credentials: 'same-origin'
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => {
+                                throw new Error(err.message || 'Terjadi kesalahan saat memproses pelunasan');
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            return data;
+                        } else {
+                            throw new Error(data.message || 'Terjadi kesalahan saat memproses pelunasan');
+                        }
+                    })
+                    .catch(error => {
+                        Swal.showValidationMessage(error.message);
+                    });
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+            }).then((result) => {
+                if (result.isConfirmed && result.value && result.value.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: result.value.message || 'Transaksi berhasil dilunasi.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                }
+            });
+        }
 
         function confirmDelete(purchaseId, invoiceNumber) {
             Swal.fire({

@@ -104,6 +104,9 @@ class PembelianController extends Controller
             ->pluck('count', 'jenis_transaksi')
             ->toArray();
 
+        $metodePembayaran = MetodePembayaran::where('status', true)->orderBy('nama')->get();
+        $kasBank = KasBank::orderBy('nama')->get();
+
         return view('pembelian.index', compact(
             'pembelian',
             'pembelianHariIni',
@@ -111,7 +114,9 @@ class PembelianController extends Controller
             'nilaiHariIni',
             'perubahanNilai',
             'statusCountsHariIni',
-            'jenisTransaksiCountsHariIni'
+            'jenisTransaksiCountsHariIni',
+            'metodePembayaran',
+            'kasBank'
         ));
     }
 
@@ -1035,6 +1040,94 @@ class PembelianController extends Controller
             }
 
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Ubah status status_pembayaran pembelian menjadi lunas dan buat record pembayaran otomatis.
+     */
+    public function makeLunas(Request $request, $encryptedId)
+    {
+        try {
+            $pembelian = Pembelian::findByEncryptedId($encryptedId);
+            
+            // Hitung sisa pembayaran
+            $sisa = $pembelian->sisa_pembayaran;
+            
+            if ($sisa <= 0) {
+                // Jika sudah lunas atau tidak ada sisa bayar, update status dan sukses
+                $pembelian->update(['status_pembayaran' => 'lunas']);
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Transaksi pembelian sudah lunas.'
+                ]);
+            }
+            
+            // Validasi input metode pembayaran dan kas bank jika diperlukan
+            $validated = $request->validate([
+                'metode_pembayaran' => 'required|string|max:50',
+                'kas_bank_id' => 'nullable|exists:kas_bank,id'
+            ]);
+            
+            // Validasi tambahan jika metode pembayaran membutuhkan kas bank
+            if (in_array($validated['metode_pembayaran'], ['tunai', 'transfer', 'qris'])) {
+                if (empty($validated['kas_bank_id'])) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Kas/Bank wajib dipilih untuk metode pembayaran ini.'
+                    ], 422);
+                }
+            }
+
+            // Tentukan tanggal pembayaran:
+            // Tanggal pembayaran terakhir, atau jika kosong sesuai tanggal transaksinya
+            $lastPayment = $pembelian->pembayaranPembelian()
+                ->where('metode_pembayaran', '!=', 'KOMPENSASI')
+                ->orderBy('tanggal', 'desc')
+                ->first();
+            
+            $tanggalBayar = $lastPayment ? $lastPayment->tanggal : $pembelian->tanggal;
+
+            DB::beginTransaction();
+
+            // Generate nomor bukti pembayaran (PB-YYYYMMDD-ID_PEMBELIAN-SEQUENCE)
+            $noBukti = 'PB-' . date('Ymd') . '-' . str_pad($pembelian->id, 4, '0', STR_PAD_LEFT) . '-' . str_pad($pembelian->pembayaranPembelian()->count() + 1, 2, '0', STR_PAD_LEFT);
+
+            // Buat record pembayaran pembelian
+            $pembayaran = PembayaranPembelian::create([
+                'pembelian_id' => $pembelian->id,
+                'no_bukti' => $noBukti,
+                'tanggal' => $tanggalBayar,
+                'jumlah_bayar' => $sisa,
+                'metode_pembayaran' => $validated['metode_pembayaran'],
+                'kas_bank_id' => $validated['kas_bank_id'] ?? null,
+                'status_bayar' => 'P', // P = Pelunasan
+                'status_uang_muka' => 0,
+                'keterangan' => 'Pelunasan otomatis dari halaman Pembelian',
+                'user_id' => Auth::id(),
+            ]);
+
+            // Update status pembelian menjadi lunas
+            $pembelian->update(['status_pembayaran' => 'lunas']);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pembelian berhasil dilunasi dengan pembayaran sebesar Rp ' . number_format($sisa, 0, ',', '.')
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Error making pembelian lunas', [
+                'encrypted_id' => $encryptedId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
         }
     }
 
