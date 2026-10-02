@@ -85,12 +85,12 @@ class LaporanStokController extends Controller
         // Get saldo awal bulan dari saldo awal produk
         $saldoAwalBulan = $this->getSaldoAwalProduk($produkId, $bulan, $tahun);
 
-        // Jika saldo awal bulan tidak ada, cari saldo awal terakhir terdekat
+        // Jika saldo awal bulan tidak ada (belum di-set), cari saldo awal terakhir terdekat
         $saldoAwalTerakhir = null;
         $periodeSaldoAwalTerakhir = null;
         $tanggalMulaiHitung = null;
 
-        if ($saldoAwalBulan === 0) {
+        if ($saldoAwalBulan === null) {
             // Cari saldo awal terakhir terdekat (mundur dari bulan yang difilter)
             $currentDate = \Carbon\Carbon::create($tahun, $bulan, 1);
 
@@ -101,7 +101,7 @@ class LaporanStokController extends Controller
 
                 $saldoAwalCari = $this->getSaldoAwalProduk($produkId, $bulanCari, $tahunCari);
 
-                if ($saldoAwalCari > 0) {
+                if ($saldoAwalCari !== null) {
                     $saldoAwalTerakhir = $saldoAwalCari;
                     $periodeSaldoAwalTerakhir = $this->getBulanNama($bulanCari) . ' ' . $tahunCari;
                     $tanggalMulaiHitung = \Carbon\Carbon::create($tahunCari, $bulanCari, 1);
@@ -114,7 +114,7 @@ class LaporanStokController extends Controller
         $tanggalAwalBulanFilter = \Carbon\Carbon::create($tahun, $bulan, 1);
         $transaksiSebelumPeriode = collect();
 
-        if ($saldoAwalTerakhir && $tanggalMulaiHitung) {
+        if ($saldoAwalTerakhir !== null && $tanggalMulaiHitung) {
             $transaksiSebelumPeriode = $this->getTransaksiProduk(
                 $produkId,
                 $tanggalMulaiHitung,
@@ -123,12 +123,14 @@ class LaporanStokController extends Controller
         }
 
         // Calculate saldo awal periode
-        $saldoAwal = $saldoAwalTerakhir ?: $saldoAwalBulan;
+        $saldoAwal = $saldoAwalTerakhir !== null ? $saldoAwalTerakhir : ($saldoAwalBulan ?? 0);
         foreach ($transaksiSebelumPeriode as $transaksi) {
             if ($transaksi->jenis == 'pembelian') {
                 $saldoAwal += $transaksi->jumlah;
-            } else {
+            } elseif ($transaksi->jenis == 'penjualan') {
                 $saldoAwal -= $transaksi->jumlah;
+            } elseif ($transaksi->jenis == 'penyesuaian') {
+                $saldoAwal += $transaksi->jumlah;
             }
         }
 
@@ -167,7 +169,7 @@ class LaporanStokController extends Controller
             ],
             'saldo_awal' => $saldoAwal,
             'saldo_awal_bulan' => $saldoAwalBulan,
-            'saldo_awal_terakhir' => $saldoAwalTerakhir ? [
+            'saldo_awal_terakhir' => $saldoAwalTerakhir !== null ? [
                 'saldo' => $saldoAwalTerakhir,
                 'periode_saldo_awal' => $periodeSaldoAwalTerakhir,
                 'tanggal_mulai_hitung' => $tanggalMulaiHitung->format('d/m/Y'),
@@ -200,13 +202,11 @@ class LaporanStokController extends Controller
     {
         $produk = Produk::with(['kategori', 'satuan'])->findOrFail($produkId);
 
-        // Parse dates
         // Parse dates using specific format d/m/Y
         try {
             $tanggalDari = \Carbon\Carbon::createFromFormat('d/m/Y', $tanggalDari);
             $tanggalSampai = \Carbon\Carbon::createFromFormat('d/m/Y', $tanggalSampai);
         } catch (\Exception $e) {
-            // Fallback for Y-m-d if needed, or re-throw
             $tanggalDari = \Carbon\Carbon::parse($tanggalDari);
             $tanggalSampai = \Carbon\Carbon::parse($tanggalSampai);
         }
@@ -216,12 +216,12 @@ class LaporanStokController extends Controller
         $tahunDari = $tanggalDari->year;
         $saldoAwalBulan = $this->getSaldoAwalProduk($produkId, $bulanDari, $tahunDari);
 
-        // Jika saldo awal bulan tidak ada, cari saldo awal terakhir terdekat
+        // Jika saldo awal bulan tidak ada (belum di-set), cari saldo awal terakhir terdekat
         $saldoAwalTerakhir = null;
         $periodeSaldoAwalTerakhir = null;
         $tanggalMulaiHitung = null;
 
-        if ($saldoAwalBulan === 0) {
+        if ($saldoAwalBulan === null) {
             // Cari saldo awal terakhir terdekat (mundur dari bulan yang difilter)
             $currentDate = \Carbon\Carbon::create($tahunDari, $bulanDari, 1);
 
@@ -232,7 +232,7 @@ class LaporanStokController extends Controller
 
                 $saldoAwalCari = $this->getSaldoAwalProduk($produkId, $bulanCari, $tahunCari);
 
-                if ($saldoAwalCari > 0) {
+                if ($saldoAwalCari !== null) {
                     $saldoAwalTerakhir = $saldoAwalCari;
                     $periodeSaldoAwalTerakhir = $this->getBulanNama($bulanCari) . ' ' . $tahunCari;
                     $tanggalMulaiHitung = \Carbon\Carbon::create($tahunCari, $bulanCari, 1);
@@ -244,29 +244,33 @@ class LaporanStokController extends Controller
         // Get transaksi dari awal bulan saldo awal terakhir sampai sebelum tanggal "dari"
         $transaksiSebelumPeriode = collect();
 
-        if ($saldoAwalTerakhir && $tanggalMulaiHitung) {
+        if ($saldoAwalTerakhir !== null && $tanggalMulaiHitung) {
             $transaksiSebelumPeriode = $this->getTransaksiProduk(
                 $produkId,
                 $tanggalMulaiHitung,
                 $tanggalDari->copy()->subDay()
             );
-        } elseif ($saldoAwalBulan > 0) {
-            // Jika ada saldo awal bulan, hitung dari awal bulan sampai sebelum tanggal "dari"
+        } elseif ($saldoAwalBulan !== null) {
+            // Jika ada saldo awal bulan (termasuk 0), hitung dari awal bulan sampai sebelum tanggal "dari"
             $tanggalAwalBulan = \Carbon\Carbon::create($tahunDari, $bulanDari, 1);
-            $transaksiSebelumPeriode = $this->getTransaksiProduk(
-                $produkId,
-                $tanggalAwalBulan,
-                $tanggalDari->copy()->subDay()
-            );
+            if ($tanggalDari->gt($tanggalAwalBulan)) {
+                $transaksiSebelumPeriode = $this->getTransaksiProduk(
+                    $produkId,
+                    $tanggalAwalBulan,
+                    $tanggalDari->copy()->subDay()
+                );
+            }
         }
 
         // Calculate saldo awal periode
-        $saldoAwalPeriode = $saldoAwalTerakhir ?: $saldoAwalBulan;
+        $saldoAwalPeriode = $saldoAwalTerakhir !== null ? $saldoAwalTerakhir : ($saldoAwalBulan ?? 0);
         foreach ($transaksiSebelumPeriode as $transaksi) {
             if ($transaksi->jenis == 'pembelian') {
                 $saldoAwalPeriode += $transaksi->jumlah;
-            } else {
+            } elseif ($transaksi->jenis == 'penjualan') {
                 $saldoAwalPeriode -= $transaksi->jumlah;
+            } elseif ($transaksi->jenis == 'penyesuaian') {
+                $saldoAwalPeriode += $transaksi->jumlah;
             }
         }
 
@@ -331,19 +335,38 @@ class LaporanStokController extends Controller
     }
 
     /**
-     * Get saldo awal produk untuk bulan dan tahun tertentu
+     * Get saldo awal produk untuk bulan dan tahun tertentu.
+     * Mengembalikan float jika saldo awal periode ada (termasuk 0.0),
+     * atau null jika periode belum pernah di-set saldo awalnya.
      */
     private function getSaldoAwalProduk($produkId, $bulan, $tahun)
     {
-        // Cari saldo awal produk dari tabel detail_saldo_awal_produk
-        $saldoAwal = DB::table('detail_saldo_awal_produks as dsap')
+        // Cari saldo awal produk dari tabel detail_saldo_awal_produks
+        $detail = DB::table('detail_saldo_awal_produks as dsap')
             ->join('saldo_awal_produk as sap', 'dsap.saldo_awal_produk_id', '=', 'sap.id')
             ->where('dsap.produk_id', $produkId)
             ->where('sap.periode_bulan', $bulan)
             ->where('sap.periode_tahun', $tahun)
-            ->value('dsap.saldo_awal');
+            ->select('dsap.saldo_awal')
+            ->first();
 
-        return $saldoAwal ?? 0;
+        if ($detail !== null) {
+            return (float) $detail->saldo_awal;
+        }
+
+        // Cek apakah header saldo_awal_produk untuk periode ini ada
+        $hasHeader = DB::table('saldo_awal_produk')
+            ->where('periode_bulan', $bulan)
+            ->where('periode_tahun', $tahun)
+            ->exists();
+
+        if ($hasHeader) {
+            // Header ada tapi produk ini tidak ada record detail terpisah, default ke 0
+            return 0.0;
+        }
+
+        // Periode belum pernah di-set sama sekali
+        return null;
     }
 
     /**
@@ -634,14 +657,14 @@ class LaporanStokController extends Controller
         // Initial Saldo Awal from table
         $saldoAwalBulan = $this->getSaldoAwalProduk($produkId, $bulan, $tahun);
         
-        // If 0, check last 12 months
-        if ($saldoAwalBulan == 0) {
+        // If null (never set for this month), check last 12 months
+        if ($saldoAwalBulan === null) {
             $currentDate = \Carbon\Carbon::create($tahun, $bulan, 1);
             for ($i = 0; $i < 12; $i++) {
                 $currentDate->subMonth();
                 $saldoAwalCari = $this->getSaldoAwalProduk($produkId, $currentDate->month, $currentDate->year);
-                if ($saldoAwalCari > 0) {
-                    // Calculate from that month to current date
+                if ($saldoAwalCari !== null) {
+                    // Calculate from that month to date-1
                     $transaksiSebelum = $this->getTransaksiProduk($produkId, \Carbon\Carbon::create($currentDate->year, $currentDate->month, 1), $date->copy()->subDay());
                     $total = $saldoAwalCari;
                     foreach ($transaksiSebelum as $t) {
@@ -652,19 +675,22 @@ class LaporanStokController extends Controller
                     return $total;
                 }
             }
+            return 0;
         } else {
+            // Saldo awal bulan ini ADA (bisa 0 atau > 0)
             // Calculate from day 1 of month to date-1
-            $transaksiSebelum = $this->getTransaksiProduk($produkId, \Carbon\Carbon::create($tahun, $bulan, 1), $date->copy()->subDay());
+            $startOfMonth = \Carbon\Carbon::create($tahun, $bulan, 1)->startOfDay();
             $total = $saldoAwalBulan;
-            foreach ($transaksiSebelum as $t) {
-                if ($t->jenis == 'pembelian') $total += $t->jumlah;
-                elseif ($t->jenis == 'penjualan') $total -= $t->jumlah;
-                elseif ($t->jenis == 'penyesuaian') $total += $t->jumlah;
+            if ($date->copy()->startOfDay()->gt($startOfMonth)) {
+                $transaksiSebelum = $this->getTransaksiProduk($produkId, $startOfMonth, $date->copy()->subDay()->endOfDay());
+                foreach ($transaksiSebelum as $t) {
+                    if ($t->jenis == 'pembelian') $total += $t->jumlah;
+                    elseif ($t->jenis == 'penjualan') $total -= $t->jumlah;
+                    elseif ($t->jenis == 'penyesuaian') $total += $t->jumlah;
+                }
             }
             return $total;
         }
-        
-        return 0;
     }
 
     public function getDetailMutasi(Request $request)
