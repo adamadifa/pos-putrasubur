@@ -46,10 +46,7 @@ class SaldoAwalProduk extends Model
      */
     public static function getSaldoAwal($produkId, $bulan, $tahun)
     {
-        $saldoAwal = self::whereHas('details', function ($query) use ($produkId) {
-            $query->where('produk_id', $produkId);
-        })
-            ->where('periode_bulan', $bulan)
+        $saldoAwal = self::where('periode_bulan', $bulan)
             ->where('periode_tahun', $tahun)
             ->first();
 

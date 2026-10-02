@@ -146,8 +146,13 @@ class SaldoAwalProdukController extends Controller
 
             $createdCount = 0;
             foreach ($request->saldo_awal as $produkId => $saldoAwalValue) {
-                // Skip jika saldo awal 0 atau kosong
-                if ($saldoAwalValue <= 0) {
+                // Jika kosong atau null, set ke 0
+                if ($saldoAwalValue === null || $saldoAwalValue === '') {
+                    $saldoAwalValue = 0;
+                }
+
+                // Skip jika bukan numerik atau bernilai negatif
+                if (!is_numeric($saldoAwalValue) || $saldoAwalValue < 0) {
                     continue;
                 }
 
@@ -157,28 +162,132 @@ class SaldoAwalProdukController extends Controller
                     continue;
                 }
 
+                $numericSaldo = (float) $saldoAwalValue;
+
                 // Buat detail saldo awal
                 DetailSaldoAwalProduk::create([
                     'saldo_awal_produk_id' => $saldoAwalHeader->id,
                     'produk_id' => $produkId,
-                    'saldo_awal' => $saldoAwalValue
+                    'saldo_awal' => $numericSaldo
                 ]);
 
                 // Update stok produk langsung
-                $produk->update(['stok' => $saldoAwalValue]);
+                $produk->update(['stok' => $numericSaldo]);
 
                 $createdCount++;
             }
 
+            if ($createdCount === 0) {
+                DB::rollBack();
+                return redirect()->back()
+                    ->with('error', 'Tidak ada saldo awal yang disimpan. Pastikan data produk valid.')
+                    ->withInput();
+            }
+
             DB::commit();
 
-            if ($createdCount > 0) {
-                return redirect()->route('saldo-awal-produk.index')
-                    ->with('success', "Berhasil menyimpan {$createdCount} saldo awal produk untuk periode {$this->getBulanNama($request->periode_bulan)} {$request->periode_tahun}");
-            } else {
-                return redirect()->back()
-                    ->with('error', 'Tidak ada saldo awal yang disimpan. Pastikan minimal satu produk memiliki saldo awal > 0.');
+            return redirect()->route('saldo-awal-produk.index')
+                ->with('success', "Berhasil menyimpan {$createdCount} saldo awal produk untuk periode {$this->getBulanNama($request->periode_bulan)} {$request->periode_tahun}");
+        } catch (\Exception $e) {
+            DB::rollback();
+            return back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()])->withInput();
+        }
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(SaldoAwalProduk $saldoAwalProduk)
+    {
+        // Cek apakah bisa diedit
+        if (!SaldoAwalProduk::canEdit($saldoAwalProduk->periode_bulan, $saldoAwalProduk->periode_tahun)) {
+            return redirect()->route('saldo-awal-produk.index')
+                ->with('error', 'Saldo awal tidak dapat diedit karena sudah ada saldo awal bulan berikutnya.');
+        }
+
+        $saldoAwalProduk->load(['details.produk.kategori', 'details.produk.satuan', 'user']);
+
+        $produkList = Produk::with(['kategori', 'satuan'])
+            ->orderBy('kategori_id')
+            ->orderBy('nama_produk')
+            ->get();
+
+        $detailsMap = $saldoAwalProduk->details->keyBy('produk_id');
+
+        return view('saldo-awal-produk.edit', compact('saldoAwalProduk', 'produkList', 'detailsMap'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, SaldoAwalProduk $saldoAwalProduk)
+    {
+        // Cek apakah bisa diedit
+        if (!SaldoAwalProduk::canEdit($saldoAwalProduk->periode_bulan, $saldoAwalProduk->periode_tahun)) {
+            return redirect()->route('saldo-awal-produk.index')
+                ->with('error', 'Saldo awal tidak dapat diedit karena sudah ada saldo awal bulan berikutnya.');
+        }
+
+        $request->validate([
+            'saldo_awal' => 'required|array',
+            'saldo_awal.*' => 'nullable|numeric|min:0',
+            'keterangan' => 'nullable|string|max:500'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $saldoAwalProduk->update([
+                'keterangan' => $request->keterangan
+            ]);
+
+            $savedCount = 0;
+            foreach ($request->saldo_awal as $produkId => $saldoAwalValue) {
+                // Jika kosong atau null, set ke 0
+                if ($saldoAwalValue === null || $saldoAwalValue === '') {
+                    $saldoAwalValue = 0;
+                }
+
+                // Skip jika bukan numerik atau bernilai negatif
+                if (!is_numeric($saldoAwalValue) || $saldoAwalValue < 0) {
+                    continue;
+                }
+
+                $produk = Produk::find($produkId);
+                if (!$produk) {
+                    continue;
+                }
+
+                $numericSaldo = (float) $saldoAwalValue;
+
+                // Update atau buat detail saldo awal
+                DetailSaldoAwalProduk::updateOrCreate(
+                    [
+                        'saldo_awal_produk_id' => $saldoAwalProduk->id,
+                        'produk_id' => $produkId,
+                    ],
+                    [
+                        'saldo_awal' => $numericSaldo
+                    ]
+                );
+
+                // Update stok produk langsung
+                $produk->update(['stok' => $numericSaldo]);
+
+                $savedCount++;
             }
+
+            if ($savedCount === 0) {
+                DB::rollBack();
+                return redirect()->back()
+                    ->with('error', 'Tidak ada saldo awal yang diperbarui. Pastikan data produk valid.')
+                    ->withInput();
+            }
+
+            DB::commit();
+
+            return redirect()->route('saldo-awal-produk.index')
+                ->with('success', "Berhasil memperbarui {$savedCount} saldo awal produk untuk periode {$saldoAwalProduk->bulan_nama} {$saldoAwalProduk->periode_tahun}");
         } catch (\Exception $e) {
             DB::rollback();
             return back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()])->withInput();
@@ -293,6 +402,12 @@ class SaldoAwalProdukController extends Controller
                 }
             }
 
+            // Ambil header saldo awal untuk periode ini jika sudah ada
+            $existingSaldoHeader = SaldoAwalProduk::with('details')
+                ->where('periode_bulan', $request->periode_bulan)
+                ->where('periode_tahun', $request->periode_tahun)
+                ->first();
+
             $produkList = Produk::with(['kategori', 'satuan'])
                 ->orderBy('kategori_id')
                 ->orderBy('nama_produk')
@@ -300,23 +415,13 @@ class SaldoAwalProdukController extends Controller
 
             $produkData = [];
             foreach ($produkList as $produk) {
-                // Cek apakah sudah ada saldo awal untuk periode ini
-                $existingSaldo = SaldoAwalProduk::whereHas('details', function ($query) use ($produk) {
-                    $query->where('produk_id', $produk->id);
-                })
-                    ->where('periode_bulan', $request->periode_bulan)
-                    ->where('periode_tahun', $request->periode_tahun)
-                    ->first();
-
-                $existingSaldoValue = 0;
-                if ($existingSaldo) {
-                    $detail = $existingSaldo->details()->where('produk_id', $produk->id)->first();
-                    $existingSaldoValue = $detail ? $detail->saldo_awal : 0;
-                }
+                $existingDetail = $existingSaldoHeader ? $existingSaldoHeader->details->firstWhere('produk_id', $produk->id) : null;
+                $hasExisting = $existingDetail !== null;
+                $existingSaldoValue = $hasExisting ? (float)$existingDetail->saldo_awal : 0;
 
                 // Hitung saldo awal otomatis jika belum ada dan saldo bulan sebelumnya sudah di-set
                 $calculatedSaldo = 0;
-                if (!$existingSaldo && !$saldoAwalBulanSebelumnyaBelumDiSet) {
+                if (!$hasExisting && !$saldoAwalBulanSebelumnyaBelumDiSet) {
                     if ($adaDataSebelumnya) {
                         $calculatedSaldo = $this->calculateSaldoAwal($produk->id, $request->periode_bulan, $request->periode_tahun);
                         // Jika hasil null, set ke 0
@@ -336,7 +441,7 @@ class SaldoAwalProdukController extends Controller
                     'satuan' => $produk->satuan->nama ?? '-',
                     'foto' => $produk->foto ? asset('storage/' . $produk->foto) : null,
                     'existing_saldo' => $existingSaldoValue,
-                    'has_existing' => $existingSaldo ? true : false,
+                    'has_existing' => $hasExisting,
                     'calculated_saldo' => $calculatedSaldo,
                     'saldo_sebelumnya_belum_diset' => $saldoAwalBulanSebelumnyaBelumDiSet // Set sama untuk semua produk
                 ];
@@ -371,10 +476,7 @@ class SaldoAwalProdukController extends Controller
             }
 
             // Cari saldo awal bulan sebelumnya
-            $saldoAwalSebelumnya = SaldoAwalProduk::whereHas('details', function ($query) use ($produkId) {
-                $query->where('produk_id', $produkId);
-            })
-                ->where('periode_bulan', $bulanSebelumnya)
+            $saldoAwalSebelumnya = SaldoAwalProduk::where('periode_bulan', $bulanSebelumnya)
                 ->where('periode_tahun', $tahunSebelumnya)
                 ->first();
 
@@ -384,7 +486,7 @@ class SaldoAwalProdukController extends Controller
             }
 
             $detail = $saldoAwalSebelumnya->details()->where('produk_id', $produkId)->first();
-            $saldoAwal = $detail ? $detail->saldo_awal : 0;
+            $saldoAwal = $detail ? (float)$detail->saldo_awal : 0;
 
             // Hitung total pembelian bulan sebelumnya (qty - qty_discount)
             $totalPembelian = DB::table('detail_pembelian')

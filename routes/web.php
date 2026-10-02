@@ -165,7 +165,7 @@ Route::middleware('auth')->group(function () {
     // Transaksi Kas & Bank Routes (Admin & Kasir only)
     Route::resource('transaksi-kas-bank', TransaksiKasBankController::class)->middleware('role:admin,kasir');
     Route::resource('saldo-awal-bulanan', SaldoAwalBulananController::class)->except(['show', 'edit', 'update'])->middleware('role:admin,kasir');
-    Route::resource('saldo-awal-produk', SaldoAwalProdukController::class)->except(['show', 'edit', 'update'])->middleware('role:admin,kasir');
+    Route::resource('saldo-awal-produk', SaldoAwalProdukController::class)->except(['show'])->middleware('role:admin,kasir');
     Route::resource('penyesuaian-stok', PenyesuaianStokController::class)->middleware('role:admin,kasir');
 
     // Saldo Awal Bulanan API Routes

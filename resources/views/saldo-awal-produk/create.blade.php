@@ -102,7 +102,7 @@
                             <h3 class="text-sm font-bold text-gray-800">Daftar Produk</h3>
                             <div class="text-xs text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 flex items-center gap-1.5">
                                 <i class="ti ti-info-circle"></i>
-                                Masukkan saldo awal jika ada. Kosongkan jika 0.
+                                Masukkan saldo awal produk. Nilai 0 diperbolehkan.
                             </div>
                         </div>
 
@@ -221,7 +221,7 @@
                     if(p.has_existing) {
                         status = `<span class="text-[10px] px-1.5 py-0.5 rounded bg-yellow-50 text-yellow-700 border border-yellow-100 font-medium">Existing: ${fmtNum(p.existing_saldo)}</span>`;
                         defVal = p.existing_saldo;
-                    } else if (p.calculated_saldo > 0) {
+                    } else if (p.calculated_saldo !== null && p.calculated_saldo !== undefined) {
                         status = `<span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100 font-medium">Auto: ${fmtNum(p.calculated_saldo)}</span>`;
                         defVal = p.calculated_saldo;
                     }
@@ -289,7 +289,12 @@
                 
                 // Unformat inputs
                 $('.saldo-input').each(function() {
-                    const val = $(this).val().replace(/\./g, '').replace(/,/g, '.');
+                    let val = $(this).val().trim();
+                    if (val === '') {
+                        val = '0';
+                    } else {
+                        val = val.replace(/\./g, '').replace(/,/g, '.');
+                    }
                     $(this).val(val);
                 });
                 

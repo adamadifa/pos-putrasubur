@@ -131,6 +131,11 @@
                                         </button>
                                         
                                         @if (\App\Models\SaldoAwalProduk::canEdit($saldoHeader->periode_bulan, $saldoHeader->periode_tahun))
+                                            <a href="{{ route('saldo-awal-produk.edit', $saldoHeader) }}"
+                                                class="p-1.5 text-amber-600 hover:text-amber-800 hover:bg-amber-50 rounded-md transition-colors"
+                                                title="Edit Saldo Awal">
+                                                <i class="ti ti-edit"></i>
+                                            </a>
                                             <form action="{{ route('saldo-awal-produk.destroy', $saldoHeader) }}" method="POST" 
                                                 class="inline-block"
                                                 onsubmit="return confirm('Hapus saldo awal periode {{ $saldoHeader->bulan_nama }} {{ $saldoHeader->periode_tahun }}?')">
